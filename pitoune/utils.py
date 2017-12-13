@@ -15,6 +15,8 @@ def torch_to_numpy(v):
     squeezed_array = np.squeeze(array)
     if squeezed_array.shape == ():
         return squeezed_array
+    else:
+        return array
 
 def tensors_to_variables(v):
     if isinstance(v, Variable):
