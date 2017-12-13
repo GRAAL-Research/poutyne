@@ -71,6 +71,7 @@ class Model(object):
         return logs
 
     def predict(self, x):
+        x = tensors_to_variables(x)
         return self.model(x)
 
     def _validate(self, valid_generator, steps_per_epoch):
