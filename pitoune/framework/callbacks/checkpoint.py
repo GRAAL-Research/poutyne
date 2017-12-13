@@ -46,6 +46,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import warnings
 
 import torch
 from .callbacks import Callback
@@ -66,7 +67,7 @@ class ModelCheckpoint(Callback):
             elif mode == 'max':
                 self.monitor_op = lambda x,y: x > y
                 self.current_best = {self.monitor: -float('Inf')}
-                self.current_best_weights = None
+            self.current_best_weights = None
 
         self.period = period
 
@@ -87,5 +88,8 @@ class ModelCheckpoint(Callback):
 
     def on_train_end(self, logs=None):
         if self.save_best_only:
-            filename = self.filename.format(self.current_best)
-            torch.save(self.current_best_weights, filename)
+            if self.current_best_weights is not None:
+                filename = self.filename.format(self.current_best)
+                torch.save(self.current_best_weights, filename)
+            else:
+                warnings.warn('No current best weights to save!')
