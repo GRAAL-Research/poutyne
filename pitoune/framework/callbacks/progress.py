@@ -26,7 +26,7 @@ class ProgressionCallback(Callback):
         self.epoch_total_time = self.epoch_end_time - self.epoch_begin_time
 
         metrics_str = self._get_metrics_string(logs)
-        print("\rEpoch %d/%d %ds Step %d/%d: %s" % (self.epoch, self.n_epochs, self.epoch_total_time, self.steps_per_epoch, self.steps_per_epoch, metrics_str))
+        print("\rEpoch %d/%d %.2fs Step %d/%d: %s" % (self.epoch, self.n_epochs, self.epoch_total_time, self.steps_per_epoch, self.steps_per_epoch, metrics_str))
 
     def on_batch_begin(self, step, logs=None):
         self.batch_begin_time = timeit.default_timer()
@@ -39,7 +39,7 @@ class ProgressionCallback(Callback):
         remaining_time = times_mean * (self.steps_per_epoch - step)
 
         metrics_str = self._get_metrics_string(logs)
-        sys.stdout.write("\rEpoch %d/%d ETA %ds Step %d/%d: %s" % (self.epoch, self.n_epochs, remaining_time, step, self.steps_per_epoch, metrics_str))
+        sys.stdout.write("\rEpoch %d/%d ETA %.0fs Step %d/%d: %s" % (self.epoch, self.n_epochs, remaining_time, step, self.steps_per_epoch, metrics_str))
         sys.stdout.flush()
 
     def _get_metrics_string(self, logs):
