@@ -18,11 +18,11 @@ def torch_to_numpy(v):
     else:
         return array
 
-def tensors_to_variables(v):
+def tensors_to_variables(v, *args, **kwargs):
     if isinstance(v, Variable):
         return v
     if torch.is_tensor(v):
-        return Variable(v)
+        return Variable(v, *args, **kwargs)
     if isinstance(v, list) or isinstance(v, tuple):
         return type(v)(tensors_to_variables(el) for el in v)
     if isinstance(v, dict):

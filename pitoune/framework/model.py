@@ -31,13 +31,14 @@ class Model(object):
             metrics_sum = np.zeros(len(self.metrics))
             times_sum = 0.
 
+            self.model.train(True)
             train_iterator = iter(train_generator)
             for step in range(1, train_steps_per_epoch + 1):
                 callback_list.on_batch_begin(step, logs)
 
                 self.model.zero_grad()
 
-                loss_tensor, metrics_tensors = self._run_step(train_iterator)
+                loss_tensor, metrics_tensors = self._run_step(train_iterator, is_training=True)
 
                 loss_tensor.backward()
                 self.optimizer.step()
@@ -54,7 +55,7 @@ class Model(object):
                 logs[-1] = {'epoch': epoch, 'lr': self.optimizer.param_groups[0]['lr'], 'loss': losses_mean, **metrics_dict}
                 callback_list.on_batch_end(step, logs)
 
-
+            self.model.eval()
             val_loss, val_metrics = self._validate(valid_generator, steps_per_epoch)
             val_metrics_dict = {'val_' + metric_name:metric for metric_name, metric in zip(self.metric_names, val_metrics)}
 
@@ -71,7 +72,8 @@ class Model(object):
         return logs
 
     def predict(self, x):
-        x = tensors_to_variables(x)
+        self.model.eval()
+        x = tensors_to_variables(x, volatile=True)
         return self.model(x)
 
     def _validate(self, valid_generator, steps_per_epoch):
@@ -80,7 +82,7 @@ class Model(object):
         metrics_list = np.empty((valid_steps_per_epoch, len(self.metrics)))
         valid_iterator = iter(valid_generator)
         for step in range(valid_steps_per_epoch):
-            loss_tensor, metrics_tensors = self._run_step(valid_iterator)
+            loss_tensor, metrics_tensors = self._run_step(valid_iterator, is_training=False)
             losses[step] = torch_to_numpy(loss_tensor)
             metrics_list[step] = np.array(torch_to_numpy(metrics_tensors))
         return losses.mean(), metrics_list.mean(0)
@@ -90,10 +92,10 @@ class Model(object):
             steps_per_epoch = len(iterator)
         return steps_per_epoch
 
-    def _run_step(self, iterator):
+    def _run_step(self, iterator, is_training=True):
         x, y = next(iterator)
-        x = tensors_to_variables(x)
-        y = tensors_to_variables(y)
+        x = tensors_to_variables(x, volatile=not is_training)
+        y = tensors_to_variables(y, volatile=not is_training)
         pred_y = self.model(x)
         loss_tensor = self.loss_function(pred_y, y)
         metrics = self._compute_metrics(pred_y, y)
