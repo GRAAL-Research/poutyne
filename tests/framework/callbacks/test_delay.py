@@ -75,6 +75,9 @@ class DelayCallbackTest(TestCase):
     def test_batch_delay_at_begin_of_epoch(self):
         self._test_batch_delay(epoch_delay=5, batch_in_epoch_delay=0)
 
+    def test_batch_delay_when_no_delay(self):
+        self._test_batch_delay(epoch_delay=0, batch_in_epoch_delay=0)
+
     def _test_batch_delay(self, epoch_delay, batch_in_epoch_delay):
         batch_delay = epoch_delay*DelayCallbackTest.steps_per_epoch + batch_in_epoch_delay
         delay_callback = DelayCallback(self.mock_callback, batch_delay=batch_delay)
@@ -94,7 +97,6 @@ class DelayCallbackTest(TestCase):
             len_logs = epoch if epoch == epoch_delay + 1 else epoch - 1
             self.assertEqual(len(method_calls[i][1][1]), len_logs)
             i += 1
-
             start_step = batch_in_epoch_delay + 1 if epoch == epoch_delay + 1 else 1
             for step in range(start_step, params['steps_per_epoch']+1):
                 self.assertEqual(method_calls[i], call.on_batch_begin(step, ANY))
