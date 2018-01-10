@@ -3,7 +3,7 @@ import torch.optim.lr_scheduler
 from .callbacks import Callback
 
 class PyTorchLRSchedulerWrapper(Callback):
-    def __init__(self, torch_lr_scheduler, monitor='val_loss', *args, **kwargs):
+    def __init__(self, torch_lr_scheduler, *args, monitor='val_loss', **kwargs):
         self.torch_lr_scheduler = torch_lr_scheduler
         self.monitor = monitor
         self.args = args
