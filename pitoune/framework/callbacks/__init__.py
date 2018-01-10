@@ -5,4 +5,4 @@ from .checkpoint import *
 from .delay import *
 from .earlystopping import *
 from .logger import *
-from .reducelronplateau import *
+from .lr_scheduler import *
