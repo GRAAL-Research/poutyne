@@ -7,11 +7,14 @@ class CSVLogger(Callback):
         self.separator = separator
 
     def on_train_begin(self, logs=None):
-        self.metrics = ['loss'] + self.params['metrics']
+        metrics = ['loss'] + self.params['metrics']
+        fieldnames = ['epoch', 'lr'] + metrics + ['val_' + metric for metric in metrics]
+        self.csvfile = open(self.filename, 'w', newline='')
+        self.writer = csv.DictWriter(self.csvfile, fieldnames=fieldnames, delimiter=self.separator)
+        self.writer.writeheader()
+
+    def on_epoch_end(self, epoch, logs=None):
+        self.writer.writerow(logs[-1])
 
     def on_train_end(self, logs=None):
-        with open(self.filename, 'w', newline='') as csvfile:
-            fieldnames = ['epoch', 'lr'] + self.metrics + ['val_' + metric for metric in self.metrics]
-            writer = csv.DictWriter(csvfile, fieldnames=fieldnames, delimiter=self.separator)
-            writer.writeheader()
-            writer.writerows(logs)
+        self.csvfile.close()
