@@ -1,5 +1,5 @@
 from .callbacks import CallbackList, ProgressionCallback
-from pitoune import torch_to_numpy, tensors_to_variables
+from pitoune import torch_to_numpy, tensors_to_variables, variables_to_tensors
 import numpy as np
 import torch
 from torch.autograd import Variable
@@ -38,7 +38,7 @@ class Model(object):
 
                 self.model.zero_grad()
 
-                loss_tensor, metrics_tensors = self._run_step(train_iterator, is_training=True)
+                loss_tensor, metrics_tensors = self._run_step(train_iterator)
 
                 loss_tensor.backward()
                 self.optimizer.step()
@@ -73,7 +73,10 @@ class Model(object):
     def predict(self, x):
         self.model.eval()
         x = tensors_to_variables(x, volatile=True)
-        return self.model(x)
+        return variables_to_tensors(self.model(x))
+
+    def evaluate(self, x, y, return_pred=False):
+        return variables_to_tensors(self._compute_loss_and_metrics(x, y, return_pred=return_pred))
 
     def _validate(self, valid_generator, steps_per_epoch):
         valid_steps_per_epoch = self._get_steps_per_epoch(valid_generator, steps_per_epoch)
@@ -81,7 +84,7 @@ class Model(object):
         metrics_list = np.empty((valid_steps_per_epoch, len(self.metrics)))
         valid_iterator = iter(valid_generator)
         for step in range(valid_steps_per_epoch):
-            loss_tensor, metrics_tensors = self._run_step(valid_iterator, is_training=False)
+            loss_tensor, metrics_tensors = self._run_step(valid_iterator)
             loss, metrics = self._loss_and_metrics_tensors_to_numpy(loss_tensor, metrics_tensors)
             losses[step] = loss
             metrics_list[step] = metrics
@@ -92,14 +95,20 @@ class Model(object):
             steps_per_epoch = len(iterator)
         return steps_per_epoch
 
-    def _run_step(self, iterator, is_training=True):
+    def _run_step(self, iterator):
         x, y = next(iterator)
-        x = tensors_to_variables(x, volatile=not is_training)
-        y = tensors_to_variables(y, volatile=not is_training)
+        return self._compute_loss_and_metrics(x, y)
+
+    def _compute_loss_and_metrics(self, x, y, return_pred=False):
+        x = tensors_to_variables(x, volatile=not self.model.training)
+        y = tensors_to_variables(y, volatile=not self.model.training)
         pred_y = self.model(x)
         loss_tensor = self.loss_function(pred_y, y)
-        metrics = self._compute_metrics(pred_y, y)
-        return loss_tensor, metrics
+        metrics_tensors = self._compute_metrics(pred_y, y)
+        ret = (loss_tensor, metrics_tensors)
+        if return_pred:
+            ret = ret + (pred_y,)
+        return ret
 
     def _compute_metrics(self, pred_y, y):
         return [metric(pred_y, y) for metric in self.metrics]

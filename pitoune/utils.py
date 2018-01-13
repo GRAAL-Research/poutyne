@@ -24,3 +24,13 @@ def tensors_to_variables(v, *args, **kwargs):
         return {k:tensors_to_variables(el, *args, **kwargs) for k,el in v}
     if not torch.is_tensor(v):
         raise ValueError("The type '%s' is not supported by this function." % type(v).__name__)
+
+def variables_to_tensors(v, *args, **kwargs):
+    if isinstance(v, Variable):
+        return v.data
+    if isinstance(v, list) or isinstance(v, tuple):
+        return type(v)(variables_to_tensors(el, *args, **kwargs) for el in v)
+    if isinstance(v, dict):
+        return {k:variables_to_tensors(el, *args, **kwargs) for k,el in v}
+    if not torch.is_tensor(v):
+        raise ValueError("The type '%s' is not supported by this function." % type(v).__name__)
