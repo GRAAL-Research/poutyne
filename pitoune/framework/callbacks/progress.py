@@ -7,7 +7,7 @@ from .callbacks import Callback
 
 class ProgressionCallback(Callback):
     def on_train_begin(self, logs=None):
-        self.metrics = ['loss'] + self.params['metrics']
+        self.metrics = ['loss'] + self.model.metrics_names
         self.n_epochs = self.params['n_epochs']
         self.steps_per_epoch = self.params['steps_per_epoch']
 

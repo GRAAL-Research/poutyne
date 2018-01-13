@@ -11,11 +11,14 @@ from torch.autograd import Variable
 from torch import FloatTensor
 from torch.utils.data import DataLoader, TensorDataset
 
+some_metric_1_value = 1.
+some_metric_2_value = 1.
+
 def some_metric_1(y, y_pred):
-    return FloatTensor([1])
+    return FloatTensor([some_metric_1_value])
 
 def some_metric_2(y, y_pred):
-    return FloatTensor([2])
+    return FloatTensor([some_metric_2_value])
 
 def some_data_tensor_generator(batch_size):
     while True:
@@ -63,6 +66,9 @@ class ModelTest(TestCase):
         self.loss_function = nn.MSELoss()
         self.optimizer = torch.optim.SGD(self.pytorch_module.parameters(), lr=1e-3)
         self.metrics = [some_metric_1, some_metric_2]
+        self.metrics_names = ['some_metric_1', 'some_metric_2']
+        self.metrics_values = [some_metric_1_value, some_metric_2_value]
+
         self.model = Model(self.pytorch_module, self.optimizer, self.loss_function, metrics=self.metrics)
         self.mock_callback = MagicMock()
         self.mock_callback.on_train_begin = CopyingMock()
@@ -76,14 +82,14 @@ class ModelTest(TestCase):
         train_generator = some_data_tensor_generator(20)
         valid_generator = some_data_tensor_generator(20)
         logs = self.model.fit_generator(train_generator, valid_generator, n_epochs=ModelTest.n_epochs, steps_per_epoch=ModelTest.steps_per_epoch, callbacks=[self.mock_callback])
-        params = {'n_epochs': ModelTest.n_epochs, 'steps_per_epoch': ModelTest.steps_per_epoch, 'metrics': ['some_metric_1', 'some_metric_2']}
+        params = {'n_epochs': ModelTest.n_epochs, 'steps_per_epoch': ModelTest.steps_per_epoch}
         self._test_fitting(params, logs)
 
     def test_fitting_variable_generator(self):
         train_generator = some_data_variable_generator(20)
         valid_generator = some_data_variable_generator(20)
         logs = self.model.fit_generator(train_generator, valid_generator, n_epochs=ModelTest.n_epochs, steps_per_epoch=ModelTest.steps_per_epoch, callbacks=[self.mock_callback])
-        params = {'n_epochs': ModelTest.n_epochs, 'steps_per_epoch': ModelTest.steps_per_epoch, 'metrics': ['some_metric_1', 'some_metric_2']}
+        params = {'n_epochs': ModelTest.n_epochs, 'steps_per_epoch': ModelTest.steps_per_epoch}
         self._test_fitting(params, logs)
 
     def test_fitting_with_data_loader(self):
@@ -104,7 +110,7 @@ class ModelTest(TestCase):
         valid_generator = DataLoader(valid_dataset, valid_batch_size)
 
         logs = self.model.fit_generator(train_generator, valid_generator, n_epochs=ModelTest.n_epochs, steps_per_epoch=None, callbacks=[self.mock_callback])
-        params = {'n_epochs': ModelTest.n_epochs, 'steps_per_epoch': train_real_steps_per_epoch, 'metrics': ['some_metric_1', 'some_metric_2']}
+        params = {'n_epochs': ModelTest.n_epochs, 'steps_per_epoch': train_real_steps_per_epoch}
         self._test_fitting(params, logs)
 
     def test_fitting_with_generator_with_len(self):
@@ -112,18 +118,18 @@ class ModelTest(TestCase):
         train_generator = SomeDataGeneratorWithLen(batch_size=20, length=train_real_steps_per_epoch, num_missing_samples=7)
         valid_generator = SomeDataGeneratorWithLen(batch_size=15, length=10, num_missing_samples=3)
         logs = self.model.fit_generator(train_generator, valid_generator, n_epochs=ModelTest.n_epochs, steps_per_epoch=None, callbacks=[self.mock_callback])
-        params = {'n_epochs': ModelTest.n_epochs, 'steps_per_epoch': train_real_steps_per_epoch, 'metrics': ['some_metric_1', 'some_metric_2']}
+        params = {'n_epochs': ModelTest.n_epochs, 'steps_per_epoch': train_real_steps_per_epoch}
         self._test_fitting(params, logs)
 
     def _test_fitting(self, params, logs):
         self.assertEqual(len(logs), params['n_epochs'])
         for log in logs:
-            keys = ['epoch', 'lr', 'loss', 'some_metric_1', 'some_metric_2', 'val_loss', 'val_some_metric_1', 'val_some_metric_2']
+            keys = ['epoch', 'lr', 'loss'] + self.metrics_names + ['val_loss'] + ['val_' + metric_name for metric_name in self.metrics_names]
             self.assertCountEqual(log.keys(), keys)
-            self.assertEqual(log['some_metric_1'], 1.)
-            self.assertEqual(log['some_metric_2'], 2.)
-            self.assertEqual(log['val_some_metric_1'], 1.)
-            self.assertEqual(log['val_some_metric_2'], 2.)
+            for metric_name, metric_value in zip(self.metrics_names, self.metrics_values):
+                with self.subTest(metric_name=metric_name):
+                    self.assertEqual(log[metric_name], metric_value)
+                    self.assertEqual(log['val_' + metric_name], metric_value)
 
         method_calls = self.mock_callback.method_calls
         self.assertEqual(method_calls.index(call.on_train_begin([])), 2)
@@ -152,6 +158,3 @@ class ModelTest(TestCase):
         i += 1
 
         self.assertEqual(len(method_calls), i)
-
-if __name__ == '__main__':
-    unittest.main()

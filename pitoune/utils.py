@@ -11,12 +11,7 @@ def torch_to_numpy(v):
         return {k:torch_to_numpy(el) for k,el in v}
     if not torch.is_tensor(v):
         return v
-    array = v.cpu().numpy()
-    squeezed_array = np.squeeze(array)
-    if squeezed_array.shape == ():
-        return squeezed_array
-    else:
-        return array
+    return v.cpu().numpy()
 
 def tensors_to_variables(v, *args, **kwargs):
     if isinstance(v, Variable):

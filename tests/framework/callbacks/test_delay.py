@@ -39,7 +39,7 @@ class DelayCallbackTest(TestCase):
         train_generator = some_data_generator(20)
         valid_generator = some_data_generator(20)
         logs = self.model.fit_generator(train_generator, valid_generator, n_epochs=DelayCallbackTest.n_epochs, steps_per_epoch=DelayCallbackTest.steps_per_epoch, callbacks=[delay_callback])
-        params = {'n_epochs': DelayCallbackTest.n_epochs, 'steps_per_epoch': DelayCallbackTest.steps_per_epoch, 'metrics': []}
+        params = {'n_epochs': DelayCallbackTest.n_epochs, 'steps_per_epoch': DelayCallbackTest.steps_per_epoch}
 
         method_calls = self.mock_callback.method_calls
         self.assertEqual(method_calls.index(call.on_train_begin([])), 2)
@@ -84,7 +84,7 @@ class DelayCallbackTest(TestCase):
         train_generator = some_data_generator(20)
         valid_generator = some_data_generator(20)
         logs = self.model.fit_generator(train_generator, valid_generator, n_epochs=DelayCallbackTest.n_epochs, steps_per_epoch=DelayCallbackTest.steps_per_epoch, callbacks=[delay_callback])
-        params = {'n_epochs': DelayCallbackTest.n_epochs, 'steps_per_epoch': DelayCallbackTest.steps_per_epoch, 'metrics': []}
+        params = {'n_epochs': DelayCallbackTest.n_epochs, 'steps_per_epoch': DelayCallbackTest.steps_per_epoch}
 
         method_calls = self.mock_callback.method_calls
         self.assertEqual(method_calls.index(call.on_train_begin([])), 2)
