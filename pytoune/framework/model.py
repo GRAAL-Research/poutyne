@@ -1,5 +1,5 @@
 from .callbacks import CallbackList, ProgressionCallback
-from pitoune import torch_to_numpy, tensors_to_variables, variables_to_tensors
+from pytoune import torch_to_numpy, tensors_to_variables, variables_to_tensors
 import numpy as np
 import torch
 from torch.autograd import Variable

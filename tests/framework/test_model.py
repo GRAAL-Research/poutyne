@@ -2,8 +2,8 @@ from unittest import TestCase
 from unittest.mock import MagicMock, call, ANY, DEFAULT
 from utils import CopyingMock
 
-from pitoune.framework import Model
-from pitoune.framework.callbacks import Callback
+from pytoune.framework import Model
+from pytoune.framework.callbacks import Callback
 
 import torch
 import torch.nn as nn
