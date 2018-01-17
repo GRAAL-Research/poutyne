@@ -51,14 +51,14 @@ class Model(object):
                 metrics_mean = metrics_sum / step
 
                 metrics_dict = dict(zip(self.metrics_names, metrics_mean))
-                logs[-1] = {'epoch': epoch, 'lr': self.optimizer.param_groups[0]['lr'], 'loss': losses_mean, **metrics_dict}
+                logs[-1] = {'epoch': epoch, 'lr': self._get_current_learning_rates(), 'loss': losses_mean, **metrics_dict}
                 callback_list.on_batch_end(step, logs)
 
             self.model.eval()
             val_loss, val_metrics = self._validate(valid_generator, steps_per_epoch)
             val_metrics_dict = {'val_' + metric_name:metric for metric_name, metric in zip(self.metrics_names, val_metrics)}
 
-            logs[-1] = {'epoch': epoch, 'lr': self.optimizer.param_groups[0]['lr'], 'loss': losses_mean, **metrics_dict, 'val_loss': val_loss, **val_metrics_dict}
+            logs[-1] = {'epoch': epoch, 'lr': self._get_current_learning_rates(), 'loss': losses_mean, **metrics_dict, 'val_loss': val_loss, **val_metrics_dict}
             callback_list.on_epoch_end(epoch, logs)
 
             if self.stop_training:
@@ -121,6 +121,10 @@ class Model(object):
             metrics = np.array(torch_to_numpy(metrics_tensors))
             metrics = metrics.squeeze(1)
         return loss, metrics
+
+    def _get_current_learning_rates(self):
+        learning_rates = [param_group['lr'] for param_group in self.optimizer.param_groups]
+        return learning_rates[0] if len(learning_rates) == 1 else learning_rates
 
     def load_weights(self, filename):
         self.model.load_state_dict(torch.load(filename))
