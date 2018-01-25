@@ -76,6 +76,7 @@ class Model(object):
         return variables_to_tensors(self.model(x))
 
     def evaluate(self, x, y, return_pred=False):
+        self.model.eval()
         return variables_to_tensors(self._compute_loss_and_metrics(x, y, return_pred=return_pred))
 
     def _validate(self, valid_generator, steps_per_epoch):
