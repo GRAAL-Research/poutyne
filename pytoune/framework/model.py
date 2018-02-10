@@ -4,7 +4,7 @@ import numpy as np
 import torch
 from torch.autograd import Variable
 
-class Model(object):
+class Model:
     def __init__(self, model, optimizer, loss_function, metrics=[]):
         self.model = model
         self.optimizer = optimizer
