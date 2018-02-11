@@ -12,9 +12,11 @@ class CSVLogger(Callback):
         self.csvfile = open(self.filename, 'w', newline='')
         self.writer = csv.DictWriter(self.csvfile, fieldnames=fieldnames, delimiter=self.separator)
         self.writer.writeheader()
+        self.csvfile.flush()
 
     def on_epoch_end(self, epoch, logs=None):
         self.writer.writerow(logs[-1])
+        self.csvfile.flush()
 
     def on_train_end(self, logs=None):
         self.csvfile.close()
