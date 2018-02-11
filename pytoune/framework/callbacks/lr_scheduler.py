@@ -3,9 +3,8 @@ import torch.optim.lr_scheduler
 from .callbacks import Callback
 
 class PyTorchLRSchedulerWrapper(Callback):
-    def __init__(self, torch_lr_scheduler, *args, monitor='val_loss', **kwargs):
+    def __init__(self, torch_lr_scheduler, *args, **kwargs):
         self.torch_lr_scheduler = torch_lr_scheduler
-        self.monitor = monitor
         self.args = args
         self.kwargs = kwargs
 
@@ -14,7 +13,7 @@ class PyTorchLRSchedulerWrapper(Callback):
         self.scheduler = self.torch_lr_scheduler(optimizer, *self.args, **self.kwargs)
 
     def on_epoch_end(self, epoch, logs=None):
-        self.scheduler.step(logs[-1][self.monitor])
+        self.scheduler.step(epoch)
 
 class LambdaLR(PyTorchLRSchedulerWrapper):
     def __init__(self, *args, **kwargs):
@@ -36,6 +35,16 @@ class CosineAnnealingLR(PyTorchLRSchedulerWrapper):
     def __init__(self, *args, **kwargs):
         super(CosineAnnealingLR, self).__init__(torch.optim.lr_scheduler.CosineAnnealingLR, *args, **kwargs)
 
-class ReduceLROnPlateau(PyTorchLRSchedulerWrapper):
-    def __init__(self, *args, **kwargs):
-        super(ReduceLROnPlateau, self).__init__(torch.optim.lr_scheduler.ReduceLROnPlateau, *args, **kwargs)
+
+class ReduceLROnPlateau(Callback):
+    def __init__(self, *args, monitor='val_loss', **kwargs):
+        self.monitor = monitor
+        self.args = args
+        self.kwargs = kwargs
+
+    def on_train_begin(self, logs=None):
+        optimizer = self.model.optimizer
+        self.scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, *self.args, **self.kwargs)
+
+    def on_epoch_end(self, epoch, logs=None):
+        self.scheduler.step(logs[-1][self.monitor], epoch)
