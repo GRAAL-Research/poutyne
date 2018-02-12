@@ -68,7 +68,7 @@ class EarlyStopping(Callback):
     """
 
     def __init__(self, monitor='val_loss',
-                 min_delta=0, patience=0, verbose=0, mode='min'):
+                 min_delta=0, patience=0, verbose=False, mode='min'):
         super(EarlyStopping, self).__init__()
 
         self.monitor = monitor
@@ -109,5 +109,5 @@ class EarlyStopping(Callback):
                 self.model.stop_training = True
 
     def on_train_end(self, logs=None):
-        if self.stopped_epoch > 0 and self.verbose > 0:
+        if self.stopped_epoch > 0 and self.verbose:
             print('Epoch %05d: early stopping' % (self.stopped_epoch + 1))
