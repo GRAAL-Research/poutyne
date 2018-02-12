@@ -52,7 +52,7 @@ import torch
 from .callbacks import Callback
 
 class ModelCheckpoint(Callback):
-    def __init__(self, filename, monitor='val_loss', verbose=0, save_best_only=False, mode='min', period=1):
+    def __init__(self, filename, monitor='val_loss', verbose=False, save_best_only=False, mode='min', period=1):
         self.filename = filename
         self.monitor = monitor
         self.verbose = verbose
@@ -63,33 +63,25 @@ class ModelCheckpoint(Callback):
                 raise ValueError("Invalid mode '%s'" % mode)
             if mode == 'min':
                 self.monitor_op = lambda x,y: x < y
-                self.current_best = {self.monitor: float('Inf')}
+                self.current_best = float('Inf')
             elif mode == 'max':
                 self.monitor_op = lambda x,y: x > y
-                self.current_best = {self.monitor: -float('Inf')}
+                self.current_best = -float('Inf')
             self.current_best_weights = None
 
         self.period = period
 
-    def get_weight_copies(self):
-        weights = self.model.get_weights()
-        for k in weights.keys():
-            weights[k] = weights[k].cpu().clone()
-        return weights
-
     def on_epoch_end(self, epoch, logs=None):
         if epoch % self.period == 0 and not self.save_best_only:
-            filename = self.filename.format(logs[-1])
+            filename = self.filename.format_map(logs[-1])
+            if self.verbose:
+                print('Epoch %d: saving model to %s' % (epoch, filename))
             self.model.save_weights(filename)
         if self.save_best_only:
-            if self.monitor_op(logs[-1][self.monitor], self.current_best[self.monitor]):
-                self.current_best = logs[-1]
-                self.current_best_weights = self.get_weight_copies()
-
-    def on_train_end(self, logs=None):
-        if self.save_best_only:
-            if self.current_best_weights is not None:
-                filename = self.filename.format(self.current_best)
-                torch.save(self.current_best_weights, filename)
-            else:
-                warnings.warn('No current best weights to save!')
+            if self.monitor_op(logs[-1][self.monitor], self.current_best):
+                filename = self.filename.format_map(logs[-1])
+                if self.verbose:
+                    print('Epoch %d: %s improved from %0.5f to %0.5f, saving model to %s'
+                          % (epoch, self.monitor, self.current_best, logs[-1][self.monitor], filename))
+                self.current_best = logs[-1][self.monitor]
+                self.model.save_weights(filename)
