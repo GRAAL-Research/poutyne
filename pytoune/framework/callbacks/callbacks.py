@@ -63,17 +63,17 @@ class CallbackList(object):
             callback.set_model(model)
 
     def on_epoch_begin(self, epoch, logs=None):
-        logs = logs or []
+        logs = logs or {}
         for callback in self.callbacks:
             callback.on_epoch_begin(epoch, logs)
 
     def on_epoch_end(self, epoch, logs=None):
-        logs = logs or []
+        logs = logs or {}
         for callback in self.callbacks:
             callback.on_epoch_end(epoch, logs)
 
     def on_batch_begin(self, batch, logs=None):
-        logs = logs or []
+        logs = logs or {}
         for callback in self.callbacks:
             callback.on_batch_begin(batch, logs)
 
@@ -83,12 +83,12 @@ class CallbackList(object):
             callback.on_batch_end(batch, logs)
 
     def on_train_begin(self, logs=None):
-        logs = logs or []
+        logs = logs or {}
         for callback in self.callbacks:
             callback.on_train_begin(logs)
 
     def on_train_end(self, logs=None):
-        logs = logs or []
+        logs = logs or {}
         for callback in self.callbacks:
             callback.on_train_end(logs)
 
@@ -105,20 +105,20 @@ class Callback(object):
     def set_model(self, model):
         self.model = model
 
-    def on_epoch_begin(self, epoch, logs=None):
+    def on_epoch_begin(self, epoch, logs):
         pass
 
-    def on_epoch_end(self, epoch, logs=None):
+    def on_epoch_end(self, epoch, logs):
         pass
 
-    def on_batch_begin(self, batch, logs=None):
+    def on_batch_begin(self, batch, logs):
         pass
 
-    def on_batch_end(self, batch, logs=None):
+    def on_batch_end(self, batch, logs):
         pass
 
-    def on_train_begin(self, logs=None):
+    def on_train_begin(self, logs):
         pass
 
-    def on_train_end(self, logs=None):
+    def on_train_end(self, logs):
         pass
