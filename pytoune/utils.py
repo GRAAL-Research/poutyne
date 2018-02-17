@@ -8,7 +8,7 @@ def torch_to_numpy(v):
     if isinstance(v, list) or isinstance(v, tuple):
         return type(v)(torch_to_numpy(el) for el in v)
     if isinstance(v, dict):
-        return {k:torch_to_numpy(el) for k,el in v}
+        return {k:torch_to_numpy(el) for k,el in v.items()}
     if not torch.is_tensor(v):
         return v
     return v.cpu().numpy()
@@ -25,12 +25,12 @@ def tensors_to_variables(v, *args, **kwargs):
     if not torch.is_tensor(v):
         raise ValueError("The type '%s' is not supported by this function." % type(v).__name__)
 
-def variables_to_tensors(v, *args, **kwargs):
+def variables_to_tensors(v):
     if isinstance(v, Variable):
         return v.data
     if isinstance(v, list) or isinstance(v, tuple):
-        return type(v)(variables_to_tensors(el, *args, **kwargs) for el in v)
+        return type(v)(variables_to_tensors(el) for el in v)
     if isinstance(v, dict):
-        return {k:variables_to_tensors(el, *args, **kwargs) for k,el in v}
+        return {k:variables_to_tensors(el) for k,el in v.items()}
     if not torch.is_tensor(v):
         raise ValueError("The type '%s' is not supported by this function." % type(v).__name__)

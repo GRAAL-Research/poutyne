@@ -1,6 +1,5 @@
 from unittest import TestCase
 from unittest.mock import MagicMock, call, ANY, DEFAULT
-from utils import CopyingMock
 
 from pytoune.framework import Model
 from pytoune.framework.callbacks import Callback
@@ -57,7 +56,7 @@ class SomeDataGeneratorWithLen(object):
 
 
 class ModelTest(TestCase):
-    n_epochs = 10
+    epochs = 10
     steps_per_epoch = 5
 
     def setUp(self):
@@ -71,25 +70,25 @@ class ModelTest(TestCase):
 
         self.model = Model(self.pytorch_module, self.optimizer, self.loss_function, metrics=self.metrics)
         self.mock_callback = MagicMock()
-        self.mock_callback.on_train_begin = CopyingMock()
-        self.mock_callback.on_train_end = CopyingMock()
-        self.mock_callback.on_epoch_begin = CopyingMock()
-        self.mock_callback.on_epoch_end = CopyingMock()
-        self.mock_callback.on_batch_begin = CopyingMock()
-        self.mock_callback.on_batch_end = CopyingMock()
 
     def test_fitting_tensor_generator(self):
         train_generator = some_data_tensor_generator(20)
         valid_generator = some_data_tensor_generator(20)
-        logs = self.model.fit_generator(train_generator, valid_generator, n_epochs=ModelTest.n_epochs, steps_per_epoch=ModelTest.steps_per_epoch, callbacks=[self.mock_callback])
-        params = {'n_epochs': ModelTest.n_epochs, 'steps_per_epoch': ModelTest.steps_per_epoch}
+        logs = self.model.fit_generator(train_generator, valid_generator, epochs=ModelTest.epochs, steps_per_epoch=ModelTest.steps_per_epoch, validation_steps=ModelTest.steps_per_epoch, callbacks=[self.mock_callback])
+        params = {'epochs': ModelTest.epochs, 'steps': ModelTest.steps_per_epoch}
         self._test_fitting(params, logs)
+
+    def test_fitting_without_valid_generator(self):
+        train_generator = some_data_tensor_generator(20)
+        logs = self.model.fit_generator(train_generator, None, epochs=ModelTest.epochs, steps_per_epoch=ModelTest.steps_per_epoch, validation_steps=ModelTest.steps_per_epoch, callbacks=[self.mock_callback])
+        params = {'epochs': ModelTest.epochs, 'steps': ModelTest.steps_per_epoch}
+        self._test_fitting(params, logs, has_valid=False)
 
     def test_fitting_variable_generator(self):
         train_generator = some_data_variable_generator(20)
         valid_generator = some_data_variable_generator(20)
-        logs = self.model.fit_generator(train_generator, valid_generator, n_epochs=ModelTest.n_epochs, steps_per_epoch=ModelTest.steps_per_epoch, callbacks=[self.mock_callback])
-        params = {'n_epochs': ModelTest.n_epochs, 'steps_per_epoch': ModelTest.steps_per_epoch}
+        logs = self.model.fit_generator(train_generator, valid_generator, epochs=ModelTest.epochs, steps_per_epoch=ModelTest.steps_per_epoch, validation_steps=ModelTest.steps_per_epoch, callbacks=[self.mock_callback])
+        params = {'epochs': ModelTest.epochs, 'steps': ModelTest.steps_per_epoch}
         self._test_fitting(params, logs)
 
     def test_fitting_with_data_loader(self):
@@ -109,52 +108,61 @@ class ModelTest(TestCase):
         valid_dataset = TensorDataset(valid_x, valid_y)
         valid_generator = DataLoader(valid_dataset, valid_batch_size)
 
-        logs = self.model.fit_generator(train_generator, valid_generator, n_epochs=ModelTest.n_epochs, steps_per_epoch=None, callbacks=[self.mock_callback])
-        params = {'n_epochs': ModelTest.n_epochs, 'steps_per_epoch': train_real_steps_per_epoch}
+        logs = self.model.fit_generator(train_generator, valid_generator, epochs=ModelTest.epochs, steps_per_epoch=None, validation_steps=None, callbacks=[self.mock_callback])
+        params = {'epochs': ModelTest.epochs, 'steps': train_real_steps_per_epoch}
+        self._test_fitting(params, logs)
+
+    def test_fitting_with_tensor(self):
+        train_real_steps_per_epoch = 30
+        train_batch_size = 20
+        train_final_batch_missing_samples = 7
+        train_x = torch.rand(train_real_steps_per_epoch * train_batch_size - train_final_batch_missing_samples, 1)
+        train_y = torch.rand(train_real_steps_per_epoch * train_batch_size - train_final_batch_missing_samples, 1)
+
+        valid_real_steps_per_epoch = 10
+        valid_batch_size = train_batch_size # valid_batch_size will be the same as train_batch_size in the fit method.
+        valid_final_batch_missing_samples = 3
+        valid_x = torch.rand(valid_real_steps_per_epoch * valid_batch_size - valid_final_batch_missing_samples, 1)
+        valid_y = torch.rand(valid_real_steps_per_epoch * valid_batch_size - valid_final_batch_missing_samples, 1)
+
+        logs = self.model.fit(train_x, train_y, validation_x=valid_x, validation_y=valid_y, epochs=ModelTest.epochs, batch_size=train_batch_size, steps_per_epoch=None, validation_steps=None, callbacks=[self.mock_callback])
+        params = {'epochs': ModelTest.epochs, 'steps': train_real_steps_per_epoch}
         self._test_fitting(params, logs)
 
     def test_fitting_with_generator_with_len(self):
         train_real_steps_per_epoch = 30
         train_generator = SomeDataGeneratorWithLen(batch_size=20, length=train_real_steps_per_epoch, num_missing_samples=7)
         valid_generator = SomeDataGeneratorWithLen(batch_size=15, length=10, num_missing_samples=3)
-        logs = self.model.fit_generator(train_generator, valid_generator, n_epochs=ModelTest.n_epochs, steps_per_epoch=None, callbacks=[self.mock_callback])
-        params = {'n_epochs': ModelTest.n_epochs, 'steps_per_epoch': train_real_steps_per_epoch}
+        logs = self.model.fit_generator(train_generator, valid_generator, epochs=ModelTest.epochs, steps_per_epoch=None, validation_steps=None, callbacks=[self.mock_callback])
+        params = {'epochs': ModelTest.epochs, 'steps': train_real_steps_per_epoch}
         self._test_fitting(params, logs)
 
-    def _test_fitting(self, params, logs):
-        self.assertEqual(len(logs), params['n_epochs'])
-        for log in logs:
-            keys = ['epoch', 'lr', 'loss'] + self.metrics_names + ['val_loss'] + ['val_' + metric_name for metric_name in self.metrics_names]
-            self.assertCountEqual(log.keys(), keys)
-            for metric_name, metric_value in zip(self.metrics_names, self.metrics_values):
-                with self.subTest(metric_name=metric_name):
-                    self.assertEqual(log[metric_name], metric_value)
-                    self.assertEqual(log['val_' + metric_name], metric_value)
+    def _test_fitting(self, params, logs, has_valid=True):
+        self.assertEqual(len(logs), params['epochs'])
+        train_dict = dict(zip(self.metrics_names, self.metrics_values), loss=ANY)
+        if has_valid:
+            val_metrics_names = ['val_' + metric_name for metric_name in self.metrics_names]
+            val_dict = dict(zip(val_metrics_names, self.metrics_values), val_loss=ANY)
+            log_dict = {**train_dict, **val_dict}
+        else:
+            log_dict = train_dict
+
+        for epoch, log in enumerate(logs, 1):
+            self.assertEqual(log, dict(log_dict, epoch=epoch))
+
+        call_list = []
+        call_list.append(call.on_train_begin({}))
+        for epoch in range(1, params['epochs']+1):
+            call_list.append(call.on_epoch_begin(epoch, {}))
+            for step in range(1, params['steps']+1):
+                call_list.append(call.on_batch_begin(step, {}))
+                call_list.append(call.on_batch_end(step, {'batch': step, **train_dict}))
+            call_list.append(call.on_epoch_end(epoch, {'epoch': epoch, **log_dict}))
+        call_list.append(call.on_train_end({}))
 
         method_calls = self.mock_callback.method_calls
-        self.assertEqual(method_calls.index(call.on_train_begin([])), 2)
         self.assertIn(call.set_model(self.model), method_calls[:2])
         self.assertIn(call.set_params(params), method_calls[:2])
 
-        i = 3
-        for epoch in range(1, params['n_epochs']+1):
-            self.assertEqual(method_calls[i], call.on_epoch_begin(epoch, ANY))
-            self.assertEqual(len(method_calls[i][1][1]), epoch - 1)
-            i += 1
-            for step in range(1, params['steps_per_epoch']+1):
-                self.assertEqual(method_calls[i], call.on_batch_begin(step, ANY))
-                self.assertEqual(len(method_calls[i][1][1]), epoch)
-                i += 1
-                self.assertEqual(method_calls[i], call.on_batch_end(step, ANY))
-                self.assertEqual(len(method_calls[i][1][1]), epoch)
-                i += 1
-
-            self.assertEqual(method_calls[i], call.on_epoch_end(epoch, ANY))
-            self.assertEqual(len(method_calls[i][1][1]), epoch)
-            i += 1
-
-        self.assertEqual(method_calls[i], call.on_train_end(ANY))
-        self.assertEqual(len(method_calls[i][1][0]), epoch)
-        i += 1
-
-        self.assertEqual(len(method_calls), i)
+        self.assertEqual(len(method_calls), len(call_list) + 2)
+        self.assertEqual(method_calls[2:], call_list)

@@ -1,6 +1,5 @@
 from unittest import TestCase
 from unittest.mock import MagicMock, call, ANY, DEFAULT
-from utils import CopyingMock
 
 from pytoune.framework import Model
 from pytoune.framework.callbacks import Callback, DelayCallback
@@ -15,7 +14,7 @@ def some_data_generator(batch_size):
         yield x, y
 
 class DelayCallbackTest(TestCase):
-    n_epochs = 10
+    epochs = 10
     steps_per_epoch = 5
 
     def setUp(self):
@@ -25,49 +24,34 @@ class DelayCallbackTest(TestCase):
         self.optimizer = torch.optim.SGD(self.pytorch_module.parameters(), lr=1e-3)
         self.model = Model(self.pytorch_module, self.optimizer, self.loss_function)
         self.mock_callback = MagicMock()
-        self.mock_callback.on_train_begin = CopyingMock()
-        self.mock_callback.on_train_end = CopyingMock()
-        self.mock_callback.on_epoch_begin = CopyingMock()
-        self.mock_callback.on_epoch_end = CopyingMock()
-        self.mock_callback.on_batch_begin = CopyingMock()
-        self.mock_callback.on_batch_end = CopyingMock()
         self.delay_callback = DelayCallback(self.mock_callback)
+        self.train_dict = {'loss': ANY}
+        self.log_dict = {'loss': ANY, 'val_loss': ANY}
 
     def test_epoch_delay(self):
         epoch_delay = 4
         delay_callback = DelayCallback(self.mock_callback, epoch_delay=epoch_delay)
         train_generator = some_data_generator(20)
         valid_generator = some_data_generator(20)
-        logs = self.model.fit_generator(train_generator, valid_generator, n_epochs=DelayCallbackTest.n_epochs, steps_per_epoch=DelayCallbackTest.steps_per_epoch, callbacks=[delay_callback])
-        params = {'n_epochs': DelayCallbackTest.n_epochs, 'steps_per_epoch': DelayCallbackTest.steps_per_epoch}
+        logs = self.model.fit_generator(train_generator, valid_generator, epochs=DelayCallbackTest.epochs, steps_per_epoch=DelayCallbackTest.steps_per_epoch, validation_steps=DelayCallbackTest.steps_per_epoch, callbacks=[delay_callback])
+        params = {'epochs': DelayCallbackTest.epochs, 'steps': DelayCallbackTest.steps_per_epoch}
+
+        call_list = []
+        call_list.append(call.on_train_begin({}))
+        for epoch in range(epoch_delay + 1, DelayCallbackTest.epochs+1):
+            call_list.append(call.on_epoch_begin(epoch, {}))
+            for step in range(1, params['steps']+1):
+                call_list.append(call.on_batch_begin(step, {}))
+                call_list.append(call.on_batch_end(step, {'batch': step, **self.train_dict}))
+            call_list.append(call.on_epoch_end(epoch, {'epoch': epoch, **self.log_dict}))
+        call_list.append(call.on_train_end({}))
 
         method_calls = self.mock_callback.method_calls
-        self.assertEqual(method_calls.index(call.on_train_begin([])), 2)
         self.assertIn(call.set_model(self.model), method_calls[:2])
         self.assertIn(call.set_params(params), method_calls[:2])
 
-        i = 3
-        for epoch in range(epoch_delay + 1, DelayCallbackTest.n_epochs+1):
-            self.assertEqual(method_calls[i], call.on_epoch_begin(epoch, ANY))
-            self.assertEqual(len(method_calls[i][1][1]), epoch - 1)
-            i += 1
-            for step in range(1, params['steps_per_epoch']+1):
-                self.assertEqual(method_calls[i], call.on_batch_begin(step, ANY))
-                self.assertEqual(len(method_calls[i][1][1]), epoch)
-                i += 1
-                self.assertEqual(method_calls[i], call.on_batch_end(step, ANY))
-                self.assertEqual(len(method_calls[i][1][1]), epoch)
-                i += 1
-
-            self.assertEqual(method_calls[i], call.on_epoch_end(epoch, ANY))
-            self.assertEqual(len(method_calls[i][1][1]), epoch)
-            i += 1
-
-        self.assertEqual(method_calls[i], call.on_train_end(ANY))
-        self.assertEqual(len(method_calls[i][1][0]), epoch)
-        i += 1
-
-        self.assertEqual(len(method_calls), i)
+        self.assertEqual(len(method_calls), len(call_list) + 2)
+        self.assertEqual(method_calls[2:], call_list)
 
     def test_batch_delay_in_middle_of_epoch(self):
         self._test_batch_delay(epoch_delay=5, batch_in_epoch_delay=3)
@@ -83,38 +67,27 @@ class DelayCallbackTest(TestCase):
         delay_callback = DelayCallback(self.mock_callback, batch_delay=batch_delay)
         train_generator = some_data_generator(20)
         valid_generator = some_data_generator(20)
-        logs = self.model.fit_generator(train_generator, valid_generator, n_epochs=DelayCallbackTest.n_epochs, steps_per_epoch=DelayCallbackTest.steps_per_epoch, callbacks=[delay_callback])
-        params = {'n_epochs': DelayCallbackTest.n_epochs, 'steps_per_epoch': DelayCallbackTest.steps_per_epoch}
+        logs = self.model.fit_generator(train_generator, valid_generator, epochs=DelayCallbackTest.epochs, steps_per_epoch=DelayCallbackTest.steps_per_epoch, validation_steps=DelayCallbackTest.steps_per_epoch, callbacks=[delay_callback])
+        params = {'epochs': DelayCallbackTest.epochs, 'steps': DelayCallbackTest.steps_per_epoch}
+
+        call_list = []
+        call_list.append(call.on_train_begin({}))
+        for epoch in range(epoch_delay + 1, DelayCallbackTest.epochs+1):
+            call_list.append(call.on_epoch_begin(epoch, {}))
+            start_step = batch_in_epoch_delay + 1 if epoch == epoch_delay + 1 else 1
+            for step in range(start_step, params['steps']+1):
+                call_list.append(call.on_batch_begin(step, {}))
+                call_list.append(call.on_batch_end(step, {'batch': step, **self.train_dict}))
+            call_list.append(call.on_epoch_end(epoch, {'epoch': epoch, **self.log_dict}))
+        call_list.append(call.on_train_end({}))
+
 
         method_calls = self.mock_callback.method_calls
-        self.assertEqual(method_calls.index(call.on_train_begin([])), 2)
         self.assertIn(call.set_model(self.model), method_calls[:2])
         self.assertIn(call.set_params(params), method_calls[:2])
 
-        i = 3
-        for epoch in range(epoch_delay + 1, DelayCallbackTest.n_epochs+1):
-            self.assertEqual(method_calls[i], call.on_epoch_begin(epoch, ANY))
-            len_logs = epoch if epoch == epoch_delay + 1 else epoch - 1
-            self.assertEqual(len(method_calls[i][1][1]), len_logs)
-            i += 1
-            start_step = batch_in_epoch_delay + 1 if epoch == epoch_delay + 1 else 1
-            for step in range(start_step, params['steps_per_epoch']+1):
-                self.assertEqual(method_calls[i], call.on_batch_begin(step, ANY))
-                self.assertEqual(len(method_calls[i][1][1]), epoch)
-                i += 1
-                self.assertEqual(method_calls[i], call.on_batch_end(step, ANY))
-                self.assertEqual(len(method_calls[i][1][1]), epoch)
-                i += 1
-
-            self.assertEqual(method_calls[i], call.on_epoch_end(epoch, ANY))
-            self.assertEqual(len(method_calls[i][1][1]), epoch)
-            i += 1
-
-        self.assertEqual(method_calls[i], call.on_train_end(ANY))
-        self.assertEqual(len(method_calls[i][1][0]), epoch)
-        i += 1
-
-        self.assertEqual(len(method_calls), i)
+        self.assertEqual(len(method_calls), len(call_list) + 2)
+        self.assertEqual(method_calls[2:], call_list)
 
 if __name__ == '__main__':
     unittest.main()

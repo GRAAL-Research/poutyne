@@ -8,11 +8,11 @@ class PyTorchLRSchedulerWrapper(Callback):
         self.args = args
         self.kwargs = kwargs
 
-    def on_train_begin(self, logs=None):
+    def on_train_begin(self, logs):
         optimizer = self.model.optimizer
         self.scheduler = self.torch_lr_scheduler(optimizer, *self.args, **self.kwargs)
 
-    def on_epoch_end(self, epoch, logs=None):
+    def on_epoch_end(self, epoch, logs):
         self.scheduler.step(epoch)
 
 class LambdaLR(PyTorchLRSchedulerWrapper):
@@ -42,9 +42,9 @@ class ReduceLROnPlateau(Callback):
         self.args = args
         self.kwargs = kwargs
 
-    def on_train_begin(self, logs=None):
+    def on_train_begin(self, logs):
         optimizer = self.model.optimizer
         self.scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, *self.args, **self.kwargs)
 
-    def on_epoch_end(self, epoch, logs=None):
-        self.scheduler.step(logs[-1][self.monitor], epoch)
+    def on_epoch_end(self, epoch, logs):
+        self.scheduler.step(logs[self.monitor], epoch)

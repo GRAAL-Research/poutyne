@@ -91,14 +91,14 @@ class EarlyStopping(Callback):
         else:
             self.min_delta *= -1
 
-    def on_train_begin(self, logs=None):
+    def on_train_begin(self, logs):
         # Allow instances to be re-used
         self.wait = 0
         self.stopped_epoch = 0
         self.best = np.Inf if self.monitor_op == np.less else -np.Inf
 
-    def on_epoch_end(self, epoch, logs=None):
-        current = logs[-1][self.monitor]
+    def on_epoch_end(self, epoch, logs):
+        current = logs[self.monitor]
         if self.monitor_op(current - self.min_delta, self.best):
             self.best = current
             self.wait = 0
@@ -108,6 +108,6 @@ class EarlyStopping(Callback):
                 self.stopped_epoch = epoch
                 self.model.stop_training = True
 
-    def on_train_end(self, logs=None):
+    def on_train_end(self, logs):
         if self.stopped_epoch > 0 and self.verbose:
             print('Epoch %05d: early stopping' % (self.stopped_epoch + 1))
