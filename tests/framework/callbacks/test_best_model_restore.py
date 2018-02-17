@@ -29,18 +29,18 @@ class BestModelRestoreTest(TestCase):
     def test_integration(self):
         train_gen = some_data_generator(20)
         valid_gen = some_data_generator(20)
-        model_restore = BestModelRestore(monitor='val_loss', verbose=True)
+        model_restore = BestModelRestore(monitor='val_loss')
         self.model.fit_generator(train_gen, valid_gen, epochs=10, steps_per_epoch=5, callbacks=[model_restore])
 
     def test_basic_restore(self):
-        model_restore = BestModelRestore(monitor='val_loss', verbose=True)
+        model_restore = BestModelRestore(monitor='val_loss')
 
         val_losses = [3, 2, 8, 5, 4]
         best_epoch = 2
         self._test_restore_with_val_losses(model_restore, val_losses, best_epoch)
 
     def test_save_best_only_with_max(self):
-        model_restore = BestModelRestore(monitor='val_loss', verbose=True, mode='max')
+        model_restore = BestModelRestore(monitor='val_loss', mode='max')
 
         val_losses = [3, 2, 8, 5, 4]
         best_epoch = 3

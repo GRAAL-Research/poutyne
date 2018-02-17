@@ -2,6 +2,16 @@ import csv
 from .callbacks import Callback
 
 class CSVLogger(Callback):
+    """
+    Callback that output the result of each epoch or batch into a CSV file.
+
+    Args:
+        filename (string): The filename of the CSV.
+        batch_granularity (bool): Whether to also output the result of each
+            batch in addition to the epochs. (Default value = False)
+        separator (string): The separator to use in the CSV.
+            (Default value = ',')
+    """
     def __init__(self, filename, batch_granularity=False, separator=','):
         self.filename = filename
         self.separator = separator

@@ -57,19 +57,18 @@ class EarlyStopping(Callback):
     Stop training when a monitored quantity has stopped improving.
 
     Args:
-        monitor: quantity to be monitored.
-        min_delta: minimum change in the monitored quantity
-            to qualify as an improvement, i.e. an absolute
-            change of less than min_delta, will count as no
-            improvement.
-        patience: number of epochs with no improvement
-            after which training will be stopped.
-        verbose: verbosity mode.
-        mode: one of {min, max}. In `min` mode,
-            training will stop when the quantity
-            monitored has stopped decreasing; in `max`
-            mode it will stop when the quantity
-            monitored has stopped increasing.
+        monitor: Quantity to be monitored.
+        min_delta: Minimum change in the monitored quantity to qualify as an
+            improvement, i.e. an absolute change of less than min_delta, will
+            count as no improvement. (Default value = 0)
+        patience: Number of epochs with no improvement after which training will
+            be stopped. (Default value = 0)
+        verbose: Whether to print when early stopping is done.
+            (Default value = False)
+        mode: One of {min, max}. In `min` mode, training will stop when the
+            quantity monitored has stopped decreasing; in `max` mode it will
+            stop when the quantity monitored has stopped increasing.
+            (Default value = 'min')
     """
 
     def __init__(self, monitor='val_loss',

@@ -7,6 +7,12 @@ pytoune
 .. automodule:: pytoune
 .. currentmodule:: pytoune
 
+Utils
+-----
+
+These utils functions only support the following basic Python types: tuple,
+list and dict.
+
 .. autofunction:: torch_to_numpy
 .. autofunction:: tensors_to_variables
 .. autofunction:: variables_to_tensors

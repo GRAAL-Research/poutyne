@@ -4,6 +4,9 @@ from .callbacks import Callback
 
 
 class TerminateOnNaN(Callback):
+    """
+    Stops the training when the loss is either `NaN` or `inf`.
+    """
     def __init__(self):
         super(TerminateOnNaN, self).__init__()
 

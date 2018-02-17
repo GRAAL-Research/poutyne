@@ -7,10 +7,22 @@ pytoune.framework.callbacks
 .. automodule:: pytoune
 .. currentmodule:: pytoune.framework.callbacks
 
-.. autoclass:: Callback
+Callbacks are a way to interact with the optimization process. For instance, the
+``ModelCheckpoint`` callback allows to save the weights of the epoch that has the
+best "score", or the ``EarlyStopping`` callback allows to stop the training
+when the "score" has not gone up for a while, etc. The following presents the
+callbacks available in PyToune, but first the documentation of the ``Callback``
+class shows which methods are available in the callback and what arguments they
+are provided with.
 
-Callbacks
----------
+Callback class
+--------------
+
+.. autoclass:: Callback
+    :members:
+
+PyToune's Callbacks
+-------------------
 
 .. autoclass:: TerminateOnNaN
 

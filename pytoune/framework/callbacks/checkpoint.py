@@ -52,6 +52,38 @@ from .callbacks import Callback
 
 
 class ModelCheckpoint(Callback):
+    """
+    The source code of this class is under the MIT License and was copied from
+    the Keras project, and has been modified.
+
+    Save the model after every epoch. `filename` can contain named formatting
+    options, which will be filled the value of `epoch` and keys in `logs`
+    (passed in `on_epoch_end`). For example: if `filename` is
+    `weights.{epoch:02d}-{val_loss:.2f}.ckpt`, then the model checkpoints will
+    be saved with the epoch number and the validation loss in the filename.
+
+    Args:
+        filename (string): Path to save the model file.
+        monitor (string): Quantity to monitor. (Default value = 'val_loss')
+        verbose (bool): Whether to display a message when saving a checkpoint.
+            (Default value = False)
+        save_best_only (bool): If `save_best_only` is true, the latest best
+            model according to the quantity monitored will not be overwritten.
+            (Default value = False)
+        restore_best (bool): If `restore_best` is true, the weights of the
+            network will be reset to the last best checkpoint done. This option
+            only works when `save_best_only` is also true.
+            (Default value = False)
+        mode (string): One of {min, max}.
+            If `save_best_only` is true, the decision to overwrite the current
+            save file is made based on either the maximization or the
+            minimization of the monitored quantity. For `val_accuracy`, this
+            should be `max`, for `val_loss` this should be `min`, etc.
+            (Default value = 'min')
+        period (int): Interval (number of epochs) between checkpoints.
+            (Default value = 1)
+    """
+
     def __init__(self, filename, monitor='val_loss', verbose=False, save_best_only=False, restore_best=False, mode='min', period=1):
         self.filename = filename
         self.monitor = monitor

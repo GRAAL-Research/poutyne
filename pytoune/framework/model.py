@@ -22,91 +22,98 @@ class Model:
             validation batches at the end of the epoch. (Default value = [])
 
     Example:
-        Using dataset tensors:
+        Using dataset tensors::
 
-        >>> import torch
-        >>> from pytoune.framework import Model
-        >>>
-        >>> num_epochs = 10
-        >>> batch_size = 20
-        >>>
-        >>> num_features = 10
-        >>>
-        >>> # Our training dataset with 800 samples.
-        >>> num_train_samples = 800
-        >>> train_x = torch.rand(num_train_samples, num_features)
-        >>> train_y = torch.rand(num_train_samples, 1)
-        >>>
-        >>> # Our validation dataset with 200 samples.
-        >>> num_valid_samples = 200
-        >>> valid_x = torch.rand(num_valid_samples, num_features)
-        >>> valid_y = torch.rand(num_valid_samples, 1)
-        >>>
-        >>> pytorch_module = torch.nn.Linear(num_features, 1) # Our network
-        >>> loss_function = torch.nn.MSELoss() # Our loss function
-        >>> optimizer = torch.optim.SGD(pytorch_module.parameters(), lr=1e-3)
-        >>>
-        >>> # We create and optimize our model
-        >>> model = Model(pytorch_module, optimizer, loss_function)
-        >>> model.fit(train_x, train_y,
-        >>>           validation_x=valid_x,
-        >>>           validation_y=valid_y,
-        >>>           epochs=num_epochs,
-        >>>           batch_size=batch_size)
-        Epoch 1/10 0.01s Step 40/40: loss: 0.710869, val_loss: 0.489602
-        Epoch 2/10 0.01s Step 40/40: loss: 0.448081, val_loss: 0.305897
-        Epoch 3/10 0.01s Step 40/40: loss: 0.301377, val_loss: 0.204526
-        Epoch 4/10 0.01s Step 40/40: loss: 0.219414, val_loss: 0.148778
-        Epoch 5/10 0.01s Step 40/40: loss: 0.173554, val_loss: 0.118251
-        Epoch 6/10 0.01s Step 40/40: loss: 0.147825, val_loss: 0.101621
-        Epoch 7/10 0.01s Step 40/40: loss: 0.133319, val_loss: 0.092615
-        Epoch 8/10 0.01s Step 40/40: loss: 0.125070, val_loss: 0.087767
-        Epoch 9/10 0.01s Step 40/40: loss: 0.120307, val_loss: 0.085166
-        Epoch 10/10 0.01s Step 40/40: loss: 0.117488, val_loss: 0.083767
+            import torch
+            from pytoune.framework import Model
 
-        Using PyTorch DataLoader:
+            num_epochs = 10
+            batch_size = 20
 
-        >>> import torch
-        >>> from torch.utils.data import DataLoader, TensorDataset
-        >>> from pytoune.framework import Model
-        >>>
-        >>> num_epochs = 10
-        >>> batch_size = 20
-        >>>
-        >>> num_features = 10
-        >>>
-        >>> # Our training dataset with 800 samples.
-        >>> num_train_samples = 800
-        >>> train_x = torch.rand(num_train_samples, num_features)
-        >>> train_y = torch.rand(num_train_samples, 1)
-        >>> train_dataset = TensorDataset(train_x, train_y)
-        >>> train_generator = DataLoader(train_dataset, batch_size)
-        >>>
-        >>> # Our validation dataset with 200 samples.
-        >>> num_valid_samples = 200
-        >>> valid_x = torch.rand(num_valid_samples, num_features)
-        >>> valid_y = torch.rand(num_valid_samples, 1)
-        >>> valid_dataset = TensorDataset(valid_x, valid_y)
-        >>> valid_generator = DataLoader(valid_dataset, batch_size)
-        >>>
-        >>> pytorch_module = torch.nn.Linear(num_features, 1)
-        >>> loss_function = torch.nn.MSELoss()
-        >>> optimizer = torch.optim.SGD(pytorch_module.parameters(), lr=1e-3)
-        >>>
-        >>> model = Model(pytorch_module, optimizer, loss_function)
-        >>> model.fit_generator(train_generator,
-        >>>                     valid_generator,
-        >>>                     epochs=num_epochs)
-        Epoch 1/10 0.01s Step 40/40: loss: 0.311442, val_loss: 0.243208
-        Epoch 2/10 0.01s Step 40/40: loss: 0.223419, val_loss: 0.183428
-        Epoch 3/10 0.01s Step 40/40: loss: 0.173739, val_loss: 0.150269
-        Epoch 4/10 0.01s Step 40/40: loss: 0.145618, val_loss: 0.131929
-        Epoch 5/10 0.01s Step 40/40: loss: 0.129623, val_loss: 0.121813
-        Epoch 6/10 0.02s Step 40/40: loss: 0.120447, val_loss: 0.116241
-        Epoch 7/10 0.02s Step 40/40: loss: 0.115111, val_loss: 0.113164
-        Epoch 8/10 0.01s Step 40/40: loss: 0.111937, val_loss: 0.111448
-        Epoch 9/10 0.01s Step 40/40: loss: 0.109983, val_loss: 0.110464
-        Epoch 10/10 0.01s Step 40/40: loss: 0.108717, val_loss: 0.109868
+            num_features = 10
+
+            # Our training dataset with 800 samples.
+            num_train_samples = 800
+            train_x = torch.rand(num_train_samples, num_features)
+            train_y = torch.rand(num_train_samples, 1)
+
+            # Our validation dataset with 200 samples.
+            num_valid_samples = 200
+            valid_x = torch.rand(num_valid_samples, num_features)
+            valid_y = torch.rand(num_valid_samples, 1)
+
+            pytorch_module = torch.nn.Linear(num_features, 1) # Our network
+            loss_function = torch.nn.MSELoss() # Our loss function
+            optimizer = torch.optim.SGD(pytorch_module.parameters(), lr=1e-3)
+
+            # We create and optimize our model
+            model = Model(pytorch_module, optimizer, loss_function)
+            model.fit(train_x, train_y,
+                      validation_x=valid_x,
+                      validation_y=valid_y,
+                      epochs=num_epochs,
+                      batch_size=batch_size)
+
+        .. code-block:: none
+
+            Epoch 1/10 0.01s Step 40/40: loss: 0.710869, val_loss: 0.489602
+            Epoch 2/10 0.01s Step 40/40: loss: 0.448081, val_loss: 0.305897
+            Epoch 3/10 0.01s Step 40/40: loss: 0.301377, val_loss: 0.204526
+            Epoch 4/10 0.01s Step 40/40: loss: 0.219414, val_loss: 0.148778
+            Epoch 5/10 0.01s Step 40/40: loss: 0.173554, val_loss: 0.118251
+            Epoch 6/10 0.01s Step 40/40: loss: 0.147825, val_loss: 0.101621
+            Epoch 7/10 0.01s Step 40/40: loss: 0.133319, val_loss: 0.092615
+            Epoch 8/10 0.01s Step 40/40: loss: 0.125070, val_loss: 0.087767
+            Epoch 9/10 0.01s Step 40/40: loss: 0.120307, val_loss: 0.085166
+            Epoch 10/10 0.01s Step 40/40: loss: 0.117488, val_loss: 0.083767
+
+        Using PyTorch DataLoader::
+
+           import torch
+           from torch.utils.data import DataLoader, TensorDataset
+           from pytoune.framework import Model
+
+           num_epochs = 10
+           batch_size = 20
+
+           num_features = 10
+
+           # Our training dataset with 800 samples.
+           num_train_samples = 800
+           train_x = torch.rand(num_train_samples, num_features)
+           train_y = torch.rand(num_train_samples, 1)
+           train_dataset = TensorDataset(train_x, train_y)
+           train_generator = DataLoader(train_dataset, batch_size)
+
+           # Our validation dataset with 200 samples.
+           num_valid_samples = 200
+           valid_x = torch.rand(num_valid_samples, num_features)
+           valid_y = torch.rand(num_valid_samples, 1)
+           valid_dataset = TensorDataset(valid_x, valid_y)
+           valid_generator = DataLoader(valid_dataset, batch_size)
+
+           pytorch_module = torch.nn.Linear(num_features, 1)
+           loss_function = torch.nn.MSELoss()
+           optimizer = torch.optim.SGD(pytorch_module.parameters(), lr=1e-3)
+
+           model = Model(pytorch_module, optimizer, loss_function)
+           model.fit_generator(train_generator,
+                               valid_generator,
+                               epochs=num_epochs)
+
+        .. code-block:: none
+
+            Epoch 1/10 0.01s Step 40/40: loss: 0.311442, val_loss: 0.243208
+            Epoch 2/10 0.01s Step 40/40: loss: 0.223419, val_loss: 0.183428
+            Epoch 3/10 0.01s Step 40/40: loss: 0.173739, val_loss: 0.150269
+            Epoch 4/10 0.01s Step 40/40: loss: 0.145618, val_loss: 0.131929
+            Epoch 5/10 0.01s Step 40/40: loss: 0.129623, val_loss: 0.121813
+            Epoch 6/10 0.02s Step 40/40: loss: 0.120447, val_loss: 0.116241
+            Epoch 7/10 0.02s Step 40/40: loss: 0.115111, val_loss: 0.113164
+            Epoch 8/10 0.01s Step 40/40: loss: 0.111937, val_loss: 0.111448
+            Epoch 9/10 0.01s Step 40/40: loss: 0.109983, val_loss: 0.110464
+            Epoch 10/10 0.01s Step 40/40: loss: 0.108717, val_loss: 0.109868
+
     """
 
     def __init__(self, model, optimizer, loss_function, metrics=[]):
@@ -149,25 +156,29 @@ class Model:
             A list of dict containing the history of each epoch.
 
         Example:
+            .. code-block:: python
 
-        >>> model = Model(pytorch_module, optimizer, loss_function)
-        >>> history = model.fit(train_x, train_y,
-        >>>                     validation_x=valid_x,
-        >>>                     validation_y=valid_y,
-        >>>                     epochs=num_epochs,
-        >>>                     batch_size=batch_size)
-        >>>                     verbose=False)
-        >>> print(*history, sep="\\n")
-        {'epoch': 1, 'loss': 0.30211143642663957, 'val_loss': 0.25165273696184159}
-        {'epoch': 2, 'loss': 0.2192931968718767, 'val_loss': 0.19234802126884459}
-        {'epoch': 3, 'loss': 0.17256419658660888, 'val_loss': 0.15897458493709565}
-        {'epoch': 4, 'loss': 0.14614091524854303, 'val_loss': 0.14015687778592109}
-        {'epoch': 5, 'loss': 0.1311435048468411, 'val_loss': 0.12950410917401314}
-        {'epoch': 6, 'loss': 0.12257619202136993, 'val_loss': 0.12342756390571594}
-        {'epoch': 7, 'loss': 0.11762827709317207, 'val_loss': 0.11991316601634025}
-        {'epoch': 8, 'loss': 0.11471841260790824, 'val_loss': 0.11783143356442452}
-        {'epoch': 9, 'loss': 0.11295686885714531, 'val_loss': 0.11654961034655571}
-        {'epoch': 10, 'loss': 0.11184301525354386, 'val_loss': 0.1157136932015419}
+                model = Model(pytorch_module, optimizer, loss_function)
+                history = model.fit(train_x, train_y,
+                                    validation_x=valid_x,
+                                    validation_y=valid_y,
+                                    epochs=num_epochs,
+                                    batch_size=batch_size)
+                                    verbose=False)
+                print(*history, sep="\\n")
+
+            .. code-block:: python
+
+                {'epoch': 1, 'loss': 0.30211143642663957, 'val_loss': 0.25165273696184159}
+                {'epoch': 2, 'loss': 0.2192931968718767, 'val_loss': 0.19234802126884459}
+                {'epoch': 3, 'loss': 0.17256419658660888, 'val_loss': 0.15897458493709565}
+                {'epoch': 4, 'loss': 0.14614091524854303, 'val_loss': 0.14015687778592109}
+                {'epoch': 5, 'loss': 0.1311435048468411, 'val_loss': 0.12950410917401314}
+                {'epoch': 6, 'loss': 0.12257619202136993, 'val_loss': 0.12342756390571594}
+                {'epoch': 7, 'loss': 0.11762827709317207, 'val_loss': 0.11991316601634025}
+                {'epoch': 8, 'loss': 0.11471841260790824, 'val_loss': 0.11783143356442452}
+                {'epoch': 9, 'loss': 0.11295686885714531, 'val_loss': 0.11654961034655571}
+                {'epoch': 10, 'loss': 0.11184301525354386, 'val_loss': 0.1157136932015419}
         """
         train_dataset = TensorDataset(x, y)
         train_generator = DataLoader(train_dataset, batch_size)
@@ -230,24 +241,28 @@ class Model:
         Returns:
             A list of dict containing the history of each epoch.
 
-        Example:
+        Example::
+            .. code-block:: python
 
-            >>> model = Model(pytorch_module, optimizer, loss_function)
-            >>> history = model.fit_generator(train_generator,
-            >>>                               valid_generator,
-            >>>                               epochs=num_epochs,
-            >>>                               verbose=False)
-            >>> print(*history, sep="\\n")
-            {'epoch': 1, 'loss': 0.4048105351626873, 'val_loss': 0.35831213593482969}
-            {'epoch': 2, 'loss': 0.27947457544505594, 'val_loss': 0.25963697880506514}
-            {'epoch': 3, 'loss': 0.20913131050765515, 'val_loss': 0.20263003259897233}
-            {'epoch': 4, 'loss': 0.1695468619465828, 'val_loss': 0.16932785511016846}
-            {'epoch': 5, 'loss': 0.14716986808925867, 'val_loss': 0.14958457425236701}
-            {'epoch': 6, 'loss': 0.13442192394286395, 'val_loss': 0.13765123039484023}
-            {'epoch': 7, 'loss': 0.12706457944586874, 'val_loss': 0.13025617450475693}
-            {'epoch': 8, 'loss': 0.12272704998031259, 'val_loss': 0.12552770525217055}
-            {'epoch': 9, 'loss': 0.12008308945223689, 'val_loss': 0.12238729819655418}
-            {'epoch': 10, 'loss': 0.11839052420109511, 'val_loss': 0.12020810544490815}
+                model = Model(pytorch_module, optimizer, loss_function)
+                history = model.fit_generator(train_generator,
+                                              valid_generator,
+                                              epochs=num_epochs,
+                                              verbose=False)
+                print(*history, sep="\\n")
+
+            .. code-block:: python
+
+                {'epoch': 1, 'loss': 0.4048105351626873, 'val_loss': 0.35831213593482969}
+                {'epoch': 2, 'loss': 0.27947457544505594, 'val_loss': 0.25963697880506514}
+                {'epoch': 3, 'loss': 0.20913131050765515, 'val_loss': 0.20263003259897233}
+                {'epoch': 4, 'loss': 0.1695468619465828, 'val_loss': 0.16932785511016846}
+                {'epoch': 5, 'loss': 0.14716986808925867, 'val_loss': 0.14958457425236701}
+                {'epoch': 6, 'loss': 0.13442192394286395, 'val_loss': 0.13765123039484023}
+                {'epoch': 7, 'loss': 0.12706457944586874, 'val_loss': 0.13025617450475693}
+                {'epoch': 8, 'loss': 0.12272704998031259, 'val_loss': 0.12552770525217055}
+                {'epoch': 9, 'loss': 0.12008308945223689, 'val_loss': 0.12238729819655418}
+                {'epoch': 10, 'loss': 0.11839052420109511, 'val_loss': 0.12020810544490815}
         """
         if verbose:
             callbacks = [ProgressionCallback()] + callbacks

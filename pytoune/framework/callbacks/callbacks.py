@@ -98,6 +98,14 @@ class CallbackList(object):
 
 
 class Callback(object):
+    """
+    Attributes:
+        params (dict): Contains a key 'epoch' and a key 'steps_per_epoch'
+            which are passed to the `fit` function in `Model`. It may
+            contain other keys.
+        model (Model): a reference to the `Model` object which is using the
+            callback.
+    """
     def __init__(self):
         self.model = None
 
@@ -108,19 +116,80 @@ class Callback(object):
         self.model = model
 
     def on_epoch_begin(self, epoch, logs):
+        """
+        Is called before the begining of each epoch.
+
+        Args:
+            epoch (int): The epoch number.
+            logs (dict): Usually an empty dict.
+        """
         pass
 
     def on_epoch_end(self, epoch, logs):
+        """
+        Is called before the end of each epoch.
+
+        Args:
+            epoch (int): The epoch number.
+            logs (dict): Contains the following keys:
+
+                 * 'epoch': The epoch number.
+                 * 'loss': The average loss of the batches.
+                 * Other metrics: One key for each type of metrics. The metrics
+                   are also averaged.
+                 * val_loss': The average loss of the batches on the validation
+                   set.
+                 * Other metrics: One key for each type of metrics on the
+                   validation set. The metrics are also averaged.
+
+        Example::
+
+            logs = {'epoch': 6, 'loss': 4.34462, 'accuracy': 0.766, 'val_loss': 5.2352, 'val_accuracy': 0.682}
+        """
         pass
 
     def on_batch_begin(self, batch, logs):
+        """
+        Is called before the begining of each batch.
+
+        Args:
+            batch (int): The batch number.
+            logs (dict): Usually an empty dict.
+        """
         pass
 
     def on_batch_end(self, batch, logs):
+        """
+        Is called before the end of each batch.
+
+        Args:
+            batch (int): The batch number.
+            logs (dict): Contains the following keys:
+
+                 * 'batch': The batch number.
+                 * 'loss': The loss of the batch.
+                 * Other metrics: One key for each type of metrics.
+
+        Example::
+
+            logs = {'batch': 6, 'loss': 4.34462, 'accuracy': 0.766}
+        """
         pass
 
     def on_train_begin(self, logs):
+        """
+        Is called before the begining of the training.
+
+        Args:
+            logs (dict): Usually an empty dict.
+        """
         pass
 
     def on_train_end(self, logs):
+        """
+        Is called before the end of the training.
+
+        Args:
+            logs (dict): Usually an empty dict.
+        """
         pass

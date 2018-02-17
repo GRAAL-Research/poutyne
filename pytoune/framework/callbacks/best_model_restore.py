@@ -4,9 +4,19 @@ from .callbacks import Callback
 
 
 class BestModelRestore(Callback):
-    def __init__(self, monitor='val_loss', verbose=False, mode='min'):
+    """
+    Restore the weights of the best model at the end of the training depending
+    on a monitored quantity.
+
+    Args:
+        monitor (string): Quantity to monitor.(Default value = 'val_loss')
+        mode (string): One of {min, max}.
+            Whether the monitored has to be maximized or minimized. For
+            instance, for `val_accuracy`, this should be `max`, and for
+            `val_loss`, this should be `min`, etc. (Default value = 'min')
+    """
+    def __init__(self, monitor='val_loss', mode='min'):
         self.monitor = monitor
-        self.verbose = verbose
 
         if mode not in ['min', 'max']:
             raise ValueError("Invalid mode '%s'" % mode)
