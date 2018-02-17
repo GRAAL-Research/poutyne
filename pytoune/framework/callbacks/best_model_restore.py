@@ -1,7 +1,7 @@
 import warnings
 
-import torch
 from .callbacks import Callback
+
 
 class BestModelRestore(Callback):
     def __init__(self, monitor='val_loss', verbose=False, mode='min'):

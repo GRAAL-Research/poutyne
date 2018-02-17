@@ -2,6 +2,7 @@ import torch.optim.lr_scheduler
 
 from .callbacks import Callback
 
+
 class PyTorchLRSchedulerWrapper(Callback):
     def __init__(self, torch_lr_scheduler, *args, **kwargs):
         self.torch_lr_scheduler = torch_lr_scheduler
@@ -15,21 +16,26 @@ class PyTorchLRSchedulerWrapper(Callback):
     def on_epoch_end(self, epoch, logs):
         self.scheduler.step(epoch)
 
+
 class LambdaLR(PyTorchLRSchedulerWrapper):
     def __init__(self, *args, **kwargs):
         super(LambdaLR, self).__init__(torch.optim.lr_scheduler.LambdaLR, *args, **kwargs)
+
 
 class StepLR(PyTorchLRSchedulerWrapper):
     def __init__(self, *args, **kwargs):
         super(StepLR, self).__init__(torch.optim.lr_scheduler.StepLR, *args, **kwargs)
 
+
 class MultiStepLR(PyTorchLRSchedulerWrapper):
     def __init__(self, *args, **kwargs):
         super(MultiStepLR, self).__init__(torch.optim.lr_scheduler.MultiStepLR, *args, **kwargs)
 
+
 class ExponentialLR(PyTorchLRSchedulerWrapper):
     def __init__(self, *args, **kwargs):
         super(ExponentialLR, self).__init__(torch.optim.lr_scheduler.ExponentialLR, *args, **kwargs)
+
 
 class CosineAnnealingLR(PyTorchLRSchedulerWrapper):
     def __init__(self, *args, **kwargs):

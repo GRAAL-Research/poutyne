@@ -48,8 +48,8 @@ SOFTWARE.
 
 import warnings
 
-import torch
 from .callbacks import Callback
+
 
 class ModelCheckpoint(Callback):
     def __init__(self, filename, monitor='val_loss', verbose=False, save_best_only=False, restore_best=False, mode='min', period=1):

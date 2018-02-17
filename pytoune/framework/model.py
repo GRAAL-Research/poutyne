@@ -2,7 +2,6 @@ from .callbacks import CallbackList, ProgressionCallback
 from pytoune import torch_to_numpy, tensors_to_variables, variables_to_tensors
 import numpy as np
 import torch
-from torch.autograd import Variable
 from torch.utils.data import DataLoader, TensorDataset
 
 class Model:
@@ -24,6 +23,7 @@ class Model:
 
     Example:
         Using dataset tensors:
+
         >>> import torch
         >>> from pytoune.framework import Model
         >>>
@@ -65,6 +65,7 @@ class Model:
         Epoch 10/10 0.01s Step 40/40: loss: 0.117488, val_loss: 0.083767
 
         Using PyTorch DataLoader:
+
         >>> import torch
         >>> from torch.utils.data import DataLoader, TensorDataset
         >>> from pytoune.framework import Model
@@ -148,6 +149,7 @@ class Model:
             A list of dict containing the history of each epoch.
 
         Example:
+
         >>> model = Model(pytorch_module, optimizer, loss_function)
         >>> history = model.fit(train_x, train_y,
         >>>                     validation_x=valid_x,
@@ -155,7 +157,7 @@ class Model:
         >>>                     epochs=num_epochs,
         >>>                     batch_size=batch_size)
         >>>                     verbose=False)
-        >>> print(*history, sep="\n")
+        >>> print(*history, sep="\\n")
         {'epoch': 1, 'loss': 0.30211143642663957, 'val_loss': 0.25165273696184159}
         {'epoch': 2, 'loss': 0.2192931968718767, 'val_loss': 0.19234802126884459}
         {'epoch': 3, 'loss': 0.17256419658660888, 'val_loss': 0.15897458493709565}
@@ -229,12 +231,13 @@ class Model:
             A list of dict containing the history of each epoch.
 
         Example:
+
             >>> model = Model(pytorch_module, optimizer, loss_function)
             >>> history = model.fit_generator(train_generator,
             >>>                               valid_generator,
             >>>                               epochs=num_epochs,
             >>>                               verbose=False)
-            >>> print(*history, sep="\n")
+            >>> print(*history, sep="\\n")
             {'epoch': 1, 'loss': 0.4048105351626873, 'val_loss': 0.35831213593482969}
             {'epoch': 2, 'loss': 0.27947457544505594, 'val_loss': 0.25963697880506514}
             {'epoch': 3, 'loss': 0.20913131050765515, 'val_loss': 0.20263003259897233}

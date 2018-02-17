@@ -46,6 +46,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+
 class CallbackList(object):
     def __init__(self, callbacks=None):
         callbacks = callbacks or []
@@ -94,6 +95,7 @@ class CallbackList(object):
 
     def __iter__(self):
         return iter(self.callbacks)
+
 
 class Callback(object):
     def __init__(self):
