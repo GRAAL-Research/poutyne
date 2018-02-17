@@ -1,12 +1,14 @@
 .. role:: hidden
     :class: hidden-section
 
-PyToune Model
+pytoune.framework
 ==================================================
 
 .. automodule:: pytoune
 .. currentmodule:: pytoune.framework
 
+Model
+-----
+
 .. autoclass:: Model
     :members:
-

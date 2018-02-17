@@ -3,6 +3,14 @@ from torch.autograd import Variable
 
 
 def torch_to_numpy(v):
+    """
+
+    Args:
+        v:
+
+    Returns:
+
+    """
     if isinstance(v, Variable):
         v = v.data
     if isinstance(v, list) or isinstance(v, tuple):
@@ -14,6 +22,16 @@ def torch_to_numpy(v):
     return v.cpu().numpy()
 
 def tensors_to_variables(v, *args, **kwargs):
+    """
+
+    Args:
+        v:
+        *args:
+        **kwargs:
+
+    Returns:
+
+    """
     if isinstance(v, Variable):
         return v
     if torch.is_tensor(v):
@@ -26,6 +44,14 @@ def tensors_to_variables(v, *args, **kwargs):
         raise ValueError("The type '%s' is not supported by this function." % type(v).__name__)
 
 def variables_to_tensors(v):
+    """
+
+    Args:
+        v:
+
+    Returns:
+
+    """
     if isinstance(v, Variable):
         return v.data
     if isinstance(v, list) or isinstance(v, tuple):

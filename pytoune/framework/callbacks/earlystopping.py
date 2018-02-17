@@ -50,8 +50,13 @@ import numpy as np
 from .callbacks import Callback
 
 class EarlyStopping(Callback):
-    """Stop training when a monitored quantity has stopped improving.
-    # Arguments
+    """
+    The source code of this class is under the MIT License and was copied from
+    the Keras project, and has been modified.
+
+    Stop training when a monitored quantity has stopped improving.
+
+    Args:
         monitor: quantity to be monitored.
         min_delta: minimum change in the monitored quantity
             to qualify as an improvement, i.e. an absolute

@@ -391,8 +391,8 @@ class Model:
 
     def load_weights(self, filename):
         """
-        Loads the weights save using the ``torch.save()`` method or the
-        ``save_weights`` method of this class.
+        Loads the weights saved using the ``torch.save()`` method or the
+        ``save_weights()`` method of this class.
 
         Args:
           filename (string): The filename of the weights.
@@ -431,7 +431,7 @@ class Model:
 
         Args:
             weights (dict): The weights returned by either ``get_weights()`` or
-            ``get_weight_copies()``.
+                ``get_weight_copies()``.
         """
         self.model.load_state_dict(weights)
 
