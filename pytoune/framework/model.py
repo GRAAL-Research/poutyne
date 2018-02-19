@@ -129,7 +129,7 @@ class Model:
         self.metrics = metrics
         self.metrics_names = [metric.__name__ for metric in metrics]
 
-    def fit(self, x, y, validation_x=None, validation_y=None, batch_size=32, epochs=1000, steps_per_epoch=None, validation_steps=None, verbose=True, callbacks=[]):
+    def fit(self, x, y, validation_x=None, validation_y=None, batch_size=32, epochs=1000, steps_per_epoch=None, validation_steps=None, initial_epoch=1, verbose=True, callbacks=[]):
         """
         Trains the model on a dataset. This method creates generators and calls
         the ``fit_generator`` method.
@@ -154,9 +154,13 @@ class Model:
                 for the validation dataset. (Defaults to ``steps_per_epoch`` if
                 provided or the number of steps needed to see the entire
                 validation dataset)
+            initial_epoch (int, optional): Epoch at which to start training
+                (useful for resuming a previous training run).
+                (Default value = 1)
             verbose (bool): Whether to display the progress of the training.
                 (Default value = True)
-            callbacks (list of pytoune.framework.Callback):  (Default value = [])
+            callbacks (list of pytoune.framework.Callback): The list of
+                to callbacks during training. (Default value = [])
 
         Returns:
             A list of dict containing the history of each epoch.
@@ -199,10 +203,11 @@ class Model:
                                   epochs=epochs,
                                   steps_per_epoch=steps_per_epoch,
                                   validation_steps=validation_steps,
+                                  initial_epoch=initial_epoch,
                                   verbose=verbose,
                                   callbacks=callbacks)
 
-    def fit_generator(self, train_generator, valid_generator=None, epochs=1000, steps_per_epoch=None, validation_steps=None, verbose=True, callbacks=[]):
+    def fit_generator(self, train_generator, valid_generator=None, epochs=1000, steps_per_epoch=None, validation_steps=None, initial_epoch=1, verbose=True, callbacks=[]):
         """
         Trains the model on a dataset using a generator.
 
@@ -240,9 +245,13 @@ class Model:
                 but for the validation dataset. (Defaults to ``steps_per_epoch``
                 if provided or the number of steps needed to see the entire
                 validation dataset)
+            initial_epoch (int, optional): Epoch at which to start training
+                (useful for resuming a previous training run).
+                (Default value = 1)
             verbose (bool): Whether to display the progress of the training.
                 (Default value = True)
-            callbacks (list of pytoune.framework.Callback):  (Default value = [])
+            callbacks (list of pytoune.framework.Callback): The list of
+                to callbacks during training. (Default value = [])
 
         Returns:
             A list of dict containing the history of each epoch.
@@ -290,7 +299,7 @@ class Model:
         epoch_logs = []
         self.stop_training = False
         callback_list.on_train_begin({})
-        for epoch in range(1, epochs + 1):
+        for epoch in range(initial_epoch, epochs + 1):
             callback_list.on_epoch_begin(epoch, {})
             losses_sum = 0.
             metrics_sum = np.zeros(len(self.metrics))
