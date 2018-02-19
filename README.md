@@ -8,7 +8,10 @@ Use PyToune to:
 - Train models easily.
 - Use callbacks to save your best model, perform early stopping and much more.
 
+Read the documentation at [PyToune.org](http://pytoune.org).
+
 PyToune is compatible with >= __PyTorch 0.3.0__.
+
 
 ------------------
 
@@ -77,7 +80,7 @@ Or only predict on new data;
 predictions = model.predict(x_test)
 ```
 
-As you can see, PyToune is inspired a lot by the friendliness of [Keras](https://keras.io).
+As you can see, PyToune is inspired a lot by the friendliness of [Keras](https://keras.io). See the PyToune documentation at [PyToune.org](http://pytoune.org) for more.
 
 
 ------------------
