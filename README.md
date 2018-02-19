@@ -18,9 +18,9 @@ PyToune is compatible with >= __PyTorch 0.3.0__.
 
 ## Getting started: few seconds to PyToune
 
-The core data structure of PyToune is a ``Model``, a way to train your own [PyTorch](http://pytorch.org/docs/0.3.1/nn.html) neural networks.
+The core data structure of PyToune is a ``Model``, a way to train your own [PyTorch](http://pytorch.org/docs/master/nn.html) neural networks.
 
-How PyToune works is that you create your [PyTorch](http://pytorch.org/docs/0.3.1/nn.html) module (neural network) as usual but when comes the time to train it you feed it into the PyToune Model, which handles all the steps, stats and callbacks, similar to what [Keras](https://keras.io) does.
+How PyToune works is that you create your [PyTorch](http://pytorch.org/docs/master/nn.html) module (neural network) as usual but when comes the time to train it you feed it into the PyToune Model, which handles all the steps, stats and callbacks, similar to what [Keras](https://keras.io) does.
 
 Here is a simple example:
 
@@ -37,7 +37,7 @@ valid_x = torch.rand(num_valid_samples, num_features)
 valid_y = torch.rand(num_valid_samples, 1)
 ```
 
-Create yourself a [PyTorch](http://pytorch.org/docs/0.3.1/nn.html) network, a loss function and an optimizer;
+Create yourself a [PyTorch](http://pytorch.org/docs/master/nn.html) network, a loss function and an optimizer;
 
 ```python
 pytorch_module = torch.nn.Linear(num_features, 1)
