@@ -21,6 +21,12 @@ class Model:
             function. It is called on each batch of the optimization and on the
             validation batches at the end of the epoch. (Default value = [])
 
+    Attributes:
+        model (torch.nn.Module): The associated PyTorch module.
+        optimizer (torch.optim.Optimizer): The associated PyTorch optimizer.
+        loss_function: The associated loss function.
+        metrics (list): The associated metric functions.
+
     Example:
         Using dataset tensors::
 
