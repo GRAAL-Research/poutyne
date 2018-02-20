@@ -7,7 +7,7 @@ setup(
     author='Frédérik Paradis',
     author_email='fredy_14@live.fr',
     url = 'http://pytoune.org',
-    download_url='https://github.com/ulaval-graal/pytoune/archive/v0.1.zip',
+    download_url='https://github.com/GRAAL-Research/pytoune/archive/v0.1.zip',
     license='GPLv3',
     classifiers=[
         'Development Status :: 3 - Alpha',

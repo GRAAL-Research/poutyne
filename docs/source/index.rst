@@ -3,7 +3,7 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-:github_url: https://github.com/ulaval-graal/pytoune
+:github_url: https://github.com/GRAAL-Research/pytoune
 
 Here is PyToune
 ===============
@@ -109,7 +109,7 @@ Before installing PyToune, you must have a working version of `PyTorch 0.3.0 <ht
 
   .. code-block:: sh
 
-    pip install -U git+https://github.com/ulaval-graal/pytoune.git
+    pip install -U git+https://github.com/GRAAL-Research/pytoune.git
 
 
 

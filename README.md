@@ -99,7 +99,7 @@ pip install pytoune
 - **Install the latest version of PyToune:**
 
 ```sh
-pip install -U git+https://github.com/ulaval-graal/pytoune.git
+pip install -U git+https://github.com/GRAAL-Research/pytoune.git
 ```
 
 ------------------
