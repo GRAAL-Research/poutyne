@@ -3,7 +3,7 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-:github_url: https://github.com/ngarneau/pytoune
+:github_url: https://github.com/ulaval-graal/pytoune
 
 Here is PyToune
 ===============
@@ -17,7 +17,7 @@ Use PyToune to:
 
 Read the documentation at `PyToune.org <http://pytoune.org>`_.
 
-PyToune is compatible with >= **PyTorch 0.3.0**.
+PyToune is compatible with **PyTorch >= 0.3.0** and  **Python >= 3.5**.
 
 
 
@@ -99,12 +99,27 @@ Installation
 
 Before installing PyToune, you must have a working version of `PyTorch 0.3.0 <http://pytorch.org/>`_ in your environment.
 
-- **Install PyToune:**
+- **Install the stable version of PyToune:**
 
-.. code-block:: sh
+  .. code-block:: sh
 
-  pip install -U git+https://github.com/ngarneau/pytoune.git
+    pip install pytoune
 
+- **Install the latest version of PyToune:**
+
+  .. code-block:: sh
+
+    pip install -U git+https://github.com/ulaval-graal/pytoune.git
+
+
+
+Why this name, PyToune?
+=======================
+
+PyToune (or pitoune in Québécois) used to be wood logs that flowed through the rivers. It was an efficient way to travel large pieces of wood across the country. We hope that PyToune will make your `PyTorch <http://pytorch.org/>`_ neural networks training flow easily just like the "pitounes" used to.
+
+.. image:: /_static/img/pitounes.jpg
+   :alt: Pitounes
 
 
 API Reference
