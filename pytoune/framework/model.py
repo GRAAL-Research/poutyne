@@ -1,8 +1,12 @@
+import warnings
+import numpy as np
+
+import torch
+from torch.autograd import Variable
+from torch.utils.data import DataLoader, TensorDataset
+
 from .callbacks import CallbackList, ProgressionCallback
 from pytoune import torch_to_numpy, tensors_to_variables, variables_to_tensors
-import numpy as np
-import torch
-from torch.utils.data import DataLoader, TensorDataset
 
 class Model:
     """
@@ -12,12 +16,12 @@ class Model:
 
     Args:
         model (torch.nn.Module): A PyTorch module.
-        optimizer (torch.optim.Optimizer): An initialized PyTorch optimizer.
-        loss_function: A loss function. It can be any PyTorch loss layer or
+        optimizer (torch.optim.Optimizer): Initialized PyTorch optimizer.
+        loss_function: Loss function. It can be any PyTorch loss layer or
             custom loss function. The loss function must have the signature
             ``loss_function(input, target)`` where ``input`` is the prediction
             of the network and ``target`` is the ground truth.
-        metrics (list): A list of functions with the same signature as the loss
+        metrics (list): List of functions with the same signature as the loss
             function. It is called on each batch of the optimization and on the
             validation batches at the end of the epoch. (Default value = [])
 
@@ -135,17 +139,17 @@ class Model:
         the ``fit_generator`` method.
 
         Args:
-            x (Tensor): The training dataset.
-            y (Tensor): The ground truth.
-            validation_x (Tensor): The validation dataset. The validation datset
+            x (Tensor): Training dataset.
+            y (Tensor): Ground truth.
+            validation_x (Tensor): Validation dataset. The validation datset
                 is optional. (Default value = None)
-            validation_y (Tensor): The validation ground truth.
+            validation_y (Tensor): Validation ground truth.
                 (Default value = None)
             batch_size (int): Number of samples given to the network at one time.
                 (Default value = 32)
             epochs (int): Number of times the entire training dataset is seen.
                 (Default value = 1000)
-            steps_per_epoch (int, optional): The number of batch used during one
+            steps_per_epoch (int, optional): Number of batch used during one
                 epoch. Obviously, using this argument may cause one epoch not to
                 see the entire training dataset or see it multiple times.
                 (Defaults the number of steps needed to see the entire
@@ -159,11 +163,11 @@ class Model:
                 (Default value = 1)
             verbose (bool): Whether to display the progress of the training.
                 (Default value = True)
-            callbacks (list of pytoune.framework.Callback): The list of
-                to callbacks during training. (Default value = [])
+            callbacks (list of pytoune.framework.Callback): List of callbacks
+                that will be called during training. (Default value = [])
 
         Returns:
-            A list of dict containing the history of each epoch.
+            List of dict containing the history of each epoch.
 
         Example:
             .. code-block:: python
@@ -212,10 +216,14 @@ class Model:
         Trains the model on a dataset using a generator.
 
         Args:
-            train_generator: A generator-like object for the training dataset.
+            train_generator: Generator-like object for the training dataset.
                 The generator must yield a tuple ``(x, y)`` where ``x`` is a
                 batch of the training dataset and ``y`` is the corresponding
-                ground truths.
+                ground truths. ``y`` should be a Tensor with the first dimension
+                being the batch size since ``len(y)`` is taken as the batch
+                size. The loss and the metrics are averaged using this batch
+                size. If ``y`` is not a Tensor, then a warning is raised and
+                the "batch size" defaults to 1.
 
                 If the generator does not have a method ``__len__()``, the
                 ``steps_per_epoch`` argument must be provided. Notice that a
@@ -228,7 +236,7 @@ class Model:
                 resulting object returned by ``__iter__()``. Notice that a call
                 to ``__iter__()`` on a generator made using the python keyword
                 ``yield`` returns the generator itself.
-            valid_generator (optional): A generator-like object for the
+            valid_generator (optional): Generator-like object for the
                 validation dataset. This generator is optional. The generator is
                 used the same way as the  generator ``train_generator``. If the
                 generator does not have a method ``__len__()``, either the
@@ -236,7 +244,7 @@ class Model:
                 provided. (Default value = None)
             epochs (int): Number of times the entire training dataset is seen.
                 (Default value = 1000)
-            steps_per_epoch (int, optional): The number of batch used during one
+            steps_per_epoch (int, optional): Number of batch used during one
                 epoch. Obviously, using this argument may cause one epoch not to
                 see the entire training dataset or see it multiple times.
                 (Defaults the number of steps needed to see the entire
@@ -250,11 +258,11 @@ class Model:
                 (Default value = 1)
             verbose (bool): Whether to display the progress of the training.
                 (Default value = True)
-            callbacks (list of pytoune.framework.Callback): The list of
-                to callbacks during training. (Default value = [])
+            callbacks (list of pytoune.framework.Callback): List of callbacks
+                that will be called during training. (Default value = [])
 
         Returns:
-            A list of dict containing the history of each epoch.
+            List of dict containing the history of each epoch.
 
         Example::
             .. code-block:: python
@@ -303,7 +311,7 @@ class Model:
             callback_list.on_epoch_begin(epoch, {})
             losses_sum = 0.
             metrics_sum = np.zeros(len(self.metrics))
-            times_sum = 0.
+            sizes_sum = 0.
 
             self.model.train(True)
             train_iterator = iter(train_generator)
@@ -319,11 +327,13 @@ class Model:
                 self.optimizer.step()
 
                 loss, metrics = self._loss_and_metrics_tensors_to_numpy(loss_tensor, metrics_tensors)
-                losses_sum += loss
-                metrics_sum += metrics
+                size = self._get_batch_size(y)
+                losses_sum += loss * size
+                metrics_sum += metrics * size
+                sizes_sum += size
 
                 metrics_dict = dict(zip(self.metrics_names, metrics))
-                batch_logs = {'batch': step, 'loss': loss, **metrics_dict}
+                batch_logs = {'batch': step, 'size': size, 'loss': loss, **metrics_dict}
                 callback_list.on_batch_end(step, batch_logs)
 
             val_dict = {}
@@ -333,8 +343,8 @@ class Model:
                 val_metrics_dict = {'val_' + metric_name:metric for metric_name, metric in zip(self.metrics_names, val_metrics)}
                 val_dict = {'val_loss': val_loss, **val_metrics_dict}
 
-            losses_mean = losses_sum / steps_per_epoch
-            metrics_mean = metrics_sum / steps_per_epoch
+            losses_mean = losses_sum / sizes_sum
+            metrics_mean = metrics_sum / sizes_sum
             metrics_dict = dict(zip(self.metrics_names, metrics_mean))
             epoch_log = {'epoch': epoch, 'loss': losses_mean, **metrics_dict, **val_dict}
             callback_list.on_epoch_end(epoch, epoch_log)
@@ -348,54 +358,174 @@ class Model:
 
         return epoch_logs
 
-    def predict(self, x):
+    def predict(self, x, batch_size=32):
         """
-        Returns the tensor of the predictions of the network given a tensor for
-        a batch of samples.
+        Returns the predictions of the network given a dataset ``x``, where the
+        torch variables are converted into numpy arrays.
 
         Args:
-            x (torch.Tensor): A batch of samples.
+            x (Union[Tensor, np.ndarray])): Dataset for which to predict.
+            batch_size (int): Number of samples given to the network at one
+                time. (Default value = 32)
 
         Returns:
-            The tensor of the predictions of the network given a tensor for
-            the batch of samples ``x``.
+            Numpy arrays of the predictions.
+        """
+        if isinstance(x, np.ndarray):
+            x = torch.from_numpy(x)
+        generator = DataLoader(x, batch_size)
+        pred_y = self.predict_generator(generator)
+        return np.concatenate(pred_y)
+
+    def predict_generator(self, generator, steps=None):
+        """
+        Returns the predictions of the network given a batch of samples ``x``,
+        where the torch variables are converted into numpy arrays.
+
+        generator: Generator-like object for the dataset. The generator must
+            yield a tuple a batch of samples.
+
+            If the generator does not have a method ``__len__()``, the
+            ``steps`` argument must be provided. Notice that a
+            generator made using the python keyword ``yield`` does not
+            have such method. However, a PyTorch DataLoader object has a
+            such method.
+
+            The method ``__iter__()`` on the generator is called and the
+            method ``__next__()`` is called for each step on resulting
+            object returned by ``__iter__()``. Notice that a call to
+            ``__iter__()`` on a generator made using the python keyword
+            ``yield`` returns the generator itself.
+        steps (int, optional): Number of iterations done on
+            ``generator``. (Defaults the number of steps needed to see the
+            entire dataset)
+
+        Returns:
+            List of the predictions of each batch with torch variables
+            converted into numpy arrays.
         """
         self.model.eval()
-        x = tensors_to_variables(x, volatile=True)
-        return variables_to_tensors(self.model(x))
+        if steps is None:
+            steps = len(generator)
+        pred_y = []
+        iterator = iter(generator)
+        for _ in range(steps):
+            x = next(iterator)
+            x = tensors_to_variables(x, volatile=True)
+            pred_y.append(torch_to_numpy(self.model(x)))
+        return pred_y
 
-    def evaluate(self, x, y, return_pred=False):
+
+    def evaluate(self, x, y, batch_size=32, return_pred=False):
         """
         Computes the loss and the metrics of the network on a batch of samples
         and optionaly returns the predictions.
 
         Args:
-            x (torch.Tensor): A batch of samples.
-            y (torch.Tensor): A batch of ground truths for the batch.
+            x (Union[Tensor, np.ndarray])): Dataset tensor.
+            y (Union[Tensor, np.ndarray])): Dataset ground truths.
+            batch_size (int): Number of samples given to the network at one
+                time. (Default value = 32)
             return_pred (bool, optional): Whether to return the predictions for
                 ``x``. (Default value = False)
 
         Returns:
-            A tuple ``(loss, metrics)``. ``loss`` is a 1x1 tensor and
-            ``metrics`` is a list of ``n`` 1x1 tensors where ``n`` is the number
-            of metrics. If ``return_pred`` is true, then this method returns
-            a tuple ``(loss, metrics, pred_y)`` where ``pred_y`` is the
-            predictions returned by the network.
+            Tuple ``(loss, metrics)``. ``loss`` is a float and
+            ``metrics`` is a numpy array of size ``n``, where ``n`` is the
+            number of metrics. If ``return_pred`` is true, then this method
+            returns a tuple ``(loss, metrics, pred_y)`` where ``pred_y`` is a
+            numpy arrays of the predictions.
+        """
+        if isinstance(x, np.ndarray):
+            x = torch.from_numpy(x)
+        if isinstance(y, np.ndarray):
+            y = torch.from_numpy(y)
+
+        dataset = TensorDataset(x, y)
+        generator = DataLoader(dataset, batch_size)
+        loss, metrics, *pred_y = self.evaluate_generator(generator, len(generator), return_pred=return_pred)
+        ret = (loss, metrics)
+        if return_pred:
+            pred_y = np.concatenate(pred_y[0])
+            ret += (pred_y,)
+        return ret
+
+
+    def evaluate_generator(self, generator, steps=None, return_pred=False):
+        """
+        Computes the loss and the metrics of the network on a batch of samples
+        and optionaly returns the predictions.
+
+        Args:
+            generator: Generator-like object for the dataset. The generator
+                must yield a tuple ``(x, y)`` where ``x`` is a batch of the
+                dataset and ``y`` is the corresponding ground truths. ``y``
+                should be a Tensor with the first dimension being the batch size
+                since ``len(y)`` is taken as the batch size. The loss and the
+                metrics are averaged using this batch size. If ``y`` is not a
+                Tensor, then a warning is raised and the "batch size" defaults
+                to 1.
+
+                If the generator does not have a method ``__len__()``, the
+                ``steps`` argument must be provided. Notice that a
+                generator made using the python keyword ``yield`` does not
+                have such method. However, a PyTorch DataLoader object has a
+                such method.
+
+                The method ``__iter__()`` on the generator is called and the
+                method ``__next__()`` is called for each step on resulting
+                object returned by ``__iter__()``. Notice that a call to
+                ``__iter__()`` on a generator made using the python keyword
+                ``yield`` returns the generator itself.
+            steps (int, optional): Number of iterations done on
+                ``generator``. (Defaults the number of steps needed to see the
+                entire dataset)
+            return_pred (bool, optional): Whether to return the predictions for
+                ``x``. (Default value = False)
+
+        Returns:
+            Tuple ``(loss, metrics)``. ``loss`` is a float and
+            ``metrics`` is a numpy array of size ``n``, where ``n`` is the
+            number of metrics. If ``return_pred`` is true, then this method
+            returns a tuple ``(loss, metrics, pred_y)`` where ``pred_y`` is the
+            list of the predictions of each batch with torch variables converted
+            into numpy arrays.
         """
         self.model.eval()
-        return variables_to_tensors(self._compute_loss_and_metrics(x, y, return_pred=return_pred))
+        if steps is None:
+            steps = len(generator)
+        return self._validate(generator, steps, return_pred=return_pred)
 
-    def _validate(self, valid_generator, validation_steps):
-        losses_list = np.zeros(validation_steps)
-        metrics_list = np.zeros((validation_steps,len(self.metrics)))
+
+    def _validate(self, valid_generator, validation_steps, return_pred=False):
+        losses_sum = 0.
+        metrics_sum = np.zeros(len(self.metrics))
+        sizes_sum = 0
+        if return_pred:
+            pred_list = []
+
         valid_iterator = iter(valid_generator)
         for step in range(validation_steps):
             x, y = next(valid_iterator)
-            loss_tensor, metrics_tensors = self._compute_loss_and_metrics(x, y)
-            loss, metrics = self._loss_and_metrics_tensors_to_numpy(loss_tensor, metrics_tensors)
-            losses_list[step] = loss
-            metrics_list[step] = metrics
-        return losses_list.mean(), metrics_list.mean(0)
+            if return_pred:
+                loss_tensor, metrics_tensors, pred_y = self._compute_loss_and_metrics(x, y, return_pred=True)
+                loss, metrics, pred_y = self._loss_and_metrics_tensors_to_numpy(loss_tensor, metrics_tensors, pred_y)
+                pred_list.append(pred_y)
+            else:
+                loss_tensor, metrics_tensors = self._compute_loss_and_metrics(x, y, return_pred=False)
+                loss, metrics = self._loss_and_metrics_tensors_to_numpy(loss_tensor, metrics_tensors)
+
+            size = self._get_batch_size(y)
+            losses_sum += loss * size
+            metrics_sum += metrics * size
+            sizes_sum += size
+
+        loss_mean = losses_sum / sizes_sum
+        metrics_mean = metrics_sum / sizes_sum
+        ret = (loss_mean, metrics_mean)
+        if return_pred:
+            ret += (pred_list,)
+        return ret
 
     def _compute_loss_and_metrics(self, x, y, return_pred=False):
         x = tensors_to_variables(x, volatile=not self.model.training)
@@ -411,32 +541,42 @@ class Model:
     def _compute_metrics(self, pred_y, y):
         return [metric(pred_y, y) for metric in self.metrics]
 
-    def _loss_and_metrics_tensors_to_numpy(self, loss_tensor, metrics_tensors):
+    def _loss_and_metrics_tensors_to_numpy(self, loss_tensor, metrics_tensors, pred_y=None):
         loss = float(loss_tensor)
-        metrics = np.array([])
-        if len(metrics_tensors) > 0:
-            metrics = np.array(torch_to_numpy(metrics_tensors))
-            metrics = metrics.squeeze(1)
-        return loss, metrics
+        metrics = np.array([float(metric_tensor) for metric_tensor in metrics_tensors])
+        ret = (loss, metrics)
+        if pred_y is not None:
+            pred_y = torch_to_numpy(pred_y)
+            ret = ret + (pred_y,)
+        return ret
 
-    def load_weights(self, filename):
+    def _get_batch_size(self, y):
+        if torch.is_tensor(y) or isinstance(y, Variable):
+            return len(y)
+        else:
+            warnings.warn("When 'y' is not a tensor, the batch size is set to 1 and, thus, the computed loss and metrics at the end of each epoch is the mean of the batches' losses and metrics.")
+            return 1
+
+    def load_weights(self, f):
         """
         Loads the weights saved using the ``torch.save()`` method or the
         ``save_weights()`` method of this class.
 
         Args:
-          filename (string): The filename of the weights.
+            f: File-like object (has to implement fileno that returns a file
+            descriptor) or string containing a file name.
         """
-        self.set_weights(torch.load(filename))
+        self.set_weights(torch.load(f))
 
-    def save_weights(self, filename):
+    def save_weights(self, f):
         """
         Saves the weights of the current network.
 
         Args:
-          filename (string): The filename of the weights.
+            f: File-like object (has to implement fileno that returns a file
+            descriptor) or string containing a file name.
         """
-        torch.save(self.model.state_dict(), filename)
+        torch.save(self.model.state_dict(), f)
 
     def get_weights(self):
         """
@@ -460,7 +600,7 @@ class Model:
         Modifies the weights of the network with the given weights.
 
         Args:
-            weights (dict): The weights returned by either ``get_weights()`` or
+            weights (dict): Weights returned by either ``get_weights()`` or
                 ``get_weight_copies()``.
         """
         self.model.load_state_dict(weights)

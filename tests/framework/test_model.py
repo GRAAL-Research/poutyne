@@ -1,3 +1,5 @@
+import numpy as np
+
 from unittest import TestCase
 from unittest.mock import MagicMock, call, ANY, DEFAULT
 
@@ -11,7 +13,7 @@ from torch import FloatTensor
 from torch.utils.data import DataLoader, TensorDataset
 
 some_metric_1_value = 1.
-some_metric_2_value = 1.
+some_metric_2_value = 2.
 
 def some_metric_1(y, y_pred):
     return FloatTensor([some_metric_1_value])
@@ -58,6 +60,9 @@ class SomeDataGeneratorWithLen(object):
 class ModelTest(TestCase):
     epochs = 10
     steps_per_epoch = 5
+    batch_size = 20
+
+    evaluate_dataset_len = 107
 
     def setUp(self):
         torch.manual_seed(42)
@@ -72,28 +77,28 @@ class ModelTest(TestCase):
         self.mock_callback = MagicMock()
 
     def test_fitting_tensor_generator(self):
-        train_generator = some_data_tensor_generator(20)
-        valid_generator = some_data_tensor_generator(20)
+        train_generator = some_data_tensor_generator(ModelTest.batch_size)
+        valid_generator = some_data_tensor_generator(ModelTest.batch_size)
         logs = self.model.fit_generator(train_generator, valid_generator, epochs=ModelTest.epochs, steps_per_epoch=ModelTest.steps_per_epoch, validation_steps=ModelTest.steps_per_epoch, callbacks=[self.mock_callback])
         params = {'epochs': ModelTest.epochs, 'steps': ModelTest.steps_per_epoch}
         self._test_fitting(params, logs)
 
     def test_fitting_without_valid_generator(self):
-        train_generator = some_data_tensor_generator(20)
+        train_generator = some_data_tensor_generator(ModelTest.batch_size)
         logs = self.model.fit_generator(train_generator, None, epochs=ModelTest.epochs, steps_per_epoch=ModelTest.steps_per_epoch, validation_steps=ModelTest.steps_per_epoch, callbacks=[self.mock_callback])
         params = {'epochs': ModelTest.epochs, 'steps': ModelTest.steps_per_epoch}
         self._test_fitting(params, logs, has_valid=False)
 
     def test_fitting_variable_generator(self):
-        train_generator = some_data_variable_generator(20)
-        valid_generator = some_data_variable_generator(20)
+        train_generator = some_data_variable_generator(ModelTest.batch_size)
+        valid_generator = some_data_variable_generator(ModelTest.batch_size)
         logs = self.model.fit_generator(train_generator, valid_generator, epochs=ModelTest.epochs, steps_per_epoch=ModelTest.steps_per_epoch, validation_steps=ModelTest.steps_per_epoch, callbacks=[self.mock_callback])
         params = {'epochs': ModelTest.epochs, 'steps': ModelTest.steps_per_epoch}
         self._test_fitting(params, logs)
 
     def test_fitting_with_data_loader(self):
         train_real_steps_per_epoch = 30
-        train_batch_size = 20
+        train_batch_size = ModelTest.batch_size
         train_final_batch_missing_samples = 7
         train_x = torch.rand(train_real_steps_per_epoch * train_batch_size - train_final_batch_missing_samples, 1)
         train_y = torch.rand(train_real_steps_per_epoch * train_batch_size - train_final_batch_missing_samples, 1)
@@ -114,7 +119,7 @@ class ModelTest(TestCase):
 
     def test_fitting_with_tensor(self):
         train_real_steps_per_epoch = 30
-        train_batch_size = 20
+        train_batch_size = ModelTest.batch_size
         train_final_batch_missing_samples = 7
         train_x = torch.rand(train_real_steps_per_epoch * train_batch_size - train_final_batch_missing_samples, 1)
         train_y = torch.rand(train_real_steps_per_epoch * train_batch_size - train_final_batch_missing_samples, 1)
@@ -131,7 +136,7 @@ class ModelTest(TestCase):
 
     def test_fitting_with_generator_with_len(self):
         train_real_steps_per_epoch = 30
-        train_generator = SomeDataGeneratorWithLen(batch_size=20, length=train_real_steps_per_epoch, num_missing_samples=7)
+        train_generator = SomeDataGeneratorWithLen(batch_size=ModelTest.batch_size, length=train_real_steps_per_epoch, num_missing_samples=7)
         valid_generator = SomeDataGeneratorWithLen(batch_size=15, length=10, num_missing_samples=3)
         logs = self.model.fit_generator(train_generator, valid_generator, epochs=ModelTest.epochs, steps_per_epoch=None, validation_steps=None, callbacks=[self.mock_callback])
         params = {'epochs': ModelTest.epochs, 'steps': train_real_steps_per_epoch}
@@ -156,7 +161,7 @@ class ModelTest(TestCase):
             call_list.append(call.on_epoch_begin(epoch, {}))
             for step in range(1, params['steps']+1):
                 call_list.append(call.on_batch_begin(step, {}))
-                call_list.append(call.on_batch_end(step, {'batch': step, **train_dict}))
+                call_list.append(call.on_batch_end(step, {'batch': step, 'size': ANY, **train_dict}))
             call_list.append(call.on_epoch_end(epoch, {'epoch': epoch, **log_dict}))
         call_list.append(call.on_train_end({}))
 
@@ -166,3 +171,89 @@ class ModelTest(TestCase):
 
         self.assertEqual(len(method_calls), len(call_list) + 2)
         self.assertEqual(method_calls[2:], call_list)
+
+    def test_evaluate(self):
+        x = torch.rand(ModelTest.evaluate_dataset_len, 1)
+        y = torch.rand(ModelTest.evaluate_dataset_len, 1)
+        loss, metrics = self.model.evaluate(x, y, batch_size=ModelTest.batch_size)
+        self.assertEqual(type(loss), float)
+        self.assertEqual(type(metrics), np.ndarray)
+        self.assertEqual(metrics.tolist(), [some_metric_1_value, some_metric_2_value])
+
+    def test_evaluate_with_pred(self):
+        x = torch.rand(ModelTest.evaluate_dataset_len, 1)
+        y = torch.rand(ModelTest.evaluate_dataset_len, 1)
+        loss, metrics, pred_y  = self.model.evaluate(x, y, batch_size=ModelTest.batch_size, return_pred=True)
+        self.assertEqual(pred_y.shape, (ModelTest.evaluate_dataset_len, 1))
+
+    def test_evaluate_with_np_array(self):
+        x = np.random.rand(ModelTest.evaluate_dataset_len, 1).astype(np.float32)
+        y = np.random.rand(ModelTest.evaluate_dataset_len, 1).astype(np.float32)
+        loss, metrics, pred_y = self.model.evaluate(x, y, batch_size=ModelTest.batch_size, return_pred=True)
+        self.assertEqual(type(loss), float)
+        self.assertEqual(type(metrics), np.ndarray)
+        self.assertEqual(metrics.tolist(), [some_metric_1_value, some_metric_2_value])
+        self.assertEqual(pred_y.shape, (ModelTest.evaluate_dataset_len, 1))
+
+    def test_evaluate_data_loader(self):
+        x = torch.rand(ModelTest.evaluate_dataset_len, 1)
+        y = torch.rand(ModelTest.evaluate_dataset_len, 1)
+        dataset = TensorDataset(x, y)
+        generator = DataLoader(dataset, ModelTest.batch_size)
+        loss, metrics, pred_y  = self.model.evaluate_generator(generator, return_pred=True)
+        self.assertEqual(type(loss), float)
+        self.assertEqual(type(metrics), np.ndarray)
+        self.assertEqual(metrics.tolist(), [some_metric_1_value, some_metric_2_value])
+        self._test_predictions_for_evaluate_and_predict_generator(pred_y)
+
+    def test_evaluate_generator(self):
+        num_steps = 10
+        generator = some_data_tensor_generator(ModelTest.batch_size)
+        loss, metrics, pred_y  = self.model.evaluate_generator(generator, steps=num_steps, return_pred=True)
+        self.assertEqual(type(loss), float)
+        self.assertEqual(type(metrics), np.ndarray)
+        self.assertEqual(metrics.tolist(), [some_metric_1_value, some_metric_2_value])
+        for pred in pred_y:
+            self.assertEqual(type(pred), np.ndarray)
+            self.assertEqual(pred.shape, (ModelTest.batch_size, 1))
+        self.assertEqual(np.concatenate(pred_y).shape, (num_steps * ModelTest.batch_size, 1))
+
+    def test_predict(self):
+        x = torch.rand(ModelTest.evaluate_dataset_len, 1)
+        pred_y = self.model.predict(x, batch_size=ModelTest.batch_size)
+        self.assertEqual(pred_y.shape, (ModelTest.evaluate_dataset_len, 1))
+
+    def test_predict_with_np_array(self):
+        x = np.random.rand(ModelTest.evaluate_dataset_len, 1).astype(np.float32)
+        pred_y = self.model.predict(x, batch_size=ModelTest.batch_size)
+        self.assertEqual(pred_y.shape, (ModelTest.evaluate_dataset_len, 1))
+
+    def test_predict_data_loader(self):
+        x = torch.rand(ModelTest.evaluate_dataset_len, 1)
+        generator = DataLoader(x, ModelTest.batch_size)
+        pred_y  = self.model.predict_generator(generator)
+        self._test_predictions_for_evaluate_and_predict_generator(pred_y)
+
+    def test_predict_generator(self):
+        num_steps = 10
+        generator = some_data_tensor_generator(ModelTest.batch_size)
+        generator = (x for x, _ in generator)
+        pred_y = self.model.predict_generator(generator, steps=num_steps)
+        for pred in pred_y:
+            self.assertEqual(type(pred), np.ndarray)
+            self.assertEqual(pred.shape, (ModelTest.batch_size, 1))
+        self.assertEqual(np.concatenate(pred_y).shape, (num_steps * ModelTest.batch_size, 1))
+
+    def _test_predictions_for_evaluate_and_predict_generator(self, pred_y):
+        self.assertEqual(type(pred_y), list)
+        remaning_example = ModelTest.evaluate_dataset_len
+        cur_batch_size = ModelTest.batch_size
+        for pred in pred_y:
+            self.assertEqual(type(pred), np.ndarray)
+            if remaning_example < ModelTest.batch_size:
+                cur_batch_size = remaning_example
+                remaning_example = 0
+            else:
+                remaning_example -= ModelTest.batch_size
+            self.assertEqual(pred.shape, (cur_batch_size, 1))
+        self.assertEqual(np.concatenate(pred_y).shape, (ModelTest.evaluate_dataset_len, 1))

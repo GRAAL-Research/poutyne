@@ -50,8 +50,8 @@ def tensors_to_variables(obj, *args, **kwargs):
         return type(obj)(tensors_to_variables(el, *args, **kwargs) for el in obj)
     if isinstance(obj, dict):
         return {k:tensors_to_variables(el, *args, **kwargs) for k,el in obj.items()}
-    if not torch.is_tensor(obj):
-        raise ValueError("The type '%s' is not supported by this function." % type(obj).__name__)
+
+    raise ValueError("The type '%s' is not supported by this function." % type(obj).__name__)
 
 def variables_to_tensors(obj):
     """
@@ -68,11 +68,13 @@ def variables_to_tensors(obj):
     Raises:
         ValueError: If a not supported type is inside `obj`.
     """
+    if torch.is_tensor(obj):
+        return obj
     if isinstance(obj, Variable):
         return obj.data
     if isinstance(obj, list) or isinstance(obj, tuple):
         return type(obj)(variables_to_tensors(el) for el in obj)
     if isinstance(obj, dict):
         return {k:variables_to_tensors(el) for k,el in obj.items()}
-    if not torch.is_tensor(obj):
-        raise ValueError("The type '%s' is not supported by this function." % type(obj).__name__)
+
+    raise ValueError("The type '%s' is not supported by this function." % type(obj).__name__)

@@ -16,6 +16,7 @@ def some_data_generator(batch_size):
 class DelayCallbackTest(TestCase):
     epochs = 10
     steps_per_epoch = 5
+    batch_size = 20
 
     def setUp(self):
         torch.manual_seed(42)
@@ -31,8 +32,8 @@ class DelayCallbackTest(TestCase):
     def test_epoch_delay(self):
         epoch_delay = 4
         delay_callback = DelayCallback(self.mock_callback, epoch_delay=epoch_delay)
-        train_generator = some_data_generator(20)
-        valid_generator = some_data_generator(20)
+        train_generator = some_data_generator(DelayCallbackTest.batch_size)
+        valid_generator = some_data_generator(DelayCallbackTest.batch_size)
         logs = self.model.fit_generator(train_generator, valid_generator, epochs=DelayCallbackTest.epochs, steps_per_epoch=DelayCallbackTest.steps_per_epoch, validation_steps=DelayCallbackTest.steps_per_epoch, callbacks=[delay_callback])
         params = {'epochs': DelayCallbackTest.epochs, 'steps': DelayCallbackTest.steps_per_epoch}
 
@@ -42,7 +43,7 @@ class DelayCallbackTest(TestCase):
             call_list.append(call.on_epoch_begin(epoch, {}))
             for step in range(1, params['steps']+1):
                 call_list.append(call.on_batch_begin(step, {}))
-                call_list.append(call.on_batch_end(step, {'batch': step, **self.train_dict}))
+                call_list.append(call.on_batch_end(step, {'batch': step, 'size': DelayCallbackTest.batch_size, **self.train_dict}))
             call_list.append(call.on_epoch_end(epoch, {'epoch': epoch, **self.log_dict}))
         call_list.append(call.on_train_end({}))
 
@@ -65,8 +66,8 @@ class DelayCallbackTest(TestCase):
     def _test_batch_delay(self, epoch_delay, batch_in_epoch_delay):
         batch_delay = epoch_delay*DelayCallbackTest.steps_per_epoch + batch_in_epoch_delay
         delay_callback = DelayCallback(self.mock_callback, batch_delay=batch_delay)
-        train_generator = some_data_generator(20)
-        valid_generator = some_data_generator(20)
+        train_generator = some_data_generator(DelayCallbackTest.batch_size)
+        valid_generator = some_data_generator(DelayCallbackTest.batch_size)
         logs = self.model.fit_generator(train_generator, valid_generator, epochs=DelayCallbackTest.epochs, steps_per_epoch=DelayCallbackTest.steps_per_epoch, validation_steps=DelayCallbackTest.steps_per_epoch, callbacks=[delay_callback])
         params = {'epochs': DelayCallbackTest.epochs, 'steps': DelayCallbackTest.steps_per_epoch}
 
@@ -77,7 +78,7 @@ class DelayCallbackTest(TestCase):
             start_step = batch_in_epoch_delay + 1 if epoch == epoch_delay + 1 else 1
             for step in range(start_step, params['steps']+1):
                 call_list.append(call.on_batch_begin(step, {}))
-                call_list.append(call.on_batch_end(step, {'batch': step, **self.train_dict}))
+                call_list.append(call.on_batch_end(step, {'batch': step, 'size': DelayCallbackTest.batch_size, **self.train_dict}))
             call_list.append(call.on_epoch_end(epoch, {'epoch': epoch, **self.log_dict}))
         call_list.append(call.on_train_end({}))
 
