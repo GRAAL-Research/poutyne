@@ -11,26 +11,31 @@ class CSVLogger(Callback):
             batch in addition to the epochs. (Default value = False)
         separator (string): The separator to use in the CSV.
             (Default value = ',')
+        append (bool): Whether to append to an existing file.
+            (Default value = False)
     """
-    def __init__(self, filename, batch_granularity=False, separator=','):
+    def __init__(self, filename, batch_granularity=False, separator=',', append=False):
         self.filename = filename
-        self.separator = separator
         self.batch_granularity = batch_granularity
+        self.separator = separator
+        self.append = append
 
     def on_train_begin(self, logs):
         metrics = ['loss'] + self.model.metrics_names
 
         if self.batch_granularity:
-            self.fieldnames = ['epoch', 'batch', 'lr']
+            self.fieldnames = ['epoch', 'batch', 'size', 'lr']
         else:
             self.fieldnames = ['epoch', 'lr']
         self.fieldnames += metrics
         self.fieldnames += ['val_' + metric for metric in metrics]
 
-        self.csvfile = open(self.filename, 'w', newline='')
+        open_flag = 'a' if self.append else 'w'
+        self.csvfile = open(self.filename, open_flag, newline='')
         self.writer = csv.DictWriter(self.csvfile, fieldnames=self.fieldnames, delimiter=self.separator)
-        self.writer.writeheader()
-        self.csvfile.flush()
+        if not self.append:
+            self.writer.writeheader()
+            self.csvfile.flush()
 
     def on_batch_end(self, batch, logs):
         if self.batch_granularity:
