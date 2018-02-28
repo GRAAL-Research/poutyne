@@ -605,7 +605,7 @@ class Model:
         """
         self.model.load_state_dict(weights)
 
-    def cuda(*args, **kwargs):
+    def cuda(self, *args, **kwargs):
         """
         Tranfers the network on the GPU. The arguments are passed to the
         ``torch.nn.Module.cuda()`` method. Notice that the method
@@ -617,7 +617,7 @@ class Model:
         """
         return self.model.cuda(*args, **kwargs)
 
-    def cpu(*args, **kwargs):
+    def cpu(self, *args, **kwargs):
         """
         Tranfers the network on the CPU. The arguments are passed to the
         ``torch.nn.Module.cpu()`` method. Notice that the method

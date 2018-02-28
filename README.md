@@ -10,7 +10,7 @@ Use PyToune to:
 
 Read the documentation at [PyToune.org](http://pytoune.org).
 
-PyToune is compatible with >= __PyTorch 0.3.0__.
+PyToune is compatible with  __PyTorch >= 0.3.0__ and  __Python >= 3.5__.
 
 
 ------------------
@@ -18,9 +18,9 @@ PyToune is compatible with >= __PyTorch 0.3.0__.
 
 ## Getting started: few seconds to PyToune
 
-The core data structure of PyToune is a ``Model``, a way to train your own [PyTorch](http://pytorch.org/docs/0.3.1/nn.html) neural networks.
+The core data structure of PyToune is a ``Model``, a way to train your own [PyTorch](http://pytorch.org/docs/master/nn.html) neural networks.
 
-How PyToune works is that you create your [PyTorch](http://pytorch.org/docs/0.3.1/nn.html) module (neural network) as usual but when comes the time to train it you feed it into the PyToune Model, which handles all the steps, stats and callbacks, similar to what [Keras](https://keras.io) does.
+How PyToune works is that you create your [PyTorch](http://pytorch.org/docs/master/nn.html) module (neural network) as usual but when comes the time to train it you feed it into the PyToune Model, which handles all the steps, stats and callbacks, similar to what [Keras](https://keras.io) does.
 
 Here is a simple example:
 
@@ -37,7 +37,7 @@ valid_x = torch.rand(num_valid_samples, num_features)
 valid_y = torch.rand(num_valid_samples, 1)
 ```
 
-Create yourself a [PyTorch](http://pytorch.org/docs/0.3.1/nn.html) network, a loss function and an optimizer;
+Create yourself a [PyTorch](http://pytorch.org/docs/master/nn.html) network, a loss function and an optimizer;
 
 ```python
 pytorch_module = torch.nn.Linear(num_features, 1)
@@ -90,10 +90,16 @@ As you can see, PyToune is inspired a lot by the friendliness of [Keras](https:/
 
 Before installing PyToune, you must have a working version of [PyTorch 0.3.0](http://pytorch.org/) in your environment.
 
-- **Install PyToune:**
+- **Install the stable version of PyToune:**
 
 ```sh
-pip install -U git+https://github.com/ngarneau/pytoune.git
+pip install pytoune
+```
+
+- **Install the latest version of PyToune:**
+
+```sh
+pip install -U git+https://github.com/GRAAL-Research/pytoune.git
 ```
 
 ------------------
@@ -102,6 +108,6 @@ pip install -U git+https://github.com/ngarneau/pytoune.git
 
 PyToune (or pitoune in Québécois) used to be wood logs that flowed through the rivers. It was an efficient way to travel large pieces of wood across the country. We hope that PyToune will make your [PyTorch](https://pytorch.org) neural networks training flow easily just like the "pitounes" used to.
 
-![Pitounes](https://pyrodactile.files.wordpress.com/2010/02/a165128.jpg)
+![Pitounes](docs/source/_static/img/pitounes.jpg)
 
 ------------------
