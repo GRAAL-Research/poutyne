@@ -112,7 +112,11 @@ class ModelCheckpoint(Callback):
         try:
             os.replace(tmp_filename, filename)
         except OSError as e:
+            # This may happen if the temp filesystem is not the same as the final destination's.
             warnings.warn('Impossible to move the checkpoint to its final destination: os.replace(%s, %s) -> %s' % (tmp_filename, filename, e))
+            warnings.warn('Saving %s non-atomically.' % filename)
+            self.model.save_weights(filename)
+
 
     def on_epoch_end(self, epoch, logs):
         filename = self.filename.format_map(logs)
