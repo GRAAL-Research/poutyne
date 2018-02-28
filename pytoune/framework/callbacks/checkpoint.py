@@ -45,8 +45,9 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
-
+import os
 import warnings
+import tempfile
 
 from .callbacks import Callback
 
@@ -104,6 +105,15 @@ class ModelCheckpoint(Callback):
 
         self.period = period
 
+    def _save_weights(self, filename):
+        with tempfile.NamedTemporaryFile(delete=False) as fp:
+            tmp_filename = fp.name
+            self.model.save_weights(fp)
+        try:
+            os.replace(tmp_filename, filename)
+        except OSError as e:
+            warnings.warn('Impossible to move the checkpoint to its final destination: os.replace(%s, %s) -> %s' % (tmp_filename, filename, e))
+
     def on_epoch_end(self, epoch, logs):
         filename = self.filename.format_map(logs)
 
@@ -116,13 +126,13 @@ class ModelCheckpoint(Callback):
                 if self.verbose:
                     print('Epoch %d: %s improved from %0.5f to %0.5f, saving model to %s'
                           % (epoch, self.monitor, old_best, self.current_best, self.best_filename))
-                self.model.save_weights(self.best_filename)
+                self._save_weights(self.best_filename)
                 return
 
         if epoch % self.period == 0 and not self.save_best_only:
             if self.verbose:
                 print('Epoch %d: saving model to %s' % (epoch, filename))
-            self.model.save_weights(filename)
+            self._save_weights(filename)
             return
 
     def on_train_end(self, logs):
