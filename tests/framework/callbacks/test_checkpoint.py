@@ -39,6 +39,28 @@ class ModelCheckpointTest(TestCase):
         checkpointer = ModelCheckpoint(self.checkpoint_filename, monitor='val_loss', verbose=True, save_best_only=True)
         self.model.fit_generator(train_gen, valid_gen, epochs=10, steps_per_epoch=5, callbacks=[checkpointer])
 
+    def test_temporary_filename_arg(self):
+        tmp_filename = os.path.join(self.temp_dir_obj.name, 'my_checkpoint.tmp.ckpt')
+        checkpoint_filename = os.path.join(self.temp_dir_obj.name, 'my_checkpoint.ckpt')
+        train_gen = some_data_generator(20)
+        valid_gen = some_data_generator(20)
+        checkpointer = ModelCheckpoint(checkpoint_filename, monitor='val_loss', verbose=True, period=1)
+        self.model.fit_generator(train_gen, valid_gen, epochs=10, steps_per_epoch=5, callbacks=[checkpointer])
+        self.assertFalse(os.path.isfile(tmp_filename))
+        self.assertTrue(os.path.isfile(checkpoint_filename))
+
+    def test_temporary_filename_arg_with_differing_checkpoint_filename(self):
+        epochs = 10
+        tmp_filename = os.path.join(self.temp_dir_obj.name, 'my_checkpoint.tmp.ckpt')
+        checkpoint_filename = os.path.join(self.temp_dir_obj.name, 'my_checkpoint_{epoch}.ckpt')
+        train_gen = some_data_generator(20)
+        valid_gen = some_data_generator(20)
+        checkpointer = ModelCheckpoint(checkpoint_filename, monitor='val_loss', verbose=True, period=1)
+        self.model.fit_generator(train_gen, valid_gen, epochs=epochs, steps_per_epoch=5, callbacks=[checkpointer])
+        self.assertFalse(os.path.isfile(tmp_filename))
+        for i in range(1, epochs+1):
+            self.assertTrue(os.path.isfile(checkpoint_filename.format(epoch=i)))
+
     def test_save_best_only(self):
         checkpointer = ModelCheckpoint(self.checkpoint_filename, monitor='val_loss', verbose=True, save_best_only=True)
 
