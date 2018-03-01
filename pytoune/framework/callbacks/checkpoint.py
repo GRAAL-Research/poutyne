@@ -120,7 +120,7 @@ class ModelCheckpoint(Callback):
     def _save_weights(self, filename):
         fd = None
         if self.temporary_filename is not None:
-            fd = open(self.temporary_filename, 'w')
+            fd = open(self.temporary_filename, 'wb')
             tmp_filename = self.temporary_filename
         else:
             fd = tempfile.NamedTemporaryFile(delete=False)
