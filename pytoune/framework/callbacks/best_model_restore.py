@@ -9,7 +9,7 @@ class BestModelRestore(Callback):
     on a monitored quantity.
 
     Args:
-        monitor (string): Quantity to monitor.(Default value = 'val_loss')
+        monitor (string): Quantity to monitor. (Default value = 'val_loss')
         mode (string): One of {min, max}.
             Whether the monitored has to be maximized or minimized. For
             instance, for `val_accuracy`, this should be `max`, and for

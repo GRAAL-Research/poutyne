@@ -10,12 +10,12 @@ class DelayCallback(Callback):
     Args:
         callbacks (Callback, list of Callback): A callback or a list of
             callbacks to delay.
-        epoch_delay: Number of epochs to delay. (Default value = None)
-        batch_delay: Number of batches to delay. The number of batches can span
-            many epochs. When the batch delay expires (i.e. there are more than
-            `batch_delay` done), the ``on_epoch_begin`` method is called on the
-            callback(s) before the ``on_batch_begin`` method.
-            (Default value = None)
+        epoch_delay (int, optional): Number of epochs to delay.
+        batch_delay (int, optional): Number of batches to delay. The number of
+            batches can span many epochs. When the batch delay expires (i.e.
+            there are more than `batch_delay` done), the ``on_epoch_begin``
+            method is called on the callback(s) before the ``on_batch_begin``
+            method.
     """
     def __init__(self, callbacks, epoch_delay=None, batch_delay=None):
         if isinstance(callbacks, CallbackList):
