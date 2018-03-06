@@ -61,6 +61,14 @@ class ModelCheckpointTest(TestCase):
         for i in range(1, epochs+1):
             self.assertTrue(os.path.isfile(checkpoint_filename.format(epoch=i)))
 
+    def test_non_atomic_write(self):
+        checkpoint_filename = os.path.join(self.temp_dir_obj.name, 'my_checkpoint.ckpt')
+        train_gen = some_data_generator(20)
+        valid_gen = some_data_generator(20)
+        checkpointer = ModelCheckpoint(checkpoint_filename, monitor='val_loss', verbose=True, period=1, atomic_write=False)
+        self.model.fit_generator(train_gen, valid_gen, epochs=10, steps_per_epoch=5, callbacks=[checkpointer])
+        self.assertTrue(os.path.isfile(checkpoint_filename))
+
     def test_save_best_only(self):
         checkpointer = ModelCheckpoint(self.checkpoint_filename, monitor='val_loss', verbose=True, save_best_only=True)
 
