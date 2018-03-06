@@ -63,13 +63,13 @@ class ModelCheckpoint(Callback):
     `weights.{epoch:02d}-{val_loss:.2f}.ckpt`, then the model checkpoints will
     be saved with the epoch number and the validation loss in the filename.
 
-    The checkpoint are written atomically to the specified filename so that the
-    training can be killed and restarted later using the same filename for
-    periodic checkpointing. To do so, a temporary file is created using the
-    system's `tmp` directory and then is moved a the final destination after the
-    checkpoint is made. Sometimes, this move is not possible on some system. To
-    address this problem, it is possible to specify the destination of the
-    temporary file using the ``temporary_filename`` argument.
+    By default, the checkpoint are written atomically to the specified filename
+    so that the training can be killed and restarted later using the same
+    filename for periodic checkpointing. To do so, a temporary file is created
+    using the system's `tmp` directory and then is moved a the final destination
+    after the checkpoint is made. Sometimes, this move is not possible on some
+    system. To address this problem, it is possible to specify the destination
+    of the temporary file using the ``temporary_filename`` argument.
 
     Args:
         filename (string): Path to save the model file.
@@ -92,17 +92,20 @@ class ModelCheckpoint(Callback):
         period (int): Interval (number of epochs) between checkpoints.
             (Default value = 1)
         temporary_filename (string, optional): Temporary filename for the
-            checkpoint so that the last checkpoint can be overwritten
-            atomically in case it has the same filename.
+            checkpoint so that the last checkpoint can be written
+            atomically. See the ``atomic_write`` argument.
+        atomic_write (bool): Whether to right atomically the checkpoint. See
+            the description above for details. (Default value = True)
     """
 
-    def __init__(self, filename, monitor='val_loss', verbose=False, save_best_only=False, restore_best=False, mode='min', period=1, temporary_filename=None):
+    def __init__(self, filename, monitor='val_loss', verbose=False, save_best_only=False, restore_best=False, mode='min', period=1, temporary_filename=None, atomic_write=True):
         self.filename = filename
         self.monitor = monitor
         self.verbose = verbose
         self.save_best_only = save_best_only
         self.restore_best = restore_best
         self.temporary_filename = temporary_filename
+        self.atomic_write = atomic_write
         self.best_filename = None
 
         if self.save_best_only or self.restore_best:
@@ -118,23 +121,28 @@ class ModelCheckpoint(Callback):
         self.period = period
 
     def _save_weights(self, filename):
-        fd = None
-        if self.temporary_filename is not None:
-            fd = open(self.temporary_filename, 'wb')
-            tmp_filename = self.temporary_filename
+        if self.atomic_write:
+            fd = None
+            if self.temporary_filename is not None:
+                fd = open(self.temporary_filename, 'wb')
+                tmp_filename = self.temporary_filename
+            else:
+                fd = tempfile.NamedTemporaryFile(delete=False)
+                tmp_filename = fd.name
+
+            with fd:
+                self.model.save_weights(fd)
+
+            try:
+                os.replace(tmp_filename, filename)
+            except OSError as e:
+                # This may happen if the temp filesystem is not the same as the final destination's.
+                warnings.warn("Impossible to move the checkpoint to its final destination: os.replace(%s, %s) -> %s\nYou may want to specify the 'temporary_filename' argument to ModelCheckpoint." % (tmp_filename, filename, e))
+                os.remove(tmp_filename)
+
+                warnings.warn('Saving %s non-atomically instead.' % filename)
+                self.model.save_weights(filename)
         else:
-            fd = tempfile.NamedTemporaryFile(delete=False)
-            tmp_filename = fd.name
-
-        with fd:
-            self.model.save_weights(fd)
-
-        try:
-            os.replace(tmp_filename, filename)
-        except OSError as e:
-            # This may happen if the temp filesystem is not the same as the final destination's.
-            warnings.warn('Impossible to move the checkpoint to its final destination: os.replace(%s, %s) -> %s' % (tmp_filename, filename, e))
-            warnings.warn('Saving %s non-atomically.' % filename)
             self.model.save_weights(filename)
 
 
