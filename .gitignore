@@ -101,3 +101,7 @@ ENV/
 .mypy_cache/
 
 .idea/
+
+# Sublime project settings
+*.sublime-project
+*.sublime-workspace
