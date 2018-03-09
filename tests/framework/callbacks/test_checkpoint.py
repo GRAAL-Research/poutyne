@@ -85,6 +85,13 @@ class ModelCheckpointTest(TestCase):
 
         self._test_restore_best(val_losses)
 
+    def test_restore_best_without_save_best_only(self):
+        with self.assertRaises(ValueError):
+            checkpointer = ModelCheckpoint(self.checkpoint_filename, monitor='val_loss', verbose=True, save_best_only=False, restore_best=True)
+
+        with self.assertRaises(ValueError):
+            checkpointer = ModelCheckpoint(self.checkpoint_filename, monitor='val_loss', verbose=True, restore_best=True)
+
     def test_save_best_only_with_max(self):
         checkpointer = ModelCheckpoint(self.checkpoint_filename, monitor='val_loss', mode='max', verbose=True, save_best_only=True)
 
@@ -106,15 +113,6 @@ class ModelCheckpointTest(TestCase):
         has_checkpoints = [False, True] * 5
         self._test_checkpointer_with_val_losses(checkpointer, val_losses, has_checkpoints)
 
-    def test_periodic_with_restore_best(self):
-        checkpointer = ModelCheckpoint(self.checkpoint_filename, monitor='val_loss', verbose=True, period=2, restore_best=True, save_best_only=False)
-
-        val_losses = [10, 3, 8, 5, 2, 4, 3]
-        has_checkpoints = [True, True, False, True, True, True, False]
-        self._test_checkpointer_with_val_losses(checkpointer, val_losses, has_checkpoints)
-
-        self._test_restore_best(val_losses)
-
     def _test_checkpointer_with_val_losses(self, checkpointer, val_losses, has_checkpoints):
         generator = some_data_generator(ModelCheckpointTest.batch_size)
 
@@ -128,10 +126,7 @@ class ModelCheckpointTest(TestCase):
             checkpointer.on_batch_end(1, {'batch': 1, 'size': ModelCheckpointTest.batch_size, 'loss': loss})
             checkpointer.on_epoch_end(epoch, {'epoch': epoch, 'loss': loss, 'val_loss': val_loss})
             filename = self.checkpoint_filename.format(epoch=epoch)
-            if has_checkpoint:
-                self.assertTrue(os.path.isfile(filename))
-            else:
-                self.assertFalse(os.path.isfile(filename))
+            self.assertEqual(has_checkpoint, os.path.isfile(filename))
         checkpointer.on_train_end({})
 
     def _update_model(self, generator):
