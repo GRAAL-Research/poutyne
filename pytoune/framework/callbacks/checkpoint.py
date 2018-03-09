@@ -108,7 +108,10 @@ class ModelCheckpoint(Callback):
         self.atomic_write = atomic_write
         self.best_filename = None
 
-        if self.save_best_only or self.restore_best:
+        if self.restore_best and not self.save_best_only:
+            raise ValueError("The 'restore_best' argument only works when 'save_best_only' is also true.")
+
+        if self.save_best_only:
             if mode not in ['min', 'max']:
                 raise ValueError("Invalid mode '%s'" % mode)
             if mode == 'min':
@@ -149,7 +152,7 @@ class ModelCheckpoint(Callback):
     def on_epoch_end(self, epoch, logs):
         filename = self.filename.format_map(logs)
 
-        if self.save_best_only or self.restore_best:
+        if self.save_best_only:
             if self.monitor_op(logs[self.monitor], self.current_best):
                 old_best = self.current_best
                 self.current_best = logs[self.monitor]
@@ -159,13 +162,10 @@ class ModelCheckpoint(Callback):
                     print('Epoch %d: %s improved from %0.5f to %0.5f, saving model to %s'
                           % (epoch, self.monitor, old_best, self.current_best, self.best_filename))
                 self._save_weights(self.best_filename)
-                return
-
-        if epoch % self.period == 0 and not self.save_best_only:
+        elif epoch % self.period == 0:
             if self.verbose:
                 print('Epoch %d: saving model to %s' % (epoch, filename))
             self._save_weights(filename)
-            return
 
     def on_train_end(self, logs):
         if self.restore_best:
