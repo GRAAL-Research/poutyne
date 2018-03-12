@@ -46,7 +46,7 @@ class ProgressionCallback(Callback):
         sys.stdout.flush()
 
     def _get_metrics_string(self, logs):
-        train_metrics_str_gen = ('{}: {:f}'.format(k, logs[k]) for k in self.metrics if logs.get(k))
+        train_metrics_str_gen = ('{}: {:f}'.format(k, logs[k]) for k in self.metrics if logs.get(k) is not None)
         val_metrics_str_gen = ('{}: {:f}'.format('val_' + k, logs['val_' + k]) for k in self.metrics if
-                               logs.get('val_' + k))
+                               logs.get('val_' + k) is not None)
         return ', '.join(itertools.chain(train_metrics_str_gen, val_metrics_str_gen))
