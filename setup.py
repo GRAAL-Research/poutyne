@@ -23,5 +23,7 @@ setup(
     packages=packages,
     install_requires=['numpy'],
     python_requires='>=3',
-    description='A Keras-like framework and utilities for PyTorch.'
+    description='A Keras-like framework and utilities for PyTorch.',
+    test_suite='nose.collector',
+    tests_require=['nose'],
 )
