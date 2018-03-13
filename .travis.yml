@@ -1,8 +1,10 @@
 language: python
 python:
   - 3.5
+  - 3.6
 install:
   - pip install -r requirements.txt
-  - pip install http://download.pytorch.org/whl/cpu/torch-0.3.1-cp35-cp35m-linux_x86_64.whl  
+  - if [[ $TRAVIS_PYTHON_VERSION == '3.5' ]]; then pip install http://download.pytorch.org/whl/cpu/torch-0.3.1-cp35-cp35m-linux_x86_64.whly
+  - if [[ $TRAVIS_PYTHON_VERSION == '3.6' ]]; then pip install http://download.pytorch.org/whl/cpu/torch-0.3.1-cp36-cp36m-linux_x86_64.whl 
 script:
   - python setup.py test
