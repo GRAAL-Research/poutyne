@@ -1,5 +1,8 @@
 # PyToune: Deep Learning framework for [PyTorch](http://pytorch.org/)
 
+[![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](http://www.gnu.org/licenses/gpl-3.0)
+[![Build Status](https://travis-ci.org/GRAAL-Research/pytoune.svg?branch=master)](https://travis-ci.org/GRAAL-Research/pytoune)
+
 ## Here is PyToune.
 
 PyToune is a Keras-like framework for [PyTorch](http://pytorch.org/) and handles much of the boilerplating code needed to train neural networks.
