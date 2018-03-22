@@ -26,6 +26,8 @@ class Mock(MagicMock):
 MOCK_MODULES = ['torch', 'torch.nn', 'torch.autograd', 'torch.optim', 'torch.optim.lr_scheduler', 'torch.utils', 'torch.utils.data']
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
+from pytoune import __version__ as version
+
 
 # -- Project information -----------------------------------------------------
 
@@ -34,9 +36,9 @@ copyright = '2018, Frédérik Paradis'
 author = 'Frédérik Paradis'
 
 # The short X.Y version
-version = ''
+version = version
 # The full version, including alpha/beta/rc tags
-release = '0.2'
+release = version
 
 
 # -- General configuration ---------------------------------------------------

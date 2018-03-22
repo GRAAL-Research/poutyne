@@ -1,13 +1,20 @@
+import os
 from setuptools import setup, find_packages
+
+
+current_file_path = os.path.abspath(os.path.dirname(__file__))
+version_file_path = os.path.join(current_file_path, 'pytoune/version.py')
+exec(compile(open(version_file_path, "rb").read(), version_file_path, 'exec'), globals(), locals())
+version = __version__
 
 packages = find_packages()
 setup(
     name='PyToune',
-    version='0.2',
+    version=version,
     author='Frédérik Paradis',
     author_email='fredy_14@live.fr',
     url = 'http://pytoune.org',
-    download_url='https://github.com/GRAAL-Research/pytoune/archive/v0.2.zip',
+    download_url='https://github.com/GRAAL-Research/pytoune/archive/v' + version + '.zip',
     license='GPLv3',
     classifiers=[
         'Development Status :: 3 - Alpha',
