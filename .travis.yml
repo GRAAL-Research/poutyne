@@ -8,5 +8,3 @@ install:
   - if [[ $TRAVIS_PYTHON_VERSION == '3.6' ]]; then pip install http://download.pytorch.org/whl/cpu/torch-0.3.1-cp36-cp36m-linux_x86_64.whl; fi
 script:
   - python setup.py test
-  - cd docs
-  - sh rebuild_html_doc.sh
