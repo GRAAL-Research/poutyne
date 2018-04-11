@@ -36,6 +36,8 @@ PyToune's Callbacks
 
 .. autoclass:: DelayCallback
 
+.. autoclass:: ClipNorm
+
 LR Schedulers
 -------------
 

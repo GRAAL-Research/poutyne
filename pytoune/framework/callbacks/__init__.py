@@ -8,3 +8,4 @@ from .logger import *
 from .lr_scheduler import *
 from .terminate_on_nan import *
 from .best_model_restore import *
+from .clip_norm import *
