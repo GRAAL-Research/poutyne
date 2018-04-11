@@ -324,6 +324,7 @@ class Model:
                 loss_tensor, metrics_tensors = self._compute_loss_and_metrics(x, y)
 
                 loss_tensor.backward()
+                callback_list.on_backward_end(step)
                 self.optimizer.step()
 
                 loss, metrics = self._loss_and_metrics_tensors_to_numpy(loss_tensor, metrics_tensors)

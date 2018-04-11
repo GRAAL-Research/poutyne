@@ -83,6 +83,10 @@ class CallbackList(object):
         for callback in self.callbacks:
             callback.on_batch_end(batch, logs)
 
+    def on_backward_end(self, batch):
+        for callback in self.callbacks:
+            callback.on_backward_end(batch)
+
     def on_train_begin(self, logs=None):
         logs = logs or {}
         for callback in self.callbacks:
@@ -173,6 +177,15 @@ class Callback(object):
         Example::
 
             logs = {'batch': 6, 'loss': 4.34462, 'accuracy': 0.766}
+        """
+        pass
+
+    def on_backward_end(self, batch):
+        """
+        Is called after the backpropagation but before the optimization step.
+
+        Args:
+            batch (int): The batch number.
         """
         pass
 

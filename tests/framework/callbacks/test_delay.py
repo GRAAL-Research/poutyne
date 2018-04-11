@@ -43,6 +43,7 @@ class DelayCallbackTest(TestCase):
             call_list.append(call.on_epoch_begin(epoch, {}))
             for step in range(1, params['steps']+1):
                 call_list.append(call.on_batch_begin(step, {}))
+                call_list.append(call.on_backward_end(step))
                 call_list.append(call.on_batch_end(step, {'batch': step, 'size': DelayCallbackTest.batch_size, **self.train_dict}))
             call_list.append(call.on_epoch_end(epoch, {'epoch': epoch, **self.log_dict}))
         call_list.append(call.on_train_end({}))
@@ -78,6 +79,7 @@ class DelayCallbackTest(TestCase):
             start_step = batch_in_epoch_delay + 1 if epoch == epoch_delay + 1 else 1
             for step in range(start_step, params['steps']+1):
                 call_list.append(call.on_batch_begin(step, {}))
+                call_list.append(call.on_backward_end(step))
                 call_list.append(call.on_batch_end(step, {'batch': step, 'size': DelayCallbackTest.batch_size, **self.train_dict}))
             call_list.append(call.on_epoch_end(epoch, {'epoch': epoch, **self.log_dict}))
         call_list.append(call.on_train_end({}))

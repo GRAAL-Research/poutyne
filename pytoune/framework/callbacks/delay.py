@@ -56,6 +56,10 @@ class DelayCallback(Callback):
         if self.has_delay_passed():
             self.callbacks.on_batch_end(batch, logs)
 
+    def on_backward_end(self, batch):
+        if self.has_delay_passed():
+            self.callbacks.on_backward_end(batch)
+
     def on_train_begin(self, logs):
         self.current_epoch = 0
         self.batch_counter = 0
