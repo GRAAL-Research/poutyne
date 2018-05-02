@@ -328,7 +328,7 @@ class Model:
                 self.optimizer.step()
 
                 loss, metrics = self._loss_and_metrics_tensors_to_numpy(loss_tensor, metrics_tensors)
-                size = self._get_batch_size(y)
+                size = self._get_batch_size(x, y)
                 losses_sum += loss * size
                 metrics_sum += metrics * size
                 sizes_sum += size
@@ -516,7 +516,7 @@ class Model:
                 loss_tensor, metrics_tensors = self._compute_loss_and_metrics(x, y, return_pred=False)
                 loss, metrics = self._loss_and_metrics_tensors_to_numpy(loss_tensor, metrics_tensors)
 
-            size = self._get_batch_size(y)
+            size = self._get_batch_size(x, y)
             losses_sum += loss * size
             metrics_sum += metrics * size
             sizes_sum += size
@@ -551,11 +551,13 @@ class Model:
             ret = ret + (pred_y,)
         return ret
 
-    def _get_batch_size(self, y):
-        if torch.is_tensor(y) or isinstance(y, Variable):
+    def _get_batch_size(self, x, y):
+        if torch.is_tensor(x) or isinstance(x, Variable):
+            return len(x)
+        elif torch.is_tensor(y) or isinstance(y, Variable):
             return len(y)
         else:
-            warnings.warn("When 'y' is not a tensor, the batch size is set to 1 and, thus, the computed loss and metrics at the end of each epoch is the mean of the batches' losses and metrics.")
+            warnings.warn("When 'x' or 'y' are not tensors, the batch size is set to 1 and, thus, the computed loss and metrics at the end of each epoch is the mean of the batches' losses and metrics.")
             return 1
 
     def load_weights(self, f):
