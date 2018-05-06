@@ -49,7 +49,7 @@ class CSVLogger(Callback):
         self.csvfile.flush()
 
     def _get_logs_without_unknown_keys(self, logs):
-        return {k:logs[k] for k in self.fieldnames if logs.get(k)}
+        return {k:logs[k] for k in self.fieldnames if logs.get(k) is not None}
 
     def _get_current_learning_rates(self):
         learning_rates = [param_group['lr'] for param_group in self.model.optimizer.param_groups]
