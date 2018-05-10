@@ -2,11 +2,10 @@ import warnings
 import numpy as np
 
 import torch
-from torch.autograd import Variable
 from torch.utils.data import DataLoader, TensorDataset
 
 from .callbacks import CallbackList, ProgressionCallback
-from pytoune import torch_to_numpy, tensors_to_variables, variables_to_tensors
+from pytoune import torch_to_numpy, torch_to
 
 class Model:
     """
@@ -132,6 +131,7 @@ class Model:
         self.loss_function = loss_function
         self.metrics = metrics
         self.metrics_names = [metric.__name__ for metric in metrics]
+        self.device = None
 
     def fit(self, x, y, validation_x=None, validation_y=None, batch_size=32, epochs=1000, steps_per_epoch=None, validation_steps=None, initial_epoch=1, verbose=True, callbacks=[]):
         """
@@ -315,27 +315,28 @@ class Model:
 
             self.model.train(True)
             train_iterator = iter(train_generator)
-            for step in range(1, steps_per_epoch + 1):
-                callback_list.on_batch_begin(step, {})
+            with torch.enable_grad():
+                for step in range(1, steps_per_epoch + 1):
+                    callback_list.on_batch_begin(step, {})
 
-                self.model.zero_grad()
+                    self.model.zero_grad()
 
-                x, y = next(train_iterator)
-                loss_tensor, metrics_tensors = self._compute_loss_and_metrics(x, y)
+                    x, y = next(train_iterator)
+                    loss_tensor, metrics_tensors = self._compute_loss_and_metrics(x, y)
 
-                loss_tensor.backward()
-                callback_list.on_backward_end(step)
-                self.optimizer.step()
+                    loss_tensor.backward()
+                    callback_list.on_backward_end(step)
+                    self.optimizer.step()
 
-                loss, metrics = self._loss_and_metrics_tensors_to_numpy(loss_tensor, metrics_tensors)
-                size = self._get_batch_size(x, y)
-                losses_sum += loss * size
-                metrics_sum += metrics * size
-                sizes_sum += size
+                    loss, metrics = self._loss_and_metrics_tensors_to_numpy(loss_tensor, metrics_tensors)
+                    size = self._get_batch_size(x, y)
+                    losses_sum += loss * size
+                    metrics_sum += metrics * size
+                    sizes_sum += size
 
-                metrics_dict = dict(zip(self.metrics_names, metrics))
-                batch_logs = {'batch': step, 'size': size, 'loss': loss, **metrics_dict}
-                callback_list.on_batch_end(step, batch_logs)
+                    metrics_dict = dict(zip(self.metrics_names, metrics))
+                    batch_logs = {'batch': step, 'size': size, 'loss': loss, **metrics_dict}
+                    callback_list.on_batch_end(step, batch_logs)
 
             val_dict = {}
             if valid_generator is not None:
@@ -362,7 +363,7 @@ class Model:
     def predict(self, x, batch_size=32):
         """
         Returns the predictions of the network given a dataset ``x``, where the
-        torch variables are converted into numpy arrays.
+        tensors are converted into numpy arrays.
 
         Args:
             x (Union[Tensor, np.ndarray])): Dataset for which to predict.
@@ -381,7 +382,7 @@ class Model:
     def predict_generator(self, generator, steps=None):
         """
         Returns the predictions of the network given a batch of samples ``x``,
-        where the torch variables are converted into numpy arrays.
+        where the tensors are converted into numpy arrays.
 
         generator: Generator-like object for the dataset. The generator must
             yield a tuple a batch of samples.
@@ -402,7 +403,7 @@ class Model:
             entire dataset)
 
         Returns:
-            List of the predictions of each batch with torch variables
+            List of the predictions of each batch with tensors
             converted into numpy arrays.
         """
         self.model.eval()
@@ -410,10 +411,10 @@ class Model:
             steps = len(generator)
         pred_y = []
         iterator = iter(generator)
-        for _ in range(steps):
-            x = next(iterator)
-            x = tensors_to_variables(x, volatile=True)
-            pred_y.append(torch_to_numpy(self.model(x)))
+        with torch.no_grad():
+            for _ in range(steps):
+                x = next(iterator)
+                pred_y.append(torch_to_numpy(self.model(x)))
         return pred_y
 
 
@@ -489,8 +490,8 @@ class Model:
             ``metrics`` is a numpy array of size ``n``, where ``n`` is the
             number of metrics. If ``return_pred`` is true, then this method
             returns a tuple ``(loss, metrics, pred_y)`` where ``pred_y`` is the
-            list of the predictions of each batch with torch variables converted
-            into numpy arrays.
+            list of the predictions of each batch with tensors converted into
+            numpy arrays.
         """
         self.model.eval()
         if steps is None:
@@ -506,20 +507,21 @@ class Model:
             pred_list = []
 
         valid_iterator = iter(valid_generator)
-        for step in range(validation_steps):
-            x, y = next(valid_iterator)
-            if return_pred:
-                loss_tensor, metrics_tensors, pred_y = self._compute_loss_and_metrics(x, y, return_pred=True)
-                loss, metrics, pred_y = self._loss_and_metrics_tensors_to_numpy(loss_tensor, metrics_tensors, pred_y)
-                pred_list.append(pred_y)
-            else:
-                loss_tensor, metrics_tensors = self._compute_loss_and_metrics(x, y, return_pred=False)
-                loss, metrics = self._loss_and_metrics_tensors_to_numpy(loss_tensor, metrics_tensors)
+        with torch.no_grad():
+            for step in range(validation_steps):
+                x, y = next(valid_iterator)
+                if return_pred:
+                    loss_tensor, metrics_tensors, pred_y = self._compute_loss_and_metrics(x, y, return_pred=True)
+                    loss, metrics, pred_y = self._loss_and_metrics_tensors_to_numpy(loss_tensor, metrics_tensors, pred_y)
+                    pred_list.append(pred_y)
+                else:
+                    loss_tensor, metrics_tensors = self._compute_loss_and_metrics(x, y, return_pred=False)
+                    loss, metrics = self._loss_and_metrics_tensors_to_numpy(loss_tensor, metrics_tensors)
 
-            size = self._get_batch_size(x, y)
-            losses_sum += loss * size
-            metrics_sum += metrics * size
-            sizes_sum += size
+                size = self._get_batch_size(x, y)
+                losses_sum += loss * size
+                metrics_sum += metrics * size
+                sizes_sum += size
 
         loss_mean = losses_sum / sizes_sum
         metrics_mean = metrics_sum / sizes_sum
@@ -529,8 +531,9 @@ class Model:
         return ret
 
     def _compute_loss_and_metrics(self, x, y, return_pred=False):
-        x = tensors_to_variables(x, volatile=not self.model.training)
-        y = tensors_to_variables(y, volatile=not self.model.training)
+        if self.device is not None:
+            x = torch_to(x, self.device)
+            y = torch_to(y, self.device)
         pred_y = self.model(x)
         loss_tensor = self.loss_function(pred_y, y)
         metrics_tensors = self._compute_metrics(pred_y, y)
@@ -552,9 +555,9 @@ class Model:
         return ret
 
     def _get_batch_size(self, x, y):
-        if torch.is_tensor(x) or isinstance(x, Variable):
+        if torch.is_tensor(x):
             return len(x)
-        elif torch.is_tensor(y) or isinstance(y, Variable):
+        elif torch.is_tensor(y):
             return len(y)
         else:
             warnings.warn("When 'x' or 'y' are not tensors, the batch size is set to 1 and, thus, the computed loss and metrics at the end of each epoch is the mean of the batches' losses and metrics.")
@@ -611,23 +614,50 @@ class Model:
     def cuda(self, *args, **kwargs):
         """
         Tranfers the network on the GPU. The arguments are passed to the
-        ``torch.nn.Module.cuda()`` method. Notice that the method
-        ``torch.Tensor.cuda()`` must be called separately on the tensors given
-        to the network.
+        ``torch.nn.Module.cuda()`` method. Notice that the device is saved so
+        that the batches can send to the right device before passing it to the
+        network.
+
+        This also saves the device so that the batches can send to the right
+        device before passing it to the network.
 
         Returns:
-            The return of ``torch.nn.Module.cuda()``.
+            `self`.
         """
-        return self.model.cuda(*args, **kwargs)
+        self.model.cuda(*args, **kwargs)
+        self.device = None
+        for _, p in zip(range(1), self.model.parameters()):
+            self.device = p.device
+        return self
 
     def cpu(self, *args, **kwargs):
         """
         Tranfers the network on the CPU. The arguments are passed to the
-        ``torch.nn.Module.cpu()`` method. Notice that the method
-        ``torch.Tensor.cpu()`` must be called separately on the tensors given
-        to the network.
+        ``torch.nn.Module.cpu()`` method. Notice that the device is saved so
+        that the batches can send to the right device before passing it to the
+        network.
 
         Returns:
-            The return of ``torch.nn.Module.cpu()``.
+            `self`.
         """
-        return self.model.cpu(*args, **kwargs)
+        ret = self.model.cpu(*args, **kwargs)
+        self.device = None
+        for _, p in zip(range(1), self.model.parameters()):
+            self.device = p.device
+        return self
+
+    def to(self, device):
+        """
+        Tranfers the network on the specified device. The device is saved so
+        that the batches can send to the right device before passing it to the
+        network.
+        
+        Args:
+            device (torch.device): The device to which the network is sent.
+
+        Returns:
+            `self`.
+        """
+        self.device = device
+        self.model.to(self.device)
+        return self

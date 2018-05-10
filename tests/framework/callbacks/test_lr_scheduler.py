@@ -2,7 +2,6 @@ from unittest import TestCase, skipIf
 
 import torch
 import torch.nn as nn
-from torch.autograd import Variable
 
 from pytoune.framework import Model
 from pytoune.framework.callbacks import LambdaLR, StepLR, MultiStepLR, ExponentialLR, CosineAnnealingLR, \
@@ -11,8 +10,8 @@ from pytoune.framework.callbacks import LambdaLR, StepLR, MultiStepLR, Exponenti
 
 def some_data_generator(batch_size):
     while True:
-        x = Variable(torch.rand(batch_size, 1))
-        y = Variable(torch.rand(batch_size, 1))
+        x = torch.rand(batch_size, 1)
+        y = torch.rand(batch_size, 1)
         yield x, y
 
 class LRSchedulersTest(TestCase):

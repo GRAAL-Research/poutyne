@@ -1,6 +1,6 @@
 import numpy as np
 
-from unittest import TestCase
+from unittest import TestCase, skipIf
 from unittest.mock import MagicMock, call, ANY, DEFAULT
 
 from pytoune.framework import Model
@@ -8,7 +8,6 @@ from pytoune.framework.callbacks import Callback
 
 import torch
 import torch.nn as nn
-from torch.autograd import Variable
 from torch import FloatTensor
 from torch.utils.data import DataLoader, TensorDataset
 
@@ -27,11 +26,6 @@ def some_data_tensor_generator(batch_size):
         y = torch.rand(batch_size, 1)
         yield x, y
 
-def some_data_variable_generator(batch_size):
-    while True:
-        x = Variable(torch.rand(batch_size, 1))
-        y = Variable(torch.rand(batch_size, 1))
-        yield x, y
 
 class SomeDataGeneratorWithLen(object):
     def __init__(self, batch_size, length, num_missing_samples):
@@ -88,13 +82,6 @@ class ModelTest(TestCase):
         logs = self.model.fit_generator(train_generator, None, epochs=ModelTest.epochs, steps_per_epoch=ModelTest.steps_per_epoch, validation_steps=ModelTest.steps_per_epoch, callbacks=[self.mock_callback])
         params = {'epochs': ModelTest.epochs, 'steps': ModelTest.steps_per_epoch}
         self._test_fitting(params, logs, has_valid=False)
-
-    def test_fitting_variable_generator(self):
-        train_generator = some_data_variable_generator(ModelTest.batch_size)
-        valid_generator = some_data_variable_generator(ModelTest.batch_size)
-        logs = self.model.fit_generator(train_generator, valid_generator, epochs=ModelTest.epochs, steps_per_epoch=ModelTest.steps_per_epoch, validation_steps=ModelTest.steps_per_epoch, callbacks=[self.mock_callback])
-        params = {'epochs': ModelTest.epochs, 'steps': ModelTest.steps_per_epoch}
-        self._test_fitting(params, logs)
 
     def test_fitting_with_data_loader(self):
         train_real_steps_per_epoch = 30
@@ -258,3 +245,16 @@ class ModelTest(TestCase):
                 remaning_example -= ModelTest.batch_size
             self.assertEqual(pred.shape, (cur_batch_size, 1))
         self.assertEqual(np.concatenate(pred_y).shape, (ModelTest.evaluate_dataset_len, 1))
+
+    @skipIf(not torch.cuda.is_available(), "no gpu available")
+    def test_cpu_cuda(self):
+        train_generator = some_data_tensor_generator(ModelTest.batch_size)
+        valid_generator = some_data_tensor_generator(ModelTest.batch_size)
+        self.model.cuda()
+        logs = self.model.fit_generator(train_generator, valid_generator, epochs=ModelTest.epochs, steps_per_epoch=ModelTest.steps_per_epoch, validation_steps=ModelTest.steps_per_epoch, callbacks=[self.mock_callback])
+        self.model.cpu()
+        logs = self.model.fit_generator(train_generator, valid_generator, epochs=ModelTest.epochs, steps_per_epoch=ModelTest.steps_per_epoch, validation_steps=ModelTest.steps_per_epoch, callbacks=[self.mock_callback])
+        self.model.to(torch.device('cuda:0'))
+        logs = self.model.fit_generator(train_generator, valid_generator, epochs=ModelTest.epochs, steps_per_epoch=ModelTest.steps_per_epoch, validation_steps=ModelTest.steps_per_epoch, callbacks=[self.mock_callback])
+        self.model.to(torch.device('cpu:0'))
+        logs = self.model.fit_generator(train_generator, valid_generator, epochs=ModelTest.epochs, steps_per_epoch=ModelTest.steps_per_epoch, validation_steps=ModelTest.steps_per_epoch, callbacks=[self.mock_callback])

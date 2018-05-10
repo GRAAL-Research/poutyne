@@ -8,12 +8,11 @@ from pytoune.framework.callbacks import BestModelRestore
 
 import torch
 import torch.nn as nn
-from torch.autograd import Variable
 
 def some_data_generator(batch_size):
     while True:
-        x = Variable(torch.rand(batch_size, 1))
-        y = Variable(torch.rand(batch_size, 1))
+        x = torch.rand(batch_size, 1)
+        y = torch.rand(batch_size, 1)
         yield x, y
 
 class BestModelRestoreTest(TestCase):
