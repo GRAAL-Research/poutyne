@@ -17,7 +17,7 @@ def torch_to_numpy(obj):
     See:
         `pytoune.torch_apply` for supported types.
     """
-    return torch_apply(obj, lambda t: t.cpu().numpy())
+    return torch_apply(obj, lambda t: t.cpu().detach().numpy())
 
 def torch_to(obj, *args, **kargs):
     return torch_apply(obj, lambda t: t.to(*args, **kargs))
