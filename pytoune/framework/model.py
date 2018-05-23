@@ -5,6 +5,7 @@ import torch
 from torch.utils.data import DataLoader, TensorDataset
 
 from .callbacks import CallbackList, ProgressionCallback
+from .metrics import get_metric
 from pytoune import torch_to_numpy, torch_to
 
 class Model:
@@ -80,26 +81,27 @@ class Model:
            batch_size = 20
 
            num_features = 10
+           num_classes = 5
 
            # Our training dataset with 800 samples.
            num_train_samples = 800
            train_x = torch.rand(num_train_samples, num_features)
-           train_y = torch.rand(num_train_samples, 1)
+           train_y = torch.randint(num_classes, (num_train_samples,), dtype=torch.long)
            train_dataset = TensorDataset(train_x, train_y)
            train_generator = DataLoader(train_dataset, batch_size)
 
            # Our validation dataset with 200 samples.
            num_valid_samples = 200
            valid_x = torch.rand(num_valid_samples, num_features)
-           valid_y = torch.rand(num_valid_samples, 1)
+           valid_y = torch.randint(num_classes, (num_valid_samples,), dtype=torch.long)
            valid_dataset = TensorDataset(valid_x, valid_y)
            valid_generator = DataLoader(valid_dataset, batch_size)
 
-           pytorch_module = torch.nn.Linear(num_features, 1)
-           loss_function = torch.nn.MSELoss()
+           pytorch_module = torch.nn.Linear(num_features, num_train_samples)
+           loss_function = torch.nn.CrossEntropyLoss()
            optimizer = torch.optim.SGD(pytorch_module.parameters(), lr=1e-3)
 
-           model = Model(pytorch_module, optimizer, loss_function)
+           model = Model(pytorch_module, optimizer, loss_function, metrics=['accuracy'])
            model.fit_generator(train_generator,
                                valid_generator,
                                epochs=num_epochs)
@@ -117,8 +119,8 @@ class Model:
         self.model = model
         self.optimizer = optimizer
         self.loss_function = loss_function
-        self.metrics = metrics
-        self.metrics_names = [metric.__name__ for metric in metrics]
+        self.metrics = list(map(get_metric, metrics))
+        self.metrics_names = [metric.__name__ for metric in self.metrics]
         self.device = None
 
     def fit(self, x, y, validation_x=None, validation_y=None, batch_size=32, epochs=1000, steps_per_epoch=None, validation_steps=None, initial_epoch=1, verbose=True, callbacks=[]):
