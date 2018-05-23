@@ -74,8 +74,8 @@ class ModelCheckpoint(Callback):
     Args:
         filename (string): Path to save the model file.
         monitor (string): Quantity to monitor. (Default value = 'val_loss')
-        verbose (bool): Whether to display a message when saving a checkpoint.
-            (Default value = False)
+        verbose (bool): Whether to display a message when saving and restoring
+            a checkpoint. (Default value = False)
         save_best_only (bool): If `save_best_only` is true, the latest best
             model according to the quantity monitored will not be overwritten.
             (Default value = False)
@@ -170,6 +170,8 @@ class ModelCheckpoint(Callback):
     def on_train_end(self, logs):
         if self.restore_best:
             if self.best_filename is not None:
+                if self.verbose:
+                    print('Restoring model from %s' % self.best_filename)
                 self.model.load_weights(self.best_filename)
             else:
                 warnings.warn('No  weights to restore!')

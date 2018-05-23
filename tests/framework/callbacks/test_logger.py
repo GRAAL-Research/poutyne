@@ -11,7 +11,6 @@ from pytoune.framework.callbacks import CSVLogger, Callback
 
 import torch
 import torch.nn as nn
-from torch.autograd import Variable
 
 def some_data_generator(batch_size):
     while True:

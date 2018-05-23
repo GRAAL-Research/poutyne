@@ -8,12 +8,11 @@ from pytoune.framework.callbacks import BestModelRestore
 
 import torch
 import torch.nn as nn
-from torch.autograd import Variable
 
 def some_data_generator(batch_size):
     while True:
-        x = Variable(torch.rand(batch_size, 1))
-        y = Variable(torch.rand(batch_size, 1))
+        x = torch.rand(batch_size, 1)
+        y = torch.rand(batch_size, 1)
         yield x, y
 
 class BestModelRestoreTest(TestCase):
@@ -29,7 +28,7 @@ class BestModelRestoreTest(TestCase):
     def test_integration(self):
         train_gen = some_data_generator(20)
         valid_gen = some_data_generator(20)
-        model_restore = BestModelRestore(monitor='val_loss')
+        model_restore = BestModelRestore(monitor='val_loss', verbose=True)
         self.model.fit_generator(train_gen, valid_gen, epochs=10, steps_per_epoch=5, callbacks=[model_restore])
 
     def test_basic_restore(self):
