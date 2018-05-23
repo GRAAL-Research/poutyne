@@ -584,13 +584,16 @@ class Model:
     def load_weights(self, f):
         """
         Loads the weights saved using the ``torch.save()`` method or the
-        ``save_weights()`` method of this class.
+        ``save_weights()`` method of this class. Contrary to ``torch.load()``,
+        the weights are not transfered to the device from which they were saved
+        from. In other words, the PyTorch module will stay on the same device it
+        already is on.
 
         Args:
             f: File-like object (has to implement fileno that returns a file
             descriptor) or string containing a file name.
         """
-        self.set_weights(torch.load(f))
+        self.set_weights(torch.load(f, map_location='cpu'))
 
     def save_weights(self, f):
         """
