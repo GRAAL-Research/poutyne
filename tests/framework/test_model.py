@@ -218,6 +218,18 @@ class ModelTest(TestCase):
         self.assertEqual(type(first_metric), float)
         self.assertEqual(first_metric, some_metric_1_value)
 
+    def test_metrics_integration(self):
+        num_steps = 10
+        import torch.nn.functional as F
+        self.model = Model(self.pytorch_module, self.optimizer, self.loss_function, metrics=[F.mse_loss])
+        train_generator = some_data_tensor_generator(ModelTest.batch_size)
+        valid_generator = some_data_tensor_generator(ModelTest.batch_size)
+        logs = self.model.fit_generator(train_generator, valid_generator, epochs=ModelTest.epochs, steps_per_epoch=ModelTest.steps_per_epoch, validation_steps=ModelTest.steps_per_epoch, callbacks=[self.mock_callback])
+        generator = some_data_tensor_generator(ModelTest.batch_size)
+        loss, mse  = self.model.evaluate_generator(generator, steps=num_steps)
+        self.assertEqual(type(loss), float)
+        self.assertEqual(type(mse), float)
+
     def test_evaluate_with_no_metric(self):
         self.model = Model(self.pytorch_module, self.optimizer, self.loss_function)
         x = torch.rand(ModelTest.evaluate_dataset_len, 1)

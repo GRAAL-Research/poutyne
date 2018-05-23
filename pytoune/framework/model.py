@@ -562,7 +562,8 @@ class Model:
         loss = self.loss_function(pred_y, y)
         if not return_loss_tensor:
             loss = float(loss)
-        metrics = self._compute_metrics(pred_y, y)
+        with torch.no_grad():
+            metrics = self._compute_metrics(pred_y, y)
         ret = (loss, metrics)
         if return_pred:
             pred_y = torch_to_numpy(pred_y)
