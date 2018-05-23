@@ -206,6 +206,22 @@ class ModelTest(TestCase):
             self.assertEqual(pred.shape, (ModelTest.batch_size, 1))
         self.assertEqual(np.concatenate(pred_y).shape, (num_steps * ModelTest.batch_size, 1))
 
+    def test_evaluate_with_only_one_metric(self):
+        self.model = Model(self.pytorch_module, self.optimizer, self.loss_function, metrics=self.metrics[:1])
+        x = torch.rand(ModelTest.evaluate_dataset_len, 1)
+        y = torch.rand(ModelTest.evaluate_dataset_len, 1)
+        loss, first_metric = self.model.evaluate(x, y, batch_size=ModelTest.batch_size)
+        self.assertEqual(type(loss), float)
+        self.assertEqual(type(first_metric), float)
+        self.assertEqual(first_metric, some_metric_1_value)
+
+    def test_evaluate_with_no_metric(self):
+        self.model = Model(self.pytorch_module, self.optimizer, self.loss_function)
+        x = torch.rand(ModelTest.evaluate_dataset_len, 1)
+        y = torch.rand(ModelTest.evaluate_dataset_len, 1)
+        loss = self.model.evaluate(x, y, batch_size=ModelTest.batch_size)
+        self.assertEqual(type(loss), float)
+
     def test_predict(self):
         x = torch.rand(ModelTest.evaluate_dataset_len, 1)
         pred_y = self.model.predict(x, batch_size=ModelTest.batch_size)

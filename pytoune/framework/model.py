@@ -68,13 +68,7 @@ class Model:
             Epoch 1/10 0.01s Step 40/40: loss: 0.710869, val_loss: 0.489602
             Epoch 2/10 0.01s Step 40/40: loss: 0.448081, val_loss: 0.305897
             Epoch 3/10 0.01s Step 40/40: loss: 0.301377, val_loss: 0.204526
-            Epoch 4/10 0.01s Step 40/40: loss: 0.219414, val_loss: 0.148778
-            Epoch 5/10 0.01s Step 40/40: loss: 0.173554, val_loss: 0.118251
-            Epoch 6/10 0.01s Step 40/40: loss: 0.147825, val_loss: 0.101621
-            Epoch 7/10 0.01s Step 40/40: loss: 0.133319, val_loss: 0.092615
-            Epoch 8/10 0.01s Step 40/40: loss: 0.125070, val_loss: 0.087767
-            Epoch 9/10 0.01s Step 40/40: loss: 0.120307, val_loss: 0.085166
-            Epoch 10/10 0.01s Step 40/40: loss: 0.117488, val_loss: 0.083767
+            ...
 
         Using PyTorch DataLoader::
 
@@ -115,13 +109,7 @@ class Model:
             Epoch 1/10 0.01s Step 40/40: loss: 0.311442, val_loss: 0.243208
             Epoch 2/10 0.01s Step 40/40: loss: 0.223419, val_loss: 0.183428
             Epoch 3/10 0.01s Step 40/40: loss: 0.173739, val_loss: 0.150269
-            Epoch 4/10 0.01s Step 40/40: loss: 0.145618, val_loss: 0.131929
-            Epoch 5/10 0.01s Step 40/40: loss: 0.129623, val_loss: 0.121813
-            Epoch 6/10 0.02s Step 40/40: loss: 0.120447, val_loss: 0.116241
-            Epoch 7/10 0.02s Step 40/40: loss: 0.115111, val_loss: 0.113164
-            Epoch 8/10 0.01s Step 40/40: loss: 0.111937, val_loss: 0.111448
-            Epoch 9/10 0.01s Step 40/40: loss: 0.109983, val_loss: 0.110464
-            Epoch 10/10 0.01s Step 40/40: loss: 0.108717, val_loss: 0.109868
+            ...
 
     """
 
@@ -186,13 +174,8 @@ class Model:
                 {'epoch': 1, 'loss': 0.30211143642663957, 'val_loss': 0.25165273696184159}
                 {'epoch': 2, 'loss': 0.2192931968718767, 'val_loss': 0.19234802126884459}
                 {'epoch': 3, 'loss': 0.17256419658660888, 'val_loss': 0.15897458493709565}
-                {'epoch': 4, 'loss': 0.14614091524854303, 'val_loss': 0.14015687778592109}
-                {'epoch': 5, 'loss': 0.1311435048468411, 'val_loss': 0.12950410917401314}
-                {'epoch': 6, 'loss': 0.12257619202136993, 'val_loss': 0.12342756390571594}
-                {'epoch': 7, 'loss': 0.11762827709317207, 'val_loss': 0.11991316601634025}
-                {'epoch': 8, 'loss': 0.11471841260790824, 'val_loss': 0.11783143356442452}
-                {'epoch': 9, 'loss': 0.11295686885714531, 'val_loss': 0.11654961034655571}
-                {'epoch': 10, 'loss': 0.11184301525354386, 'val_loss': 0.1157136932015419}
+                ...
+
         """
         train_dataset = TensorDataset(x, y)
         train_generator = DataLoader(train_dataset, batch_size)
@@ -279,13 +262,8 @@ class Model:
                 {'epoch': 1, 'loss': 0.4048105351626873, 'val_loss': 0.35831213593482969}
                 {'epoch': 2, 'loss': 0.27947457544505594, 'val_loss': 0.25963697880506514}
                 {'epoch': 3, 'loss': 0.20913131050765515, 'val_loss': 0.20263003259897233}
-                {'epoch': 4, 'loss': 0.1695468619465828, 'val_loss': 0.16932785511016846}
-                {'epoch': 5, 'loss': 0.14716986808925867, 'val_loss': 0.14958457425236701}
-                {'epoch': 6, 'loss': 0.13442192394286395, 'val_loss': 0.13765123039484023}
-                {'epoch': 7, 'loss': 0.12706457944586874, 'val_loss': 0.13025617450475693}
-                {'epoch': 8, 'loss': 0.12272704998031259, 'val_loss': 0.12552770525217055}
-                {'epoch': 9, 'loss': 0.12008308945223689, 'val_loss': 0.12238729819655418}
-                {'epoch': 10, 'loss': 0.11839052420109511, 'val_loss': 0.12020810544490815}
+                ...
+
         """
         if verbose:
             callbacks = [ProgressionCallback()] + callbacks
@@ -322,13 +300,13 @@ class Model:
                     self.model.zero_grad()
 
                     x, y = next(train_iterator)
-                    loss_tensor, metrics_tensors = self._compute_loss_and_metrics(x, y)
+                    loss_tensor, metrics = self._compute_loss_and_metrics(x, y, return_loss_tensor=True)
 
                     loss_tensor.backward()
                     callback_list.on_backward_end(step)
                     self.optimizer.step()
 
-                    loss, metrics = self._loss_and_metrics_tensors_to_numpy(loss_tensor, metrics_tensors)
+                    loss = float(loss_tensor)
                     size = self._get_batch_size(x, y)
                     losses_sum += loss * size
                     metrics_sum += metrics * size
@@ -445,11 +423,11 @@ class Model:
 
         dataset = TensorDataset(x, y)
         generator = DataLoader(dataset, batch_size)
-        loss, metrics, *pred_y = self.evaluate_generator(generator, len(generator), return_pred=return_pred)
-        ret = (loss, metrics)
+        ret = self.evaluate_generator(generator, len(generator), return_pred=return_pred)
         if return_pred:
-            pred_y = np.concatenate(pred_y[0])
-            ret += (pred_y,)
+            ret = list(ret)
+            ret[-1] = np.concatenate(ret[-1])
+            ret = tuple(ret)
         return ret
 
 
@@ -486,17 +464,63 @@ class Model:
                 ``x``. (Default value = False)
 
         Returns:
-            Tuple ``(loss, metrics)``. ``loss`` is a float and
+            Float ``loss`` if no metrics were specified and ``return_pred`` is
+            false.
+
+            Otherwise, tuple ``(loss, metrics)`` if ``return_pred`` is false.
             ``metrics`` is a numpy array of size ``n``, where ``n`` is the
-            number of metrics. If ``return_pred`` is true, then this method
-            returns a tuple ``(loss, metrics, pred_y)`` where ``pred_y`` is the
-            list of the predictions of each batch with tensors converted into
-            numpy arrays.
+            number of metrics if ``n > 1``. If ``n == 1``, then ``metrics`` is a
+            float. If ``n == 0``, the ``metrics`` is omitted.
+
+            Tuple ``(loss, metrics, pred_y)`` if ``return_pred`` is true where
+            ``pred_y`` is the list of the predictions of each batch with tensors
+            onverted into numpy arrays.
+
+        Example::
+            With no metrics:
+
+            .. code-block:: python
+
+                model = Model(pytorch_module, optimizer, loss_function, metrics=[])
+                loss = model.evaluate_generator(test_generator)
+
+            With only one metric:
+
+            .. code-block:: python
+
+                model = Model(pytorch_module, optimizer, loss_function, metrics=[my_metric_fn])
+                loss, my_metric = model.evaluate_generator(test_generator)
+
+            With only several metrics:
+
+            .. code-block:: python
+
+                model = Model(pytorch_module, optimizer, loss_function, metrics=[my_metric1_fn, my_metric2_fn])
+                loss, (my_metric1, my_metric2) = model.evaluate_generator(test_generator)
+
+            With metrics and ``return_pred`` flag:
+
+            .. code-block:: python
+
+                model = Model(pytorch_module, optimizer, loss_function, metrics=[my_metric1_fn, my_metric2_fn])
+                loss, (my_metric1, my_metric2), pred_y = model.evaluate_generator(test_generator, return_pred=True)
         """
         self.model.eval()
         if steps is None:
             steps = len(generator)
-        return self._validate(generator, steps, return_pred=return_pred)
+        loss, metrics, *pred_y = self._validate(generator, steps, return_pred=return_pred)
+
+        ret = [loss, metrics]
+        if len(metrics) <= 1:
+            ret[1:2] = metrics.tolist()
+        if return_pred:
+            ret += pred_y
+
+        if len(ret) == 1:
+            ret = ret[0]
+        else:
+            ret = tuple(ret)
+        return ret
 
 
     def _validate(self, valid_generator, validation_steps, return_pred=False):
@@ -511,12 +535,10 @@ class Model:
             for step in range(validation_steps):
                 x, y = next(valid_iterator)
                 if return_pred:
-                    loss_tensor, metrics_tensors, pred_y = self._compute_loss_and_metrics(x, y, return_pred=True)
-                    loss, metrics, pred_y = self._loss_and_metrics_tensors_to_numpy(loss_tensor, metrics_tensors, pred_y)
+                    loss, metrics, pred_y = self._compute_loss_and_metrics(x, y, return_pred=True)
                     pred_list.append(pred_y)
                 else:
-                    loss_tensor, metrics_tensors = self._compute_loss_and_metrics(x, y, return_pred=False)
-                    loss, metrics = self._loss_and_metrics_tensors_to_numpy(loss_tensor, metrics_tensors)
+                    loss, metrics = self._compute_loss_and_metrics(x, y, return_pred=False)
 
                 size = self._get_batch_size(x, y)
                 losses_sum += loss * size
@@ -530,29 +552,23 @@ class Model:
             ret += (pred_list,)
         return ret
 
-    def _compute_loss_and_metrics(self, x, y, return_pred=False):
+    def _compute_loss_and_metrics(self, x, y, return_loss_tensor=False, return_pred=False):
         if self.device is not None:
             x = torch_to(x, self.device)
             y = torch_to(y, self.device)
         pred_y = self.model(x)
-        loss_tensor = self.loss_function(pred_y, y)
-        metrics_tensors = self._compute_metrics(pred_y, y)
-        ret = (loss_tensor, metrics_tensors)
+        loss = self.loss_function(pred_y, y)
+        if not return_loss_tensor:
+            loss = float(loss)
+        metrics = self._compute_metrics(pred_y, y)
+        ret = (loss, metrics)
         if return_pred:
+            pred_y = torch_to_numpy(pred_y)
             ret = ret + (pred_y,)
         return ret
 
     def _compute_metrics(self, pred_y, y):
-        return [metric(pred_y, y) for metric in self.metrics]
-
-    def _loss_and_metrics_tensors_to_numpy(self, loss_tensor, metrics_tensors, pred_y=None):
-        loss = float(loss_tensor)
-        metrics = np.array([float(metric_tensor) for metric_tensor in metrics_tensors])
-        ret = (loss, metrics)
-        if pred_y is not None:
-            pred_y = torch_to_numpy(pred_y)
-            ret = ret + (pred_y,)
-        return ret
+        return np.array([float(metric(pred_y, y)) for metric in self.metrics])
 
     def _get_batch_size(self, x, y):
         if torch.is_tensor(x):
@@ -651,7 +667,7 @@ class Model:
         Tranfers the network on the specified device. The device is saved so
         that the batches can send to the right device before passing it to the
         network.
-        
+
         Args:
             device (torch.device): The device to which the network is sent.
 
