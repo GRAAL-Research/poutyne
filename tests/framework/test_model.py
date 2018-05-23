@@ -1,3 +1,4 @@
+import os
 import numpy as np
 
 from unittest import TestCase, skipIf
@@ -57,6 +58,8 @@ class ModelTest(TestCase):
     batch_size = 20
 
     evaluate_dataset_len = 107
+
+    cuda_device = int(os.environ.get('CUDA_DEVICE', 0))
 
     def setUp(self):
         torch.manual_seed(42)
@@ -266,11 +269,21 @@ class ModelTest(TestCase):
     def test_cpu_cuda(self):
         train_generator = some_data_tensor_generator(ModelTest.batch_size)
         valid_generator = some_data_tensor_generator(ModelTest.batch_size)
-        self.model.cuda()
-        logs = self.model.fit_generator(train_generator, valid_generator, epochs=ModelTest.epochs, steps_per_epoch=ModelTest.steps_per_epoch, validation_steps=ModelTest.steps_per_epoch, callbacks=[self.mock_callback])
-        self.model.cpu()
-        logs = self.model.fit_generator(train_generator, valid_generator, epochs=ModelTest.epochs, steps_per_epoch=ModelTest.steps_per_epoch, validation_steps=ModelTest.steps_per_epoch, callbacks=[self.mock_callback])
-        self.model.to(torch.device('cuda:0'))
-        logs = self.model.fit_generator(train_generator, valid_generator, epochs=ModelTest.epochs, steps_per_epoch=ModelTest.steps_per_epoch, validation_steps=ModelTest.steps_per_epoch, callbacks=[self.mock_callback])
-        self.model.to(torch.device('cpu:0'))
-        logs = self.model.fit_generator(train_generator, valid_generator, epochs=ModelTest.epochs, steps_per_epoch=ModelTest.steps_per_epoch, validation_steps=ModelTest.steps_per_epoch, callbacks=[self.mock_callback])
+
+        with torch.cuda.device(ModelTest.cuda_device):
+            self.model.cuda()
+            logs = self.model.fit_generator(train_generator, valid_generator, epochs=ModelTest.epochs, steps_per_epoch=ModelTest.steps_per_epoch, validation_steps=ModelTest.steps_per_epoch, callbacks=[self.mock_callback])
+
+        # The context manager is also used here because of this bug: https://github.com/pytorch/pytorch/issues/7320
+        with torch.cuda.device(ModelTest.cuda_device):
+            self.model.cuda(ModelTest.cuda_device)
+            logs = self.model.fit_generator(train_generator, valid_generator, epochs=ModelTest.epochs, steps_per_epoch=ModelTest.steps_per_epoch, validation_steps=ModelTest.steps_per_epoch, callbacks=[self.mock_callback])
+
+            self.model.cpu()
+            logs = self.model.fit_generator(train_generator, valid_generator, epochs=ModelTest.epochs, steps_per_epoch=ModelTest.steps_per_epoch, validation_steps=ModelTest.steps_per_epoch, callbacks=[self.mock_callback])
+
+            self.model.to(torch.device('cuda:' + str(ModelTest.cuda_device)))
+            logs = self.model.fit_generator(train_generator, valid_generator, epochs=ModelTest.epochs, steps_per_epoch=ModelTest.steps_per_epoch, validation_steps=ModelTest.steps_per_epoch, callbacks=[self.mock_callback])
+
+            self.model.to(torch.device('cpu'))
+            logs = self.model.fit_generator(train_generator, valid_generator, epochs=ModelTest.epochs, steps_per_epoch=ModelTest.steps_per_epoch, validation_steps=ModelTest.steps_per_epoch, callbacks=[self.mock_callback])
