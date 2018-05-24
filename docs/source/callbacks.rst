@@ -38,6 +38,8 @@ PyToune's Callbacks
 
 .. autoclass:: ClipNorm
 
+.. autoclass:: ClipValue
+
 LR Schedulers
 -------------
 
