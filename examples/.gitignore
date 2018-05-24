@@ -1,4 +1,5 @@
 images.tgz
 CUB200
-log.tsv
+mnist
+*.tsv
 *.ckpt
