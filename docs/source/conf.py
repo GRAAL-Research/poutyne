@@ -23,9 +23,8 @@ class Mock(MagicMock):
     def __getattr__(cls, name):
         return MagicMock()
 
-# This was used to mock PyTorch when it had no PyPI package.
-#MOCK_MODULES = ['torch', 'torch.nn', 'torch.nn.utils', 'torch.autograd', 'torch.optim', 'torch.optim.lr_scheduler', 'torch.utils', 'torch.utils.data']
-#sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
+MOCK_MODULES = ['torch', 'torch.nn', 'torch.nn.utils', 'torch.autograd', 'torch.optim', 'torch.optim.lr_scheduler', 'torch.utils', 'torch.utils.data']
+sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
 from pytoune import __version__ as version
 
