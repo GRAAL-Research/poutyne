@@ -299,3 +299,6 @@ class ModelTest(TestCase):
 
             self.model.to(torch.device('cpu'))
             logs = self.model.fit_generator(train_generator, valid_generator, epochs=ModelTest.epochs, steps_per_epoch=ModelTest.steps_per_epoch, validation_steps=ModelTest.steps_per_epoch, callbacks=[self.mock_callback])
+
+if __name__ == '__main__':
+    unittest.main()

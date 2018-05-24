@@ -13,7 +13,7 @@ Use PyToune to:
 
 Read the documentation at [PyToune.org](http://pytoune.org).
 
-PyToune is compatible with  __PyTorch >= 0.3.0__ and  __Python >= 3.5__.
+PyToune is compatible with  __PyTorch >= 0.4.0__ and  __Python >= 3.5__.
 
 
 ------------------

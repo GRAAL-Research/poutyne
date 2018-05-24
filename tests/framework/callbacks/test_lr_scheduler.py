@@ -45,7 +45,6 @@ class LRSchedulersTest(TestCase):
         exponential_lr = ExponentialLR(gamma=0.01)
         self._fit_with_callback_integration(exponential_lr)
 
-    @skipIf(not hasattr(torch.optim.lr_scheduler, 'CosineAnnealingLR'), "not supported in this library version")
     def test_cosine_annealing_lr_integration(self):
         cosine_annealing_lr = CosineAnnealingLR(T_max=8)
         self._fit_with_callback_integration(cosine_annealing_lr)

@@ -17,7 +17,7 @@ Use PyToune to:
 
 Read the documentation at `PyToune.org <http://pytoune.org>`_.
 
-PyToune is compatible with **PyTorch >= 0.3.0** and  **Python >= 3.5**.
+PyToune is compatible with **PyTorch >= 0.4.0** and  **Python >= 3.5**.
 
 
 
