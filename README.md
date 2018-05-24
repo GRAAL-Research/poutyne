@@ -91,7 +91,7 @@ As you can see, PyToune is inspired a lot by the friendliness of [Keras](https:/
 
 ## Installation
 
-Before installing PyToune, you must have a working version of [PyTorch 0.3.0](http://pytorch.org/) in your environment.
+Before installing PyToune, you must have a working version of [PyTorch 0.4.0](http://pytorch.org/) in your environment.
 
 - **Install the stable version of PyToune:**
 
