@@ -5,7 +5,7 @@ import torch
 
 from pytoune import torch_apply
 
-class UtilsTest(TestCase):
+class TorchApplyTest(TestCase):
     def test_apply_on_list(self):
         my_list = [MagicMock(spec=torch.Tensor) for _ in range(10)]
         torch_apply(my_list, lambda t: t.cpu())
