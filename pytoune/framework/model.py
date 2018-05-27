@@ -255,7 +255,7 @@ class Model:
         Returns:
             List of dict containing the history of each epoch.
 
-        Example::
+        Example:
             .. code-block:: python
 
                 model = Model(pytorch_module, optimizer, loss_function)
@@ -547,7 +547,7 @@ class Model:
             ``pred_y`` is the list of the predictions of each batch with tensors
             converted into Numpy arrays.
 
-        Example::
+        Example:
             With no metrics:
 
             .. code-block:: python
