@@ -2,7 +2,7 @@
     :class: hidden-section
 
 pytoune
-==================================================
+=======
 
 .. automodule:: pytoune
 .. currentmodule:: pytoune

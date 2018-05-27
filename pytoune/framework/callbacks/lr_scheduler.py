@@ -16,6 +16,11 @@ class PyTorchLRSchedulerWrapper(Callback):
     def on_epoch_end(self, epoch, logs):
         self.scheduler.step(epoch)
 
+    def load_state(self, f):
+        self.scheduler.load_state_dict(torch.load(f, map_location='cpu'))
+
+    def save_state(self, f):
+        torch.save(self.scheduler.state_dict(), f)
 
 class LambdaLR(PyTorchLRSchedulerWrapper):
     """
@@ -61,6 +66,14 @@ class CosineAnnealingLR(PyTorchLRSchedulerWrapper):
     def __init__(self, *args, **kwargs):
         super(CosineAnnealingLR, self).__init__(torch.optim.lr_scheduler.CosineAnnealingLR, *args, **kwargs)
 
+import types
+
+def reduce_lr_state_dict(self):
+    return {key: value for key, value in self.__dict__.items() if key not in {'optimizer', 'is_better', 'state_dict', 'load_state_dict'}}
+
+def reduce_lr_load_state_dict(self, state_dict):
+    self.__dict__.update(state_dict)
+    self._init_is_better(mode=self.mode, threshold=self.threshold, threshold_mode=self.threshold_mode)
 
 class ReduceLROnPlateau(Callback):
     """
@@ -78,5 +91,16 @@ class ReduceLROnPlateau(Callback):
         optimizer = self.model.optimizer
         self.scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, *self.args, **self.kwargs)
 
+        # This is not in the current PyTorch version (0.4.0) yet.
+        if not hasattr(self.scheduler, 'state_dict'):
+            self.scheduler.state_dict = types.MethodType(reduce_lr_state_dict, self.scheduler)
+            self.scheduler.load_state_dict = types.MethodType(reduce_lr_load_state_dict, self.scheduler)
+
     def on_epoch_end(self, epoch, logs):
         self.scheduler.step(logs[self.monitor], epoch)
+
+    def load_state(self, f):
+        self.scheduler.load_state_dict(torch.load(f, map_location='cpu'))
+
+    def save_state(self, f):
+        torch.save(self.scheduler.state_dict(), f)

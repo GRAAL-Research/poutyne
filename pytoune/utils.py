@@ -2,23 +2,29 @@ import numpy as np
 import torch
 
 
-def torch_to_numpy(obj):
+def torch_to_numpy(obj, copy=False):
     """
     Convert to numpy arrays all tensors inside a Python object composed of the
     supported types.
 
     Args:
         obj: The Python object to convert.
+        copy (bool): Whether to copy the memory. By default, if a tensor is
+            already on CPU, the Numpy array will be a view of the tensor.
 
     Returns:
         A new Python object with the same structure as `obj` but where the
-        tensors are now numpy arrays. Not supported type are left as reference
+        tensors are now Numpy arrays. Not supported type are left as reference
         in the new object.
 
     See:
         `pytoune.torch_apply` for supported types.
     """
-    return torch_apply(obj, lambda t: t.cpu().detach().numpy())
+    if copy:
+        func = lambda t: t.cpu().detach().numpy().copy()
+    else:
+        func = lambda t: t.cpu().detach().numpy()
+    return torch_apply(obj, func)
 
 def torch_to(obj, *args, **kargs):
     return torch_apply(obj, lambda t: t.to(*args, **kargs))

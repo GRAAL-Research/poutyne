@@ -132,6 +132,7 @@ API Reference
    utils
    framework
    callbacks
+   layers
 
 Indices and tables
 ==================

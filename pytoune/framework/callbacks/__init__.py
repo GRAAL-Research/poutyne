@@ -2,6 +2,7 @@
 from .callbacks import *
 from .progress import *
 from .checkpoint import *
+from .periodic import *
 from .delay import *
 from .earlystopping import *
 from .logger import *

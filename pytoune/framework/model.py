@@ -273,6 +273,8 @@ class Model:
                 ...
 
         """
+        self._transfer_optimizer_state_to_right_device()
+
         if verbose:
             callbacks = [ProgressionCallback()] + callbacks
         callback_list = CallbackList(callbacks)
@@ -304,7 +306,6 @@ class Model:
             with torch.enable_grad():
                 for step in range(1, steps_per_epoch + 1):
                     callback_list.on_batch_begin(step, {})
-
                     self.model.zero_grad()
 
                     x, y = next(train_iterator)
@@ -370,6 +371,7 @@ class Model:
             ``pred_y`` is the predictions with tensors converted into Numpy
             arrays.
         """
+        self._transfer_optimizer_state_to_right_device()
 
         self.model.zero_grad()
 
@@ -682,7 +684,7 @@ class Model:
 
         Args:
             f: File-like object (has to implement fileno that returns a file
-            descriptor) or string containing a file name.
+                descriptor) or string containing a file name.
         """
         self.set_weights(torch.load(f, map_location='cpu'))
 
@@ -692,9 +694,42 @@ class Model:
 
         Args:
             f: File-like object (has to implement fileno that returns a file
-            descriptor) or string containing a file name.
+                descriptor) or string containing a file name.
         """
         torch.save(self.model.state_dict(), f)
+
+    def load_optimizer_state(self, f):
+        """
+        Loads the optimizer state saved using the ``torch.save()`` method or the
+        ``save_optimizer_state()`` method of this class.
+
+        Args:
+            f: File-like object (has to implement fileno that returns a file
+                descriptor) or string containing a file name.
+        """
+        self.optimizer.load_state_dict(torch.load(f, map_location='cpu'))
+
+    def save_optimizer_state(self, f):
+        """
+        Saves the state of the current optimizer.
+
+        Args:
+            f: File-like object (has to implement fileno that returns a file
+                descriptor) or string containing a file name.
+        """
+        torch.save(self.optimizer.state_dict(), f)
+
+    def _transfer_optimizer_state_to_right_device(self):
+        # Since the optimizer state is loaded on CPU, it will crashed when the
+        # optimizer will receive gradient for parameters not on CPU. Thus, for
+        # each parameter, we transfer its state in the optimizer on the same
+        # device as the parameter itself just before starting the optimization.
+        for group in self.optimizer.param_groups:
+            for p in group['params']:
+                if p in self.optimizer.state:
+                    for _, v in self.optimizer.state[p].items():
+                        if torch.is_tensor(v) and p.device != v.device:
+                            v.data = v.data.to(p.device)
 
     def get_weights(self):
         """

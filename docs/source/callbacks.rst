@@ -2,7 +2,7 @@
     :class: hidden-section
 
 pytoune.framework.callbacks
-==================================================
+===========================
 
 .. automodule:: pytoune
 .. currentmodule:: pytoune.framework.callbacks
@@ -26,8 +26,6 @@ PyToune's Callbacks
 
 .. autoclass:: TerminateOnNaN
 
-.. autoclass:: ModelCheckpoint
-
 .. autoclass:: BestModelRestore
 
 .. autoclass:: EarlyStopping
@@ -39,6 +37,25 @@ PyToune's Callbacks
 .. autoclass:: ClipNorm
 
 .. autoclass:: ClipValue
+
+Checkpointing
+-------------
+
+PyToune provides callbacks for checkpointing the state of the optimization
+so that it can be stopped and restarted at a later point. All the checkpointing
+classes inherit the ``PeriodicSaveCallback`` class and, thus, have the same
+arguments in their constructors. They may have other arguments specific to their
+purpose.
+
+.. autoclass:: PeriodicSaveCallback
+
+.. autoclass:: ModelCheckpoint
+
+.. autoclass:: OptimizerCheckpoint
+
+.. autoclass:: LRSchedulerCheckpoint
+
+.. autoclass:: PeriodicSaveLambda
 
 LR Schedulers
 -------------

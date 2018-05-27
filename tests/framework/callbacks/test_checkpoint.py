@@ -33,16 +33,16 @@ class ModelCheckpointTest(TestCase):
         self.temp_dir_obj.cleanup()
 
     def test_integration(self):
-        train_gen = some_data_generator(20)
-        valid_gen = some_data_generator(20)
+        train_gen = some_data_generator(ModelCheckpointTest.batch_size)
+        valid_gen = some_data_generator(ModelCheckpointTest.batch_size)
         checkpointer = ModelCheckpoint(self.checkpoint_filename, monitor='val_loss', verbose=True, save_best_only=True)
         self.model.fit_generator(train_gen, valid_gen, epochs=10, steps_per_epoch=5, callbacks=[checkpointer])
 
     def test_temporary_filename_arg(self):
         tmp_filename = os.path.join(self.temp_dir_obj.name, 'my_checkpoint.tmp.ckpt')
         checkpoint_filename = os.path.join(self.temp_dir_obj.name, 'my_checkpoint.ckpt')
-        train_gen = some_data_generator(20)
-        valid_gen = some_data_generator(20)
+        train_gen = some_data_generator(ModelCheckpointTest.batch_size)
+        valid_gen = some_data_generator(ModelCheckpointTest.batch_size)
         checkpointer = ModelCheckpoint(checkpoint_filename, monitor='val_loss', verbose=True, period=1, temporary_filename=tmp_filename)
         self.model.fit_generator(train_gen, valid_gen, epochs=10, steps_per_epoch=5, callbacks=[checkpointer])
         self.assertFalse(os.path.isfile(tmp_filename))
@@ -52,8 +52,8 @@ class ModelCheckpointTest(TestCase):
         epochs = 10
         tmp_filename = os.path.join(self.temp_dir_obj.name, 'my_checkpoint.tmp.ckpt')
         checkpoint_filename = os.path.join(self.temp_dir_obj.name, 'my_checkpoint_{epoch}.ckpt')
-        train_gen = some_data_generator(20)
-        valid_gen = some_data_generator(20)
+        train_gen = some_data_generator(ModelCheckpointTest.batch_size)
+        valid_gen = some_data_generator(ModelCheckpointTest.batch_size)
         checkpointer = ModelCheckpoint(checkpoint_filename, monitor='val_loss', verbose=True, period=1, temporary_filename=tmp_filename)
         self.model.fit_generator(train_gen, valid_gen, epochs=epochs, steps_per_epoch=5, callbacks=[checkpointer])
         self.assertFalse(os.path.isfile(tmp_filename))
@@ -62,8 +62,8 @@ class ModelCheckpointTest(TestCase):
 
     def test_non_atomic_write(self):
         checkpoint_filename = os.path.join(self.temp_dir_obj.name, 'my_checkpoint.ckpt')
-        train_gen = some_data_generator(20)
-        valid_gen = some_data_generator(20)
+        train_gen = some_data_generator(ModelCheckpointTest.batch_size)
+        valid_gen = some_data_generator(ModelCheckpointTest.batch_size)
         checkpointer = ModelCheckpoint(checkpoint_filename, monitor='val_loss', verbose=True, period=1, atomic_write=False)
         self.model.fit_generator(train_gen, valid_gen, epochs=10, steps_per_epoch=5, callbacks=[checkpointer])
         self.assertTrue(os.path.isfile(checkpoint_filename))

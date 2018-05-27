@@ -1,3 +1,2 @@
 
-from .identity import *
-from .flatten import *
+from .utils import *
