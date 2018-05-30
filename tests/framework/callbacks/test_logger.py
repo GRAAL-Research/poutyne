@@ -2,12 +2,18 @@ import os
 
 import csv
 
-from unittest import TestCase
+from unittest import TestCase, skipIf
+from unittest.mock import MagicMock, call
 
 from tempfile import TemporaryDirectory
 
+try:
+    from tensorboardX import SummaryWriter
+except ImportError:
+    SummaryWriter = None
+
 from pytoune.framework import Model
-from pytoune.framework.callbacks import CSVLogger, Callback
+from pytoune.framework.callbacks import CSVLogger, Callback, TensorBoardLogger
 
 import torch
 import torch.nn as nn
@@ -29,7 +35,7 @@ class History(Callback):
         self.history = []
 
 
-class LoggerTest(TestCase):
+class CSVLoggerTest(TestCase):
     batch_size = 20
     lr = 1e-3
 
@@ -37,7 +43,7 @@ class LoggerTest(TestCase):
         torch.manual_seed(42)
         self.pytorch_module = nn.Linear(1, 1)
         self.loss_function = nn.MSELoss()
-        self.optimizer = torch.optim.SGD(self.pytorch_module.parameters(), lr=LoggerTest.lr)
+        self.optimizer = torch.optim.SGD(self.pytorch_module.parameters(), lr=CSVLoggerTest.lr)
         self.model = Model(self.pytorch_module, self.optimizer, self.loss_function)
         self.temp_dir_obj = TemporaryDirectory()
         self.csv_filename = os.path.join(self.temp_dir_obj.name, 'my_log.csv')
@@ -75,7 +81,7 @@ class LoggerTest(TestCase):
             rows = []
             for row in reader:
                 if row['epoch'] != '':
-                    self.assertAlmostEqual(float(row['lr']), LoggerTest.lr)
+                    self.assertAlmostEqual(float(row['lr']), CSVLoggerTest.lr)
                 del row['lr']
                 rows.append(row)
         self.assertEqual(len(rows), len(history))
@@ -88,6 +94,39 @@ class LoggerTest(TestCase):
                 else:
                     self.assertEqual(str(row[k]), str(hist_entry[k]))
 
+
+@skipIf(SummaryWriter is None, "Needs tensorboardX to run this test")
+class TensorBoardLoggerTest(TestCase):
+    batch_size = 20
+    lr = 1e-3
+
+    def setUp(self):
+        torch.manual_seed(42)
+        self.pytorch_module = nn.Linear(1, 1)
+        self.loss_function = nn.MSELoss()
+        self.optimizer = torch.optim.SGD(self.pytorch_module.parameters(), lr=TensorBoardLoggerTest.lr)
+        self.model = Model(self.pytorch_module, self.optimizer, self.loss_function)
+        self.temp_dir_obj = TemporaryDirectory()
+        self.writer = SummaryWriter(self.temp_dir_obj.name)
+        self.writer.add_scalar = MagicMock()
+
+    def tearDown(self):
+        self.temp_dir_obj.cleanup()
+
+    def test_logging(self):
+        train_gen = some_data_generator(20)
+        valid_gen = some_data_generator(20)
+        logger = TensorBoardLogger(self.writer)
+        history = self.model.fit_generator(train_gen, valid_gen, epochs=10, steps_per_epoch=5, callbacks=[logger])
+        self._test_logging(history)
+
+    def _test_logging(self, history):
+        calls = list()
+        for h in history:
+            calls.append(call('loss', h['loss'], h['epoch']))
+            calls.append(call('lr', 1e-3, h['epoch']))
+            calls.append(call('val_loss', h['val_loss'], h['epoch']))
+        self.writer.add_scalar.assert_has_calls(calls, any_order=True)
 
 
 if __name__ == '__main__':
