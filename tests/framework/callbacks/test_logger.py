@@ -108,7 +108,7 @@ class TensorBoardLoggerTest(TestCase):
         self.model = Model(self.pytorch_module, self.optimizer, self.loss_function)
         self.temp_dir_obj = TemporaryDirectory()
         self.writer = SummaryWriter(self.temp_dir_obj.name)
-        self.writer.add_scalar = MagicMock()
+        self.writer.add_scalars = MagicMock()
 
     def tearDown(self):
         self.temp_dir_obj.cleanup()
@@ -123,10 +123,27 @@ class TensorBoardLoggerTest(TestCase):
     def _test_logging(self, history):
         calls = list()
         for h in history:
-            calls.append(call('loss', h['loss'], h['epoch']))
-            calls.append(call('lr', 1e-3, h['epoch']))
-            calls.append(call('val_loss', h['val_loss'], h['epoch']))
-        self.writer.add_scalar.assert_has_calls(calls, any_order=True)
+            calls.append(
+                call(
+                    'loss',
+                    {
+                        'loss': h['loss'],
+                        'val_loss': h['val_loss']
+                    },
+                    h['epoch']
+                )
+            )
+            calls.append(
+                call(
+                    'lr',
+                    {
+                        'lr': 1e-3,
+                    },
+                    h['epoch']
+                )
+            )
+        print(self.writer.add_scalars.mock_calls)
+        self.writer.add_scalars.assert_has_calls(calls, any_order=True)
 
 
 if __name__ == '__main__':

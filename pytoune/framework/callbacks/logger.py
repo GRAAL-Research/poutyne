@@ -116,8 +116,19 @@ class TensorBoardLogger(Logger):
         pass
 
     def _on_epoch_end_write(self, epoch, logs):
+        grouped_items = dict()
         for k, v in logs.items():
-            self.writer.add_scalar(k, v, epoch)
+            if 'val_' in k:
+                primary_key = k[4:]
+                if primary_key not in grouped_items:
+                    grouped_items[primary_key] = dict()
+                grouped_items[k[4:]][k] = v
+            else:
+                if k not in grouped_items:
+                    grouped_items[k] = dict()
+                grouped_items[k][k] = v
+        for k, v in grouped_items.items():
+            self.writer.add_scalars(k, v, epoch)
         lr = self._get_current_learning_rates()
         if isinstance(lr, (list,)):
             self.writer.add_scalars(
@@ -126,4 +137,4 @@ class TensorBoardLogger(Logger):
                 epoch
             )
         else:
-            self.writer.add_scalar('lr', lr, epoch)
+            self.writer.add_scalars('lr', {'lr': lr}, epoch)
