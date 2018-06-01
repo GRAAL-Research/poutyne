@@ -102,8 +102,19 @@ class TensorBoardLogger(Logger):
 
     Args:
         writer (tensorboardX.SummaryWriter): The tensorboard writer.
-        batch_granularity (bool): Whether to also output the result of each
-            batch in addition to the epochs. (Default value = False)
+
+    Example:
+        Using tensorboardX::
+
+            from tensorboardX import SummaryWriter
+            from pytoune.framework import Model
+            from pytoune.framework.callbacks import TensorBoardLogger
+
+            writer = SummaryWriter('runs')
+            tb_logger = TensorBoardLogger(writer)
+
+            model = Model(...)
+            model.fit_generator(..., callbacks=[tb_logger])
     """
     def __init__(self, writer):
         super().__init__(batch_granularity=False)
