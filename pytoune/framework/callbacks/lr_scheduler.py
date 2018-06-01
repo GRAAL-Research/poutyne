@@ -8,16 +8,27 @@ class PyTorchLRSchedulerWrapper(Callback):
         self.torch_lr_scheduler = torch_lr_scheduler
         self.args = args
         self.kwargs = kwargs
+        self.scheduler = None
+        self.loaded_state = None
 
     def on_train_begin(self, logs):
         optimizer = self.model.optimizer
         self.scheduler = self.torch_lr_scheduler(optimizer, *self.args, **self.kwargs)
 
+        # Load state if the scheduler was not initialized when the user asked
+        # to load its state
+        if self.loaded_state is not None:
+            self.scheduler.load_state_dict(self.loaded_state)
+            self.loaded_state = None
+
     def on_epoch_end(self, epoch, logs):
         self.scheduler.step(epoch)
 
     def load_state(self, f):
-        self.scheduler.load_state_dict(torch.load(f, map_location='cpu'))
+        if self.scheduler is not None:
+            self.scheduler.load_state_dict(torch.load(f, map_location='cpu'))
+        else:
+            self.loaded_state = torch.load(f, map_location='cpu')
 
     def save_state(self, f):
         torch.save(self.scheduler.state_dict(), f)
@@ -86,6 +97,8 @@ class ReduceLROnPlateau(Callback):
         self.monitor = monitor
         self.args = args
         self.kwargs = kwargs
+        self.scheduler = None
+        self.loaded_state = None
 
     def on_train_begin(self, logs):
         optimizer = self.model.optimizer
@@ -96,11 +109,20 @@ class ReduceLROnPlateau(Callback):
             self.scheduler.state_dict = types.MethodType(reduce_lr_state_dict, self.scheduler)
             self.scheduler.load_state_dict = types.MethodType(reduce_lr_load_state_dict, self.scheduler)
 
+        # Load state if the scheduler was not initialized when the user asked
+        # to load its state
+        if self.loaded_state is not None:
+            self.scheduler.load_state_dict(self.loaded_state)
+            self.loaded_state = None
+
     def on_epoch_end(self, epoch, logs):
         self.scheduler.step(logs[self.monitor], epoch)
 
     def load_state(self, f):
-        self.scheduler.load_state_dict(torch.load(f, map_location='cpu'))
+        if self.scheduler is not None:
+            self.scheduler.load_state_dict(torch.load(f, map_location='cpu'))
+        else:
+            self.loaded_state = torch.load(f, map_location='cpu')
 
     def save_state(self, f):
         torch.save(self.scheduler.state_dict(), f)

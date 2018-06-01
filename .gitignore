@@ -100,8 +100,12 @@ ENV/
 # mypy
 .mypy_cache/
 
+# Pycharm projects
 .idea/
 
 # Sublime project settings
 *.sublime-project
 *.sublime-workspace
+
+# VScode projects
+.vscode/
