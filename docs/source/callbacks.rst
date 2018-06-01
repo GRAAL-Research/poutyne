@@ -30,13 +30,18 @@ PyToune's Callbacks
 
 .. autoclass:: EarlyStopping
 
-.. autoclass:: CSVLogger
-
 .. autoclass:: DelayCallback
 
 .. autoclass:: ClipNorm
 
 .. autoclass:: ClipValue
+
+Logging
+-------
+
+.. autoclass:: CSVLogger
+
+.. autoclass:: TensorBoardLogger
 
 Checkpointing
 -------------
