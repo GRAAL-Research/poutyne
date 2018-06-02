@@ -371,14 +371,16 @@ class Model:
             ``pred_y`` is the predictions with tensors converted into Numpy
             arrays.
         """
-        self._transfer_optimizer_state_to_right_device()
+        self.model.train(True)
+        with torch.enable_grad():
+            self._transfer_optimizer_state_to_right_device()
 
-        self.model.zero_grad()
+            self.model.zero_grad()
 
-        loss_tensor, metrics, pred_y = self._compute_loss_and_metrics(x, y, return_loss_tensor=True, return_pred=return_pred)
+            loss_tensor, metrics, pred_y = self._compute_loss_and_metrics(x, y, return_loss_tensor=True, return_pred=return_pred)
 
-        loss_tensor.backward()
-        self.optimizer.step()
+            loss_tensor.backward()
+            self.optimizer.step()
 
         loss = float(loss_tensor)
         return self._format_return(loss, metrics, pred_y, return_pred)
