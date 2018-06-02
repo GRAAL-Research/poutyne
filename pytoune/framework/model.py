@@ -451,6 +451,8 @@ class Model:
             for _ in range(steps):
                 x = next(iterator)
                 x = numpy_to_torch(x)
+                if self.device is not None:
+                    x = torch_to(x, self.device)
                 pred_y.append(torch_to_numpy(self.model(x)))
         return pred_y
 
@@ -468,6 +470,8 @@ class Model:
         self.model.eval()
         with torch.no_grad():
             x = numpy_to_torch(x)
+            if self.device is not None:
+                x = torch_to(x, self.device)
             return torch_to_numpy(self.model(x))
 
     def evaluate(self, x, y, batch_size=32, return_pred=False):
