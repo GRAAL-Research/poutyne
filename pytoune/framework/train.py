@@ -110,12 +110,13 @@ def train(directory, module, train_loader, valid_loader=None,
                                                temporary_filename=epoch_tmp_filename,
                                                open_mode='w')
         callbacks += [csv_logger, best_checkpoint, checkpoint, optimizer_checkpoint, save_epoch_number]
-        if SummaryWriter is None:
-            warnings.warn("tensorboardX does not seem to be installed. To remove this warning, set the 'disable_tensorboard' flag to True.")
-        else:
-            writer = SummaryWriter(tensorboard_directory)
-            tensorboard_logger = TensorBoardLogger(writer)
-            callbacks.append(tensorboard_logger)
+        if not disable_tensorboard:
+            if SummaryWriter is None:
+                warnings.warn("tensorboardX does not seem to be installed. To remove this warning, set the 'disable_tensorboard' flag to True.")
+            else:
+                writer = SummaryWriter(tensorboard_directory)
+                tensorboard_logger = TensorBoardLogger(writer)
+                callbacks.append(tensorboard_logger)
         for i, lr_scheduler in enumerate(lr_schedulers):
             filename = lr_scheduler_filename % i
             tmp_filename = lr_scheduler_tmp_filename % i
