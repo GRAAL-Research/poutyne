@@ -215,6 +215,8 @@ def test(directory, module, test_loader,
         model.load_weights(best_ckpt_filename)
 
     test_loss, test_metrics = model.evaluate_generator(test_loader, steps=steps)
+    if not isinstance(test_metrics, np.ndarray):
+        test_metrics = np.array([test_metrics])
 
     test_metrics_names = ['test_loss'] + ['test_' + metric_name for metric_name in model.metrics_names]
     test_df = pd.DataFrame([np.concatenate(([test_loss], test_metrics))], columns=test_metrics_names)
