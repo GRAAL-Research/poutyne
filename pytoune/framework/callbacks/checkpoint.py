@@ -28,7 +28,7 @@ class ModelCheckpoint(PeriodicSaveCallback):
         if self.restore_best and not self.save_best_only:
             raise ValueError("The 'restore_best' argument only works when 'save_best_only' is also true.")
 
-    def save_file(self, fd):
+    def save_file(self, fd, epoch, logs):
         self.model.save_weights(fd)
 
     def on_train_end(self, logs):
@@ -56,7 +56,7 @@ class OptimizerCheckpoint(PeriodicSaveCallback):
     See:
         pytoune.framework.PeriodicSaveCallback
     """
-    def save_file(self, fd):
+    def save_file(self, fd, epoch, logs):
         self.model.save_optimizer_state(fd)
 
 from .lr_scheduler import PyTorchLRSchedulerWrapper, ReduceLROnPlateau
@@ -90,7 +90,7 @@ class LRSchedulerCheckpoint(PeriodicSaveCallback):
                 not isinstance(self.lr_scheduler, ReduceLROnPlateau):
             raise ValueError("Unknown scheduler callback '%s'." % lr_scheduler)
 
-    def save_file(self, fd):
+    def save_file(self, fd, epoch, logs):
         self.lr_scheduler.save_state(fd)
 
     def set_params(self, params):

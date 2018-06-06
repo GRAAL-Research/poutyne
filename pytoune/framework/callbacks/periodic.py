@@ -93,15 +93,18 @@ class PeriodicSaveCallback(Callback):
             atomically. See the ``atomic_write`` argument.
         atomic_write (bool): Whether to right atomically the checkpoint. See
             the description above for details. (Default value = True)
+        open_mode (str): ``mode`` option passed to ``open()``.
+            (Default value = 'wb')
     """
 
-    def __init__(self, filename, monitor='val_loss', verbose=False, save_best_only=False, mode='min', period=1, temporary_filename=None, atomic_write=True):
+    def __init__(self, filename, monitor='val_loss', verbose=False, save_best_only=False, mode='min', period=1, temporary_filename=None, atomic_write=True, open_mode='wb'):
         self.filename = filename
         self.monitor = monitor
         self.verbose = verbose
         self.save_best_only = save_best_only
         self.temporary_filename = temporary_filename
         self.atomic_write = atomic_write
+        self.open_mode = open_mode
         self.best_filename = None
 
         if self.save_best_only:
@@ -116,21 +119,21 @@ class PeriodicSaveCallback(Callback):
 
         self.period = period
 
-    def save_file(self, fd):
+    def save_file(self, fd, epoch, logs):
         raise NotImplementedError
 
-    def _save_file(self, filename):
+    def _save_file(self, filename, epoch, logs):
         if self.atomic_write:
             fd = None
             if self.temporary_filename is not None:
-                fd = open(self.temporary_filename, 'wb')
+                fd = open(self.temporary_filename, self.open_mode)
                 tmp_filename = self.temporary_filename
             else:
                 fd = tempfile.NamedTemporaryFile(delete=False)
                 tmp_filename = fd.name
 
             with fd:
-                self.save_file(fd)
+                self.save_file(fd, epoch, logs)
 
             try:
                 os.replace(tmp_filename, filename)
@@ -140,11 +143,11 @@ class PeriodicSaveCallback(Callback):
                 os.remove(tmp_filename)
 
                 warnings.warn('Saving %s non-atomically instead.' % filename)
-                with open(filename, 'wb') as fd:
-                    self.save_file(fd)
+                with open(filename, self.open_mode) as fd:
+                    self.save_file(fd, epoch, logs)
         else:
-            with open(filename, 'wb') as fd:
-                self.save_file(fd)
+            with open(filename, self.open_mode) as fd:
+                self.save_file(fd, epoch, logs)
 
 
     def on_epoch_end(self, epoch, logs):
@@ -159,11 +162,11 @@ class PeriodicSaveCallback(Callback):
                 if self.verbose:
                     print('Epoch %d: %s improved from %0.5f to %0.5f, saving file to %s'
                           % (epoch, self.monitor, old_best, self.current_best, self.best_filename))
-                self._save_file(self.best_filename)
+                self._save_file(self.best_filename, epoch, logs)
         elif epoch % self.period == 0:
             if self.verbose:
                 print('Epoch %d: saving file to %s' % (epoch, filename))
-            self._save_file(filename)
+            self._save_file(filename, epoch, logs)
 
 class PeriodicSaveLambda(PeriodicSaveCallback):
     """
@@ -171,8 +174,8 @@ class PeriodicSaveLambda(PeriodicSaveCallback):
     `pytoune.framework.PeriodicSaveCallback` for the arguments' descriptions.
 
     Args:
-        func (fd -> None): The lambda that will be called with a file
-            descriptor.
+        func (fd, int, dict -> None): The lambda that will be called with a
+            file descriptor, the epoch number and the epoch logs.
 
     See:
         pytoune.framework.PeriodicSaveCallback
@@ -181,5 +184,5 @@ class PeriodicSaveLambda(PeriodicSaveCallback):
         super(PeriodicSaveLambda, self).__init__(*args, **kwargs)
         self.func = func
 
-    def save_file(self, fd):
-        self.func(fd)
+    def save_file(self, fd, epoch, logs):
+        self.func(fd, epoch, logs)
