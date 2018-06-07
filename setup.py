@@ -28,7 +28,7 @@ setup(
         'Topic :: Software Development :: Libraries :: Python Modules'
     ],
     packages=packages,
-    install_requires=['numpy', 'torch'],
+    install_requires=['numpy', 'pandas', 'torch'],
     python_requires='>=3',
     description='A Keras-like framework and utilities for PyTorch.',
     test_suite='nose.collector',
