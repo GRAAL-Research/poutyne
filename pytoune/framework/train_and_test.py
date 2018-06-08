@@ -41,6 +41,19 @@ def get_loss_and_metrics(module, loss_function, metrics):
         metrics = module.metrics
     return loss_function, metrics
 
+def get_best_epoch_stats(directory, monitor, mode):
+    if mode not in ['min', 'max']:
+        raise ValueError("Invalid mode '%s'" % mode)
+
+    log_filename = os.path.join(directory, LOG_FILENAME)
+
+    history = pd.read_csv(log_filename, sep='\t')
+    if mode == 'min':
+        best_epoch_index = history[monitor].idxmin()
+    else:
+        best_epoch_index = history[monitor].idxmax()
+    return history.iloc[best_epoch_index:best_epoch_index + 1]
+
 def warn_missing_file(filename):
     warnings.warn("Missing checkpoint: %s." % filename)
 
@@ -79,6 +92,15 @@ def load_epoch_state(model, lr_schedulers, epoch_filename, model_filename, optim
             else:
                 warn_missing_file(filename)
     return initial_epoch
+
+def set_best_epoch_model_checkpoint(directory, best_checkpoint_callback, monitor, mode):
+    log_filename = os.path.join(directory, LOG_FILENAME)
+    best_checkpoint_filename = os.path.join(directory, BEST_CHECKPOINT_FILENAME)
+    if os.path.isfile(log_filename):
+        best_epoch_stats = get_best_epoch_stats(directory, monitor, mode)
+        best_epoch = best_epoch_stats['epoch'].item()
+        best_checkpoint_callback.best_filename = best_checkpoint_filename.format(epoch=best_epoch)
+        best_checkpoint_callback.current_best = best_epoch_stats[monitor].item()
 
 def train(directory, module, train_loader, valid_loader=None,
           logging=True, optimizer=None, loss_function=None,
@@ -122,14 +144,26 @@ def train(directory, module, train_loader, valid_loader=None,
                                          lr_scheduler_filename)
 
         csv_logger = CSVLogger(log_filename, separator='\t', append=initial_epoch != 1)
+
+
         best_checkpoint = ModelCheckpoint(best_checkpoint_filename, monitor=monitor_metric, mode=monitor_mode, save_best_only=True, restore_best=True, verbose=True, temporary_filename=best_checkpoint_tmp_filename)
+        # We set the current best metric score in the ModelCheckpoint so that
+        # it does not save checkpoint it would not have saved if the
+        # optimization was not stopped.
+        set_best_epoch_model_checkpoint(directory, best_checkpoint, monitor_metric, monitor_mode)
+
         checkpoint = ModelCheckpoint(model_checkpoint_filename, verbose=False, temporary_filename=model_checkpoint_tmp_filename)
         optimizer_checkpoint = OptimizerCheckpoint(optimizer_checkpoint_filename, verbose=False, temporary_filename=optimizer_checkpoint_tmp_filename)
+
+        # We save the last epoch number after the end of the epoch so that the
+        # load_epoch_state() knows which epoch to restart the optimization.
         save_epoch_number = PeriodicSaveLambda(lambda fd, epoch, logs: print(epoch, file=fd),
                                                epoch_filename,
                                                temporary_filename=epoch_tmp_filename,
                                                open_mode='w')
+
         callbacks += [csv_logger, best_checkpoint, checkpoint, optimizer_checkpoint, save_epoch_number]
+
         if not disable_tensorboard:
             if SummaryWriter is None:
                 warnings.warn("tensorboardX does not seem to be installed. To remove this warning, set the 'disable_tensorboard' flag to True.")
@@ -192,22 +226,14 @@ def test(directory, module, test_loader,
 
     if load_best_checkpoint:
         best_checkpoint_filename = os.path.join(directory, BEST_CHECKPOINT_FILENAME)
-        log_filename = os.path.join(directory, LOG_FILENAME)
-
-        history = pd.read_csv(log_filename, sep='\t')
-        if monitor_mode == 'min':
-            best_epoch_index = history[monitor_metric].idxmin()
-        else:
-            best_epoch_index = history[monitor_metric].idxmax()
-        best_ckpt_df = history.iloc[best_epoch_index:best_epoch_index + 1]
-        print(best_ckpt_df)
-        best_epoch = int(best_ckpt_df['epoch'])
+        best_epoch_stats = get_best_epoch_stats(directory, monitor_metric, monitor_mode)
+        best_epoch = best_epoch_stats['epoch'].item()
 
         metrics_names = model.metrics_names + ['val_' + metric_name for metric_name in model.metrics_names]
         # Some metrics may not have been used during training
-        metrics_str = ', '.join('%s: %g' % (metric_name, best_ckpt_df[metric_name])
+        metrics_str = ', '.join('%s: %g' % (metric_name, best_epoch_stats[metric_name].item())
                                     for metric_name in metrics_names
-                                        if best_ckpt_df.get(metric_name) is not None)
+                                        if best_epoch_stats.get(metric_name) is not None)
         print("Found best checkpoint at epoch: {}".format(best_epoch))
         print(metrics_str)
 
@@ -219,15 +245,17 @@ def test(directory, module, test_loader,
         test_metrics = np.array([test_metrics])
 
     test_metrics_names = ['test_loss'] + ['test_' + metric_name for metric_name in model.metrics_names]
-    test_df = pd.DataFrame([np.concatenate(([test_loss], test_metrics))], columns=test_metrics_names)
-    test_metrics_str = ', '.join('%s: %g' % (col, val) for col, val in test_df.iteritems())
+    test_metrics_values = np.concatenate(([test_loss], test_metrics))
+    test_metrics_str = ', '.join('%s: %g' % (col, val) for col, val in zip(test_metrics_names, test_metrics_values))
     print("On best model: %s" % test_metrics_str)
 
     if logging:
+        test_stats = pd.DataFrame([test_metrics_values], columns=test_metrics_names)
+        best_epoch_stats = best_epoch_stats.reset_index(drop=True)
+        best_epoch_stats = best_epoch_stats.join(test_stats)
+
         test_log_filename = os.path.join(directory, TEST_LOG_FILENAME)
-        best_ckpt_df = best_ckpt_df.reset_index(drop=True)
-        best_ckpt_df = best_ckpt_df.join(test_df)
-        best_ckpt_df.to_csv(test_log_filename, sep='\t', index=False)
+        best_epoch_stats.to_csv(test_log_filename, sep='\t', index=False)
 
     return model
 
