@@ -57,7 +57,13 @@ def get_best_epoch_stats(directory, monitor, mode):
 def warn_missing_file(filename):
     warnings.warn("Missing checkpoint: %s." % filename)
 
-def load_epoch_state(model, lr_schedulers, epoch_filename, model_filename, optimizer_filename, lr_scheduler_filename):
+def load_epoch_state(directory, model, lr_schedulers):
+    model_filename = os.path.join(directory, MODEL_CHECKPOINT_FILENAME)
+    optimizer_filename = os.path.join(directory, OPTIMIZER_CHECKPOINT_FILENAME)
+    log_filename = os.path.join(directory, LOG_FILENAME)
+    epoch_filename = os.path.join(directory, EPOCH_FILENAME)
+    lr_scheduler_filename = os.path.join(directory, LR_SCHEDULER_FILENAME)
+
     initial_epoch = 1
     if os.path.isfile(epoch_filename):
         try:
@@ -96,11 +102,10 @@ def load_epoch_state(model, lr_schedulers, epoch_filename, model_filename, optim
 def set_best_epoch_model_checkpoint(directory, best_checkpoint_callback, monitor, mode):
     log_filename = os.path.join(directory, LOG_FILENAME)
     best_checkpoint_filename = os.path.join(directory, BEST_CHECKPOINT_FILENAME)
-    if os.path.isfile(log_filename):
-        best_epoch_stats = get_best_epoch_stats(directory, monitor, mode)
-        best_epoch = best_epoch_stats['epoch'].item()
-        best_checkpoint_callback.best_filename = best_checkpoint_filename.format(epoch=best_epoch)
-        best_checkpoint_callback.current_best = best_epoch_stats[monitor].item()
+    best_epoch_stats = get_best_epoch_stats(directory, monitor, mode)
+    best_epoch = best_epoch_stats['epoch'].item()
+    best_checkpoint_callback.best_filename = best_checkpoint_filename.format(epoch=best_epoch)
+    best_checkpoint_callback.current_best = best_epoch_stats[monitor].item()
 
 def train(directory, module, train_loader, valid_loader=None,
           logging=True, optimizer=None, loss_function=None,
@@ -136,21 +141,17 @@ def train(directory, module, train_loader, valid_loader=None,
         lr_scheduler_tmp_filename = os.path.join(directory, LR_SCHEDULER_TMP_FILENAME)
 
         # Restarting optimization if needed.
-        initial_epoch = load_epoch_state(model,
-                                         lr_schedulers,
-                                         epoch_filename,
-                                         model_checkpoint_filename,
-                                         optimizer_checkpoint_filename,
-                                         lr_scheduler_filename)
+        initial_epoch = load_epoch_state(directory, model, lr_schedulers)
 
         csv_logger = CSVLogger(log_filename, separator='\t', append=initial_epoch != 1)
 
 
         best_checkpoint = ModelCheckpoint(best_checkpoint_filename, monitor=monitor_metric, mode=monitor_mode, save_best_only=True, restore_best=True, verbose=True, temporary_filename=best_checkpoint_tmp_filename)
-        # We set the current best metric score in the ModelCheckpoint so that
-        # it does not save checkpoint it would not have saved if the
-        # optimization was not stopped.
-        set_best_epoch_model_checkpoint(directory, best_checkpoint, monitor_metric, monitor_mode)
+        if initial_epoch > 1:
+            # We set the current best metric score in the ModelCheckpoint so that
+            # it does not save checkpoint it would not have saved if the
+            # optimization was not stopped.
+            set_best_epoch_model_checkpoint(directory, best_checkpoint, monitor_metric, monitor_mode)
 
         checkpoint = ModelCheckpoint(model_checkpoint_filename, verbose=False, temporary_filename=model_checkpoint_tmp_filename)
         optimizer_checkpoint = OptimizerCheckpoint(optimizer_checkpoint_filename, verbose=False, temporary_filename=optimizer_checkpoint_tmp_filename)
