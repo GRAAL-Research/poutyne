@@ -280,13 +280,14 @@ class Model:
         callback_list = CallbackList(callbacks)
         callback_list.set_model(self)
 
-        if validation_steps is None:
-            if hasattr(valid_generator, '__len__'):
-                validation_steps = len(valid_generator)
-            elif steps_per_epoch is not None:
-                validation_steps = steps_per_epoch
-            else:
-                raise ValueError("Invalid 'validation_steps' value. Either a value for 'validation_steps' or 'steps_per_epoch' must be provided, or 'valid_generator' must provide a '__len__' method.")
+        if valid_generator is not None:
+            if validation_steps is None:
+                if hasattr(valid_generator, '__len__'):
+                    validation_steps = len(valid_generator)
+                elif steps_per_epoch is not None:
+                    validation_steps = steps_per_epoch
+                else:
+                    raise ValueError("Invalid 'validation_steps' value. Either a value for 'validation_steps' or 'steps_per_epoch' must be provided, or 'valid_generator' must provide a '__len__' method.")
         if steps_per_epoch is None:
             steps_per_epoch = len(train_generator)
         params = {'epochs': epochs, 'steps': steps_per_epoch}

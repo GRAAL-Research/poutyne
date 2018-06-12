@@ -88,7 +88,7 @@ class ModelTest(TestCase):
 
     def test_fitting_without_valid_generator(self):
         train_generator = some_data_tensor_generator(ModelTest.batch_size)
-        logs = self.model.fit_generator(train_generator, None, epochs=ModelTest.epochs, steps_per_epoch=ModelTest.steps_per_epoch, validation_steps=ModelTest.steps_per_epoch, callbacks=[self.mock_callback])
+        logs = self.model.fit_generator(train_generator, None, epochs=ModelTest.epochs, steps_per_epoch=ModelTest.steps_per_epoch, callbacks=[self.mock_callback])
         params = {'epochs': ModelTest.epochs, 'steps': ModelTest.steps_per_epoch}
         self._test_fitting(params, logs, has_valid=False)
 
