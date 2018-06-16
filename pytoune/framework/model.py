@@ -348,6 +348,12 @@ class Model:
 
         return epoch_logs
 
+    def _process_input(self, *args):
+        args = numpy_to_torch(args)
+        if self.device is not None:
+            args = torch_to(args, self.device)
+        return args[0] if len(args) == 1 else args
+
     def train_on_batch(self, x, y, return_pred=False):
         """
         Trains the model for the batch ``(x, y)`` and computes the loss and
@@ -389,17 +395,12 @@ class Model:
     def _format_return(self, loss, metrics, pred_y, return_pred):
         ret = (loss,)
 
-        if len(metrics) <= 1:
-            ret += tuple(metrics.tolist())
-        else:
-            ret += (metrics,)
+        ret += tuple(metrics.tolist()) if len(metrics) <= 1 else (metrics,)
 
         if return_pred:
             ret += (pred_y,)
 
-        if len(ret) == 1:
-            ret = ret[0]
-        return ret
+        return ret[0] if len(ret) == 1 else ret
 
     def predict(self, x, batch_size=32):
         """
@@ -452,10 +453,7 @@ class Model:
         iterator = iter(generator)
         with torch.no_grad():
             for _ in range(steps):
-                x = next(iterator)
-                x = numpy_to_torch(x)
-                if self.device is not None:
-                    x = torch_to(x, self.device)
+                x = self._process_input(next(iterator))
                 pred_y.append(torch_to_numpy(self.model(x)))
         return pred_y
 
@@ -472,9 +470,7 @@ class Model:
         """
         self.model.eval()
         with torch.no_grad():
-            x = numpy_to_torch(x)
-            if self.device is not None:
-                x = torch_to(x, self.device)
+            x = self._process_input(x)
             return torch_to_numpy(self.model(x))
 
     def evaluate(self, x, y, batch_size=32, return_pred=False):
@@ -647,13 +643,7 @@ class Model:
         return loss_mean, metrics_mean, pred_list
 
     def _compute_loss_and_metrics(self, x, y, return_loss_tensor=False, return_pred=False):
-        x = numpy_to_torch(x)
-        y = numpy_to_torch(y)
-
-        if self.device is not None:
-            x = torch_to(x, self.device)
-            y = torch_to(y, self.device)
-
+        x, y = self._process_input(x, y)
         pred_y = self.model(x)
         loss = self.loss_function(pred_y, y)
         if not return_loss_tensor:
@@ -661,13 +651,8 @@ class Model:
         with torch.no_grad():
             metrics = self._compute_metrics(pred_y, y)
 
-        ret = (loss, metrics)
-        if return_pred:
-            pred_y = torch_to_numpy(pred_y)
-            ret += (pred_y,)
-        else:
-            ret += (None,)
-        return ret
+        pred_y = torch_to_numpy(pred_y) if return_pred else None
+        return loss, metrics, pred_y
 
     def _compute_metrics(self, pred_y, y):
         return np.array([float(metric(pred_y, y)) for metric in self.metrics])
