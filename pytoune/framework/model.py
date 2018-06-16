@@ -633,7 +633,7 @@ class Model:
             for step in range(validation_steps):
                 x, y = next(valid_iterator)
 
-                loss, metrics, pred_y = self._compute_loss_and_metrics(x, y, return_pred=True)
+                loss, metrics, pred_y = self._compute_loss_and_metrics(x, y, return_pred=return_pred)
                 if return_pred:
                     pred_list.append(pred_y)
 
