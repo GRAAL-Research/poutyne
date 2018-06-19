@@ -2,8 +2,10 @@ import os
 import warnings
 
 import numpy as np
-import pandas as pd
-
+try:
+    import pandas as pd
+except ImportError:
+    pd = None
 import torch
 import torch.nn as nn
 
@@ -42,6 +44,8 @@ def get_loss_and_metrics(module, loss_function, metrics):
     return loss_function, metrics
 
 def get_best_epoch_stats(directory, monitor, mode):
+    if pd is None:
+        warnings.warn("pandas needs to be installed to use this function.")
     if mode not in ['min', 'max']:
         raise ValueError("Invalid mode '%s'" % mode)
 
