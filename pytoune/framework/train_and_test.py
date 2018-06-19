@@ -217,8 +217,58 @@ def train_regressor(*args,
                  loss_function=loss_function,
                  **kwargs)
 
+def load_best_checkpoint(directory, module,
+                         monitor_metric='val_loss', monitor_mode='min',
+                         verbose=False):
+    best_checkpoint_filename = os.path.join(directory, BEST_CHECKPOINT_FILENAME)
+    best_epoch_stats = get_best_epoch_stats(directory, monitor_metric, monitor_mode)
+    best_epoch = best_epoch_stats['epoch'].item()
+
+    if verbose:
+        metrics_str = ', '.join('%s: %g' % (metric_name, best_epoch_stats[metric_name].item())
+                                    for metric_name in best_epoch_stats.columns[2:])
+        print("Found best checkpoint at epoch: {}".format(best_epoch))
+        print(metrics_str)
+
+    best_ckpt_filename = best_checkpoint_filename.format(epoch=best_epoch)
+    module.load_state_dict(torch.load(best_ckpt_filename, map_location='cpu'))
+    return best_epoch_stats
+
+def load_best_model(directory, module, optimizer=None, loss_function=None,
+                    metrics=[], device=None,
+                    monitor_metric='val_loss', monitor_mode='min',
+                    verbose=False):
+    loss_function, metrics = get_loss_and_metrics(module, loss_function, metrics)
+
+    model = Model(module, optimizer, loss_function, metrics=metrics)
+    if device is not None:
+        model.to(device)
+
+    load_best_checkpoint(directory,
+                         module,
+                         monitor_metric=monitor_metric,
+                         monitor_mode=monitor_mode,
+                         verbose=verbose)
+    return model
+
+def load_last_checkpoint(directory, module):
+    last_checkpoint_filename = os.path.join(directory, MODEL_CHECKPOINT_FILENAME)
+    module.load_state_dict(torch.load(last_checkpoint_filename, map_location='cpu'))
+
+def load_last_model(directory, module, optimizer=None, loss_function=None,
+                    metrics=[], device=None):
+    loss_function, metrics = get_loss_and_metrics(module, loss_function, metrics)
+
+    model = Model(module, optimizer, loss_function, metrics=metrics)
+    if device is not None:
+        model.to(device)
+
+    load_last_checkpoint(directory, module)
+    return model
+
 def test(directory, module, test_loader,
-         logging=True, load_best_checkpoint=True,
+         logging=True,
+         do_load_best_checkpoint=True, do_load_last_checkpoint=False,
          loss_function=None,
          metrics=[], device=None,
          monitor_metric='val_loss', monitor_mode='min',
@@ -229,21 +279,16 @@ def test(directory, module, test_loader,
     if device is not None:
         model.to(device)
 
-    if load_best_checkpoint:
-        best_checkpoint_filename = os.path.join(directory, BEST_CHECKPOINT_FILENAME)
-        best_epoch_stats = get_best_epoch_stats(directory, monitor_metric, monitor_mode)
-        best_epoch = best_epoch_stats['epoch'].item()
-
-        metrics_names = model.metrics_names + ['val_' + metric_name for metric_name in model.metrics_names]
-        # Some metrics may not have been used during training
-        metrics_str = ', '.join('%s: %g' % (metric_name, best_epoch_stats[metric_name].item())
-                                    for metric_name in metrics_names
-                                        if best_epoch_stats.get(metric_name) is not None)
-        print("Found best checkpoint at epoch: {}".format(best_epoch))
-        print(metrics_str)
-
-        best_ckpt_filename = best_checkpoint_filename.format(epoch=best_epoch)
-        model.load_weights(best_ckpt_filename)
+    best_epoch_stats = None
+    if do_load_best_checkpoint:
+        best_epoch_stats = load_best_checkpoint(directory,
+                                                module,
+                                                monitor_metric=monitor_metric,
+                                                monitor_mode=monitor_mode,
+                                                verbose=True)
+    elif do_load_last_checkpoint:
+        best_epoch_stats = load_last_checkpoint(directory,
+                                                module)
 
     test_loss, test_metrics = model.evaluate_generator(test_loader, steps=steps)
     if not isinstance(test_metrics, np.ndarray):
@@ -256,11 +301,12 @@ def test(directory, module, test_loader,
 
     if logging:
         test_stats = pd.DataFrame([test_metrics_values], columns=test_metrics_names)
-        best_epoch_stats = best_epoch_stats.reset_index(drop=True)
-        best_epoch_stats = best_epoch_stats.join(test_stats)
+        if best_epoch_stats is not None:
+            best_epoch_stats = best_epoch_stats.reset_index(drop=True)
+            test_stats = best_epoch_stats.join(test_stats)
 
         test_log_filename = os.path.join(directory, TEST_LOG_FILENAME)
-        best_epoch_stats.to_csv(test_log_filename, sep='\t', index=False)
+        test_stats.to_csv(test_log_filename, sep='\t', index=False)
 
     return model
 
