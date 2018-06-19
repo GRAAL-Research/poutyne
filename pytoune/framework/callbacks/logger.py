@@ -144,7 +144,7 @@ class TensorBoardLogger(Logger):
         if isinstance(lr, (list,)):
             self.writer.add_scalars(
                 'lr',
-                {i: v for i, v in enumerate(lr)},
+                {str(i): v for i, v in enumerate(lr)},
                 epoch
             )
         else:
