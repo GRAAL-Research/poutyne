@@ -129,11 +129,11 @@ class Model:
         the ``fit_generator`` method.
 
         Args:
-            x (Union[Tensor, np.ndarray])): Training dataset.
-            y (Union[Tensor, np.ndarray])): Ground truth.
-            validation_x (Union[Tensor, np.ndarray])): Validation dataset. The validation datset
+            x (Union[Tensor, np.ndarray]): Training dataset.
+            y (Union[Tensor, np.ndarray]): Ground truth.
+            validation_x (Union[Tensor, np.ndarray]): Validation dataset. The validation datset
                 is optional. (Default value = None)
-            validation_y (Union[Tensor, np.ndarray])): Validation ground truth.
+            validation_y (Union[Tensor, np.ndarray]): Validation ground truth.
                 (Default value = None)
             batch_size (int): Number of samples given to the network at one time.
                 (Default value = 32)
@@ -408,7 +408,7 @@ class Model:
         tensors are converted into Numpy arrays.
 
         Args:
-            x (Union[Tensor, np.ndarray])): Dataset for which to predict.
+            x (Union[Tensor, np.ndarray]): Dataset for which to predict.
             batch_size (int): Number of samples given to the network at one
                 time. (Default value = 32)
 
@@ -463,7 +463,7 @@ class Model:
         tensors are converted into Numpy arrays.
 
         Args:
-            x (Union[Tensor, np.ndarray])): Batch for which to predict.
+            x (Union[Tensor, np.ndarray]): Batch for which to predict.
 
         Returns:
             The predictions with tensors converted into Numpy arrays.
@@ -479,8 +479,8 @@ class Model:
         and optionaly returns the predictions.
 
         Args:
-            x (Union[Tensor, np.ndarray])): Dataset.
-            y (Union[Tensor, np.ndarray])): Dataset ground truths.
+            x (Union[Tensor, np.ndarray]): Dataset.
+            y (Union[Tensor, np.ndarray]): Dataset ground truths.
             batch_size (int): Number of samples given to the network at one
                 time. (Default value = 32)
             return_pred (bool, optional): Whether to return the predictions for
@@ -593,8 +593,8 @@ class Model:
         samples and optionaly returns the predictions.
 
         Args:
-            x (Union[Tensor, np.ndarray])): Batch.
-            y (Union[Tensor, np.ndarray])): Batch ground truths.
+            x (Union[Tensor, np.ndarray]): Batch.
+            y (Union[Tensor, np.ndarray]): Batch ground truths.
             return_pred (bool, optional): Whether to return the predictions for
                 ``x``. (Default value = False)
 
