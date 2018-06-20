@@ -16,16 +16,6 @@ import os
 import sys
 sys.path.insert(0, os.path.abspath('../..'))
 
-from unittest.mock import MagicMock
-
-class Mock(MagicMock):
-    @classmethod
-    def __getattr__(cls, name):
-        return MagicMock()
-
-MOCK_MODULES = ['torch', 'torch.nn', 'torch.nn.utils', 'torch.autograd', 'torch.optim', 'torch.optim.lr_scheduler', 'torch.utils', 'torch.utils.data', 'nn.Module']
-sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
-
 from pytoune import __version__ as version
 
 
