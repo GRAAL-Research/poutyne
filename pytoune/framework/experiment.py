@@ -1,5 +1,6 @@
 import os
 import warnings
+import random
 
 import numpy as np
 try:
@@ -61,7 +62,7 @@ class Experiment:
                 if type.startswith('classif'):
                     metrics = ['accuracy'] if len(metrics) == 0 else metrics
                     self.monitor_metric = 'val_acc'
-                    self.monitor_mode = 'max',
+                    self.monitor_mode = 'max'
                     loss_function = nn.CrossEntropyLoss() if loss_function is None else loss_function
                 elif type.startswith('reg'):
                     loss_function = nn.MSELoss() if loss_function is None else loss_function
@@ -139,7 +140,14 @@ class Experiment:
     def train(self, train_loader, valid_loader=None,
               callbacks=[], lr_schedulers=[],
               disable_tensorboard=False,
-              epochs=1000, steps_per_epoch=None, validation_steps=None):
+              epochs=1000, steps_per_epoch=None, validation_steps=None,
+              seed=42):
+        if seed is not None:
+            # Make training deterministic.
+            random.seed(seed)
+            np.random.seed(seed)
+            torch.manual_seed(seed)
+
         # Copy callback list.
         callbacks = list(callbacks)
 
@@ -226,7 +234,14 @@ class Experiment:
         self.model.load_weights(self.model_checkpoint_filename)
 
     def test(self, test_loader, steps=None,
-             do_load_best_checkpoint=True, do_load_last_checkpoint=False):
+             do_load_best_checkpoint=True, do_load_last_checkpoint=False,
+             seed=42):
+        if seed is not None:
+            # Make training deterministic.
+            random.seed(seed)
+            np.random.seed(seed)
+            torch.manual_seed(seed)
+
         best_epoch_stats = None
         if do_load_best_checkpoint:
             best_epoch_stats = self.load_best_checkpoint(verbose=True)
