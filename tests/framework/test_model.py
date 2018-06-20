@@ -4,11 +4,12 @@ import numpy as np
 from unittest import TestCase, skipIf
 from unittest.mock import MagicMock, call, ANY, DEFAULT
 
-from pytoune.framework import Model
-from pytoune.framework.callbacks import Callback
+from pytoune.framework import Model, Callback
+from pytoune.framework import warning_settings
 
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 from torch import FloatTensor
 from torch.utils.data import DataLoader, TensorDataset
 
@@ -397,6 +398,47 @@ class ModelTest(TestCase):
     def _test_device(self, device):
         for p in self.pytorch_module.parameters():
             self.assertEqual(p.device, device)
+
+    def test_disable_batch_size_warning(self):
+        import warnings
+        def tuple_generator(batch_size):
+            while True:
+                x1 = torch.rand(batch_size, 1)
+                x2 = torch.rand(batch_size, 1)
+                y1 = torch.rand(batch_size, 1)
+                y2 = torch.rand(batch_size, 1)
+                yield (x1, x2), (y1, y2)
+        class TupleModule(nn.Module):
+            def __init__(self):
+                super().__init__()
+                self.l1 = nn.Linear(1, 1)
+                self.l2 = nn.Linear(1, 1)
+
+            def forward(self, x):
+                x1, x2 = x
+                return self.l1(x1), self.l2(x2)
+
+        def loss_function(y_pred, y_true):
+            return F.mse_loss(y_pred[0], y_true[0]) + F.mse_loss(y_pred[1], y_true[1])
+
+        pytorch_module = TupleModule()
+        optimizer = torch.optim.SGD(pytorch_module.parameters(), lr=1e-3)
+        model = Model(pytorch_module, optimizer, loss_function)
+
+        train_generator = tuple_generator(ModelTest.batch_size)
+        valid_generator = tuple_generator(ModelTest.batch_size)
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("always")
+            model.fit_generator(train_generator, valid_generator, epochs=ModelTest.epochs, steps_per_epoch=ModelTest.steps_per_epoch, validation_steps=ModelTest.steps_per_epoch)
+            num_warnings = ModelTest.steps_per_epoch * 2 * ModelTest.epochs
+            self.assertEqual(len(w), num_warnings)
+
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("always")
+            warning_settings['batch_size'] = 'ignore'
+            model.fit_generator(train_generator, valid_generator, epochs=ModelTest.epochs, steps_per_epoch=ModelTest.steps_per_epoch, validation_steps=ModelTest.steps_per_epoch)
+            self.assertEqual(len(w), 0)
+
 
 if __name__ == '__main__':
     unittest.main()

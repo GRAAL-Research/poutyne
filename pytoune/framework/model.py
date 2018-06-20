@@ -6,6 +6,7 @@ from torch.utils.data import DataLoader, TensorDataset
 
 from .callbacks import CallbackList, ProgressionCallback
 from .metrics import get_metric
+from .warning_manager import warning_settings
 from pytoune import torch_to_numpy, numpy_to_torch, torch_to
 
 class Model:
@@ -662,9 +663,15 @@ class Model:
             return len(x)
         elif torch.is_tensor(y) or isinstance(y, np.ndarray):
             return len(y)
-        else:
-            warnings.warn("When 'x' or 'y' are not tensors nor Numpy arrays, the batch size is set to 1 and, thus, the computed loss and metrics at the end of each epoch is the mean of the batches' losses and metrics.")
-            return 1
+        elif warning_settings['batch_size'] == 'warn':
+            warnings.warn("When 'x' or 'y' are not tensors nor Numpy arrays, "
+                          "the batch size is set to 1 and, thus, the computed "
+                          "loss and metrics at the end of each epoch is the "
+                          "mean of the batches' losses and metrics. To disable "
+                          "this warning, set\n"
+                          "from pytoune.framework import import warning_settings\n"
+                          "warning_settings['batch_size'] = 'ignore'")
+        return 1
 
     def load_weights(self, f):
         """
