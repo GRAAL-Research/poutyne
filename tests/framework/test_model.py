@@ -34,6 +34,15 @@ def some_ndarray_generator(batch_size):
         y = np.random.rand(batch_size, 1).astype(np.float32)
         yield x, y
 
+class SomeDataGeneratorUsingStopIteration(object):
+    def __init__(self, batch_size, length):
+        self.batch_size = batch_size
+        self.length = length
+
+    def __iter__(self):
+        return ((np.random.rand(self.batch_size, 1).astype(np.float32),
+                 np.random.rand(self.batch_size, 1).astype(np.float32))
+                for i in range(self.length))
 
 class SomeDataGeneratorWithLen(object):
     def __init__(self, batch_size, length, num_missing_samples):
@@ -163,7 +172,17 @@ class ModelTest(TestCase):
         params = {'epochs': ModelTest.epochs, 'steps': train_real_steps_per_epoch}
         self._test_fitting(params, logs)
 
-    def _test_fitting(self, params, logs, has_valid=True):
+    def test_fitting_with_generator_with_stop_iteration(self):
+        train_real_steps_per_epoch = 30
+        train_generator = SomeDataGeneratorUsingStopIteration(batch_size=ModelTest.batch_size, length=train_real_steps_per_epoch)
+        valid_generator = SomeDataGeneratorUsingStopIteration(batch_size=15, length=10)
+        logs = self.model.fit_generator(train_generator, valid_generator, epochs=ModelTest.epochs, steps_per_epoch=None, validation_steps=None, callbacks=[self.mock_callback])
+        params = {'epochs': ModelTest.epochs, 'steps': None}
+        self._test_fitting(params, logs, steps=train_real_steps_per_epoch)
+
+    def _test_fitting(self, params, logs, has_valid=True, steps=None):
+        if steps is None:
+            steps = params['steps']
         self.assertEqual(len(logs), params['epochs'])
         train_dict = dict(zip(self.metrics_names, self.metrics_values), loss=ANY)
         if has_valid:
@@ -180,7 +199,7 @@ class ModelTest(TestCase):
         call_list.append(call.on_train_begin({}))
         for epoch in range(1, params['epochs']+1):
             call_list.append(call.on_epoch_begin(epoch, {}))
-            for step in range(1, params['steps']+1):
+            for step in range(1, steps+1):
                 call_list.append(call.on_batch_begin(step, {}))
                 call_list.append(call.on_backward_end(step))
                 call_list.append(call.on_batch_end(step, {'batch': step, 'size': ANY, **train_dict}))

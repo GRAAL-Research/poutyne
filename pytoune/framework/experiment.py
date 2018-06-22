@@ -234,7 +234,7 @@ class Experiment:
         self.model.load_weights(self.model_checkpoint_filename)
 
     def test(self, test_loader, steps=None,
-             do_load_best_checkpoint=True, do_load_last_checkpoint=False,
+             load_best_checkpoint=True, load_last_checkpoint=False,
              seed=42):
         if seed is not None:
             # Make training deterministic.
@@ -243,9 +243,9 @@ class Experiment:
             torch.manual_seed(seed)
 
         best_epoch_stats = None
-        if do_load_best_checkpoint:
+        if load_best_checkpoint:
             best_epoch_stats = self.load_best_checkpoint(verbose=True)
-        elif do_load_last_checkpoint:
+        elif load_last_checkpoint:
             best_epoch_stats = self.load_last_checkpoint()
 
         test_loss, test_metrics = self.model.evaluate_generator(test_loader, steps=steps)

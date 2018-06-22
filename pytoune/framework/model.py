@@ -1,5 +1,6 @@
 import warnings
 import numpy as np
+import itertools
 
 import torch
 from torch.utils.data import DataLoader, TensorDataset
@@ -217,11 +218,11 @@ class Model:
                 array, then a warning is raised and the "batch size" defaults
                 to 1.
 
-                If the generator does not have a method ``__len__()``, the
-                ``steps_per_epoch`` argument must be provided. Notice that a
-                generator made using the python keyword ``yield`` does not
-                have such method. However, a PyTorch DataLoader object has a
-                such method.
+                If the generator does not have a method ``__len__()``, either
+                the ``steps_per_epoch`` argument must be provided, or the
+                iterator returned raises a StopIteration exception at the end
+                of the training dataset. PyTorch DataLoaders object do provide a
+                ``__len__()`` method.
 
                 Before each epoch, the method ``__iter__()`` on the generator is
                 called and the method ``__next__()`` is called for each step on
@@ -233,7 +234,9 @@ class Model:
                 used the same way as the  generator ``train_generator``. If the
                 generator does not have a method ``__len__()``, either the
                 ``validation_steps`` or the ``steps_per_epoch`` argument must be
-                provided. (Default value = None)
+                provided or the iterator returned raises a StopIteration
+                exception at the end of the validation dataset.
+                (Default value = None)
             epochs (int): Number of times the entire training dataset is seen.
                 (Default value = 1000)
             steps_per_epoch (int, optional): Number of batch used during one
@@ -287,9 +290,7 @@ class Model:
                     validation_steps = len(valid_generator)
                 elif steps_per_epoch is not None:
                     validation_steps = steps_per_epoch
-                else:
-                    raise ValueError("Invalid 'validation_steps' value. Either a value for 'validation_steps' or 'steps_per_epoch' must be provided, or 'valid_generator' must provide a '__len__' method.")
-        if steps_per_epoch is None:
+        if steps_per_epoch is None and hasattr(train_generator, '__len__'):
             steps_per_epoch = len(train_generator)
         params = {'epochs': epochs, 'steps': steps_per_epoch}
         callback_list.set_params(params)
@@ -304,13 +305,11 @@ class Model:
             sizes_sum = 0.
 
             self.model.train(True)
-            train_iterator = iter(train_generator)
             with torch.enable_grad():
-                for step in range(1, steps_per_epoch + 1):
+                for step, (x, y) in self._get_step_iterator(steps_per_epoch, train_generator):
                     callback_list.on_batch_begin(step, {})
                     self.model.zero_grad()
 
-                    x, y = next(train_iterator)
                     loss_tensor, metrics, _ = self._compute_loss_and_metrics(x, y, return_loss_tensor=True)
 
                     loss_tensor.backward()
@@ -348,6 +347,10 @@ class Model:
         callback_list.on_train_end({})
 
         return epoch_logs
+
+    def _get_step_iterator(self, steps, generator):
+        count_iterator = range(1, steps + 1) if steps is not None else itertools.count(1)
+        return zip(count_iterator, generator)
 
     def _process_input(self, *args):
         args = numpy_to_torch(args)
@@ -426,19 +429,8 @@ class Model:
         where the tensors are converted into Numpy arrays.
 
         generator: Generator-like object for the dataset. The generator must
-            yield a batch of samples.
-
-            If the generator does not have a method ``__len__()``, the
-            ``steps`` argument must be provided. Notice that a
-            generator made using the python keyword ``yield`` does not
-            have such method. However, a PyTorch DataLoader object has a
-            such method.
-
-            The method ``__iter__()`` on the generator is called and the
-            method ``__next__()`` is called for each step on resulting
-            object returned by ``__iter__()``. Notice that a call to
-            ``__iter__()`` on a generator made using the python keyword
-            ``yield`` returns the generator itself.
+            yield a batch of samples. See the ``fit_generator()`` method for
+            details on the types of generators supported.
         steps (int, optional): Number of iterations done on
             ``generator``. (Defaults the number of steps needed to see the
             entire dataset)
@@ -448,13 +440,12 @@ class Model:
             Numpy arrays.
         """
         self.model.eval()
-        if steps is None:
+        if steps is None and hasattr(generator, '__len__'):
             steps = len(generator)
         pred_y = []
-        iterator = iter(generator)
         with torch.no_grad():
-            for _ in range(steps):
-                x = self._process_input(next(iterator))
+            for _, x in self._get_step_iterator(steps, generator):
+                x = self._process_input(x)
                 pred_y.append(torch_to_numpy(self.model(x)))
         return pred_y
 
@@ -523,17 +514,8 @@ class Model:
                 size. If ``y`` is not a Tensor or a Numpy array, then a warning
                 is raised and the "batch size" defaults to 1.
 
-                If the generator does not have a method ``__len__()``, the
-                ``steps`` argument must be provided. Notice that a
-                generator made using the python keyword ``yield`` does not
-                have such method. However, a PyTorch DataLoader object has a
-                such method.
-
-                The method ``__iter__()`` on the generator is called and the
-                method ``__next__()`` is called for each step on resulting
-                object returned by ``__iter__()``. Notice that a call to
-                ``__iter__()`` on a generator made using the python keyword
-                ``yield`` returns the generator itself.
+                See the ``fit_generator()`` method for details on the types of
+                generators supported.
             steps (int, optional): Number of iterations done on
                 ``generator``. (Defaults the number of steps needed to see the
                 entire dataset)
@@ -625,11 +607,8 @@ class Model:
         if return_pred:
             pred_list = []
 
-        valid_iterator = iter(valid_generator)
         with torch.no_grad():
-            for step in range(validation_steps):
-                x, y = next(valid_iterator)
-
+            for _, (x, y) in self._get_step_iterator(validation_steps, valid_generator):
                 loss, metrics, pred_y = self._compute_loss_and_metrics(x, y, return_pred=return_pred)
                 if return_pred:
                     pred_list.append(pred_y)

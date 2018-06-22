@@ -27,8 +27,12 @@ class ProgressionCallback(Callback):
         self.epoch_total_time = self.epoch_end_time - self.epoch_begin_time
 
         metrics_str = self._get_metrics_string(logs)
-        print("\rEpoch %d/%d %.2fs Step %d/%d: %s" % (
-        self.epoch, self.epochs, self.epoch_total_time, self.steps, self.steps, metrics_str))
+        if self.steps is not None:
+            print("\rEpoch %d/%d %.2fs Step %d/%d: %s" % (
+            self.epoch, self.epochs, self.epoch_total_time, self.steps, self.steps, metrics_str))
+        else:
+            print("\rEpoch %d/%d %.2fs: Step %d/%d: %s" % (
+            self.epoch, self.epochs, self.epoch_total_time, self.last_step, self.last_step, metrics_str))
 
     def on_batch_begin(self, step, logs):
         self.batch_begin_time = timeit.default_timer()
@@ -37,13 +41,20 @@ class ProgressionCallback(Callback):
         self.batch_end_time = timeit.default_timer()
         self.step_times_sum += self.batch_end_time - self.batch_begin_time
 
-        times_mean = self.step_times_sum / step
-        remaining_time = times_mean * (self.steps - step)
-
         metrics_str = self._get_metrics_string(logs)
-        sys.stdout.write("\rEpoch %d/%d ETA %.0fs Step %d/%d: %s" % (
-        self.epoch, self.epochs, remaining_time, step, self.steps, metrics_str))
-        sys.stdout.flush()
+
+        times_mean = self.step_times_sum / step
+        if self.steps is not None:
+            remaining_time = times_mean * (self.steps - step)
+
+            sys.stdout.write("\rEpoch %d/%d ETA %.0fs Step %d/%d: %s" % (
+            self.epoch, self.epochs, remaining_time, step, self.steps, metrics_str))
+            sys.stdout.flush()
+        else:
+            sys.stdout.write("\rEpoch %d/%d %.2fs/step Step %d: %s" % (
+            self.epoch, self.epochs, times_mean, step, metrics_str))
+            sys.stdout.flush()
+            self.last_step = step
 
     def _get_metrics_string(self, logs):
         train_metrics_str_gen = ('{}: {:f}'.format(k, logs[k]) for k in self.metrics if logs.get(k) is not None)
