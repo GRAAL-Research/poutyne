@@ -44,28 +44,35 @@ class Experiment:
         self.directory = directory
         self.logging = logging
 
+        if type is not None and not type.startswith('classif') and not type.startswith('reg'):
+            raise ValueError("Invalid type '%s'" % type)
+
         if loss_function is None and hasattr(module, 'loss_function'):
             loss_function = module.loss_function
+        elif loss_function is None and type is not None:
+            if type.startswith('classif'):
+                loss_function = nn.CrossEntropyLoss()
+            elif type.startswith('reg'):
+                loss_function = nn.MSELoss()
+
         if (metrics is None or len(metrics) == 0) and hasattr(module, 'metrics'):
             metrics = module.metrics
+        elif (metrics is None or len(metrics) == 0) and \
+                type is not None and type.startswith('classif'):
+            metrics = ['accuracy']
 
         if monitor_mode is not None and monitor_mode not in ['min', 'max']:
             raise ValueError("Invalid mode '%s'" % monitor_mode)
 
+        self.monitor_metric = 'val_loss'
+        self.monitor_mode = 'min'
         if monitor_metric is not None:
             self.monitor_metric = monitor_metric
-            self.monitor_mode = monitor_mode if monitor_mode is not None else 'min'
-        else:
-            self.monitor_metric = 'val_loss'
-            self.monitor_mode = 'min'
-            if type is not None:
-                if type.startswith('classif'):
-                    metrics = ['accuracy'] if len(metrics) == 0 else metrics
-                    self.monitor_metric = 'val_acc'
-                    self.monitor_mode = 'max'
-                    loss_function = nn.CrossEntropyLoss() if loss_function is None else loss_function
-                elif type.startswith('reg'):
-                    loss_function = nn.MSELoss() if loss_function is None else loss_function
+            if monitor_mode is not None:
+                self.monitor_mode = monitor_mode
+        elif type is not None and type.startswith('classif'):
+            self.monitor_metric = 'val_acc'
+            self.monitor_mode = 'max'
 
         self.model = Model(module, optimizer, loss_function, metrics=metrics)
         if device is not None:
