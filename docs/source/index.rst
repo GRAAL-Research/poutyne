@@ -5,6 +5,11 @@
 
 :github_url: https://github.com/GRAAL-Research/pytoune
 
+.. meta::
+   :description: PyToune is a Keras-like framework for PyTorch and handles much of the boilerplating code needed to train neural networks.
+   :keywords: deep learning, pytorch, neural network, keras, machine learning, data science, python
+   :author: Frédérik Paradis
+
 Here is PyToune
 ===============
 
