@@ -145,7 +145,7 @@ class Experiment:
         return initial_epoch
 
     def train(self, train_loader, valid_loader=None,
-              callbacks=[], lr_schedulers=[],
+              callbacks=[], lr_schedulers=[], save_every_epoch=False,
               disable_tensorboard=False,
               epochs=1000, steps_per_epoch=None, validation_steps=None,
               seed=42):
@@ -172,18 +172,29 @@ class Experiment:
             best_checkpoint = ModelCheckpoint(self.best_checkpoint_filename,
                                               monitor=self.monitor_metric,
                                               mode=self.monitor_mode,
-                                              save_best_only=True,
-                                              restore_best=True,
-                                              verbose=True,
+                                              save_best_only=not save_every_epoch,
+                                              restore_best=not save_every_epoch,
+                                              verbose=not save_every_epoch,
                                               temporary_filename=self.best_checkpoint_tmp_filename)
+            if save_every_epoch:
+                best_restore = BestModelRestore(monitor=self.monitor_metric,
+                                                mode=self.monitor_mode,
+                                                verbose=True)
+                callbacks.append(best_restore)
+
             if initial_epoch > 1:
                 # We set the current best metric score in the ModelCheckpoint so that
                 # it does not save checkpoint it would not have saved if the
                 # optimization was not stopped.
                 best_epoch_stats = self.get_best_epoch_stats()
                 best_epoch = best_epoch_stats['epoch'].item()
-                best_checkpoint.best_filename = self.best_checkpoint_filename.format(epoch=best_epoch)
-                best_checkpoint.current_best = best_epoch_stats[self.monitor_metric].item()
+                best_filename = self.best_checkpoint_filename.format(epoch=best_epoch)
+                if not save_every_epoch:
+                    best_checkpoint.best_filename = best_filename
+                    best_checkpoint.current_best = best_epoch_stats[self.monitor_metric].item()
+                else:
+                    best_restore.best_weights = torch.load(best_filename, map_location='cpu')
+                    best_restore.current_best = best_epoch_stats[self.monitor_metric].item()
 
             checkpoint = ModelCheckpoint(self.model_checkpoint_filename, verbose=False, temporary_filename=self.model_checkpoint_tmp_filename)
             optimizer_checkpoint = OptimizerCheckpoint(self.optimizer_checkpoint_filename, verbose=False, temporary_filename=self.optimizer_checkpoint_tmp_filename)
@@ -212,7 +223,7 @@ class Experiment:
         else:
             for lr_scheduler in lr_schedulers:
                 callbacks.append(lr_scheduler)
-            best_restore = BestModelRestore(monitor=self.monitor_metric, mode=self.monitor_mode)
+            best_restore = BestModelRestore(monitor=self.monitor_metric, mode=self.monitor_mode, verbose=True)
             callbacks.append(best_restore)
 
         self.model.fit_generator(train_loader, valid_loader,
@@ -233,9 +244,12 @@ class Experiment:
             print("Found best checkpoint at epoch: {}".format(best_epoch))
             print(metrics_str)
 
-        best_ckpt_filename = self.best_checkpoint_filename.format(epoch=best_epoch)
-        self.model.load_weights(best_ckpt_filename)
+        self.load_checkpoint(best_epoch)
         return best_epoch_stats
+
+    def load_checkpoint(self, epoch):
+        ckpt_filename = self.best_checkpoint_filename.format(epoch=epoch)
+        self.model.load_weights(ckpt_filename)
 
     def load_last_checkpoint(self):
         self.model.load_weights(self.model_checkpoint_filename)
