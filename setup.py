@@ -1,6 +1,9 @@
 import os
 from setuptools import setup, find_packages
 
+def readme():
+    with open('README.md', 'r') as f:
+        return f.read()
 
 current_file_path = os.path.abspath(os.path.dirname(__file__))
 version_file_path = os.path.join(current_file_path, 'pytoune/version.py')
@@ -31,6 +34,8 @@ setup(
     install_requires=['numpy', 'torch'],
     python_requires='>=3',
     description='A Keras-like framework and utilities for PyTorch.',
+    long_description=readme(),
+    long_description_content_type='text/markdown',
     test_suite='nose.collector',
     tests_require=['nose'],
 )
