@@ -6,7 +6,8 @@ import torch
 from torch.utils.data import DataLoader, TensorDataset
 
 from .callbacks import CallbackList, ProgressionCallback
-from .metrics import get_metric
+from .metrics import get_loss_or_metric
+from .optimizers import get_optimizer
 from .warning_manager import warning_settings
 from pytoune import torch_to_numpy, numpy_to_torch, torch_to
 
@@ -20,12 +21,18 @@ class Model:
         model (torch.nn.Module): A PyTorch module.
         optimizer (torch.optim.Optimizer): Initialized PyTorch optimizer.
         loss_function: Loss function. It can be any PyTorch loss layer or
-            custom loss function. The loss function must have the signature
+            custom loss function. It can also be a string with the same name as
+            a PyTorch loss function (either the functional or object name). The
+            loss function must have the signature
             ``loss_function(input, target)`` where ``input`` is the prediction
             of the network and ``target`` is the ground truth.
         metrics (list): List of functions with the same signature as the loss
-            function. It is called on each batch of the optimization and on the
-            validation batches at the end of the epoch. (Default value = [])
+            function. Each metric can be any PyTorch loss function. It can also
+            be a string with the same name as a PyTorch loss function (either
+            the functional or object name). 'accuracy' (or just 'acc') is also
+            a valid metric. Each metric function is called on each batch of the
+            optimization and on the validation batches at the end of the epoch.
+            (Default value = [])
 
     Attributes:
         model (torch.nn.Module): The associated PyTorch module.
@@ -34,37 +41,34 @@ class Model:
         metrics (list): The associated metric functions.
 
     Example:
-        Using dataset tensors::
+        Using Numpy arrays (or tensors) dataset::
 
-            import torch
             from pytoune.framework import Model
+            import torch
+            import numpy as np
 
-            num_epochs = 10
-            batch_size = 20
-
-            num_features = 10
+            num_features = 20
+            num_classes = 5
 
             # Our training dataset with 800 samples.
             num_train_samples = 800
-            train_x = torch.rand(num_train_samples, num_features)
-            train_y = torch.rand(num_train_samples, 1)
+            train_x = np.random.randn(num_train_samples, num_features).astype('float32')
+            train_y = np.random.randint(num_classes, size=num_train_samples)
 
             # Our validation dataset with 200 samples.
             num_valid_samples = 200
-            valid_x = torch.rand(num_valid_samples, num_features)
-            valid_y = torch.rand(num_valid_samples, 1)
+            valid_x = np.random.randn(num_valid_samples, num_features).astype('float32')
+            valid_y = np.random.randint(num_classes, size=num_valid_samples)
 
-            pytorch_module = torch.nn.Linear(num_features, 1) # Our network
-            loss_function = torch.nn.MSELoss() # Our loss function
-            optimizer = torch.optim.SGD(pytorch_module.parameters(), lr=1e-3)
+            pytorch_module = torch.nn.Linear(num_features, num_classes) # Our network
 
             # We create and optimize our model
-            model = Model(pytorch_module, optimizer, loss_function)
+            model = Model(pytorch_module, 'sgd', 'cross_entropy', metrics=['accuracy'])
             model.fit(train_x, train_y,
                       validation_x=valid_x,
                       validation_y=valid_y,
-                      epochs=num_epochs,
-                      batch_size=batch_size)
+                      epochs=5,
+                      batch_size=32)
 
         .. code-block:: none
 
@@ -79,10 +83,7 @@ class Model:
            from torch.utils.data import DataLoader, TensorDataset
            from pytoune.framework import Model
 
-           num_epochs = 10
-           batch_size = 20
-
-           num_features = 10
+           num_features = 20
            num_classes = 5
 
            # Our training dataset with 800 samples.
@@ -90,23 +91,21 @@ class Model:
            train_x = torch.rand(num_train_samples, num_features)
            train_y = torch.randint(num_classes, (num_train_samples,), dtype=torch.long)
            train_dataset = TensorDataset(train_x, train_y)
-           train_generator = DataLoader(train_dataset, batch_size)
+           train_generator = DataLoader(train_dataset, batch_size=32)
 
            # Our validation dataset with 200 samples.
            num_valid_samples = 200
            valid_x = torch.rand(num_valid_samples, num_features)
            valid_y = torch.randint(num_classes, (num_valid_samples,), dtype=torch.long)
            valid_dataset = TensorDataset(valid_x, valid_y)
-           valid_generator = DataLoader(valid_dataset, batch_size)
+           valid_generator = DataLoader(valid_dataset, batch_size=32)
 
            pytorch_module = torch.nn.Linear(num_features, num_train_samples)
-           loss_function = torch.nn.CrossEntropyLoss()
-           optimizer = torch.optim.SGD(pytorch_module.parameters(), lr=1e-3)
 
-           model = Model(pytorch_module, optimizer, loss_function, metrics=['accuracy'])
+           model = Model(pytorch_module, 'sgd', 'cross_entropy', metrics=['accuracy'])
            model.fit_generator(train_generator,
                                valid_generator,
-                               epochs=num_epochs)
+                               epochs=5)
 
         .. code-block:: none
 
@@ -119,9 +118,9 @@ class Model:
 
     def __init__(self, model, optimizer, loss_function, metrics=[]):
         self.model = model
-        self.optimizer = optimizer
-        self.loss_function = loss_function
-        self.metrics = list(map(get_metric, metrics))
+        self.optimizer = get_optimizer(optimizer, self.model)
+        self.loss_function = get_loss_or_metric(loss_function)
+        self.metrics = list(map(get_loss_or_metric, metrics))
         self.metrics_names = [metric.__name__ for metric in self.metrics]
         self.device = None
 

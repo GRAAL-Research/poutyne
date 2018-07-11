@@ -8,7 +8,6 @@ try:
 except ImportError:
     pd = None
 import torch
-import torch.nn as nn
 
 from pytoune.framework import Model
 from pytoune.framework.callbacks import ModelCheckpoint, \
@@ -51,9 +50,9 @@ class Experiment:
             loss_function = module.loss_function
         elif loss_function is None and type is not None:
             if type.startswith('classif'):
-                loss_function = nn.CrossEntropyLoss()
+                loss_function = 'cross_entropy'
             elif type.startswith('reg'):
-                loss_function = nn.MSELoss()
+                loss_function = 'mse'
 
         if (metrics is None or len(metrics) == 0) and hasattr(module, 'metrics'):
             metrics = module.metrics
@@ -158,6 +157,7 @@ class Experiment:
         # Copy callback list.
         callbacks = list(callbacks)
 
+        tensorboard_writer = None
         initial_epoch = 1
         if self.logging:
             if not os.path.exists(self.directory):
@@ -212,8 +212,8 @@ class Experiment:
                 if SummaryWriter is None:
                     warnings.warn("tensorboardX does not seem to be installed. To remove this warning, set the 'disable_tensorboard' flag to True.")
                 else:
-                    writer = SummaryWriter(self.tensorboard_directory)
-                    tensorboard_logger = TensorBoardLogger(writer)
+                    tensorboard_writer = SummaryWriter(self.tensorboard_directory)
+                    tensorboard_logger = TensorBoardLogger(tensorboard_writer)
                     callbacks.append(tensorboard_logger)
             for i, lr_scheduler in enumerate(lr_schedulers):
                 filename = self.lr_scheduler_filename % i
@@ -226,12 +226,16 @@ class Experiment:
             best_restore = BestModelRestore(monitor=self.monitor_metric, mode=self.monitor_mode, verbose=True)
             callbacks.append(best_restore)
 
-        self.model.fit_generator(train_loader, valid_loader,
-                            epochs=epochs,
-                            steps_per_epoch=steps_per_epoch,
-                            validation_steps=validation_steps,
-                            initial_epoch=initial_epoch,
-                            callbacks=callbacks)
+        try:
+            self.model.fit_generator(train_loader, valid_loader,
+                                epochs=epochs,
+                                steps_per_epoch=steps_per_epoch,
+                                validation_steps=validation_steps,
+                                initial_epoch=initial_epoch,
+                                callbacks=callbacks)
+        finally:
+            if tensorboard_writer is not None:
+                tensorboard_writer.close()
 
 
     def load_best_checkpoint(self, verbose=False):
