@@ -3,7 +3,7 @@ from .callbacks import Callback
 
 
 class Logger(Callback):
-    def __init__(self, batch_granularity=False):
+    def __init__(self, *, batch_granularity=False):
         self.batch_granularity = batch_granularity
         self.epoch = 0
 
@@ -70,8 +70,8 @@ class CSVLogger(Logger):
         append (bool): Whether to append to an existing file.
 
     """
-    def __init__(self, filename, batch_granularity=False, separator=',', append=False):
-        super().__init__(batch_granularity)
+    def __init__(self, filename, *, batch_granularity=False, separator=',', append=False):
+        super().__init__(batch_granularity=batch_granularity)
         self.filename = filename
         self.separator = separator
         self.append = append

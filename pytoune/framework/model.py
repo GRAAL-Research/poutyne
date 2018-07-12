@@ -116,7 +116,7 @@ class Model:
 
     """
 
-    def __init__(self, model, optimizer, loss_function, metrics=[]):
+    def __init__(self, model, optimizer, loss_function, *, metrics=[]):
         self.model = model
         self.optimizer = get_optimizer(optimizer, self.model)
         self.loss_function = get_loss_or_metric(loss_function)
@@ -124,7 +124,7 @@ class Model:
         self.metrics_names = [metric.__name__ for metric in self.metrics]
         self.device = None
 
-    def fit(self, x, y, validation_x=None, validation_y=None, batch_size=32, epochs=1000, steps_per_epoch=None, validation_steps=None, initial_epoch=1, verbose=True, callbacks=[]):
+    def fit(self, x, y, validation_x=None, validation_y=None, *, batch_size=32, epochs=1000, steps_per_epoch=None, validation_steps=None, initial_epoch=1, verbose=True, callbacks=[]):
         """
         Trains the model on a dataset. This method creates generators and calls
         the ``fit_generator`` method.
@@ -202,7 +202,7 @@ class Model:
         generator = DataLoader(dataset, batch_size)
         return generator
 
-    def fit_generator(self, train_generator, valid_generator=None, epochs=1000, steps_per_epoch=None, validation_steps=None, initial_epoch=1, verbose=True, callbacks=[]):
+    def fit_generator(self, train_generator, valid_generator=None, *, epochs=1000, steps_per_epoch=None, validation_steps=None, initial_epoch=1, verbose=True, callbacks=[]):
         """
         Trains the model on a dataset using a generator.
 
@@ -357,7 +357,7 @@ class Model:
             args = torch_to(args, self.device)
         return args[0] if len(args) == 1 else args
 
-    def train_on_batch(self, x, y, return_pred=False):
+    def train_on_batch(self, x, y, *, return_pred=False):
         """
         Trains the model for the batch ``(x, y)`` and computes the loss and
         the metrics, and optionaly returns the predictions.
@@ -405,7 +405,7 @@ class Model:
 
         return ret[0] if len(ret) == 1 else ret
 
-    def predict(self, x, batch_size=32):
+    def predict(self, x, *, batch_size=32):
         """
         Returns the predictions of the network given a dataset ``x``, where the
         tensors are converted into Numpy arrays.
@@ -422,7 +422,7 @@ class Model:
         pred_y = self.predict_generator(generator)
         return np.concatenate(pred_y)
 
-    def predict_generator(self, generator, steps=None):
+    def predict_generator(self, generator, *, steps=None):
         """
         Returns the predictions of the network given batches of samples ``x``,
         where the tensors are converted into Numpy arrays.
@@ -464,7 +464,7 @@ class Model:
             x = self._process_input(x)
             return torch_to_numpy(self.model(x))
 
-    def evaluate(self, x, y, batch_size=32, return_pred=False):
+    def evaluate(self, x, y, *, batch_size=32, return_pred=False):
         """
         Computes the loss and the metrics of the network on batches of samples
         and optionaly returns the predictions.
@@ -490,7 +490,7 @@ class Model:
             ``pred_y`` is a Numpy array of the predictions.
         """
         generator = self._dataloader_from_data(x, y, batch_size=batch_size)
-        ret = self.evaluate_generator(generator, len(generator), return_pred=return_pred)
+        ret = self.evaluate_generator(generator, steps=len(generator), return_pred=return_pred)
         if return_pred:
             ret = list(ret)
             ret[-1] = np.concatenate(ret[-1])
@@ -498,7 +498,7 @@ class Model:
         return ret
 
 
-    def evaluate_generator(self, generator, steps=None, return_pred=False):
+    def evaluate_generator(self, generator, *, steps=None, return_pred=False):
         """
         Computes the loss and the metrics of the network on batches of samples
         and optionaly returns the predictions.
@@ -569,7 +569,7 @@ class Model:
         loss, metrics, pred_y = self._validate(generator, steps, return_pred=return_pred)
         return self._format_return(loss, metrics, pred_y, return_pred)
 
-    def evaluate_on_batch(self, x, y, return_pred=False):
+    def evaluate_on_batch(self, x, y, *, return_pred=False):
         """
         Computes the loss and the metrics of the network on a single batch of
         samples and optionaly returns the predictions.

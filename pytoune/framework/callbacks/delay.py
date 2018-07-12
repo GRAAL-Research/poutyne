@@ -17,7 +17,7 @@ class DelayCallback(Callback):
             method is called on the callback(s) before the ``on_batch_begin``
             method.
     """
-    def __init__(self, callbacks, epoch_delay=None, batch_delay=None):
+    def __init__(self, callbacks, *, epoch_delay=None, batch_delay=None):
         if isinstance(callbacks, CallbackList):
             self.callbacks = callbacks
         elif isinstance(callbacks, list):

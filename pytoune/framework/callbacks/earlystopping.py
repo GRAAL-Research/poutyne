@@ -71,7 +71,7 @@ class EarlyStopping(Callback):
             (Default value = 'min')
     """
 
-    def __init__(self, monitor='val_loss',
+    def __init__(self, *, monitor='val_loss',
                  min_delta=0, patience=0, verbose=False, mode='min'):
         super(EarlyStopping, self).__init__()
 

@@ -17,7 +17,7 @@ class BestModelRestore(Callback):
         verbose (bool): Whether to display a message when the model has improved
             or when restoring the best model. (Default value = False)
     """
-    def __init__(self, monitor='val_loss', mode='min', verbose=False):
+    def __init__(self, *, monitor='val_loss', mode='min', verbose=False):
         self.monitor = monitor
 
         if mode not in ['min', 'max']:

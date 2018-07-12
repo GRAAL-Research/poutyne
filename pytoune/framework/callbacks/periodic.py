@@ -97,7 +97,7 @@ class PeriodicSaveCallback(Callback):
             (Default value = 'wb')
     """
 
-    def __init__(self, filename, monitor='val_loss', verbose=False, save_best_only=False, mode='min', period=1, temporary_filename=None, atomic_write=True, open_mode='wb'):
+    def __init__(self, filename, *, monitor='val_loss', verbose=False, save_best_only=False, mode='min', period=1, temporary_filename=None, atomic_write=True, open_mode='wb'):
         self.filename = filename
         self.monitor = monitor
         self.verbose = verbose

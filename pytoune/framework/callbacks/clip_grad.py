@@ -11,7 +11,7 @@ class ClipNorm(Callback):
         `torch.nn.utils.clip_grad_norm_ <http://pytorch.org/docs/stable/nn.html#torch.nn.utils.clip_grad_norm_>`_
 
     """
-    def __init__(self, parameters, max_norm, norm_type=2):
+    def __init__(self, parameters, max_norm, *, norm_type=2):
         super(ClipNorm, self).__init__()
         self.parameters = list(parameters)
         self.max_norm = max_norm

@@ -37,7 +37,7 @@ class Experiment:
     LR_SCHEDULER_TMP_FILENAME           = 'lr_sched_%d.tmp.lrsched'
     TEST_LOG_FILENAME                   = 'test_log.tsv'
 
-    def __init__(self, directory, module, device=None, logging=True,
+    def __init__(self, directory, module, *, device=None, logging=True,
                  optimizer=None, loss_function=None, metrics=[],
                  monitor_metric=None, monitor_mode=None, type=None):
         self.directory = directory
@@ -143,7 +143,7 @@ class Experiment:
                     self._warn_missing_file(filename)
         return initial_epoch
 
-    def train(self, train_loader, valid_loader=None,
+    def train(self, train_loader, valid_loader=None, *,
               callbacks=[], lr_schedulers=[], save_every_epoch=False,
               disable_tensorboard=False,
               epochs=1000, steps_per_epoch=None, validation_steps=None,
@@ -238,7 +238,7 @@ class Experiment:
                 tensorboard_writer.close()
 
 
-    def load_best_checkpoint(self, verbose=False):
+    def load_best_checkpoint(self, *, verbose=False):
         best_epoch_stats = self.get_best_epoch_stats()
         best_epoch = best_epoch_stats['epoch'].item()
 
@@ -258,7 +258,7 @@ class Experiment:
     def load_last_checkpoint(self):
         self.model.load_weights(self.model_checkpoint_filename)
 
-    def test(self, test_loader, steps=None,
+    def test(self, test_loader, *, steps=None,
              load_best_checkpoint=True, load_last_checkpoint=False,
              seed=42):
         if seed is not None:
