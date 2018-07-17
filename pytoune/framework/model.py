@@ -307,7 +307,7 @@ class Model:
             with torch.enable_grad():
                 for step, (x, y) in self._get_step_iterator(steps_per_epoch, train_generator):
                     callback_list.on_batch_begin(step, {})
-                    self.model.zero_grad()
+                    self.optimizer.zero_grad()
 
                     loss_tensor, metrics, _ = self._compute_loss_and_metrics(x, y, return_loss_tensor=True)
 
@@ -385,7 +385,7 @@ class Model:
         with torch.enable_grad():
             self._transfer_optimizer_state_to_right_device()
 
-            self.model.zero_grad()
+            self.optimizer.zero_grad()
 
             loss_tensor, metrics, pred_y = self._compute_loss_and_metrics(x, y, return_loss_tensor=True, return_pred=return_pred)
 
