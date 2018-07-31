@@ -1,8 +1,10 @@
 import torch.nn.functional as F
 
-def acc(y_pred, y_true):
-    _, y_pred = y_pred.max(1)
-    acc_pred = (y_pred == y_true).float().mean()
+def acc(y_pred, y_true, ignore_index=-100):
+    y_pred = y_pred.argmax(1)
+    weights = (y_true != ignore_index).float()
+    num_labels = weights.sum()
+    acc_pred = ((y_pred == y_true).float() * weights).sum() / num_labels
     return acc_pred * 100
 
 def bce(y_pred, y_true):
