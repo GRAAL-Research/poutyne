@@ -742,9 +742,6 @@ class Model:
         that the batches can send to the right device before passing it to the
         network.
 
-        This also saves the device so that the batches can send to the right
-        device before passing it to the network.
-
         Returns:
             `self`.
         """
@@ -764,7 +761,7 @@ class Model:
         Returns:
             `self`.
         """
-        ret = self.model.cpu(*args, **kwargs)
+        self.model.cpu(*args, **kwargs)
         self.device = None
         for _, p in zip(range(1), self.model.parameters()):
             self.device = p.device
