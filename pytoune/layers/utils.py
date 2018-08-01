@@ -1,3 +1,5 @@
+# pylint: disable=arguments-differ
+
 import torch.nn as nn
 
 class Flatten(nn.Module):

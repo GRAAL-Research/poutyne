@@ -1,10 +1,8 @@
-import os
 import warnings
-import tempfile
-
-import torch
 
 from .periodic import PeriodicSaveCallback
+from .lr_scheduler import PyTorchLRSchedulerWrapper, ReduceLROnPlateau
+
 
 class ModelCheckpoint(PeriodicSaveCallback):
     """
@@ -22,11 +20,12 @@ class ModelCheckpoint(PeriodicSaveCallback):
     """
 
     def __init__(self, *args, restore_best=False, **kwargs):
-        super(ModelCheckpoint, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.restore_best = restore_best
         if self.restore_best and not self.save_best_only:
-            raise ValueError("The 'restore_best' argument only works when 'save_best_only' is also true.")
+            raise ValueError("The 'restore_best' argument only works when "
+                             "'save_best_only' is also true.")
 
     def save_file(self, fd, epoch, logs):
         self.model.save_weights(fd)
@@ -59,8 +58,6 @@ class OptimizerCheckpoint(PeriodicSaveCallback):
     def save_file(self, fd, epoch, logs):
         self.model.save_optimizer_state(fd)
 
-from .lr_scheduler import PyTorchLRSchedulerWrapper, ReduceLROnPlateau
-
 class LRSchedulerCheckpoint(PeriodicSaveCallback):
     """
     Save the state of an LR scheduler callback after every epoch. The LR
@@ -83,11 +80,10 @@ class LRSchedulerCheckpoint(PeriodicSaveCallback):
         pytoune.framework.PeriodicSaveCallback
     """
     def __init__(self, lr_scheduler, *args, **kwargs):
-        super(LRSchedulerCheckpoint, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.lr_scheduler = lr_scheduler
 
-        if not isinstance(self.lr_scheduler, PyTorchLRSchedulerWrapper) and \
-                not isinstance(self.lr_scheduler, ReduceLROnPlateau):
+        if not isinstance(self.lr_scheduler, (PyTorchLRSchedulerWrapper, ReduceLROnPlateau)):
             raise ValueError("Unknown scheduler callback '%s'." % lr_scheduler)
 
     def save_file(self, fd, epoch, logs):

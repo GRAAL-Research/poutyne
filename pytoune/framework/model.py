@@ -1,15 +1,15 @@
 import warnings
-import numpy as np
 import itertools
+import numpy as np
 
 import torch
 from torch.utils.data import DataLoader, TensorDataset
 
+from pytoune import torch_to_numpy, numpy_to_torch, torch_to
 from .callbacks import CallbackList, ProgressionCallback
 from .metrics import get_loss_or_metric
 from .optimizers import get_optimizer
 from .warning_manager import warning_settings
-from pytoune import torch_to_numpy, numpy_to_torch, torch_to
 
 class Model:
     """
@@ -124,7 +124,9 @@ class Model:
         self.metrics_names = [metric.__name__ for metric in self.metrics]
         self.device = None
 
-    def fit(self, x, y, validation_x=None, validation_y=None, *, batch_size=32, epochs=1000, steps_per_epoch=None, validation_steps=None, initial_epoch=1, verbose=True, callbacks=[]):
+    def fit(self, x, y, validation_x=None, validation_y=None, *,
+            batch_size=32, epochs=1000, steps_per_epoch=None, validation_steps=None,
+            initial_epoch=1, verbose=True, callbacks=[]):
         """
         Trains the model on a dataset. This method creates generators and calls
         the ``fit_generator`` method.
@@ -184,7 +186,9 @@ class Model:
         train_generator = self._dataloader_from_data(x, y, batch_size=batch_size)
         valid_generator = None
         if validation_x is not None or validation_y is not None:
-            valid_generator = self._dataloader_from_data(validation_x, validation_y, batch_size=batch_size)
+            valid_generator = self._dataloader_from_data(validation_x,
+                                                         validation_y,
+                                                         batch_size=batch_size)
 
         return self.fit_generator(train_generator,
                                   valid_generator=valid_generator,
@@ -196,13 +200,17 @@ class Model:
                                   callbacks=callbacks)
 
     def _dataloader_from_data(self, *args, batch_size=None):
-        assert batch_size is not None, "batch_size should not be None. Please, report this as a bug."
+        assert batch_size is not None, \
+            "batch_size should not be None. Please, report this as a bug."
         args = numpy_to_torch(args)
         dataset = TensorDataset(*args) if len(args) > 1 else args[0]
         generator = DataLoader(dataset, batch_size)
         return generator
 
-    def fit_generator(self, train_generator, valid_generator=None, *, epochs=1000, steps_per_epoch=None, validation_steps=None, initial_epoch=1, verbose=True, callbacks=[]):
+    def fit_generator(self, train_generator, valid_generator=None, *,
+                      epochs=1000, steps_per_epoch=None, validation_steps=None,
+                      initial_epoch=1, verbose=True, callbacks=[]):
+        # pylint: disable=too-many-locals,too-many-statements
         """
         Trains the model on a dataset using a generator.
 
@@ -309,7 +317,9 @@ class Model:
                     callback_list.on_batch_begin(step, {})
                     self.optimizer.zero_grad()
 
-                    loss_tensor, metrics, _ = self._compute_loss_and_metrics(x, y, return_loss_tensor=True)
+                    loss_tensor, metrics, _ = self._compute_loss_and_metrics(
+                        x, y, return_loss_tensor=True
+                    )
 
                     loss_tensor.backward()
                     callback_list.on_backward_end(step)
@@ -329,7 +339,10 @@ class Model:
             if valid_generator is not None:
                 self.model.eval()
                 val_loss, val_metrics, _ = self._validate(valid_generator, validation_steps)
-                val_metrics_dict = {'val_' + metric_name:metric for metric_name, metric in zip(self.metrics_names, val_metrics)}
+                val_metrics_dict = {
+                    'val_' + metric_name:metric
+                    for metric_name, metric in zip(self.metrics_names, val_metrics)
+                }
                 val_dict = {'val_loss': val_loss, **val_metrics_dict}
 
             losses_mean = losses_sum / sizes_sum
@@ -387,7 +400,9 @@ class Model:
 
             self.optimizer.zero_grad()
 
-            loss_tensor, metrics, pred_y = self._compute_loss_and_metrics(x, y, return_loss_tensor=True, return_pred=return_pred)
+            loss_tensor, metrics, pred_y = self._compute_loss_and_metrics(
+                x, y, return_loss_tensor=True, return_pred=return_pred
+            )
 
             loss_tensor.backward()
             self.optimizer.step()
@@ -539,29 +554,35 @@ class Model:
 
             .. code-block:: python
 
-                model = Model(pytorch_module, optimizer, loss_function, metrics=[])
+                model = Model(pytorch_module, optimizer, loss_function,
+                              metrics=[])
                 loss = model.evaluate_generator(test_generator)
 
             With only one metric:
 
             .. code-block:: python
 
-                model = Model(pytorch_module, optimizer, loss_function, metrics=[my_metric_fn])
+                model = Model(pytorch_module, optimizer, loss_function,
+                              metrics=[my_metric_fn])
                 loss, my_metric = model.evaluate_generator(test_generator)
 
             With only several metrics:
 
             .. code-block:: python
 
-                model = Model(pytorch_module, optimizer, loss_function, metrics=[my_metric1_fn, my_metric2_fn])
+                model = Model(pytorch_module, optimizer, loss_function,
+                              metrics=[my_metric1_fn, my_metric2_fn])
                 loss, (my_metric1, my_metric2) = model.evaluate_generator(test_generator)
 
             With metrics and ``return_pred`` flag:
 
             .. code-block:: python
 
-                model = Model(pytorch_module, optimizer, loss_function, metrics=[my_metric1_fn, my_metric2_fn])
-                loss, (my_metric1, my_metric2), pred_y = model.evaluate_generator(test_generator, return_pred=True)
+                model = Model(pytorch_module, optimizer, loss_function,
+                              metrics=[my_metric1_fn, my_metric2_fn])
+                loss, (my_metric1, my_metric2), pred_y = model.evaluate_generator(
+                    test_generator, return_pred=True
+                )
         """
         self.model.eval()
         if steps is None:
@@ -599,6 +620,7 @@ class Model:
         return self._format_return(loss, metrics, pred_y, return_pred)
 
     def _validate(self, valid_generator, validation_steps, return_pred=False):
+        # pylint: disable=too-many-locals
         losses_sum = 0.
         metrics_sum = np.zeros(len(self.metrics))
         sizes_sum = 0
@@ -608,7 +630,9 @@ class Model:
 
         with torch.no_grad():
             for _, (x, y) in self._get_step_iterator(validation_steps, valid_generator):
-                loss, metrics, pred_y = self._compute_loss_and_metrics(x, y, return_pred=return_pred)
+                loss, metrics, pred_y = self._compute_loss_and_metrics(
+                    x, y, return_pred=return_pred
+                )
                 if return_pred:
                     pred_list.append(pred_y)
 

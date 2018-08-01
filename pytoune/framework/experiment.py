@@ -1,3 +1,4 @@
+# pylint: disable=redefined-builtin
 import os
 import warnings
 import random
@@ -23,19 +24,19 @@ except ImportError:
     SummaryWriter = None
 
 class Experiment:
-    BEST_CHECKPOINT_FILENAME            = 'checkpoint_epoch_{epoch}.ckpt'
-    BEST_CHECKPOINT_TMP_FILENAME        = 'checkpoint_epoch.tmp.ckpt'
-    MODEL_CHECKPOINT_FILENAME           = 'checkpoint.ckpt'
-    MODEL_CHECKPOINT_TMP_FILENAME       = 'checkpoint.tmp.ckpt'
-    OPTIMIZER_CHECKPOINT_FILENAME       = 'checkpoint.optim'
-    OPTIMIZER_CHECKPOINT_TMP_FILENAME   = 'checkpoint.tmp.optim'
-    LOG_FILENAME                        = 'log.tsv'
-    TENSORBOARD_DIRECTORY               = 'tensorboard'
-    EPOCH_FILENAME                      = 'last.epoch'
-    EPOCH_TMP_FILENAME                  = 'last.tmp.epoch'
-    LR_SCHEDULER_FILENAME               = 'lr_sched_%d.lrsched'
-    LR_SCHEDULER_TMP_FILENAME           = 'lr_sched_%d.tmp.lrsched'
-    TEST_LOG_FILENAME                   = 'test_log.tsv'
+    BEST_CHECKPOINT_FILENAME = 'checkpoint_epoch_{epoch}.ckpt'
+    BEST_CHECKPOINT_TMP_FILENAME = 'checkpoint_epoch.tmp.ckpt'
+    MODEL_CHECKPOINT_FILENAME = 'checkpoint.ckpt'
+    MODEL_CHECKPOINT_TMP_FILENAME = 'checkpoint.tmp.ckpt'
+    OPTIMIZER_CHECKPOINT_FILENAME = 'checkpoint.optim'
+    OPTIMIZER_CHECKPOINT_TMP_FILENAME = 'checkpoint.tmp.optim'
+    LOG_FILENAME = 'log.tsv'
+    TENSORBOARD_DIRECTORY = 'tensorboard'
+    EPOCH_FILENAME = 'last.epoch'
+    EPOCH_TMP_FILENAME = 'last.tmp.epoch'
+    LR_SCHEDULER_FILENAME = 'lr_sched_%d.lrsched'
+    LR_SCHEDULER_TMP_FILENAME = 'lr_sched_%d.tmp.lrsched'
+    TEST_LOG_FILENAME = 'test_log.tsv'
 
     def __init__(self, directory, module, *, device=None, logging=True,
                  optimizer=None, loss_function=None, metrics=[],
@@ -46,32 +47,9 @@ class Experiment:
         if type is not None and not type.startswith('classif') and not type.startswith('reg'):
             raise ValueError("Invalid type '%s'" % type)
 
-        if loss_function is None and hasattr(module, 'loss_function'):
-            loss_function = module.loss_function
-        elif loss_function is None and type is not None:
-            if type.startswith('classif'):
-                loss_function = 'cross_entropy'
-            elif type.startswith('reg'):
-                loss_function = 'mse'
-
-        if (metrics is None or len(metrics) == 0) and hasattr(module, 'metrics'):
-            metrics = module.metrics
-        elif (metrics is None or len(metrics) == 0) and \
-                type is not None and type.startswith('classif'):
-            metrics = ['accuracy']
-
-        if monitor_mode is not None and monitor_mode not in ['min', 'max']:
-            raise ValueError("Invalid mode '%s'" % monitor_mode)
-
-        self.monitor_metric = 'val_loss'
-        self.monitor_mode = 'min'
-        if monitor_metric is not None:
-            self.monitor_metric = monitor_metric
-            if monitor_mode is not None:
-                self.monitor_mode = monitor_mode
-        elif type is not None and type.startswith('classif'):
-            self.monitor_metric = 'val_acc'
-            self.monitor_mode = 'max'
+        loss_function = self._get_loss_function(loss_function, module, type)
+        metrics = self._get_metrics(metrics, module, type)
+        self._set_monitor(monitor_metric, monitor_mode, type)
 
         self.model = Model(module, optimizer, loss_function, metrics=metrics)
         if device is not None:
@@ -84,7 +62,9 @@ class Experiment:
         self.model_checkpoint_filename = join_dir(Experiment.MODEL_CHECKPOINT_FILENAME)
         self.model_checkpoint_tmp_filename = join_dir(Experiment.MODEL_CHECKPOINT_TMP_FILENAME)
         self.optimizer_checkpoint_filename = join_dir(Experiment.OPTIMIZER_CHECKPOINT_FILENAME)
-        self.optimizer_checkpoint_tmp_filename = join_dir(Experiment.OPTIMIZER_CHECKPOINT_TMP_FILENAME)
+        self.optimizer_checkpoint_tmp_filename = join_dir(
+            Experiment.OPTIMIZER_CHECKPOINT_TMP_FILENAME
+        )
         self.log_filename = join_dir(Experiment.LOG_FILENAME)
         self.tensorboard_directory = join_dir(Experiment.TENSORBOARD_DIRECTORY)
         self.epoch_filename = join_dir(Experiment.EPOCH_FILENAME)
@@ -92,6 +72,38 @@ class Experiment:
         self.lr_scheduler_filename = join_dir(Experiment.LR_SCHEDULER_FILENAME)
         self.lr_scheduler_tmp_filename = join_dir(Experiment.LR_SCHEDULER_TMP_FILENAME)
         self.test_log_filename = join_dir(Experiment.TEST_LOG_FILENAME)
+
+    def _get_loss_function(self, loss_function, module, type):
+        if loss_function is None and hasattr(module, 'loss_function'):
+            return module.loss_function
+        elif loss_function is None and type is not None:
+            if type.startswith('classif'):
+                return 'cross_entropy'
+            elif type.startswith('reg'):
+                return 'mse'
+        return loss_function
+
+    def _get_metrics(self, metrics, module, type):
+        if (metrics is None or len(metrics) == 0) and hasattr(module, 'metrics'):
+            return module.metrics
+        elif (metrics is None or len(metrics) == 0) and \
+                type is not None and type.startswith('classif'):
+            return ['accuracy']
+        return metrics
+
+    def _set_monitor(self, monitor_metric, monitor_mode, type):
+        if monitor_mode is not None and monitor_mode not in ['min', 'max']:
+            raise ValueError("Invalid mode '%s'" % monitor_mode)
+
+        self.monitor_metric = 'val_loss'
+        self.monitor_mode = 'min'
+        if monitor_metric is not None:
+            self.monitor_metric = monitor_metric
+            if monitor_mode is not None:
+                self.monitor_mode = monitor_mode
+        elif type is not None and type.startswith('classif'):
+            self.monitor_metric = 'val_acc'
+            self.monitor_mode = 'max'
 
     def get_best_epoch_stats(self):
         if pd is None:
@@ -108,6 +120,7 @@ class Experiment:
         warnings.warn("Missing checkpoint: %s." % filename)
 
     def _load_epoch_state(self, lr_schedulers):
+        # pylint: disable=broad-except
         initial_epoch = 1
         if os.path.isfile(self.epoch_filename):
             try:
@@ -117,7 +130,9 @@ class Experiment:
                 print(e)
             if os.path.isfile(self.model_checkpoint_filename):
                 try:
-                    print("Loading weights from %s and starting at epoch %d." % (self.model_checkpoint_filename, initial_epoch))
+                    print("Loading weights from %s and starting at epoch %d." % (
+                        self.model_checkpoint_filename, initial_epoch
+                    ))
                     self.model.load_weights(self.model_checkpoint_filename)
                 except Exception as e:
                     print(e)
@@ -125,7 +140,9 @@ class Experiment:
                 self._warn_missing_file(self.model_checkpoint_filename)
             if os.path.isfile(self.optimizer_checkpoint_filename):
                 try:
-                    print("Loading optimizer state from %s and starting at epoch %d." % (self.optimizer_checkpoint_filename, initial_epoch))
+                    print("Loading optimizer state from %s and starting at epoch %d." % (
+                        self.optimizer_checkpoint_filename, initial_epoch
+                    ))
                     self.model.load_optimizer_state(self.optimizer_checkpoint_filename)
                 except Exception as e:
                     print(e)
@@ -135,7 +152,9 @@ class Experiment:
                 filename = self.lr_scheduler_filename % i
                 if os.path.isfile(filename):
                     try:
-                        print("Loading LR scheduler state from %s and starting at epoch %d." % (filename, initial_epoch))
+                        print("Loading LR scheduler state from %s and starting at epoch %d." % (
+                            filename, initial_epoch
+                        ))
                         lr_scheduler.load_state(filename)
                     except Exception as e:
                         print(e)
@@ -148,6 +167,7 @@ class Experiment:
               disable_tensorboard=False,
               epochs=1000, steps_per_epoch=None, validation_steps=None,
               seed=42):
+        # pylint: disable=too-many-locals,too-many-branches,too-many-statements
         if seed is not None:
             # Make training deterministic.
             random.seed(seed)
@@ -196,8 +216,15 @@ class Experiment:
                     best_restore.best_weights = torch.load(best_filename, map_location='cpu')
                     best_restore.current_best = best_epoch_stats[self.monitor_metric].item()
 
-            checkpoint = ModelCheckpoint(self.model_checkpoint_filename, verbose=False, temporary_filename=self.model_checkpoint_tmp_filename)
-            optimizer_checkpoint = OptimizerCheckpoint(self.optimizer_checkpoint_filename, verbose=False, temporary_filename=self.optimizer_checkpoint_tmp_filename)
+            checkpoint = ModelCheckpoint(
+                self.model_checkpoint_filename,
+                verbose=False,
+                temporary_filename=self.model_checkpoint_tmp_filename)
+            optimizer_checkpoint = OptimizerCheckpoint(
+                self.optimizer_checkpoint_filename,
+                verbose=False,
+                temporary_filename=self.optimizer_checkpoint_tmp_filename
+            )
 
             # We save the last epoch number after the end of the epoch so that the
             # load_epoch_state() knows which epoch to restart the optimization.
@@ -206,11 +233,14 @@ class Experiment:
                                                    temporary_filename=self.epoch_tmp_filename,
                                                    open_mode='w')
 
-            callbacks += [csv_logger, best_checkpoint, checkpoint, optimizer_checkpoint, save_epoch_number]
+            callbacks += [csv_logger, best_checkpoint, checkpoint,
+                          optimizer_checkpoint, save_epoch_number]
 
             if not disable_tensorboard:
                 if SummaryWriter is None:
-                    warnings.warn("tensorboardX does not seem to be installed. To remove this warning, set the 'disable_tensorboard' flag to True.")
+                    warnings.warn("tensorboardX does not seem to be installed. "
+                                  "To remove this warning, set the 'disable_tensorboard' "
+                                  "flag to True.")
                 else:
                     tensorboard_writer = SummaryWriter(self.tensorboard_directory)
                     tensorboard_logger = TensorBoardLogger(tensorboard_writer)
@@ -218,21 +248,28 @@ class Experiment:
             for i, lr_scheduler in enumerate(lr_schedulers):
                 filename = self.lr_scheduler_filename % i
                 tmp_filename = self.lr_scheduler_tmp_filename % i
-                lr_scheduler_checkpoint = LRSchedulerCheckpoint(lr_scheduler, filename, verbose=False, temporary_filename=tmp_filename)
+                lr_scheduler_checkpoint = LRSchedulerCheckpoint(
+                    lr_scheduler,
+                    filename,
+                    verbose=False,
+                    temporary_filename=tmp_filename
+                )
                 callbacks.append(lr_scheduler_checkpoint)
         else:
             for lr_scheduler in lr_schedulers:
                 callbacks.append(lr_scheduler)
-            best_restore = BestModelRestore(monitor=self.monitor_metric, mode=self.monitor_mode, verbose=True)
+            best_restore = BestModelRestore(monitor=self.monitor_metric,
+                                            mode=self.monitor_mode,
+                                            verbose=True)
             callbacks.append(best_restore)
 
         try:
             self.model.fit_generator(train_loader, valid_loader,
-                                epochs=epochs,
-                                steps_per_epoch=steps_per_epoch,
-                                validation_steps=validation_steps,
-                                initial_epoch=initial_epoch,
-                                callbacks=callbacks)
+                                     epochs=epochs,
+                                     steps_per_epoch=steps_per_epoch,
+                                     validation_steps=validation_steps,
+                                     initial_epoch=initial_epoch,
+                                     callbacks=callbacks)
         finally:
             if tensorboard_writer is not None:
                 tensorboard_writer.close()
@@ -244,7 +281,7 @@ class Experiment:
 
         if verbose:
             metrics_str = ', '.join('%s: %g' % (metric_name, best_epoch_stats[metric_name].item())
-                                        for metric_name in best_epoch_stats.columns[2:])
+                                    for metric_name in best_epoch_stats.columns[2:])
             print("Found best checkpoint at epoch: {}".format(best_epoch))
             print(metrics_str)
 
@@ -277,9 +314,11 @@ class Experiment:
         if not isinstance(test_metrics, np.ndarray):
             test_metrics = np.array([test_metrics])
 
-        test_metrics_names = ['test_loss'] + ['test_' + metric_name for metric_name in self.model.metrics_names]
+        test_metrics_names = ['test_loss'] + \
+                             ['test_' + metric_name for metric_name in self.model.metrics_names]
         test_metrics_values = np.concatenate(([test_loss], test_metrics))
-        test_metrics_str = ', '.join('%s: %g' % (col, val) for col, val in zip(test_metrics_names, test_metrics_values))
+        test_metrics_str = ', '.join('%s: %g' % (col, val)
+                                     for col, val in zip(test_metrics_names, test_metrics_values))
         print("On best model: %s" % test_metrics_str)
 
         if self.logging:

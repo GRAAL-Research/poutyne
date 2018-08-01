@@ -97,7 +97,10 @@ class PeriodicSaveCallback(Callback):
             (Default value = 'wb')
     """
 
-    def __init__(self, filename, *, monitor='val_loss', verbose=False, save_best_only=False, mode='min', period=1, temporary_filename=None, atomic_write=True, open_mode='wb'):
+    def __init__(self, filename, *,
+                 monitor='val_loss', mode='min', save_best_only=False, period=1, verbose=False,
+                 temporary_filename=None, atomic_write=True, open_mode='wb'):
+        super().__init__()
         self.filename = filename
         self.monitor = monitor
         self.verbose = verbose
@@ -111,10 +114,10 @@ class PeriodicSaveCallback(Callback):
             if mode not in ['min', 'max']:
                 raise ValueError("Invalid mode '%s'" % mode)
             if mode == 'min':
-                self.monitor_op = lambda x,y: x < y
+                self.monitor_op = lambda x, y: x < y
                 self.current_best = float('Inf')
             elif mode == 'max':
-                self.monitor_op = lambda x,y: x > y
+                self.monitor_op = lambda x, y: x > y
                 self.current_best = -float('Inf')
 
         self.period = period
@@ -139,7 +142,13 @@ class PeriodicSaveCallback(Callback):
                 os.replace(tmp_filename, filename)
             except OSError as e:
                 # This may happen if the temp filesystem is not the same as the final destination's.
-                warnings.warn("Impossible to move the file to its final destination: os.replace(%s, %s) -> %s\nYou may want to specify the 'temporary_filename' argument to %s." % (tmp_filename, filename, e, self.__class__.__name__))
+                warnings.warn(
+                    "Impossible to move the file to its final destination: "
+                    "os.replace(%s, %s) -> %s\nYou may want to specify the "
+                    "'temporary_filename' argument to %s." % (
+                        tmp_filename, filename, e, self.__class__.__name__
+                    )
+                )
                 os.remove(tmp_filename)
 
                 warnings.warn('Saving %s non-atomically instead.' % filename)
@@ -181,7 +190,7 @@ class PeriodicSaveLambda(PeriodicSaveCallback):
         pytoune.framework.PeriodicSaveCallback
     """
     def __init__(self, func, *args, **kwargs):
-        super(PeriodicSaveLambda, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.func = func
 
     def save_file(self, fd, epoch, logs):

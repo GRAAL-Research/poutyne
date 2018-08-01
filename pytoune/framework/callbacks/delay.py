@@ -18,6 +18,7 @@ class DelayCallback(Callback):
             method.
     """
     def __init__(self, callbacks, *, epoch_delay=None, batch_delay=None):
+        super().__init__()
         if isinstance(callbacks, CallbackList):
             self.callbacks = callbacks
         elif isinstance(callbacks, list):

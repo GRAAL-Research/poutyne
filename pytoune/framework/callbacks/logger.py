@@ -4,6 +4,7 @@ from .callbacks import Callback
 
 class Logger(Callback):
     def __init__(self, *, batch_granularity=False):
+        super().__init__()
         self.batch_granularity = batch_granularity
         self.epoch = 0
 
@@ -26,7 +27,7 @@ class Logger(Callback):
             logs = self._get_logs_without_unknown_keys(logs)
             self._on_batch_end_write(batch, logs)
 
-    def _on_batch_end_write(self, logs):
+    def _on_batch_end_write(self, batch, logs):
         pass
 
     def on_epoch_begin(self, epoch, logs):
@@ -40,7 +41,7 @@ class Logger(Callback):
         logs = self._get_logs_without_unknown_keys(logs)
         self._on_epoch_end_write(epoch, logs)
 
-    def _on_epoch_end_write(self, logs):
+    def _on_epoch_end_write(self, epoch, logs):
         pass
 
     def on_train_end(self, logs=None):
@@ -79,7 +80,9 @@ class CSVLogger(Logger):
     def _on_train_begin_write(self, logs):
         open_flag = 'a' if self.append else 'w'
         self.csvfile = open(self.filename, open_flag, newline='')
-        self.writer = csv.DictWriter(self.csvfile, fieldnames=self.fieldnames, delimiter=self.separator)
+        self.writer = csv.DictWriter(self.csvfile,
+                                     fieldnames=self.fieldnames,
+                                     delimiter=self.separator)
         if not self.append:
             self.writer.writeheader()
             self.csvfile.flush()

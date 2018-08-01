@@ -49,10 +49,10 @@ def torch_apply(obj, func):
     return _apply(obj, fn)
 
 def _apply(obj, func):
-    if isinstance(obj, list) or isinstance(obj, tuple):
+    if isinstance(obj, (list, tuple)):
         return type(obj)(_apply(el, func) for el in obj)
     if isinstance(obj, dict):
-        return {k:_apply(el, func) for k,el in obj.items()}
+        return {k:_apply(el, func) for k, el in obj.items()}
     return func(obj)
 
 def numpy_to_torch(obj):

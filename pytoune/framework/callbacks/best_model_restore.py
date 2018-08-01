@@ -18,15 +18,16 @@ class BestModelRestore(Callback):
             or when restoring the best model. (Default value = False)
     """
     def __init__(self, *, monitor='val_loss', mode='min', verbose=False):
+        super().__init__()
         self.monitor = monitor
 
         if mode not in ['min', 'max']:
             raise ValueError("Invalid mode '%s'" % mode)
         if mode == 'min':
-            self.monitor_op = lambda x,y: x < y
+            self.monitor_op = lambda x, y: x < y
             self.current_best = float('Inf')
         elif mode == 'max':
-            self.monitor_op = lambda x,y: x > y
+            self.monitor_op = lambda x, y: x > y
             self.current_best = -float('Inf')
         self.best_weights = None
         self.verbose = verbose
@@ -37,8 +38,9 @@ class BestModelRestore(Callback):
             self.current_best = logs[self.monitor]
 
             if self.verbose:
-                print('Epoch %d: %s improved from %0.5f to %0.5f'
-                % (epoch, self.monitor, old_best, self.current_best))
+                print('Epoch %d: %s improved from %0.5f to %0.5f' % (
+                    epoch, self.monitor, old_best, self.current_best
+                ))
             self.best_weights = self.model.get_weight_copies()
 
     def on_train_end(self, logs):

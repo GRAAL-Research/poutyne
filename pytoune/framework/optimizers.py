@@ -19,7 +19,7 @@ def get_optimizer(optimizer, module):
         params = (p for p in module.parameters() if p.requires_grad)
         if optimizer != 'sgd':
             return all_optimizers_dict[optimizer](params)
-        else:
-            return all_optimizers_dict[optimizer](params, lr=1e-2)
-    else:
-        return optimizer
+
+        return all_optimizers_dict[optimizer](params, lr=1e-2)
+
+    return optimizer

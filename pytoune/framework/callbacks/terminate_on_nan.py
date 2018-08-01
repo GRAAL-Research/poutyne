@@ -7,8 +7,6 @@ class TerminateOnNaN(Callback):
     """
     Stops the training when the loss is either `NaN` or `inf`.
     """
-    def __init__(self):
-        super(TerminateOnNaN, self).__init__()
 
     def on_batch_end(self, batch, logs):
         loss = logs['loss']

@@ -70,5 +70,5 @@ def get_loss_or_metric(loss_metric):
         loss_metric = loss_metric[:-4] if loss_metric.endswith('loss') else loss_metric
         loss_metric = loss_metric.replace('_', '')
         return all_losses_metrics_dict[loss_metric]
-    else:
-        return loss_metric
+
+    return loss_metric
