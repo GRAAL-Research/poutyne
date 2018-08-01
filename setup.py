@@ -39,6 +39,4 @@ setup(
     description='A Keras-like framework and utilities for PyTorch.',
     long_description=readme,
     long_description_content_type='text/markdown',
-    test_suite='nose.collector',
-    tests_require=['nose'],
 )

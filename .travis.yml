@@ -6,8 +6,6 @@ install:
   - pip install -q -r requirements.txt
   - pip install -q -r docs/requirements.txt
 script:
-  - cd tests
-  - python ../setup.py test
-  - cd ..
+  - pytest
   - cd docs
   - ./rebuild_html_doc.sh
