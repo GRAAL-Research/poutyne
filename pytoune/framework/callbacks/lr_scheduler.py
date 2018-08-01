@@ -1,4 +1,3 @@
-import types
 import torch.optim.lr_scheduler
 
 from .callbacks import Callback
@@ -84,17 +83,6 @@ class CosineAnnealingLR(PyTorchLRSchedulerWrapper):
     def __init__(self, *args, **kwargs):
         super().__init__(torch.optim.lr_scheduler.CosineAnnealingLR, *args, **kwargs)
 
-def reduce_lr_state_dict(self):
-    return {key: value for key, value in self.__dict__.items()
-            if key not in {'optimizer', 'is_better', 'state_dict', 'load_state_dict'}}
-
-def reduce_lr_load_state_dict(self, state_dict):
-    self.__dict__.update(state_dict)
-    # pylint: disable=protected-access
-    self._init_is_better(mode=self.mode,
-                         threshold=self.threshold,
-                         threshold_mode=self.threshold_mode)
-
 class ReduceLROnPlateau(Callback):
     """
     Args:
@@ -117,17 +105,9 @@ class ReduceLROnPlateau(Callback):
             optimizer, *self.args, **self.kwargs
         )
 
-        # This is not in the current PyTorch version (0.4.0) yet.
-        if not hasattr(self.scheduler, 'state_dict'):
-            self.scheduler.state_dict = types.MethodType(reduce_lr_state_dict, self.scheduler)
-            self.scheduler.load_state_dict = types.MethodType(
-                reduce_lr_load_state_dict, self.scheduler
-            )
-
         # Load state if the scheduler was not initialized when the user asked
         # to load its state
         if self.loaded_state is not None:
-            # pylint: disable=not-callable
             self.scheduler.load_state_dict(self.loaded_state)
             self.loaded_state = None
 
@@ -136,11 +116,9 @@ class ReduceLROnPlateau(Callback):
 
     def load_state(self, f):
         if self.scheduler is not None:
-            # pylint: disable=not-callable
             self.scheduler.load_state_dict(torch.load(f, map_location='cpu'))
         else:
             self.loaded_state = torch.load(f, map_location='cpu')
 
     def save_state(self, f):
-        # pylint: disable=not-callable
         torch.save(self.scheduler.state_dict(), f)

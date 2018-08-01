@@ -9,6 +9,7 @@ with open(readme_file_path, 'r') as f:
 
 version_file_path = os.path.join(current_file_path, 'pytoune/version.py')
 with open(version_file_path, 'rb') as f:
+    # pylint: disable=exec-used,undefined-variable
     exec(compile(f.read(), version_file_path, 'exec'), globals(), locals())
     version = __version__
 
@@ -18,7 +19,7 @@ setup(
     version=version,
     author='Frédérik Paradis',
     author_email='fredy_14@live.fr',
-    url = 'http://pytoune.org',
+    url='http://pytoune.org',
     download_url='https://github.com/GRAAL-Research/pytoune/archive/v' + version + '.zip',
     license='GPLv3',
     classifiers=[
@@ -33,7 +34,7 @@ setup(
         'Topic :: Software Development :: Libraries :: Python Modules'
     ],
     packages=packages,
-    install_requires=['numpy', 'torch'],
+    install_requires=['numpy', 'torch>=0.4.1'],
     python_requires='>=3',
     description='A Keras-like framework and utilities for PyTorch.',
     long_description=readme,

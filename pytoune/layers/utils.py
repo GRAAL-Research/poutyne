@@ -5,10 +5,10 @@ import torch.nn as nn
 class Flatten(nn.Module):
     """
     Flattens the input tensor such that the dimension 0 is the batch.
-    Equivalent to ``x.view(x.size(0), -1)``.
+    Equivalent to ``x.flatten(1)``.
     """
     def forward(self, x):
-        return x.view(x.size(0), -1)
+        return x.flatten(1)
 
 class Identity(nn.Module):
     """
@@ -30,7 +30,7 @@ class Lambda(nn.Module):
         .. code-block:: python
 
             # Alternate version to the ``Flatten`` module.
-            my_flatten = Lambda(lambda x: x.view(x.size(0), -1))
+            my_flatten = Lambda(lambda x: x.flatten(1))
 
     """
     def __init__(self, func):
