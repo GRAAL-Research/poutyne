@@ -1,13 +1,13 @@
-import os
-
+import unittest
 from unittest import TestCase
+
+import torch
+import torch.nn as nn
 
 from pytoune import torch_to_numpy
 from pytoune.framework import Model
 from pytoune.framework.callbacks import BestModelRestore
 
-import torch
-import torch.nn as nn
 
 def some_data_generator(batch_size):
     while True:
@@ -29,7 +29,10 @@ class BestModelRestoreTest(TestCase):
         train_gen = some_data_generator(20)
         valid_gen = some_data_generator(20)
         model_restore = BestModelRestore(monitor='val_loss', verbose=True)
-        self.model.fit_generator(train_gen, valid_gen, epochs=10, steps_per_epoch=5, callbacks=[model_restore])
+        self.model.fit_generator(train_gen, valid_gen,
+                                 epochs=10,
+                                 steps_per_epoch=5,
+                                 callbacks=[model_restore])
 
     def test_basic_restore(self):
         model_restore = BestModelRestore(monitor='val_loss')
@@ -56,7 +59,9 @@ class BestModelRestoreTest(TestCase):
             checkpointer.on_epoch_begin(epoch, {})
             checkpointer.on_batch_begin(1, {})
             loss = self._update_model(generator)
-            checkpointer.on_batch_end(1, {'batch': 1, 'size': BestModelRestoreTest.batch_size, 'loss': loss})
+            checkpointer.on_batch_end(
+                1, {'batch': 1, 'size': BestModelRestoreTest.batch_size, 'loss': loss}
+            )
             checkpointer.on_epoch_end(epoch, {'epoch': epoch, 'loss': loss, 'val_loss': val_loss})
             if epoch == best_epoch:
                 best_epoch_weights = torch_to_numpy(self.model.get_weight_copies())

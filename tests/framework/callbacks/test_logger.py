@@ -2,10 +2,14 @@ import os
 
 import csv
 
+import unittest
 from unittest import TestCase, skipIf
 from unittest.mock import MagicMock, call
 
 from tempfile import TemporaryDirectory
+
+import torch
+import torch.nn as nn
 
 try:
     from tensorboardX import SummaryWriter
@@ -15,8 +19,6 @@ except ImportError:
 from pytoune.framework import Model
 from pytoune.framework.callbacks import CSVLogger, Callback, TensorBoardLogger
 
-import torch
-import torch.nn as nn
 
 def some_data_generator(batch_size):
     while True:
@@ -55,7 +57,10 @@ class CSVLoggerTest(TestCase):
         train_gen = some_data_generator(20)
         valid_gen = some_data_generator(20)
         logger = CSVLogger(self.csv_filename)
-        history = self.model.fit_generator(train_gen, valid_gen, epochs=10, steps_per_epoch=5, callbacks=[logger])
+        history = self.model.fit_generator(train_gen, valid_gen,
+                                           epochs=10,
+                                           steps_per_epoch=5,
+                                           callbacks=[logger])
         self._test_logging(history)
 
     def test_logging_with_batch_granularity(self):
@@ -63,16 +68,26 @@ class CSVLoggerTest(TestCase):
         valid_gen = some_data_generator(20)
         logger = CSVLogger(self.csv_filename, batch_granularity=True)
         history = History()
-        self.model.fit_generator(train_gen, valid_gen, epochs=10, steps_per_epoch=5, callbacks=[logger, history])
+        self.model.fit_generator(train_gen, valid_gen,
+                                 epochs=10,
+                                 steps_per_epoch=5,
+                                 callbacks=[logger, history])
         self._test_logging(history.history)
 
     def test_logging_append(self):
         train_gen = some_data_generator(20)
         valid_gen = some_data_generator(20)
         logger = CSVLogger(self.csv_filename)
-        history = self.model.fit_generator(train_gen, valid_gen, epochs=10, steps_per_epoch=5, callbacks=[logger])
+        history = self.model.fit_generator(train_gen, valid_gen,
+                                           epochs=10,
+                                           steps_per_epoch=5,
+                                           callbacks=[logger])
         logger = CSVLogger(self.csv_filename, append=True)
-        history2 = self.model.fit_generator(train_gen, valid_gen, epochs=20, steps_per_epoch=5, initial_epoch=10, callbacks=[logger])
+        history2 = self.model.fit_generator(train_gen, valid_gen,
+                                            epochs=20,
+                                            steps_per_epoch=5,
+                                            initial_epoch=10,
+                                            callbacks=[logger])
         self._test_logging(history + history2)
 
     def _test_logging(self, history):
@@ -104,7 +119,8 @@ class TensorBoardLoggerTest(TestCase):
         torch.manual_seed(42)
         self.pytorch_module = nn.Linear(1, 1)
         self.loss_function = nn.MSELoss()
-        self.optimizer = torch.optim.SGD(self.pytorch_module.parameters(), lr=TensorBoardLoggerTest.lr)
+        self.optimizer = torch.optim.SGD(self.pytorch_module.parameters(),
+                                         lr=TensorBoardLoggerTest.lr)
         self.model = Model(self.pytorch_module, self.optimizer, self.loss_function)
         self.temp_dir_obj = TemporaryDirectory()
         self.writer = SummaryWriter(self.temp_dir_obj.name)
@@ -117,7 +133,10 @@ class TensorBoardLoggerTest(TestCase):
         train_gen = some_data_generator(20)
         valid_gen = some_data_generator(20)
         logger = TensorBoardLogger(self.writer)
-        history = self.model.fit_generator(train_gen, valid_gen, epochs=10, steps_per_epoch=5, callbacks=[logger])
+        history = self.model.fit_generator(train_gen, valid_gen,
+                                           epochs=10,
+                                           steps_per_epoch=5,
+                                           callbacks=[logger])
         self._test_logging(history)
 
     def _test_logging(self, history):

@@ -1,3 +1,4 @@
+import unittest
 from unittest import TestCase
 from unittest.mock import MagicMock, call
 
@@ -63,7 +64,7 @@ class TorchApplyTest(TestCase):
             'a': 5,
             'b': 3.141592,
             'c': {
-                'd': [1,2,3]
+                'd': [1, 2, 3]
             }
         }
         ret = torch_apply(my_obj, lambda t: t.cpu())

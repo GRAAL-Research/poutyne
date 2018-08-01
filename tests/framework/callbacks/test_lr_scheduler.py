@@ -1,11 +1,12 @@
-from unittest import TestCase, skipIf
+import unittest
+from unittest import TestCase
 
 import torch
 import torch.nn as nn
 
 from pytoune.framework import Model
-from pytoune.framework.callbacks import LambdaLR, StepLR, MultiStepLR, ExponentialLR, CosineAnnealingLR, \
-    ReduceLROnPlateau
+from pytoune.framework.callbacks import LambdaLR, StepLR, MultiStepLR, ExponentialLR, \
+    CosineAnnealingLR, ReduceLROnPlateau
 
 
 def some_data_generator(batch_size):
@@ -38,7 +39,7 @@ class LRSchedulersTest(TestCase):
         self._fit_with_callback_integration(step_lr)
 
     def test_multistep_lr_integration(self):
-        multistep_lr = MultiStepLR(milestones=[2,5,7])
+        multistep_lr = MultiStepLR(milestones=[2, 5, 7])
         self._fit_with_callback_integration(multistep_lr)
 
     def test_exponential_lr_integration(self):
@@ -54,7 +55,10 @@ class LRSchedulersTest(TestCase):
         self._fit_with_callback_integration(reduce_lr)
 
     def _fit_with_callback_integration(self, callback):
-        self.model.fit_generator(self.train_gen, self.valid_gen, epochs=LRSchedulersTest.epochs, steps_per_epoch=LRSchedulersTest.steps_per_epoch, callbacks=[callback])
+        self.model.fit_generator(self.train_gen, self.valid_gen,
+                                 epochs=LRSchedulersTest.epochs,
+                                 steps_per_epoch=LRSchedulersTest.steps_per_epoch,
+                                 callbacks=[callback])
 
 
 if __name__ == '__main__':
