@@ -39,7 +39,7 @@ class Experiment:
     TEST_LOG_FILENAME = 'test_log.tsv'
 
     def __init__(self, directory, module, *, device=None, logging=True,
-                 optimizer=None, loss_function=None, metrics=[],
+                 optimizer='sgd', loss_function=None, metrics=[],
                  monitor_metric=None, monitor_mode=None, type=None):
         self.directory = directory
         self.logging = logging
