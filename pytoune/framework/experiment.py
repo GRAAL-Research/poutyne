@@ -162,12 +162,76 @@ class Experiment:
                     self._warn_missing_file(filename)
         return initial_epoch
 
+    def _init_model_restoring_callbacks(self, initial_epoch, save_every_epoch):
+        callbacks = []
+        best_checkpoint = ModelCheckpoint(self.best_checkpoint_filename,
+                                          monitor=self.monitor_metric,
+                                          mode=self.monitor_mode,
+                                          save_best_only=not save_every_epoch,
+                                          restore_best=not save_every_epoch,
+                                          verbose=not save_every_epoch,
+                                          temporary_filename=self.best_checkpoint_tmp_filename)
+        callbacks.append(best_checkpoint)
+
+        if save_every_epoch:
+            best_restore = BestModelRestore(monitor=self.monitor_metric,
+                                            mode=self.monitor_mode,
+                                            verbose=True)
+            callbacks.append(best_restore)
+
+        if initial_epoch > 1:
+            # We set the current best metric score in the ModelCheckpoint so that
+            # it does not save checkpoint it would not have saved if the
+            # optimization was not stopped.
+            best_epoch_stats = self.get_best_epoch_stats()
+            best_epoch = best_epoch_stats['epoch'].item()
+            best_filename = self.best_checkpoint_filename.format(epoch=best_epoch)
+            if not save_every_epoch:
+                best_checkpoint.best_filename = best_filename
+                best_checkpoint.current_best = best_epoch_stats[self.monitor_metric].item()
+            else:
+                best_restore.best_weights = torch.load(best_filename, map_location='cpu')
+                best_restore.current_best = best_epoch_stats[self.monitor_metric].item()
+
+        return callbacks
+
+    def _init_tensorboard_callbacks(self, disable_tensorboard):
+        tensorboard_writer = None
+        callbacks = []
+        if not disable_tensorboard:
+            if SummaryWriter is None:
+                warnings.warn("tensorboardX does not seem to be installed. "
+                              "To remove this warning, set the 'disable_tensorboard' "
+                              "flag to True.")
+            else:
+                tensorboard_writer = SummaryWriter(self.tensorboard_directory)
+                callbacks += [TensorBoardLogger(tensorboard_writer)]
+        return tensorboard_writer, callbacks
+
+    def _init_lr_scheduler_callbacks(self, lr_schedulers):
+        callbacks = []
+        if self.logging:
+            for i, lr_scheduler in enumerate(lr_schedulers):
+                filename = self.lr_scheduler_filename % i
+                tmp_filename = self.lr_scheduler_tmp_filename % i
+                callbacks += [LRSchedulerCheckpoint(
+                    lr_scheduler,
+                    filename,
+                    verbose=False,
+                    temporary_filename=tmp_filename
+                )]
+        else:
+            callbacks += lr_schedulers
+            callbacks += [BestModelRestore(monitor=self.monitor_metric,
+                                           mode=self.monitor_mode,
+                                           verbose=True)]
+        return callbacks
+
     def train(self, train_loader, valid_loader=None, *,
               callbacks=[], lr_schedulers=[], save_every_epoch=False,
               disable_tensorboard=False,
               epochs=1000, steps_per_epoch=None, validation_steps=None,
               seed=42):
-        # pylint: disable=too-many-locals,too-many-branches,too-many-statements
         if seed is not None:
             # Make training deterministic.
             random.seed(seed)
@@ -186,82 +250,33 @@ class Experiment:
             # Restarting optimization if needed.
             initial_epoch = self._load_epoch_state(lr_schedulers)
 
-            csv_logger = CSVLogger(self.log_filename, separator='\t', append=initial_epoch != 1)
+            callbacks += [CSVLogger(self.log_filename, separator='\t', append=initial_epoch != 1)]
 
-
-            best_checkpoint = ModelCheckpoint(self.best_checkpoint_filename,
-                                              monitor=self.monitor_metric,
-                                              mode=self.monitor_mode,
-                                              save_best_only=not save_every_epoch,
-                                              restore_best=not save_every_epoch,
-                                              verbose=not save_every_epoch,
-                                              temporary_filename=self.best_checkpoint_tmp_filename)
-            if save_every_epoch:
-                best_restore = BestModelRestore(monitor=self.monitor_metric,
-                                                mode=self.monitor_mode,
-                                                verbose=True)
-                callbacks.append(best_restore)
-
-            if initial_epoch > 1:
-                # We set the current best metric score in the ModelCheckpoint so that
-                # it does not save checkpoint it would not have saved if the
-                # optimization was not stopped.
-                best_epoch_stats = self.get_best_epoch_stats()
-                best_epoch = best_epoch_stats['epoch'].item()
-                best_filename = self.best_checkpoint_filename.format(epoch=best_epoch)
-                if not save_every_epoch:
-                    best_checkpoint.best_filename = best_filename
-                    best_checkpoint.current_best = best_epoch_stats[self.monitor_metric].item()
-                else:
-                    best_restore.best_weights = torch.load(best_filename, map_location='cpu')
-                    best_restore.current_best = best_epoch_stats[self.monitor_metric].item()
-
-            checkpoint = ModelCheckpoint(
+            callbacks += self._init_model_restoring_callbacks(initial_epoch, save_every_epoch)
+            callbacks += [ModelCheckpoint(
                 self.model_checkpoint_filename,
                 verbose=False,
-                temporary_filename=self.model_checkpoint_tmp_filename)
-            optimizer_checkpoint = OptimizerCheckpoint(
+                temporary_filename=self.model_checkpoint_tmp_filename
+            )]
+            callbacks += [OptimizerCheckpoint(
                 self.optimizer_checkpoint_filename,
                 verbose=False,
                 temporary_filename=self.optimizer_checkpoint_tmp_filename
-            )
+            )]
 
             # We save the last epoch number after the end of the epoch so that the
-            # load_epoch_state() knows which epoch to restart the optimization.
-            save_epoch_number = PeriodicSaveLambda(lambda fd, epoch, logs: print(epoch, file=fd),
-                                                   self.epoch_filename,
-                                                   temporary_filename=self.epoch_tmp_filename,
-                                                   open_mode='w')
+            # _load_epoch_state() knows which epoch to restart the optimization.
+            callbacks += [PeriodicSaveLambda(lambda fd, epoch, logs: print(epoch, file=fd),
+                                             self.epoch_filename,
+                                             temporary_filename=self.epoch_tmp_filename,
+                                             open_mode='w')]
 
-            callbacks += [csv_logger, best_checkpoint, checkpoint,
-                          optimizer_checkpoint, save_epoch_number]
+            tensorboard_writer, cb_list = self._init_tensorboard_callbacks(disable_tensorboard)
+            callbacks += cb_list
 
-            if not disable_tensorboard:
-                if SummaryWriter is None:
-                    warnings.warn("tensorboardX does not seem to be installed. "
-                                  "To remove this warning, set the 'disable_tensorboard' "
-                                  "flag to True.")
-                else:
-                    tensorboard_writer = SummaryWriter(self.tensorboard_directory)
-                    tensorboard_logger = TensorBoardLogger(tensorboard_writer)
-                    callbacks.append(tensorboard_logger)
-            for i, lr_scheduler in enumerate(lr_schedulers):
-                filename = self.lr_scheduler_filename % i
-                tmp_filename = self.lr_scheduler_tmp_filename % i
-                lr_scheduler_checkpoint = LRSchedulerCheckpoint(
-                    lr_scheduler,
-                    filename,
-                    verbose=False,
-                    temporary_filename=tmp_filename
-                )
-                callbacks.append(lr_scheduler_checkpoint)
-        else:
-            for lr_scheduler in lr_schedulers:
-                callbacks.append(lr_scheduler)
-            best_restore = BestModelRestore(monitor=self.monitor_metric,
-                                            mode=self.monitor_mode,
-                                            verbose=True)
-            callbacks.append(best_restore)
+        # This method returns callbacks that checkpoints the LR scheduler if logging is enabled.
+        # Otherwise, it just returns the list of LR schedulers with a BestModelRestore callback.
+        callbacks += self._init_lr_scheduler_callbacks(lr_schedulers)
 
         try:
             self.model.fit_generator(train_loader, valid_loader,
@@ -273,7 +288,6 @@ class Experiment:
         finally:
             if tensorboard_writer is not None:
                 tensorboard_writer.close()
-
 
     def load_best_checkpoint(self, *, verbose=False):
         best_epoch_stats = self.get_best_epoch_stats()
