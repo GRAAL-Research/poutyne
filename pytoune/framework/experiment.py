@@ -74,21 +74,22 @@ class Experiment:
         self.test_log_filename = join_dir(Experiment.TEST_LOG_FILENAME)
 
     def _get_loss_function(self, loss_function, module, type):
-        if loss_function is None and hasattr(module, 'loss_function'):
-            return module.loss_function
-        elif loss_function is None and type is not None:
-            if type.startswith('classif'):
-                return 'cross_entropy'
-            elif type.startswith('reg'):
-                return 'mse'
+        if loss_function is None:
+            if hasattr(module, 'loss_function'):
+                return module.loss_function
+            elif type is not None:
+                if type.startswith('classif'):
+                    return 'cross_entropy'
+                elif type.startswith('reg'):
+                    return 'mse'
         return loss_function
 
     def _get_metrics(self, metrics, module, type):
-        if (metrics is None or len(metrics) == 0) and hasattr(module, 'metrics'):
-            return module.metrics
-        elif (metrics is None or len(metrics) == 0) and \
-                type is not None and type.startswith('classif'):
-            return ['accuracy']
+        if metrics is None or len(metrics) == 0:
+            if hasattr(module, 'metrics'):
+                return module.metrics
+            elif type is not None and type.startswith('classif'):
+                return ['accuracy']
         return metrics
 
     def _set_monitor(self, monitor_metric, monitor_mode, type):
