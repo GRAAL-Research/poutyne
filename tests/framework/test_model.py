@@ -39,7 +39,6 @@ def some_ndarray_generator(batch_size):
         yield x, y
 
 class SomeDataGeneratorUsingStopIteration:
-    # pylint: disable=too-few-public-methods
     def __init__(self, batch_size, length):
         self.batch_size = batch_size
         self.length = length
@@ -50,7 +49,6 @@ class SomeDataGeneratorUsingStopIteration:
                 for i in range(self.length))
 
 class SomeDataGeneratorWithLen:
-    # pylint: disable=too-few-public-methods
     def __init__(self, batch_size, length, num_missing_samples):
         self.batch_size = batch_size
         self.length = length

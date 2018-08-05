@@ -6,10 +6,112 @@ import torch
 from torch.utils.data import DataLoader, TensorDataset
 
 from pytoune import torch_to_numpy, numpy_to_torch, torch_to
-from .callbacks import CallbackList, ProgressionCallback
+from .callbacks import CallbackList, ProgressionCallback, Callback
 from .metrics import get_loss_or_metric
 from .optimizers import get_optimizer
 from .warning_manager import warning_settings
+
+class Step:
+    def __init__(self, number):
+        self.number = number
+
+        self.loss = None
+        self.metrics = None
+        self.size = None
+
+def _get_step_iterator(steps, generator):
+    count_iterator = range(1, steps + 1) if steps is not None else itertools.count(1)
+    return zip(count_iterator, generator)
+
+class StepIterator:
+    def __init__(self, generator, steps_per_epoch, callback, metrics_names):
+        self.generator = generator
+        self.steps_per_epoch = steps_per_epoch
+        self.callback = callback
+        self.metrics_names = metrics_names
+
+        self.losses_sum = 0.
+        self.metrics_sum = np.zeros(len(self.metrics_names))
+        self.sizes_sum = 0.
+
+    @property
+    def loss(self):
+        return self.losses_sum / self.sizes_sum
+
+    @property
+    def metrics(self):
+        return self.metrics_sum / self.sizes_sum
+
+    def __iter__(self):
+        for step, data in _get_step_iterator(self.steps_per_epoch, self.generator):
+            self.callback.on_batch_begin(step, {})
+
+            step_data = Step(step)
+            yield step_data, data
+
+            self.losses_sum += step_data.loss * step_data.size
+            self.metrics_sum += step_data.metrics * step_data.size
+            self.sizes_sum += step_data.size
+
+            metrics_dict = dict(zip(self.metrics_names, step_data.metrics))
+            batch_logs = {'batch': step, 'size': step_data.size,
+                          'loss': step_data.loss, **metrics_dict}
+            self.callback.on_batch_end(step, batch_logs)
+
+class EpochIterator:
+    def __init__(self, train_generator, valid_generator, *,
+                 epochs, steps_per_epoch, validation_steps,
+                 initial_epoch=1, callback, metrics_names):
+        self.train_generator = train_generator
+        self.valid_generator = valid_generator
+        self.epochs = epochs
+        self.steps_per_epoch = steps_per_epoch
+        self.validation_steps = validation_steps
+
+        self.initial_epoch = initial_epoch
+        self.callback = callback
+        self.metrics_names = metrics_names
+        self.epoch_logs = []
+        self.stop_training = False
+
+    def __iter__(self):
+        self.callback.on_train_begin({})
+        for epoch in range(self.initial_epoch, self.epochs + 1):
+            self.callback.on_epoch_begin(epoch, {})
+
+            train_step_iterator = StepIterator(self.train_generator,
+                                               self.steps_per_epoch,
+                                               self.callback,
+                                               self.metrics_names)
+
+            valid_step_iterator = None
+            if self.valid_generator is not None:
+                valid_step_iterator = StepIterator(self.valid_generator,
+                                                   self.validation_steps,
+                                                   Callback(),
+                                                   self.metrics_names)
+
+            yield train_step_iterator, valid_step_iterator
+
+            val_dict = {}
+            if valid_step_iterator is not None:
+                val_metrics_dict = {
+                    'val_' + metric_name:metric
+                    for metric_name, metric in zip(self.metrics_names, valid_step_iterator.metrics)
+                }
+                val_dict = {'val_loss': valid_step_iterator.loss, **val_metrics_dict}
+
+            metrics_dict = dict(zip(self.metrics_names, train_step_iterator.metrics))
+            epoch_log = {'epoch': epoch, 'loss': train_step_iterator.loss,
+                         **metrics_dict, **val_dict}
+            self.callback.on_epoch_end(epoch, epoch_log)
+
+            self.epoch_logs.append(epoch_log)
+
+            if self.stop_training:
+                break
+
+        self.callback.on_train_end({})
 
 class Model:
     """
@@ -210,7 +312,7 @@ class Model:
     def fit_generator(self, train_generator, valid_generator=None, *,
                       epochs=1000, steps_per_epoch=None, validation_steps=None,
                       initial_epoch=1, verbose=True, callbacks=[]):
-        # pylint: disable=too-many-locals,too-many-statements
+        # pylint: disable=too-many-locals
         """
         Trains the model on a dataset using a generator.
 
@@ -291,6 +393,43 @@ class Model:
         callback_list = CallbackList(callbacks)
         callback_list.set_model(self)
 
+        steps_per_epoch, validation_steps = self._compute_steps(train_generator,
+                                                                valid_generator,
+                                                                steps_per_epoch,
+                                                                validation_steps)
+        params = {'epochs': epochs, 'steps': steps_per_epoch}
+        callback_list.set_params(params)
+
+        self.stop_training = False
+        epoch_iterator = EpochIterator(train_generator, valid_generator,
+                                       epochs=epochs,
+                                       steps_per_epoch=steps_per_epoch,
+                                       validation_steps=validation_steps,
+                                       initial_epoch=initial_epoch,
+                                       callback=callback_list,
+                                       metrics_names=self.metrics_names)
+
+        for train_step_iterator, valid_step_iterator in epoch_iterator:
+            self.model.train(True)
+            with torch.enable_grad():
+                for step, (x, y) in train_step_iterator:
+                    loss, metrics, _ = self._fit_batch(x, y,
+                                                       callback=callback_list,
+                                                       step=step.number)
+                    size = self._get_batch_size(x, y)
+                    step.loss = loss
+                    step.metrics = metrics
+                    step.size = size
+
+            if valid_step_iterator is not None:
+                self.model.eval()
+                self._validate(valid_step_iterator)
+
+            epoch_iterator.stop_training = self.stop_training
+
+        return epoch_iterator.epoch_logs
+
+    def _compute_steps(self, train_generator, valid_generator, steps_per_epoch, validation_steps):
         if valid_generator is not None:
             if validation_steps is None:
                 if hasattr(valid_generator, '__len__'):
@@ -299,70 +438,21 @@ class Model:
                     validation_steps = steps_per_epoch
         if steps_per_epoch is None and hasattr(train_generator, '__len__'):
             steps_per_epoch = len(train_generator)
-        params = {'epochs': epochs, 'steps': steps_per_epoch}
-        callback_list.set_params(params)
+        return steps_per_epoch, validation_steps
 
-        epoch_logs = []
-        self.stop_training = False
-        callback_list.on_train_begin({})
-        for epoch in range(initial_epoch, epochs + 1):
-            callback_list.on_epoch_begin(epoch, {})
-            losses_sum = 0.
-            metrics_sum = np.zeros(len(self.metrics))
-            sizes_sum = 0.
+    def _fit_batch(self, x, y, *, callback=Callback(), step=None, return_pred=False):
+        self.optimizer.zero_grad()
 
-            self.model.train(True)
-            with torch.enable_grad():
-                for step, (x, y) in self._get_step_iterator(steps_per_epoch, train_generator):
-                    callback_list.on_batch_begin(step, {})
-                    self.optimizer.zero_grad()
+        loss_tensor, metrics, pred_y = self._compute_loss_and_metrics(
+            x, y, return_loss_tensor=True, return_pred=return_pred
+        )
 
-                    loss_tensor, metrics, _ = self._compute_loss_and_metrics(
-                        x, y, return_loss_tensor=True
-                    )
+        loss_tensor.backward()
+        callback.on_backward_end(step)
+        self.optimizer.step()
 
-                    loss_tensor.backward()
-                    callback_list.on_backward_end(step)
-                    self.optimizer.step()
-
-                    loss = float(loss_tensor)
-                    size = self._get_batch_size(x, y)
-                    losses_sum += loss * size
-                    metrics_sum += metrics * size
-                    sizes_sum += size
-
-                    metrics_dict = dict(zip(self.metrics_names, metrics))
-                    batch_logs = {'batch': step, 'size': size, 'loss': loss, **metrics_dict}
-                    callback_list.on_batch_end(step, batch_logs)
-
-            val_dict = {}
-            if valid_generator is not None:
-                self.model.eval()
-                val_loss, val_metrics, _ = self._validate(valid_generator, validation_steps)
-                val_metrics_dict = {
-                    'val_' + metric_name:metric
-                    for metric_name, metric in zip(self.metrics_names, val_metrics)
-                }
-                val_dict = {'val_loss': val_loss, **val_metrics_dict}
-
-            losses_mean = losses_sum / sizes_sum
-            metrics_mean = metrics_sum / sizes_sum
-            metrics_dict = dict(zip(self.metrics_names, metrics_mean))
-            epoch_log = {'epoch': epoch, 'loss': losses_mean, **metrics_dict, **val_dict}
-            callback_list.on_epoch_end(epoch, epoch_log)
-
-            epoch_logs.append(epoch_log)
-
-            if self.stop_training:
-                break
-
-        callback_list.on_train_end({})
-
-        return epoch_logs
-
-    def _get_step_iterator(self, steps, generator):
-        count_iterator = range(1, steps + 1) if steps is not None else itertools.count(1)
-        return zip(count_iterator, generator)
+        loss = float(loss_tensor)
+        return loss, metrics, pred_y
 
     def _process_input(self, *args):
         args = numpy_to_torch(args)
@@ -397,17 +487,7 @@ class Model:
         self.model.train(True)
         with torch.enable_grad():
             self._transfer_optimizer_state_to_right_device()
-
-            self.optimizer.zero_grad()
-
-            loss_tensor, metrics, pred_y = self._compute_loss_and_metrics(
-                x, y, return_loss_tensor=True, return_pred=return_pred
-            )
-
-            loss_tensor.backward()
-            self.optimizer.step()
-
-        loss = float(loss_tensor)
+            loss, metrics, pred_y = self._fit_batch(x, y, return_pred=return_pred)
         return self._format_return(loss, metrics, pred_y, return_pred)
 
     def _format_return(self, loss, metrics, pred_y, return_pred):
@@ -458,7 +538,7 @@ class Model:
             steps = len(generator)
         pred_y = []
         with torch.no_grad():
-            for _, x in self._get_step_iterator(steps, generator):
+            for _, x in _get_step_iterator(steps, generator):
                 x = self._process_input(x)
                 pred_y.append(torch_to_numpy(self.model(x)))
         return pred_y
@@ -587,7 +667,8 @@ class Model:
         self.model.eval()
         if steps is None:
             steps = len(generator)
-        loss, metrics, pred_y = self._validate(generator, steps, return_pred=return_pred)
+        step_iterator = StepIterator(generator, steps, Callback(), self.metrics_names)
+        loss, metrics, pred_y = self._validate(step_iterator, return_pred=return_pred)
         return self._format_return(loss, metrics, pred_y, return_pred)
 
     def evaluate_on_batch(self, x, y, *, return_pred=False):
@@ -619,17 +700,13 @@ class Model:
             loss, metrics, pred_y = self._compute_loss_and_metrics(x, y, return_pred=return_pred)
         return self._format_return(loss, metrics, pred_y, return_pred)
 
-    def _validate(self, valid_generator, validation_steps, return_pred=False):
-        # pylint: disable=too-many-locals
-        losses_sum = 0.
-        metrics_sum = np.zeros(len(self.metrics))
-        sizes_sum = 0
+    def _validate(self, step_iterator, return_pred=False):
         pred_list = None
         if return_pred:
             pred_list = []
 
         with torch.no_grad():
-            for _, (x, y) in self._get_step_iterator(validation_steps, valid_generator):
+            for step, (x, y) in step_iterator:
                 loss, metrics, pred_y = self._compute_loss_and_metrics(
                     x, y, return_pred=return_pred
                 )
@@ -637,13 +714,11 @@ class Model:
                     pred_list.append(pred_y)
 
                 size = self._get_batch_size(x, y)
-                losses_sum += loss * size
-                metrics_sum += metrics * size
-                sizes_sum += size
+                step.loss = loss
+                step.metrics = metrics
+                step.size = size
 
-        loss_mean = losses_sum / sizes_sum
-        metrics_mean = metrics_sum / sizes_sum
-        return loss_mean, metrics_mean, pred_list
+        return step_iterator.loss, step_iterator.metrics, pred_list
 
     def _compute_loss_and_metrics(self, x, y, return_loss_tensor=False, return_pred=False):
         x, y = self._process_input(x, y)
