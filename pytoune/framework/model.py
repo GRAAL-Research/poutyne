@@ -65,14 +65,29 @@ class EpochIterator:
         self.train_generator = train_generator
         self.valid_generator = valid_generator
         self.epochs = epochs
-        self.steps_per_epoch = steps_per_epoch
-        self.validation_steps = validation_steps
+        self._init_steps(train_generator, valid_generator, steps_per_epoch, validation_steps)
 
         self.initial_epoch = initial_epoch
         self.callback = callback
         self.metrics_names = metrics_names
         self.epoch_logs = []
         self.stop_training = False
+
+        params = {'epochs': self.epochs, 'steps': self.steps_per_epoch}
+        self.callback.set_params(params)
+
+    def _init_steps(self, train_generator, valid_generator, steps_per_epoch, validation_steps):
+        self.steps_per_epoch = steps_per_epoch
+        self.validation_steps = validation_steps
+
+        if valid_generator is not None:
+            if validation_steps is None:
+                if hasattr(valid_generator, '__len__'):
+                    self.validation_steps = len(valid_generator)
+                elif steps_per_epoch is not None:
+                    self.validation_steps = steps_per_epoch
+        if steps_per_epoch is None and hasattr(train_generator, '__len__'):
+            self.steps_per_epoch = len(train_generator)
 
     def __iter__(self):
         self.callback.on_train_begin({})
@@ -393,13 +408,6 @@ class Model:
         callback_list = CallbackList(callbacks)
         callback_list.set_model(self)
 
-        steps_per_epoch, validation_steps = self._compute_steps(train_generator,
-                                                                valid_generator,
-                                                                steps_per_epoch,
-                                                                validation_steps)
-        params = {'epochs': epochs, 'steps': steps_per_epoch}
-        callback_list.set_params(params)
-
         self.stop_training = False
         epoch_iterator = EpochIterator(train_generator, valid_generator,
                                        epochs=epochs,
@@ -428,17 +436,6 @@ class Model:
             epoch_iterator.stop_training = self.stop_training
 
         return epoch_iterator.epoch_logs
-
-    def _compute_steps(self, train_generator, valid_generator, steps_per_epoch, validation_steps):
-        if valid_generator is not None:
-            if validation_steps is None:
-                if hasattr(valid_generator, '__len__'):
-                    validation_steps = len(valid_generator)
-                elif steps_per_epoch is not None:
-                    validation_steps = steps_per_epoch
-        if steps_per_epoch is None and hasattr(train_generator, '__len__'):
-            steps_per_epoch = len(train_generator)
-        return steps_per_epoch, validation_steps
 
     def _fit_batch(self, x, y, *, callback=Callback(), step=None, return_pred=False):
         self.optimizer.zero_grad()
