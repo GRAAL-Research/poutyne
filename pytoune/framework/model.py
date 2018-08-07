@@ -305,13 +305,10 @@ class Model:
             self.model.train(True)
             with torch.enable_grad():
                 for step, (x, y) in train_step_iterator:
-                    loss, metrics, _ = self._fit_batch(x, y,
-                                                       callback=callback_list,
-                                                       step=step.number)
-                    size = self._get_batch_size(x, y)
-                    step.loss = loss
-                    step.metrics = metrics
-                    step.size = size
+                    step.loss, step.metrics, _ = self._fit_batch(x, y,
+                                                                 callback=callback_list,
+                                                                 step=step.number)
+                    step.size = self._get_batch_size(x, y)
 
             if valid_step_iterator is not None:
                 self.model.eval()
@@ -588,16 +585,13 @@ class Model:
 
         with torch.no_grad():
             for step, (x, y) in step_iterator:
-                loss, metrics, pred_y = self._compute_loss_and_metrics(
+                step.loss, step.metrics, pred_y = self._compute_loss_and_metrics(
                     x, y, return_pred=return_pred
                 )
                 if return_pred:
                     pred_list.append(pred_y)
 
-                size = self._get_batch_size(x, y)
-                step.loss = loss
-                step.metrics = metrics
-                step.size = size
+                step.size = self._get_batch_size(x, y)
 
         return step_iterator.loss, step_iterator.metrics, pred_list
 
