@@ -81,3 +81,25 @@ omitted.
 .. autoclass:: CosineAnnealingLR
 
 .. autoclass:: ReduceLROnPlateau
+
+Policies
+--------
+
+.. automodule:: pytoune.framework.callbacks.policies
+
+.. autoclass:: Phase
+
+.. autoclass:: OptimizerPolicy
+
+.. autofunction:: linspace
+
+.. autofunction:: cosinespace
+
+High Level Policies
+~~~~~~~~~~~~~~~~~~~
+
+Ready to use policies.
+
+.. autofunction:: one_cycle_phases
+
+.. autofunction:: sgdr_phases
