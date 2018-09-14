@@ -311,7 +311,6 @@ class Model:
                     step.size = self._get_batch_size(x, y)
 
             if valid_step_iterator is not None:
-                self.model.eval()
                 self._validate(valid_step_iterator)
 
             epoch_iterator.stop_training = self.stop_training
@@ -411,10 +410,10 @@ class Model:
             List of the predictions of each batch with tensors converted into
             Numpy arrays.
         """
-        self.model.eval()
         if steps is None and hasattr(generator, '__len__'):
             steps = len(generator)
         pred_y = []
+        self.model.eval()
         with torch.no_grad():
             for _, x in _get_step_iterator(steps, generator):
                 x = self._process_input(x)
@@ -465,9 +464,7 @@ class Model:
         generator = self._dataloader_from_data(x, y, batch_size=batch_size)
         ret = self.evaluate_generator(generator, steps=len(generator), return_pred=return_pred)
         if return_pred:
-            ret = list(ret)
-            ret[-1] = np.concatenate(ret[-1])
-            ret = tuple(ret)
+            ret = (*ret[:-1], np.concatenate(ret[-1]))
         return ret
 
 
@@ -542,7 +539,6 @@ class Model:
                     test_generator, return_pred=True
                 )
         """
-        self.model.eval()
         if steps is None:
             steps = len(generator)
         step_iterator = StepIterator(generator, steps, Callback(), self.metrics_names)
@@ -583,6 +579,7 @@ class Model:
         if return_pred:
             pred_list = []
 
+        self.model.eval()
         with torch.no_grad():
             for step, (x, y) in step_iterator:
                 step.loss, step.metrics, pred_y = self._compute_loss_and_metrics(
