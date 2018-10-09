@@ -1,7 +1,6 @@
 import csv
 from .callbacks import Callback
 
-
 class Logger(Callback):
     def __init__(self, *, batch_granularity=False):
         super().__init__()
@@ -121,6 +120,7 @@ class TensorBoardLogger(Logger):
     """
     def __init__(self, writer):
         super().__init__(batch_granularity=False)
+
         self.writer = writer
 
     def _on_batch_end_write(self, batch, logs):
@@ -130,25 +130,20 @@ class TensorBoardLogger(Logger):
         pass
 
     def _on_epoch_end_write(self, epoch, logs):
-        grouped_items = dict()
-        for k, v in logs.items():
-            if 'val_' in k:
-                primary_key = k[4:]
-                if primary_key not in grouped_items:
-                    grouped_items[primary_key] = dict()
-                grouped_items[k[4:]][k] = v
-            else:
-                if k not in grouped_items:
-                    grouped_items[k] = dict()
-                grouped_items[k][k] = v
-        for k, v in grouped_items.items():
-            self.writer.add_scalars(k, v, epoch)
+        ignored_keys = ['epoch']
+
         lr = self._get_current_learning_rates()
+
         if isinstance(lr, (list,)):
-            self.writer.add_scalars(
-                'lr',
-                {str(i): v for i, v in enumerate(lr)},
-                epoch
-            )
+            lr_metrics = {'lr_' + str(i): v for i, v in enumerate(lr)}
         else:
-            self.writer.add_scalars('lr', {'lr': lr}, epoch)
+            lr_metrics = {'lr': lr}
+
+        metrics = {
+            **logs,
+            **lr_metrics
+        }
+
+        for metric_name, metric_value in metrics.items():
+            if metric_name not in ignored_keys:
+                self.writer.add_scalar(metric_name, metric_value, epoch)
