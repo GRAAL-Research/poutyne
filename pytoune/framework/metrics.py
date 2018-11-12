@@ -7,6 +7,11 @@ def acc(y_pred, y_true, ignore_index=-100):
     acc_pred = ((y_pred == y_true).float() * weights).sum() / num_labels
     return acc_pred * 100
 
+def bin_acc(y_pred, y_true, threshold=0.5):
+    y_pred = (y_pred > threshold).float()
+    acc_pred = (y_pred == y_true).float().mean()
+    return acc_pred * 100
+
 def bce(y_pred, y_true):
     return F.binary_cross_entropy(y_pred, y_true)
 
@@ -46,6 +51,9 @@ def soft_margin(y_pred, y_true):
 all_losses_metrics_dict = dict(
     acc=acc,
     accuracy=acc,
+    binacc=bin_acc,
+    binaryacc=bin_acc,
+    binaryaccuracy=bin_acc,
     binarycrossentropy=bce,
     bce=bce,
     poissonnll=poisson_nll,
