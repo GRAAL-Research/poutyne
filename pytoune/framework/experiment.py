@@ -280,12 +280,12 @@ class Experiment:
         callbacks += self._init_lr_scheduler_callbacks(lr_schedulers)
 
         try:
-            self.model.fit_generator(train_loader, valid_loader,
-                                     epochs=epochs,
-                                     steps_per_epoch=steps_per_epoch,
-                                     validation_steps=validation_steps,
-                                     initial_epoch=initial_epoch,
-                                     callbacks=callbacks)
+            return self.model.fit_generator(train_loader, valid_loader,
+                                            epochs=epochs,
+                                            steps_per_epoch=steps_per_epoch,
+                                            validation_steps=validation_steps,
+                                            initial_epoch=initial_epoch,
+                                            callbacks=callbacks)
         finally:
             if tensorboard_writer is not None:
                 tensorboard_writer.close()
@@ -332,9 +332,6 @@ class Experiment:
         test_metrics_names = ['test_loss'] + \
                              ['test_' + metric_name for metric_name in self.model.metrics_names]
         test_metrics_values = np.concatenate(([test_loss], test_metrics))
-        test_metrics_str = ', '.join('%s: %g' % (col, val)
-                                     for col, val in zip(test_metrics_names, test_metrics_values))
-        print("On best model: %s" % test_metrics_str)
 
         if self.logging:
             test_stats = pd.DataFrame([test_metrics_values], columns=test_metrics_names)
@@ -342,3 +339,5 @@ class Experiment:
                 best_epoch_stats = best_epoch_stats.reset_index(drop=True)
                 test_stats = best_epoch_stats.join(test_stats)
             test_stats.to_csv(self.test_log_filename, sep='\t', index=False)
+
+        return {col: val for col, val in zip(test_metrics_names, test_metrics_values)}
