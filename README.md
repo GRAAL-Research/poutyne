@@ -39,7 +39,6 @@ num_classes = 5
 num_train_samples = 800
 train_x = np.random.randn(num_train_samples, num_features).astype('float32')
 train_y = np.random.randint(num_classes, size=num_train_samples).astype('int64')
-)
 
 num_valid_samples = 200
 valid_x = np.random.randn(num_valid_samples, num_features).astype('float32')
