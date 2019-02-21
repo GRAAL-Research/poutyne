@@ -618,7 +618,7 @@ class Model:
                           "loss and metrics at the end of each epoch is the "
                           "mean of the batches' losses and metrics. To disable "
                           "this warning, set\n"
-                          "from pytoune.framework import import warning_settings\n"
+                          "from pytoune.framework import warning_settings\n"
                           "warning_settings['batch_size'] = 'ignore'")
         return 1
 
