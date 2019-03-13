@@ -1,4 +1,3 @@
-import timeit
 import sys
 
 import itertools
@@ -18,32 +17,29 @@ class ProgressionCallback(Callback):
     def on_epoch_begin(self, epoch, logs):
         self.step_times_sum = 0.
         self.epoch = epoch
-        self.epoch_begin_time = timeit.default_timer()
         sys.stdout.write("\rEpoch %d/%d" % (self.epoch, self.epochs))
         sys.stdout.flush()
 
     def on_epoch_end(self, epoch, logs):
-        self.epoch_end_time = timeit.default_timer()
-        self.epoch_total_time = self.epoch_end_time - self.epoch_begin_time
+        epoch_total_time = logs['time']
 
         metrics_str = self._get_metrics_string(logs)
         if self.steps is not None:
             print("\rEpoch %d/%d %.2fs Step %d/%d: %s" % (
-                self.epoch, self.epochs, self.epoch_total_time, self.steps, self.steps,
+                self.epoch, self.epochs, epoch_total_time, self.steps, self.steps,
                 metrics_str
             ))
         else:
             print("\rEpoch %d/%d %.2fs: Step %d/%d: %s" % (
-                self.epoch, self.epochs, self.epoch_total_time, self.last_step, self.last_step,
+                self.epoch, self.epochs, epoch_total_time, self.last_step, self.last_step,
                 metrics_str
             ))
 
     def on_batch_begin(self, batch, logs):
-        self.batch_begin_time = timeit.default_timer()
+        pass
 
     def on_batch_end(self, batch, logs):
-        self.batch_end_time = timeit.default_timer()
-        self.step_times_sum += self.batch_end_time - self.batch_begin_time
+        self.step_times_sum += logs['time']
 
         metrics_str = self._get_metrics_string(logs)
 

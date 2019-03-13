@@ -28,8 +28,8 @@ class DelayCallbackTest(TestCase):
         self.model = Model(self.pytorch_module, self.optimizer, self.loss_function)
         self.mock_callback = MagicMock()
         self.delay_callback = DelayCallback(self.mock_callback)
-        self.train_dict = {'loss': ANY}
-        self.log_dict = {'loss': ANY, 'val_loss': ANY}
+        self.train_dict = {'loss': ANY, 'time': ANY}
+        self.log_dict = {'loss': ANY, 'val_loss': ANY, 'time': ANY}
 
     def test_epoch_delay(self):
         epoch_delay = 4

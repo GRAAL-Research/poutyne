@@ -251,7 +251,7 @@ class ModelTest(TestCase):
         if steps is None:
             steps = params['steps']
         self.assertEqual(len(logs), params['epochs'])
-        train_dict = dict(zip(self.metrics_names, self.metrics_values), loss=ANY)
+        train_dict = dict(zip(self.metrics_names, self.metrics_values), loss=ANY, time=ANY)
         if has_valid:
             val_metrics_names = ['val_' + metric_name for metric_name in self.metrics_names]
             val_dict = dict(zip(val_metrics_names, self.metrics_values), val_loss=ANY)

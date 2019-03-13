@@ -1,3 +1,4 @@
+import timeit
 import itertools
 import numpy as np
 
@@ -37,6 +38,7 @@ class StepIterator:
     def __iter__(self):
         for step, data in _get_step_iterator(self.steps_per_epoch, self.generator):
             self.callback.on_batch_begin(step, {})
+            batch_begin_time = timeit.default_timer()
 
             step_data = Step(step)
             yield step_data, data
@@ -45,8 +47,9 @@ class StepIterator:
             self.metrics_sum += step_data.metrics * step_data.size
             self.sizes_sum += step_data.size
 
+            batch_total_time = timeit.default_timer() - batch_begin_time
             metrics_dict = dict(zip(self.metrics_names, step_data.metrics))
-            batch_logs = {'batch': step, 'size': step_data.size,
+            batch_logs = {'batch': step, 'size': step_data.size, 'time': batch_total_time,
                           'loss': step_data.loss, **metrics_dict}
             self.callback.on_batch_end(step, batch_logs)
 
@@ -85,6 +88,7 @@ class EpochIterator:
         self.callback.on_train_begin({})
         for epoch in range(self.initial_epoch, self.epochs + 1):
             self.callback.on_epoch_begin(epoch, {})
+            epoch_begin_time = timeit.default_timer()
 
             train_step_iterator = StepIterator(self.train_generator,
                                                self.steps_per_epoch,
@@ -108,8 +112,9 @@ class EpochIterator:
                 }
                 val_dict = {'val_loss': valid_step_iterator.loss, **val_metrics_dict}
 
+            epoch_total_time = timeit.default_timer() - epoch_begin_time
             metrics_dict = dict(zip(self.metrics_names, train_step_iterator.metrics))
-            epoch_log = {'epoch': epoch, 'loss': train_step_iterator.loss,
+            epoch_log = {'epoch': epoch, 'loss': train_step_iterator.loss, 'time': epoch_total_time,
                          **metrics_dict, **val_dict}
             self.callback.on_epoch_end(epoch, epoch_log)
 
