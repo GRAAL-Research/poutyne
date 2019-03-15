@@ -13,6 +13,7 @@ from .warning_manager import warning_settings
 
 
 class Model:
+    # pylint: disable=line-too-long
     """
     The Model class encapsulates a PyTorch module/network, a PyTorch optimizer,
     a loss function and metric functions. It allows the user to train a neural
@@ -73,9 +74,9 @@ class Model:
 
         .. code-block:: none
 
-            Epoch 1/10 0.01s Step 40/40: loss: 0.710869, val_loss: 0.489602
-            Epoch 2/10 0.01s Step 40/40: loss: 0.448081, val_loss: 0.305897
-            Epoch 3/10 0.01s Step 40/40: loss: 0.301377, val_loss: 0.204526
+            Epoch 1/5 0.02s Step 25/25: loss: 1.719885, acc: 19.375000, val_loss: 1.667446, val_acc: 22.000000
+            Epoch 2/5 0.02s Step 25/25: loss: 1.705489, acc: 19.750000, val_loss: 1.660806, val_acc: 22.000000
+            Epoch 3/5 0.01s Step 25/25: loss: 1.692345, acc: 19.625000, val_loss: 1.655008, val_acc: 22.500000
             ...
 
         Using PyTorch DataLoader::
@@ -110,9 +111,9 @@ class Model:
 
         .. code-block:: none
 
-            Epoch 1/10 0.01s Step 40/40: loss: 0.311442, val_loss: 0.243208
-            Epoch 2/10 0.01s Step 40/40: loss: 0.223419, val_loss: 0.183428
-            Epoch 3/10 0.01s Step 40/40: loss: 0.173739, val_loss: 0.150269
+            Epoch 1/5 0.05s Step 25/25: loss: 6.752676, acc: 0.000000, val_loss: 6.575071, val_acc: 0.000000
+            Epoch 2/5 0.03s Step 25/25: loss: 6.454859, acc: 0.125000, val_loss: 6.279577, val_acc: 0.000000
+            Epoch 3/5 0.03s Step 25/25: loss: 6.158523, acc: 2.125000, val_loss: 5.985811, val_acc: 9.500000
             ...
 
     """
@@ -128,6 +129,7 @@ class Model:
     def fit(self, x, y, validation_x=None, validation_y=None, *,
             batch_size=32, epochs=1000, steps_per_epoch=None, validation_steps=None,
             initial_epoch=1, verbose=True, callbacks=[]):
+        # pylint: disable=line-too-long
         """
         Trains the model on a dataset. This method creates generators and calls
         the ``fit_generator`` method.
@@ -171,15 +173,15 @@ class Model:
                                     validation_x=valid_x,
                                     validation_y=valid_y,
                                     epochs=num_epochs,
-                                    batch_size=batch_size)
+                                    batch_size=batch_size,
                                     verbose=False)
                 print(*history, sep="\\n")
 
             .. code-block:: python
 
-                {'epoch': 1, 'loss': 0.30211143642663957, 'val_loss': 0.25165273696184159}
-                {'epoch': 2, 'loss': 0.2192931968718767, 'val_loss': 0.19234802126884459}
-                {'epoch': 3, 'loss': 0.17256419658660888, 'val_loss': 0.15897458493709565}
+                {'epoch': 1, 'loss': 1.7198852968215943, 'time': 0.019999928001197986, 'acc': 19.375, 'val_loss': 1.6674459838867188, 'val_acc': 22.0}
+                {'epoch': 2, 'loss': 1.7054892110824584, 'time': 0.015421080999658443, 'acc': 19.75, 'val_loss': 1.660806336402893, 'val_acc': 22.0}
+                {'epoch': 3, 'loss': 1.6923445892333984, 'time': 0.01363091799794347, 'acc': 19.625, 'val_loss': 1.6550078630447387, 'val_acc': 22.5}
                 ...
 
         """
@@ -211,7 +213,7 @@ class Model:
     def fit_generator(self, train_generator, valid_generator=None, *,
                       epochs=1000, steps_per_epoch=None, validation_steps=None,
                       initial_epoch=1, verbose=True, callbacks=[]):
-        # pylint: disable=too-many-locals
+        # pylint: disable=too-many-locals, line-too-long
         """
         Trains the model on a dataset using a generator.
 
@@ -279,9 +281,9 @@ class Model:
 
             .. code-block:: python
 
-                {'epoch': 1, 'loss': 0.4048105351626873, 'val_loss': 0.35831213593482969}
-                {'epoch': 2, 'loss': 0.27947457544505594, 'val_loss': 0.25963697880506514}
-                {'epoch': 3, 'loss': 0.20913131050765515, 'val_loss': 0.20263003259897233}
+                {'epoch': 1, 'loss': 1.7198852968215943, 'time': 0.019999928001197986, 'acc': 19.375, 'val_loss': 1.6674459838867188, 'val_acc': 22.0}
+                {'epoch': 2, 'loss': 1.7054892110824584, 'time': 0.015421080999658443, 'acc': 19.75, 'val_loss': 1.660806336402893, 'val_acc': 22.0}
+                {'epoch': 3, 'loss': 1.6923445892333984, 'time': 0.01363091799794347, 'acc': 19.625, 'val_loss': 1.6550078630447387, 'val_acc': 22.5}
                 ...
 
         """

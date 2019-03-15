@@ -139,6 +139,7 @@ class Callback(object):
 
                  * 'epoch': The epoch number.
                  * 'loss': The average loss of the batches.
+                 * 'time': The computation time of the epoch.
                  * Other metrics: One key for each type of metrics. The metrics
                    are also averaged.
                  * val_loss': The average loss of the batches on the validation
@@ -148,7 +149,7 @@ class Callback(object):
 
         Example::
 
-            logs = {'epoch': 6, 'loss': 4.34462, 'accuracy': 0.766,
+            logs = {'epoch': 6, 'time': 3.141519837, 'loss': 4.34462, 'accuracy': 0.766,
                     'val_loss': 5.2352, 'val_accuracy': 0.682}
         """
         pass
@@ -173,11 +174,12 @@ class Callback(object):
 
                  * 'batch': The batch number.
                  * 'loss': The loss of the batch.
+                 * 'time': The computation time of the batch.
                  * Other metrics: One key for each type of metrics.
 
         Example::
 
-            logs = {'batch': 6, 'loss': 4.34462, 'accuracy': 0.766}
+            logs = {'batch': 6, 'time': 0.10012837, 'loss': 4.34462, 'accuracy': 0.766}
         """
         pass
 
