@@ -17,7 +17,7 @@ PyToune is compatible with  __PyTorch >= 0.4.0__ and  __Python >= 3.5__.
 
 ### Cite
 ```
-@Misc{frederickParadisPyToune,
+@Misc{frederikParadisPyToune,
   author={Paradis, Fr{\'e}d{\'e}rik and Garneau, Nicolas},
   title =     {{PyToune}: Keras-like framework for {PyTorch}},
   year =      {2018--},
