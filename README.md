@@ -16,7 +16,7 @@ Read the documentation at [PyToune.org](https://pytoune.org).
 PyToune is compatible with  __PyTorch >= 0.4.0__ and  __Python >= 3.5__.
 
 ### Cite
-`
+```
 @Misc{frederickParadisPyToune,
   author={Paradis, Fr{\'e}d{\'e}rik and Garneau, Nicolas},
   title =     {{PyToune}:Keras-like framework for {PyTorch}},
@@ -24,7 +24,7 @@ PyToune is compatible with  __PyTorch >= 0.4.0__ and  __Python >= 3.5__.
   url = "\url{http://pytoune.org}",
   note = {[Online; accessed <today>]}
 }
-`
+```
 
 
 ------------------
