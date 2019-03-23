@@ -717,6 +717,9 @@ class Model:
             `self`.
         """
         self.model.cuda(*args, **kwargs)
+        if isinstance(self.loss_function, torch.nn.Module):
+            self.loss_function.cuda(*args, **kwargs)
+
         self.device = None
         for _, p in zip(range(1), self.model.parameters()):
             self.device = p.device
@@ -733,6 +736,9 @@ class Model:
             `self`.
         """
         self.model.cpu(*args, **kwargs)
+        if isinstance(self.loss_function, torch.nn.Module):
+            self.loss_function.cpu(*args, **kwargs)
+
         self.device = None
         for _, p in zip(range(1), self.model.parameters()):
             self.device = p.device
@@ -752,4 +758,6 @@ class Model:
         """
         self.device = device
         self.model.to(self.device)
+        if isinstance(self.loss_function, torch.nn.Module):
+            self.loss_function.to(self.device)
         return self
