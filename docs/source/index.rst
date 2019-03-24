@@ -24,6 +24,16 @@ Read the documentation at `PyToune.org <https://pytoune.org>`_.
 
 PyToune is compatible with **PyTorch >= 0.4.0** and  **Python >= 3.5**.
 
+Cite
+-----
+.. code-block:: bib
+
+   @Misc{frederikParadisPyToune,
+     author={Paradis, Fr{\'e}d{\'e}rik and Garneau, Nicolas},
+     title =     {{PyToune}: Keras-like framework for {PyTorch}},
+     year =      {2018--},
+     url = "\url{http://pytoune.org}"
+   }
 
 
 Getting started: few seconds to PyToune

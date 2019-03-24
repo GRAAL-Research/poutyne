@@ -620,7 +620,7 @@ class Model:
                           "loss and metrics at the end of each epoch is the "
                           "mean of the batches' losses and metrics. To disable "
                           "this warning, set\n"
-                          "from pytoune.framework import import warning_settings\n"
+                          "from pytoune.framework import warning_settings\n"
                           "warning_settings['batch_size'] = 'ignore'")
         return 1
 
@@ -719,6 +719,9 @@ class Model:
             `self`.
         """
         self.model.cuda(*args, **kwargs)
+        if isinstance(self.loss_function, torch.nn.Module):
+            self.loss_function.cuda(*args, **kwargs)
+
         self.device = None
         for _, p in zip(range(1), self.model.parameters()):
             self.device = p.device
@@ -735,6 +738,9 @@ class Model:
             `self`.
         """
         self.model.cpu(*args, **kwargs)
+        if isinstance(self.loss_function, torch.nn.Module):
+            self.loss_function.cpu(*args, **kwargs)
+
         self.device = None
         for _, p in zip(range(1), self.model.parameters()):
             self.device = p.device
@@ -754,4 +760,6 @@ class Model:
         """
         self.device = device
         self.model.to(self.device)
+        if isinstance(self.loss_function, torch.nn.Module):
+            self.loss_function.to(self.device)
         return self
