@@ -13,7 +13,7 @@ Use PyToune to:
 
 Read the documentation at [PyToune.org](https://pytoune.org).
 
-PyToune is compatible with  __PyTorch >= 0.4.0__ and  __Python >= 3.5__.
+PyToune is compatible with  the __latest version of PyTorch__ and  __Python >= 3.5__.
 
 ### Cite
 ```
@@ -108,7 +108,7 @@ As you can see, PyToune is inspired a lot by the friendliness of [Keras](https:/
 
 ## Installation
 
-Before installing PyToune, you must have a working version of [PyTorch 0.4.0](https://pytorch.org/) in your environment.
+Before installing PyToune, you must have the latest version of [PyTorch](https://pytorch.org/) in your environment.
 
 - **Install the stable version of PyToune:**
 

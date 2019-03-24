@@ -19,7 +19,7 @@ setup(
     version=version,
     author='Frédérik Paradis',
     author_email='fredy_14@live.fr',
-    url='http://pytoune.org',
+    url='https://pytoune.org',
     download_url='https://github.com/GRAAL-Research/pytoune/archive/v' + version + '.zip',
     license='GPLv3',
     classifiers=[
@@ -34,7 +34,7 @@ setup(
         'Topic :: Software Development :: Libraries :: Python Modules'
     ],
     packages=packages,
-    install_requires=['numpy', 'torch>=0.4.1'],
+    install_requires=['numpy', 'torch'],
     python_requires='>=3',
     description='A Keras-like framework and utilities for PyTorch.',
     long_description=readme,
