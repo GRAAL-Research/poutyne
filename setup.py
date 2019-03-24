@@ -7,7 +7,7 @@ readme_file_path = os.path.join(current_file_path, 'README.md')
 with open(readme_file_path, 'r') as f:
     readme = f.read()
 
-version_file_path = os.path.join(current_file_path, 'pytoune/version.py')
+version_file_path = os.path.join(current_file_path, 'poutyne/version.py')
 with open(version_file_path, 'rb') as f:
     # pylint: disable=exec-used,undefined-variable
     exec(compile(f.read(), version_file_path, 'exec'), globals(), locals())
@@ -15,12 +15,12 @@ with open(version_file_path, 'rb') as f:
 
 packages = find_packages()
 setup(
-    name='PyToune',
+    name='Poutyne',
     version=version,
     author='Frédérik Paradis',
     author_email='fredy_14@live.fr',
-    url='https://pytoune.org',
-    download_url='https://github.com/GRAAL-Research/pytoune/archive/v' + version + '.zip',
+    url='https://poutyne.org',
+    download_url='https://github.com/GRAAL-Research/poutyne/archive/v' + version + '.zip',
     license='GPLv3',
     classifiers=[
         'Development Status :: 3 - Alpha',

@@ -180,14 +180,14 @@ class PeriodicSaveCallback(Callback):
 class PeriodicSaveLambda(PeriodicSaveCallback):
     """
     Call a lambda with a file descriptor after every epoch. See
-    `pytoune.framework.PeriodicSaveCallback` for the arguments' descriptions.
+    `poutyne.framework.PeriodicSaveCallback` for the arguments' descriptions.
 
     Args:
         func (fd, int, dict -> None): The lambda that will be called with a
             file descriptor, the epoch number and the epoch logs.
 
     See:
-        pytoune.framework.PeriodicSaveCallback
+        poutyne.framework.PeriodicSaveCallback
     """
     def __init__(self, func, *args, **kwargs):
         super().__init__(*args, **kwargs)

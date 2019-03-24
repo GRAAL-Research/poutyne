@@ -110,8 +110,8 @@ class TensorBoardLogger(Logger):
         Using tensorboardX::
 
             from tensorboardX import SummaryWriter
-            from pytoune.framework import Model
-            from pytoune.framework.callbacks import TensorBoardLogger
+            from poutyne.framework import Model
+            from poutyne.framework.callbacks import TensorBoardLogger
 
             writer = SummaryWriter('runs')
             tb_logger = TensorBoardLogger(writer)

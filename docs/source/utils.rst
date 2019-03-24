@@ -1,11 +1,11 @@
 .. role:: hidden
     :class: hidden-section
 
-pytoune
+poutyne
 =======
 
-.. automodule:: pytoune
-.. currentmodule:: pytoune
+.. automodule:: poutyne
+.. currentmodule:: poutyne
 
 Utils
 -----

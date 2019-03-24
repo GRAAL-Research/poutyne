@@ -4,9 +4,9 @@ from unittest import TestCase
 import torch
 import torch.nn as nn
 
-from pytoune import torch_to_numpy
-from pytoune.framework import Model
-from pytoune.framework.callbacks import BestModelRestore
+from poutyne import torch_to_numpy
+from poutyne.framework import Model
+from poutyne.framework.callbacks import BestModelRestore
 
 
 def some_data_generator(batch_size):

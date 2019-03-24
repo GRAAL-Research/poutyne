@@ -1,16 +1,16 @@
 .. role:: hidden
     :class: hidden-section
 
-pytoune.layers
+poutyne.layers
 ==============
 
-.. automodule:: pytoune
-.. currentmodule:: pytoune.layers
+.. automodule:: poutyne
+.. currentmodule:: poutyne.layers
 
 Layers
 ------
 
-PyToune provides utility layers that can be used with the ``Sequential`` module,
+Poutyne provides utility layers that can be used with the ``Sequential`` module,
 ``ModuleList`` module and others.
 
 .. autoclass:: Flatten

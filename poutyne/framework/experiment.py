@@ -10,8 +10,8 @@ except ImportError:
     pd = None
 import torch
 
-from pytoune.framework import Model
-from pytoune.framework.callbacks import ModelCheckpoint, \
+from poutyne.framework import Model
+from poutyne.framework.callbacks import ModelCheckpoint, \
                                         OptimizerCheckpoint, \
                                         LRSchedulerCheckpoint, \
                                         PeriodicSaveLambda, \

@@ -1,54 +1,56 @@
-.. PyToune documentation master file, created by
+.. Poutyne documentation master file, created by
    sphinx-quickstart on Sat Feb 17 12:19:43 2018.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-:github_url: https://github.com/GRAAL-Research/pytoune
+:github_url: https://github.com/GRAAL-Research/poutyne
 
 .. meta::
-   :description: PyToune is a Keras-like framework for PyTorch and handles much of the boilerplating code needed to train neural networks.
+   :description: Poutyne is a Keras-like framework for PyTorch and handles much of the boilerplating code needed to train neural networks.
    :keywords: deep learning, pytorch, neural network, keras, machine learning, data science, python
    :author: Frédérik Paradis
 
-Here is PyToune
+Here is Poutyne
 ===============
 
-PyToune is a Keras-like framework for `PyTorch <https://pytorch.org/>`_ and handles much of the boilerplating code needed to train neural networks.
+.. warning:: As you can see, PyToune has changed its name for Poutyne. From now on, please use the new package name `poutyne`. The `pytoune` package has been kept for this release but will be removed in the next release.
 
-Use PyToune to:
+Poutyne is a Keras-like framework for `PyTorch <https://pytorch.org/>`_ and handles much of the boilerplating code needed to train neural networks.
+
+Use Poutyne to:
 
 - Train models easily.
 - Use callbacks to save your best model, perform early stopping and much more.
 
-Read the documentation at `PyToune.org <https://pytoune.org>`_.
+Read the documentation at `Poutyne.org <https://poutyne.org>`_.
 
-PyToune is compatible with the **latest version of PyTorch** and  **Python >= 3.5**.
+Poutyne is compatible with the **latest version of PyTorch** and  **Python >= 3.5**.
 
 Cite
 -----
 .. code-block:: bib
 
-   @Misc{frederikParadisPyToune,
-     author={Paradis, Fr{\'e}d{\'e}rik and Garneau, Nicolas},
-     title =     {{PyToune}: Keras-like framework for {PyTorch}},
-     year =      {2018--},
-     url = "\url{http://pytoune.org}"
+   @misc{frederikParadisPoutyne,
+     author = {Paradis, Fr{\'e}d{\'e}rik and Garneau, Nicolas},
+     title  = {{Poutyne}: Keras-like framework for {PyTorch}},
+     year   = {2018--},
+     url    = {\url{https://poutyne.org}}
    }
 
 
-Getting started: few seconds to PyToune
+Getting started: few seconds to Poutyne
 =======================================
 
-The core data structure of PyToune is a ``Model``, a way to train your own `PyTorch <https://pytorch.org/docs/master/nn.html>`_ neural networks.
+The core data structure of Poutyne is a ``Model``, a way to train your own `PyTorch <https://pytorch.org/docs/master/nn.html>`_ neural networks.
 
-How PyToune works is that you create your `PyTorch <https://pytorch.org/docs/master/nn.html>`_ module (neural network) as usual but when comes the time to train it you feed it into the PyToune Model, which handles all the steps, stats and callbacks, similar to what `Keras <https://keras.io/>`_ does.
+How Poutyne works is that you create your `PyTorch <https://pytorch.org/docs/master/nn.html>`_ module (neural network) as usual but when comes the time to train it you feed it into the Poutyne Model, which handles all the steps, stats and callbacks, similar to what `Keras <https://keras.io/>`_ does.
 
 Here is a simple example:
 
 .. code-block:: python
 
-  # Import the PyToune Model and define a toy dataset
-  from pytoune.framework import Model
+  # Import the Poutyne Model and define a toy dataset
+  from poutyne.framework import Model
   import torch
   import numpy as np
 
@@ -75,7 +77,7 @@ Create yourself a `PyTorch <https://pytorch.org/docs/master/nn.html>`_ network;
   pytorch_module = torch.nn.Linear(num_features, 1)
 
 
-You can now use PyToune's model to train your network easily;
+You can now use Poutyne's model to train your network easily;
 
 .. code-block:: python
 
@@ -100,7 +102,7 @@ This is really similar to the ``model.compile`` function as in `Keras <https://k
   model.fit(train_x, train_y, epochs=5, batch_size=32)
 
 
-You can evaluate the performances of your network using the ``evaluate`` method of PyToune's model;
+You can evaluate the performances of your network using the ``evaluate`` method of Poutyne's model;
 
 .. code-block:: python
 
@@ -114,35 +116,36 @@ Or only predict on new data;
   predictions = model.predict(test_x)
 
 
-As you can see, PyToune is inspired a lot by the friendliness of `Keras <https://keras.io/>`_. See the PyToune documentation at `PyToune.org <https://pytoune.org/>`_ for more.
+As you can see, Poutyne is inspired a lot by the friendliness of `Keras <https://keras.io/>`_. See the Poutyne documentation at `Poutyne.org <https://poutyne.org/>`_ for more.
 
 Installation
 ============
 
-Before installing PyToune, you must have the latest version of `PyTorch <https://pytorch.org/>`_ in your environment.
+Before installing Poutyne, you must have the latest version of `PyTorch <https://pytorch.org/>`_ in your environment.
 
-- **Install the stable version of PyToune:**
-
-  .. code-block:: sh
-
-    pip install pytoune
-
-- **Install the latest version of PyToune:**
+- **Install the stable version of Poutyne:**
 
   .. code-block:: sh
 
-    pip install -U git+https://github.com/GRAAL-Research/pytoune.git
+    pip install poutyne
+
+- **Install the latest version of Poutyne:**
+
+  .. code-block:: sh
+
+    pip install -U git+https://github.com/GRAAL-Research/poutyne.git
 
 
 
-Why this name, PyToune?
+Why this name, Poutyne?
 =======================
 
-PyToune (or pitoune in Québécois) used to be wood logs that flowed through the rivers. It was an efficient way to travel large pieces of wood across the country. We hope that PyToune will make your `PyTorch <https://pytorch.org/>`_ neural networks training flow easily just like the "pitounes" used to.
+Poutyne (or poutine in Québécois) is now the well-known dish from Quebec composed of French fries, squeaky cheese curds and brown gravy. However, in Quebec, it also has the meaning of something that is an `"ordinary or common subject or activity" <https://fr.wiktionary.org/wiki/poutine>`_. Thus, Poutyne will get rid of the ordinary boilerplate code that plain `PyTorch <https://pytorch.org/>`_ training usually entails.
 
-.. image:: /_static/img/pitounes.jpg
-   :alt: Pitounes
+.. figure:: https://upload.wikimedia.org/wikipedia/commons/4/4e/La_Banquise_Poutine_%28cropped%29.jpg
+  :alt: Poutine
 
+  Yuri Long from Arlington, VA, USA [`CC BY 2.0 <https://creativecommons.org/licenses/by/2.0>`_]
 
 API Reference
 =============

@@ -11,8 +11,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import DataLoader, TensorDataset
 
-from pytoune.framework import Model
-from pytoune.framework import warning_settings
+from poutyne.framework import Model
+from poutyne.framework import warning_settings
 
 
 some_metric_1_value = 1.

@@ -16,12 +16,12 @@ import os
 import sys
 sys.path.insert(0, os.path.abspath('../..'))
 
-from pytoune import __version__ as version
+from poutyne import __version__ as version
 
 
 # -- Project information -----------------------------------------------------
 
-project = 'PyToune'
+project = 'Poutyne'
 copyright = '2018, Frédérik Paradis'
 author = 'Frédérik Paradis'
 
@@ -112,7 +112,7 @@ html_static_path = ['_static']
 # -- Options for HTMLHelp output ---------------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'PyTounedoc'
+htmlhelp_basename = 'Poutynedoc'
 
 
 # -- Options for LaTeX output ------------------------------------------------
@@ -139,7 +139,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'PyToune.tex', 'PyToune Documentation',
+    (master_doc, 'Poutyne.tex', 'Poutyne Documentation',
      'Frédérik Paradis', 'manual'),
 ]
 
@@ -149,7 +149,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'pytoune', 'PyToune Documentation',
+    (master_doc, 'poutyne', 'Poutyne Documentation',
      [author], 1)
 ]
 
@@ -160,8 +160,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'PyToune', 'PyToune Documentation',
-     author, 'PyToune', 'One line description of project.',
+    (master_doc, 'Poutyne', 'Poutyne Documentation',
+     author, 'Poutyne', 'One line description of project.',
      'Miscellaneous'),
 ]
 

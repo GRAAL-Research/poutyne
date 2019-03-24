@@ -1,11 +1,11 @@
 .. role:: hidden
     :class: hidden-section
 
-pytoune.framework
+poutyne.framework
 ==================================================
 
-.. automodule:: pytoune
-.. currentmodule:: pytoune.framework
+.. automodule:: poutyne
+.. currentmodule:: poutyne.framework
 
 Model
 -----

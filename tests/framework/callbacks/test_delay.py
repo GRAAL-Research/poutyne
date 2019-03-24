@@ -5,8 +5,8 @@ from unittest.mock import MagicMock, call, ANY
 import torch
 import torch.nn as nn
 
-from pytoune.framework import Model
-from pytoune.framework.callbacks import DelayCallback
+from poutyne.framework import Model
+from poutyne.framework.callbacks import DelayCallback
 
 
 def some_data_generator(batch_size):

@@ -16,8 +16,8 @@ try:
 except ImportError:
     SummaryWriter = None
 
-from pytoune.framework import Model
-from pytoune.framework.callbacks import CSVLogger, Callback, TensorBoardLogger
+from poutyne.framework import Model
+from poutyne.framework.callbacks import CSVLogger, Callback, TensorBoardLogger
 
 
 def some_data_generator(batch_size):

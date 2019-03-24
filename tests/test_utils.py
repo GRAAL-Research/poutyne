@@ -4,7 +4,7 @@ from unittest.mock import MagicMock, call
 
 import torch
 
-from pytoune import torch_apply
+from poutyne import torch_apply
 
 class TorchApplyTest(TestCase):
     def test_apply_on_list(self):

@@ -7,10 +7,10 @@ from tempfile import TemporaryDirectory
 import torch
 import torch.nn as nn
 
-from pytoune import torch_to_numpy
-from pytoune.framework import Model
-from pytoune.framework.callbacks import LRSchedulerCheckpoint
-from pytoune.framework.callbacks import ExponentialLR, ReduceLROnPlateau
+from poutyne import torch_to_numpy
+from poutyne.framework import Model
+from poutyne.framework.callbacks import LRSchedulerCheckpoint
+from poutyne.framework.callbacks import ExponentialLR, ReduceLROnPlateau
 
 
 def some_data_generator(batch_size):

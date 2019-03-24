@@ -20,7 +20,7 @@ def torch_to_numpy(obj, copy=False):
     Example:
         .. code-block:: python
 
-            >>> from pytoune import torch_to_numpy
+            >>> from poutyne import torch_to_numpy
             >>> torch_to_numpy({
             ...     'first': torch.tensor([1, 2, 3]),
             ...     'second':[torch.tensor([4,5,6]), torch.tensor([7,8,9])],
@@ -33,7 +33,7 @@ def torch_to_numpy(obj, copy=False):
             }
 
     See:
-        `pytoune.torch_apply` for supported types.
+        `poutyne.torch_apply` for supported types.
     """
     if copy:
         func = lambda t: t.cpu().detach().numpy().copy()
@@ -86,7 +86,7 @@ def numpy_to_torch(obj):
     Example:
         .. code-block:: python
 
-            >>> from pytoune import numpy_to_torch
+            >>> from poutyne import numpy_to_torch
             >>> numpy_to_torch({
             ...     'first': np.array([1, 2, 3]),
             ...     'second':[np.array([4,5,6]), np.array([7,8,9])],

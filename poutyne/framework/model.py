@@ -4,7 +4,7 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader, TensorDataset
 
-from pytoune import torch_to_numpy, numpy_to_torch, torch_to
+from poutyne import torch_to_numpy, numpy_to_torch, torch_to
 from .iterators import EpochIterator, StepIterator, _get_step_iterator
 from .callbacks import CallbackList, ProgressionCallback, Callback
 from .metrics import get_loss_or_metric
@@ -45,7 +45,7 @@ class Model:
     Example:
         Using Numpy arrays (or tensors) dataset::
 
-            from pytoune.framework import Model
+            from poutyne.framework import Model
             import torch
             import numpy as np
 
@@ -83,7 +83,7 @@ class Model:
 
            import torch
            from torch.utils.data import DataLoader, TensorDataset
-           from pytoune.framework import Model
+           from poutyne.framework import Model
 
            num_features = 20
            num_classes = 5
@@ -159,7 +159,7 @@ class Model:
                 (Default value = 1)
             verbose (bool): Whether to display the progress of the training.
                 (Default value = True)
-            callbacks (list of pytoune.framework.Callback): List of callbacks
+            callbacks (list of poutyne.framework.Callback): List of callbacks
                 that will be called during training. (Default value = [])
 
         Returns:
@@ -263,7 +263,7 @@ class Model:
                 (Default value = 1)
             verbose (bool): Whether to display the progress of the training.
                 (Default value = True)
-            callbacks (list of pytoune.framework.Callback): List of callbacks
+            callbacks (list of poutyne.framework.Callback): List of callbacks
                 that will be called during training. (Default value = [])
 
         Returns:
@@ -620,7 +620,7 @@ class Model:
                           "loss and metrics at the end of each epoch is the "
                           "mean of the batches' losses and metrics. To disable "
                           "this warning, set\n"
-                          "from pytoune.framework import warning_settings\n"
+                          "from poutyne.framework import warning_settings\n"
                           "warning_settings['batch_size'] = 'ignore'")
         return 1
 
