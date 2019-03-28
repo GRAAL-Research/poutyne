@@ -47,7 +47,7 @@ SOFTWARE.
 """
 
 
-class CallbackList(object):
+class CallbackList:
     def __init__(self, callbacks=None):
         callbacks = callbacks or []
         self.callbacks = [c for c in callbacks]
@@ -101,7 +101,7 @@ class CallbackList(object):
         return iter(self.callbacks)
 
 
-class Callback(object):
+class Callback:
     """
     Attributes:
         params (dict): Contains a key 'epoch' and a key 'steps_per_epoch'

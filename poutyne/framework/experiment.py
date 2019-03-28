@@ -77,10 +77,10 @@ class Experiment:
         if loss_function is None:
             if hasattr(module, 'loss_function'):
                 return module.loss_function
-            elif type is not None:
+            if type is not None:
                 if type.startswith('classif'):
                     return 'cross_entropy'
-                elif type.startswith('reg'):
+                if type.startswith('reg'):
                     return 'mse'
         return loss_function
 
@@ -88,7 +88,7 @@ class Experiment:
         if metrics is None or len(metrics) == 0:
             if hasattr(module, 'metrics'):
                 return module.metrics
-            elif type is not None and type.startswith('classif'):
+            if type is not None and type.startswith('classif'):
                 return ['accuracy']
         return metrics
 
@@ -323,7 +323,7 @@ class Experiment:
         if load_best_checkpoint:
             best_epoch_stats = self.load_best_checkpoint(verbose=True)
         elif load_last_checkpoint:
-            best_epoch_stats = self.load_last_checkpoint()
+            self.load_last_checkpoint()
 
         test_loss, test_metrics = self.model.evaluate_generator(test_loader, steps=steps)
         if not isinstance(test_metrics, np.ndarray):
@@ -334,7 +334,8 @@ class Experiment:
         test_metrics_values = np.concatenate(([test_loss], test_metrics))
 
         test_metrics_dict = {col: val for col, val in zip(test_metrics_names, test_metrics_values)}
-        test_metrics_str = ', '.join('%s: %g' % (col, val) for col, val in test_metrics_dict.items())
+        test_metrics_str = ', '.join('%s: %g' % (col, val)
+                                     for col, val in test_metrics_dict.items())
         print("On best model: %s" % test_metrics_str)
 
         if self.logging:

@@ -19,7 +19,7 @@ from math import cos, pi
 from itertools import islice, chain
 from typing import Dict, List, Tuple
 
-from poutyne.framework.callbacks.callbacks import Callback
+from .callbacks import Callback
 
 
 ###############################################################################

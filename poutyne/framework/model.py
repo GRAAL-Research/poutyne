@@ -612,9 +612,9 @@ class Model:
     def _get_batch_size(self, x, y):
         if torch.is_tensor(x) or isinstance(x, np.ndarray):
             return len(x)
-        elif torch.is_tensor(y) or isinstance(y, np.ndarray):
+        if torch.is_tensor(y) or isinstance(y, np.ndarray):
             return len(y)
-        elif warning_settings['batch_size'] == 'warn':
+        if warning_settings['batch_size'] == 'warn':
             warnings.warn("When 'x' or 'y' are not tensors nor Numpy arrays, "
                           "the batch size is set to 1 and, thus, the computed "
                           "loss and metrics at the end of each epoch is the "

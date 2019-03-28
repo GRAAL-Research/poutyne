@@ -84,22 +84,20 @@ class EarlyStopping(Callback):
 
         if mode not in ['min', 'max']:
             raise ValueError("Invalid mode '%s'" % mode)
+        self.mode = mode
 
         if mode == 'min':
+            self.min_delta *= -1
             self.monitor_op = np.less
         elif mode == 'max':
-            self.monitor_op = np.greater
-
-        if self.monitor_op == np.greater:
             self.min_delta *= 1
-        else:
-            self.min_delta *= -1
+            self.monitor_op = np.greater
 
     def on_train_begin(self, logs):
         # Allow instances to be re-used
         self.wait = 0
         self.stopped_epoch = 0
-        self.best = np.Inf if self.monitor_op == np.less else -np.Inf
+        self.best = np.Inf if self.mode == 'min' else -np.Inf
 
     def on_epoch_end(self, epoch, logs):
         current = logs[self.monitor]
