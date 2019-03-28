@@ -719,12 +719,12 @@ class Model:
             `self`.
         """
         self.model.cuda(*args, **kwargs)
-        if isinstance(self.loss_function, torch.nn.Module):
-            self.loss_function.cuda(*args, **kwargs)
 
-        self.device = None
-        for _, p in zip(range(1), self.model.parameters()):
-            self.device = p.device
+        # Assuming the PyTorch module has at least one parameter.
+        self.device = next(self.model.parameters()).device
+
+        self._transfer_loss_and_metrics_modules_to_right_device()
+
         return self
 
     def cpu(self, *args, **kwargs):
@@ -738,12 +738,12 @@ class Model:
             `self`.
         """
         self.model.cpu(*args, **kwargs)
-        if isinstance(self.loss_function, torch.nn.Module):
-            self.loss_function.cpu(*args, **kwargs)
 
-        self.device = None
-        for _, p in zip(range(1), self.model.parameters()):
-            self.device = p.device
+        # Assuming the PyTorch module has at least one parameter.
+        self.device = next(self.model.parameters()).device
+
+        self._transfer_loss_and_metrics_modules_to_right_device()
+
         return self
 
     def to(self, device):
@@ -760,6 +760,13 @@ class Model:
         """
         self.device = device
         self.model.to(self.device)
+        self._transfer_loss_and_metrics_modules_to_right_device()
+        return self
+
+    def _transfer_loss_and_metrics_modules_to_right_device(self):
         if isinstance(self.loss_function, torch.nn.Module):
             self.loss_function.to(self.device)
-        return self
+
+        for metric in self.metrics:
+            if isinstance(metric, torch.nn.Module):
+                metric.to(self.device)
