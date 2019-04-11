@@ -568,8 +568,8 @@ class Model:
             float. If ``n == 0``, the ``metrics`` is omitted.
 
             Tuple ``(loss, metrics, pred_y)`` if ``return_pred`` is true where
-            ``pred_y`` is the predictions with tensors converted into Numpy
-            arrays.
+            ``pred_y`` is the list of the predictions of each batch with tensors
+            converted into Numpy arrays.
         """
         self.model.eval()
         with torch.no_grad():
