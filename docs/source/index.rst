@@ -7,7 +7,7 @@
 
 .. meta::
    :description: Poutyne is a Keras-like framework for PyTorch and handles much of the boilerplating code needed to train neural networks.
-   :keywords: deep learning, pytorch, neural network, keras, machine learning, data science, python
+   :keywords: poutyne, poutine, deep learning, pytorch, neural network, keras, machine learning, data science, python
    :author: Frédérik Paradis
 
 Here is Poutyne
