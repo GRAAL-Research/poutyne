@@ -284,6 +284,7 @@ class ModelTest(TestCase):
 
     def test_tensor_train_on_batch(self):
         x = torch.rand(ModelTest.batch_size, 1)
+        x = self.model.format_input(x)
         y = torch.rand(ModelTest.batch_size, 1)
         loss, metrics = self.model.train_on_batch(x, y)
         self.assertEqual(type(loss), float)
@@ -292,6 +293,7 @@ class ModelTest(TestCase):
 
     def test_train_on_batch_with_pred(self):
         x = torch.rand(ModelTest.batch_size, 1)
+        x = self.model.format_input(x)
         y = torch.rand(ModelTest.batch_size, 1)
         loss, metrics, pred_y = self.model.train_on_batch(x, y, return_pred=True)
         self.assertEqual(type(loss), float)
@@ -301,6 +303,7 @@ class ModelTest(TestCase):
 
     def test_ndarray_train_on_batch(self):
         x = np.random.rand(ModelTest.batch_size, 1).astype(np.float32)
+        x = self.model.format_input(x)
         y = np.random.rand(ModelTest.batch_size, 1).astype(np.float32)
         loss, metrics = self.model.train_on_batch(x, y)
         self.assertEqual(type(loss), float)

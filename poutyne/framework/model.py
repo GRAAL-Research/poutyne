@@ -430,7 +430,7 @@ class Model:
         with torch.no_grad():
             for _, x in _get_step_iterator(steps, generator):
                 x = self._process_input(x)
-                pred_y.append(torch_to_numpy(self.model(*x)))
+                pred_y.append(torch_to_numpy(self.model(x)))
         return pred_y
 
     def predict_on_batch(self, x):
