@@ -135,7 +135,8 @@ class Model:
         the ``fit_generator`` method.
 
         Args:
-            x (Union[Tensor, np.ndarray]): Training dataset.
+            x (Union[Tensor, np.ndarray]) or
+               tuple((Union[Tensor1, np.ndarray1]), (Union[Tensor2, np.ndarray2]), ... ): Training dataset.
             y (Union[Tensor, np.ndarray]): Ground truth.
             validation_x (Union[Tensor, np.ndarray]): Validation dataset. The validation datset
                 is optional. (Default value = None)
@@ -186,10 +187,15 @@ class Model:
 
         """
 
-        train_generator = self._dataloader_from_data(x, y, batch_size=batch_size)
+        x = self.format_input(x)
+
+        train_generator = self._dataloader_from_data(*x, y, batch_size=batch_size)
         valid_generator = None
         if validation_x is not None or validation_y is not None:
-            valid_generator = self._dataloader_from_data(validation_x,
+
+            validation_x = self.format_input(validation_x)
+
+            valid_generator = self._dataloader_from_data(*validation_x,
                                                          validation_y,
                                                          batch_size=batch_size)
 
@@ -306,7 +312,8 @@ class Model:
         for train_step_iterator, valid_step_iterator in epoch_iterator:
             self.model.train(True)
             with torch.enable_grad():
-                for step, (x, y) in train_step_iterator:
+                for step, xy in train_step_iterator:
+                    x, y = xy[:-1], xy[-1]
                     step.loss, step.metrics, _ = self._fit_batch(x, y,
                                                                  callback=callback_list,
                                                                  step=step.number)
@@ -385,14 +392,18 @@ class Model:
         tensors are converted into Numpy arrays.
 
         Args:
-            x (Union[Tensor, np.ndarray]): Dataset for which to predict.
+          x (Union[Tensor, np.ndarray]) or
+             tuple((Union[Tensor1, np.ndarray1]), (Union[Tensor2, np.ndarray2]), ... ): Dataset for which to predict.
             batch_size (int): Number of samples given to the network at one
                 time. (Default value = 32)
 
         Returns:
             Numpy arrays of the predictions.
         """
-        generator = self._dataloader_from_data(x, batch_size=batch_size)
+
+        x = self.format_input(x)
+
+        generator = self._dataloader_from_data(*x, batch_size=batch_size)
         pred_y = self.predict_generator(generator)
         return np.concatenate(pred_y)
 
@@ -419,7 +430,7 @@ class Model:
         with torch.no_grad():
             for _, x in _get_step_iterator(steps, generator):
                 x = self._process_input(x)
-                pred_y.append(torch_to_numpy(self.model(x)))
+                pred_y.append(torch_to_numpy(self.model(*x)))
         return pred_y
 
     def predict_on_batch(self, x):
@@ -428,15 +439,18 @@ class Model:
         tensors are converted into Numpy arrays.
 
         Args:
-            x (Union[Tensor, np.ndarray]): Batch for which to predict.
+             x (Union[Tensor, np.ndarray]) or
+             tuple((Union[Tensor1, np.ndarray1]), (Union[Tensor2, np.ndarray2]), ... ): Batch for which to predict.
 
         Returns:
             The predictions with tensors converted into Numpy arrays.
         """
+        x = self.format_input(x)
+
         self.model.eval()
         with torch.no_grad():
             x = self._process_input(x)
-            return torch_to_numpy(self.model(x))
+            return torch_to_numpy(self.model(*x))
 
     def evaluate(self, x, y, *, batch_size=32, return_pred=False):
         """
@@ -444,7 +458,8 @@ class Model:
         and optionaly returns the predictions.
 
         Args:
-            x (Union[Tensor, np.ndarray]): Dataset.
+            x (Union[Tensor, np.ndarray]) or
+               tuple((Union[Tensor1, np.ndarray1]), (Union[Tensor2, np.ndarray2]), ... ): Dataset.
             y (Union[Tensor, np.ndarray]): Dataset ground truths.
             batch_size (int): Number of samples given to the network at one
                 time. (Default value = 32)
@@ -463,7 +478,10 @@ class Model:
             Tuple ``(loss, metrics, pred_y)`` if ``return_pred`` is true where
             ``pred_y`` is a Numpy array of the predictions.
         """
-        generator = self._dataloader_from_data(x, y, batch_size=batch_size)
+
+        x = self.format_input(x)
+
+        generator = self._dataloader_from_data(*x, y, batch_size=batch_size)
         ret = self.evaluate_generator(generator, steps=len(generator), return_pred=return_pred)
         if return_pred:
             ret = (*ret[:-1], np.concatenate(ret[-1]))
@@ -553,7 +571,8 @@ class Model:
         samples and optionaly returns the predictions.
 
         Args:
-            x (Union[Tensor, np.ndarray]): Batch.
+            x (Union[Tensor, np.ndarray]) or
+               tuple((Union[Tensor1, np.ndarray1]), (Union[Tensor2, np.ndarray2]), ... ): Batch.
             y (Union[Tensor, np.ndarray]): Batch ground truths.
             return_pred (bool, optional): Whether to return the predictions for
                 ``x``. (Default value = False)
@@ -571,6 +590,8 @@ class Model:
             ``pred_y`` is the predictions with tensors converted into Numpy
             arrays.
         """
+        x = self.format_input(x)
+
         self.model.eval()
         with torch.no_grad():
             loss, metrics, pred_y = self._compute_loss_and_metrics(x, y, return_pred=return_pred)
@@ -583,7 +604,8 @@ class Model:
 
         self.model.eval()
         with torch.no_grad():
-            for step, (x, y) in step_iterator:
+            for step, xy in step_iterator:
+                x, y = xy[:-1], xy[-1]
                 step.loss, step.metrics, pred_y = self._compute_loss_and_metrics(
                     x, y, return_pred=return_pred
                 )
@@ -596,7 +618,7 @@ class Model:
 
     def _compute_loss_and_metrics(self, x, y, return_loss_tensor=False, return_pred=False):
         x, y = self._process_input(x, y)
-        pred_y = self.model(x)
+        pred_y = self.model(*x)
         loss = self.loss_function(pred_y, y)
         if not return_loss_tensor:
             loss = float(loss)
@@ -763,3 +785,21 @@ class Model:
         if isinstance(self.loss_function, torch.nn.Module):
             self.loss_function.to(self.device)
         return self
+
+    @staticmethod
+    def format_input(x):
+        """
+        Formats a single input into a tuple of length one. Assumptions are that a single input are either a numpy array
+        or torch tensor, and multiple inputs are contained into a tuple.
+
+        Args:
+            x: Input to be formatted into a tuple if necessary.
+
+        Returns:
+            tuple containing inputs.
+        """
+        # Formats to tuple
+        if not isinstance(x, tuple):
+            x = (x, )
+
+        return x
