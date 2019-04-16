@@ -187,13 +187,13 @@ class Model:
 
         """
 
-        x = self.format_input(x)
+        x = self._format_input(x)
 
         train_generator = self._dataloader_from_data(*x, y, batch_size=batch_size)
         valid_generator = None
         if validation_x is not None or validation_y is not None:
 
-            validation_x = self.format_input(validation_x)
+            validation_x = self._format_input(validation_x)
 
             valid_generator = self._dataloader_from_data(*validation_x,
                                                          validation_y,
@@ -370,6 +370,7 @@ class Model:
             ``pred_y`` is the predictions with tensors converted into Numpy
             arrays.
         """
+        x = self._format_input(x)
         self.model.train(True)
         with torch.enable_grad():
             self._transfer_optimizer_state_to_right_device()
@@ -401,7 +402,7 @@ class Model:
             Numpy arrays of the predictions.
         """
 
-        x = self.format_input(x)
+        x = self._format_input(x)
 
         generator = self._dataloader_from_data(*x, batch_size=batch_size)
         pred_y = self.predict_generator(generator)
@@ -445,7 +446,7 @@ class Model:
         Returns:
             The predictions with tensors converted into Numpy arrays.
         """
-        x = self.format_input(x)
+        x = self._format_input(x)
 
         self.model.eval()
         with torch.no_grad():
@@ -479,7 +480,7 @@ class Model:
             ``pred_y`` is a Numpy array of the predictions.
         """
 
-        x = self.format_input(x)
+        x = self._format_input(x)
 
         generator = self._dataloader_from_data(*x, y, batch_size=batch_size)
         ret = self.evaluate_generator(generator, steps=len(generator), return_pred=return_pred)
@@ -590,7 +591,7 @@ class Model:
             ``pred_y`` is the predictions with tensors converted into Numpy
             arrays.
         """
-        x = self.format_input(x)
+        x = self._format_input(x)
 
         self.model.eval()
         with torch.no_grad():
@@ -787,7 +788,7 @@ class Model:
         return self
 
     @staticmethod
-    def format_input(x):
+    def _format_input(x):
         """
         Formats a single input into a tuple of length one. Assumptions are that a single input are either a numpy array
         or torch tensor, and multiple inputs are contained into a tuple.

@@ -73,6 +73,23 @@ class SomeDataGeneratorWithLen:
         return x, y
 
 
+class MultiInputModel(nn.Module):
+    """MultiInputModel to test multiple inputs"""
+    def __init__(self, num_input=2):
+        super(MultiInputModel, self).__init__()
+        inputs = []
+        for _ in range(num_input):
+            inputs.append(nn.Linear(1, 1))
+        self.inputs = nn.ModuleList(inputs)
+        self.output = nn.Linear(2, 1)
+
+    def forward(self, *x):
+        to_cat = []
+        for i, inp in enumerate(self.inputs):
+            to_cat.append(inp(x[i]))
+
+        return self.output(torch.cat(to_cat, dim=1))
+
 
 class ModelTest(TestCase):
     # pylint: disable=too-many-public-methods
@@ -95,6 +112,10 @@ class ModelTest(TestCase):
 
         self.model = Model(self.pytorch_module, self.optimizer, self.loss_function,
                            metrics=self.metrics)
+
+        self.multi_input_model = Model(MultiInputModel(), self.optimizer,
+                                       self.loss_function, metrics=self.metrics)
+
         self.mock_callback = MagicMock()
 
     def test_fitting_tensor_generator(self):
@@ -284,7 +305,6 @@ class ModelTest(TestCase):
 
     def test_tensor_train_on_batch(self):
         x = torch.rand(ModelTest.batch_size, 1)
-        x = self.model.format_input(x)
         y = torch.rand(ModelTest.batch_size, 1)
         loss, metrics = self.model.train_on_batch(x, y)
         self.assertEqual(type(loss), float)
@@ -293,7 +313,6 @@ class ModelTest(TestCase):
 
     def test_train_on_batch_with_pred(self):
         x = torch.rand(ModelTest.batch_size, 1)
-        x = self.model.format_input(x)
         y = torch.rand(ModelTest.batch_size, 1)
         loss, metrics, pred_y = self.model.train_on_batch(x, y, return_pred=True)
         self.assertEqual(type(loss), float)
@@ -303,9 +322,39 @@ class ModelTest(TestCase):
 
     def test_ndarray_train_on_batch(self):
         x = np.random.rand(ModelTest.batch_size, 1).astype(np.float32)
-        x = self.model.format_input(x)
         y = np.random.rand(ModelTest.batch_size, 1).astype(np.float32)
         loss, metrics = self.model.train_on_batch(x, y)
+        self.assertEqual(type(loss), float)
+        self.assertEqual(type(metrics), np.ndarray)
+        self.assertEqual(metrics.tolist(), [some_metric_1_value, some_metric_2_value])
+
+    def test_tensor_train_on_batch_format_input(self):
+        x1 = torch.rand(ModelTest.batch_size, 1)
+        x2 = torch.rand(ModelTest.batch_size, 1)
+        x = (x1, x2)
+        y = torch.rand(ModelTest.batch_size, 1)
+        loss, metrics = self.multi_input_model.train_on_batch(x, y)
+        self.assertEqual(type(loss), float)
+        self.assertEqual(type(metrics), np.ndarray)
+        self.assertEqual(metrics.tolist(), [some_metric_1_value, some_metric_2_value])
+
+    def test_train_on_batch_with_pred_format_input(self):
+        x1 = torch.rand(ModelTest.batch_size, 1)
+        x2 = torch.rand(ModelTest.batch_size, 1)
+        x = (x1, x2)
+        y = torch.rand(ModelTest.batch_size, 1)
+        loss, metrics, pred_y = self.multi_input_model.train_on_batch(x, y, return_pred=True)
+        self.assertEqual(type(loss), float)
+        self.assertEqual(type(metrics), np.ndarray)
+        self.assertEqual(metrics.tolist(), [some_metric_1_value, some_metric_2_value])
+        self.assertEqual(pred_y.shape, (ModelTest.batch_size, 1))
+
+    def test_ndarray_train_on_batch_format_input(self):
+        x1 = np.random.rand(ModelTest.batch_size, 1).astype(np.float32)
+        x2 = np.random.rand(ModelTest.batch_size, 1).astype(np.float32)
+        x = (x1, x2)
+        y = np.random.rand(ModelTest.batch_size, 1).astype(np.float32)
+        loss, metrics = self.multi_input_model.train_on_batch(x, y)
         self.assertEqual(type(loss), float)
         self.assertEqual(type(metrics), np.ndarray)
         self.assertEqual(metrics.tolist(), [some_metric_1_value, some_metric_2_value])
