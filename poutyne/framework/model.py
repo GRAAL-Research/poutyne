@@ -312,8 +312,7 @@ class Model:
         for train_step_iterator, valid_step_iterator in epoch_iterator:
             self.model.train(True)
             with torch.enable_grad():
-                for step, xy in train_step_iterator:
-                    x, y = xy[:-1], xy[-1]
+                for step, (*x, y) in train_step_iterator:
                     step.loss, step.metrics, _ = self._fit_batch(x, y,
                                                                  callback=callback_list,
                                                                  step=step.number)
@@ -605,8 +604,7 @@ class Model:
 
         self.model.eval()
         with torch.no_grad():
-            for step, xy in step_iterator:
-                x, y = xy[:-1], xy[-1]
+            for step, (*x, y) in step_iterator:
                 step.loss, step.metrics, pred_y = self._compute_loss_and_metrics(
                     x, y, return_pred=return_pred
                 )
