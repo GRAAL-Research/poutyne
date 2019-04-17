@@ -540,6 +540,19 @@ class ModelTest(TestCase):
             self.assertEqual(pred.shape, (ModelTest.batch_size, 1))
         self.assertEqual(np.concatenate(pred_y).shape, (num_steps * ModelTest.batch_size, 1))
 
+    def test_predict_generator_format_input(self):
+        num_steps = 10
+        generator = some_data_tensor_generator_multi_input(ModelTest.batch_size)
+        generator = (x for *x, _ in generator)
+        pred_y = self.multi_input_model.predict_generator(
+            generator,
+            steps=num_steps
+        )
+        for pred in pred_y:
+            self.assertEqual(type(pred), np.ndarray)
+            self.assertEqual(pred.shape, (ModelTest.batch_size, 1))
+        self.assertEqual(np.concatenate(pred_y).shape, (num_steps * ModelTest.batch_size, 1))
+
     def _test_predictions_for_evaluate_and_predict_generator(self, pred_y):
         self.assertEqual(type(pred_y), list)
         remaning_example = ModelTest.evaluate_dataset_len
