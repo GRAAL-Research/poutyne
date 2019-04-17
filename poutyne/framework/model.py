@@ -400,9 +400,7 @@ class Model:
         Returns:
             Numpy arrays of the predictions.
         """
-
         x = self._format_input(x)
-
         generator = self._dataloader_from_data(*x, batch_size=batch_size)
         pred_y = self.predict_generator(generator)
         return np.concatenate(pred_y)
@@ -445,8 +443,6 @@ class Model:
         Returns:
             The predictions with tensors converted into Numpy arrays.
         """
-        x = self._format_input(x)
-
         self.model.eval()
         with torch.no_grad():
             x = self._process_input(x)
@@ -478,9 +474,7 @@ class Model:
             Tuple ``(loss, metrics, pred_y)`` if ``return_pred`` is true where
             ``pred_y`` is a Numpy array of the predictions.
         """
-
         x = self._format_input(x)
-
         generator = self._dataloader_from_data(*x, y, batch_size=batch_size)
         ret = self.evaluate_generator(generator, steps=len(generator), return_pred=return_pred)
         if return_pred:
@@ -591,7 +585,6 @@ class Model:
             arrays.
         """
         x = self._format_input(x)
-
         self.model.eval()
         with torch.no_grad():
             loss, metrics, pred_y = self._compute_loss_and_metrics(x, y, return_pred=return_pred)
