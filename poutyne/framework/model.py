@@ -135,11 +135,12 @@ class Model:
         the ``fit_generator`` method.
 
         Args:
-            x (Union[Tensor, np.ndarray]) or
-               tuple((Union[Tensor1, np.ndarray1]), (Union[Tensor2, np.ndarray2]), ... ): Training dataset.
+            x (Union[Tensor, np.ndarray, tuple]): Training dataset.
+                If ``x`` is a tuple, the tuple content must be of Union[Tensor, np.ndarray].
             y (Union[Tensor, np.ndarray]): Ground truth.
             validation_x (Union[Tensor, np.ndarray]): Validation dataset. The validation datset
                 is optional. (Default value = None)
+                If ``validation_x`` is a tuple, it's data must be a Union[Tensor, np.ndarray, tuple].
             validation_y (Union[Tensor, np.ndarray]): Validation ground truth.
                 (Default value = None)
             batch_size (int): Number of samples given to the network at one time.
@@ -225,9 +226,11 @@ class Model:
 
         Args:
             train_generator: Generator-like object for the training dataset.
-                The generator must yield a tuple ``(x, y)`` where ``x`` is a
+                The generator must yield a tuple ``(x_1, x_2, ..., x_n, y)`` where ``x`` is a
                 batch of the training dataset and ``y`` is the corresponding
-                ground truths. ``y`` should be a Tensor or a Numpy array with
+                ground truths. The last element will be considered as output (``y``).
+                The first n elements are considered as inputs (``x``).
+                ``y`` should be a Tensor or a Numpy array with
                 the first dimension being the batch size since ``len(y)`` is
                 taken as the batch size. The loss and the metrics are averaged
                 using this batch size. If ``y`` is not a Tensor or a Numpy
@@ -392,8 +395,8 @@ class Model:
         tensors are converted into Numpy arrays.
 
         Args:
-          x (Union[Tensor, np.ndarray]) or
-             tuple((Union[Tensor1, np.ndarray1]), (Union[Tensor2, np.ndarray2]), ... ): Dataset for which to predict.
+            x (Union[Tensor, np.ndarray, tuple]): Dataset for which to predict.
+                If ``x`` is a tuple, the tuple content must be of Union[Tensor, np.ndarray].
             batch_size (int): Number of samples given to the network at one
                 time. (Default value = 32)
 
@@ -439,8 +442,8 @@ class Model:
         tensors are converted into Numpy arrays.
 
         Args:
-             x (Union[Tensor, np.ndarray]) or
-             tuple((Union[Tensor1, np.ndarray1]), (Union[Tensor2, np.ndarray2]), ... ): Batch for which to predict.
+            x (Union[Tensor, np.ndarray, tuple]): Batch for which to predict.
+                If ``x`` is a tuple, the tuple content must be of Union[Tensor, np.ndarray].
 
         Returns:
             The predictions with tensors converted into Numpy arrays.
@@ -458,8 +461,8 @@ class Model:
         and optionaly returns the predictions.
 
         Args:
-            x (Union[Tensor, np.ndarray]) or
-               tuple((Union[Tensor1, np.ndarray1]), (Union[Tensor2, np.ndarray2]), ... ): Dataset.
+            x (Union[Tensor, np.ndarray, tuple]): Dataset.
+                If ``x`` is a tuple, the tuple content must be of Union[Tensor, np.ndarray].
             y (Union[Tensor, np.ndarray]): Dataset ground truths.
             batch_size (int): Number of samples given to the network at one
                 time. (Default value = 32)
@@ -571,8 +574,8 @@ class Model:
         samples and optionaly returns the predictions.
 
         Args:
-            x (Union[Tensor, np.ndarray]) or
-               tuple((Union[Tensor1, np.ndarray1]), (Union[Tensor2, np.ndarray2]), ... ): Batch.
+            x (Union[Tensor, np.ndarray, tuple]): Batch.
+                If ``x`` is a tuple, the tuple content must be of Union[Tensor, np.ndarray].
             y (Union[Tensor, np.ndarray]): Batch ground truths.
             return_pred (bool, optional): Whether to return the predictions for
                 ``x``. (Default value = False)
