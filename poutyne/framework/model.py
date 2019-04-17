@@ -445,7 +445,7 @@ class Model:
         """
         self.model.eval()
         with torch.no_grad():
-             x = self._process_input(self._format_input(x))
+            x = self._process_input(self._format_input(x))
             return torch_to_numpy(self.model(*x))
 
     def evaluate(self, x, y, *, batch_size=32, return_pred=False):
