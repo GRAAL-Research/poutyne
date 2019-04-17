@@ -228,7 +228,7 @@ class Model:
             train_generator: Generator-like object for the training dataset.
                 The generator must yield a tuple ``(x_1, x_2, ..., x_n, y)`` where ``x`` is a
                 batch of the training dataset and ``y`` is the corresponding
-                ground truths. The last element will be considered as output (``y``).
+                ground truths. The last element will be considered as the target (``y``).
                 The first n elements are considered as inputs (``x``).
                 ``y`` should be a Tensor or a Numpy array with
                 the first dimension being the batch size since ``len(y)`` is
