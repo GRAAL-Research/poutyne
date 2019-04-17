@@ -32,7 +32,7 @@ def some_data_tensor_generator(batch_size):
         y = torch.rand(batch_size, 1)
         yield x, y
 
-def some_data_tensor_generator_multi_input(batch_size, num_input=2):
+def some_data_tensor_generator_multi_input(batch_size):
     while True:
         x1 = torch.rand(batch_size, 1)
         x2 = torch.rand(batch_size, 1)
@@ -250,13 +250,13 @@ class ModelTest(TestCase):
         valid_y = torch.rand(valid_size, 1)
 
         logs = self.multi_input_model.fit(train_x, train_y,
-                              validation_x=valid_x,
-                              validation_y=valid_y,
-                              epochs=ModelTest.epochs,
-                              batch_size=train_batch_size,
-                              steps_per_epoch=None,
-                              validation_steps=None,
-                              callbacks=[self.mock_callback])
+                                          validation_x=valid_x,
+                                          validation_y=valid_y,
+                                          epochs=ModelTest.epochs,
+                                          batch_size=train_batch_size,
+                                          steps_per_epoch=None,
+                                          validation_steps=None,
+                                          callbacks=[self.mock_callback])
         params = {'epochs': ModelTest.epochs, 'steps': train_real_steps_per_epoch}
         self._test_fitting(params, logs, multi_input=True)
 
@@ -319,7 +319,16 @@ class ModelTest(TestCase):
         params = {'epochs': ModelTest.epochs, 'steps': None}
         self._test_fitting(params, logs, steps=train_real_steps_per_epoch)
 
-    def _test_fitting(self, params, logs, has_valid=True, steps=None, multi_input=False):
+    def _test_fitting(
+            self,
+            params,
+            logs,
+            has_valid=True,
+            steps=None,
+            multi_input=False
+        ):
+        # pylint: disable=too-many-locals
+        # pylint: disable=too-many-arguments
         if steps is None:
             steps = params['steps']
         self.assertEqual(len(logs), params['epochs'])
@@ -500,7 +509,9 @@ class ModelTest(TestCase):
         y = torch.rand(ModelTest.evaluate_dataset_len, 1)
         dataset = TensorDataset(x1, x2, y)
         generator = DataLoader(dataset, ModelTest.batch_size)
-        loss, metrics, pred_y = self.multi_input_model.evaluate_generator(generator, return_pred=True)
+        loss, metrics, pred_y = self.multi_input_model.evaluate_generator(
+            generator, return_pred=True
+        )
         self.assertEqual(type(loss), float)
         self.assertEqual(type(metrics), np.ndarray)
         self.assertEqual(metrics.tolist(), [some_metric_1_value, some_metric_2_value])
