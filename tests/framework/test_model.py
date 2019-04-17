@@ -36,9 +36,8 @@ def some_data_tensor_generator_multi_input(batch_size, num_input=2):
     while True:
         x1 = torch.rand(batch_size, 1)
         x2 = torch.rand(batch_size, 1)
-        x = (x1, x2)
         y = torch.rand(batch_size, 1)
-        yield x, y
+        yield x1, x2, y
 
 def some_ndarray_generator(batch_size):
     while True:
