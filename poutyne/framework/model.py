@@ -193,7 +193,6 @@ class Model:
         valid_generator = None
         if validation_x is not None or validation_y is not None:
             validation_x = self._format_input(validation_x)
-
             valid_generator = self._dataloader_from_data(*validation_x,
                                                          validation_y,
                                                          batch_size=batch_size)
