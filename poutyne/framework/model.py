@@ -135,12 +135,12 @@ class Model:
         the ``fit_generator`` method.
 
         Args:
-            x (Union[Tensor, np.ndarray, tuple]): Training dataset.
-                If ``x`` is a tuple, the tuple content must be of Union[Tensor, np.ndarray].
+            x (Union[Tensor, np.ndarray, tuple, list]): Training dataset.
+                If ``x`` is a tuple or list, the tuple or list content must be of Union[Tensor, np.ndarray].
             y (Union[Tensor, np.ndarray]): Ground truth.
             validation_x (Union[Tensor, np.ndarray]): Validation dataset. The validation datset
                 is optional. (Default value = None)
-                If ``validation_x`` is a tuple, it's data must be a Union[Tensor, np.ndarray, tuple].
+                If ``validation_x`` is a tuple or list, the tuple or list content must be of Union[Tensor, np.ndarray].
             validation_y (Union[Tensor, np.ndarray]): Validation ground truth.
                 (Default value = None)
             batch_size (int): Number of samples given to the network at one time.
@@ -395,8 +395,8 @@ class Model:
         tensors are converted into Numpy arrays.
 
         Args:
-            x (Union[Tensor, np.ndarray, tuple]): Dataset for which to predict.
-                If ``x`` is a tuple, the tuple content must be of Union[Tensor, np.ndarray].
+            x (Union[Tensor, np.ndarray, tuple, list]): Dataset for which to predict.
+                If ``x`` is a tuple or list, the tuple or list content must be of Union[Tensor, np.ndarray].
             batch_size (int): Number of samples given to the network at one
                 time. (Default value = 32)
 
@@ -432,8 +432,8 @@ class Model:
         self.model.eval()
         with torch.no_grad():
             for _, x in _get_step_iterator(steps, generator):
-                x = self._process_input(x)
-                pred_y.append(torch_to_numpy(self.model(x)))
+                x = self._process_input(self._format_input(x))
+                pred_y.append(torch_to_numpy(self.model(*x)))
         return pred_y
 
     def predict_on_batch(self, x):
@@ -442,8 +442,8 @@ class Model:
         tensors are converted into Numpy arrays.
 
         Args:
-            x (Union[Tensor, np.ndarray, tuple]): Batch for which to predict.
-                If ``x`` is a tuple, the tuple content must be of Union[Tensor, np.ndarray].
+            x (Union[Tensor, np.ndarray, tuple, list]): Batch for which to predict.
+                If ``x`` is a tuple or list, the tuple or list content must be of Union[Tensor, np.ndarray].
 
         Returns:
             The predictions with tensors converted into Numpy arrays.
@@ -461,8 +461,8 @@ class Model:
         and optionaly returns the predictions.
 
         Args:
-            x (Union[Tensor, np.ndarray, tuple]): Dataset.
-                If ``x`` is a tuple, the tuple content must be of Union[Tensor, np.ndarray].
+            x (Union[Tensor, np.ndarray, tuple, list]): Dataset.
+                If ``x`` is a tuple or list, the tuple or list content must be of Union[Tensor, np.ndarray].
             y (Union[Tensor, np.ndarray]): Dataset ground truths.
             batch_size (int): Number of samples given to the network at one
                 time. (Default value = 32)
@@ -574,8 +574,8 @@ class Model:
         samples and optionaly returns the predictions.
 
         Args:
-            x (Union[Tensor, np.ndarray, tuple]): Batch.
-                If ``x`` is a tuple, the tuple content must be of Union[Tensor, np.ndarray].
+            x (Union[Tensor, np.ndarray, tuple, list]): Batch.
+                If ``x`` is a tuple or list, the tuple or list content must be of Union[Tensor, np.ndarray].
             y (Union[Tensor, np.ndarray]): Batch ground truths.
             return_pred (bool, optional): Whether to return the predictions for
                 ``x``. (Default value = False)
@@ -792,16 +792,16 @@ class Model:
     def _format_input(x):
         """
         Formats a single input into a tuple of length one. Assumptions are that a single input are either a numpy array
-        or torch tensor, and multiple inputs are contained into a tuple.
+        or torch tensor, and multiple inputs are contained into a tuple or a list.
 
         Args:
             x: Input to be formatted into a tuple if necessary.
 
         Returns:
-            tuple containing inputs.
+            tuple or list containing inputs.
         """
         # Formats to tuple
-        if not isinstance(x, tuple):
+        if not isinstance(x, tuple) and not isinstance(x, list):
             x = (x, )
 
         return x
