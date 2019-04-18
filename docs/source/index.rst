@@ -84,8 +84,7 @@ You can now use Poutyne's model to train your network easily;
   model = Model(pytorch_module, 'sgd', 'cross_entropy', metrics=['accuracy'])
   model.fit(
       train_x, train_y,
-      validation_x=valid_x,
-      validation_y=valid_y,
+      validation_data=(valid_x, valid_y),
       epochs=5,
       batch_size=32
     )
