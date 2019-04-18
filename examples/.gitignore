@@ -3,3 +3,4 @@ CUB200
 mnist
 *.tsv
 *.ckpt
+data
