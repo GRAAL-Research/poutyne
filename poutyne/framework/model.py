@@ -223,16 +223,16 @@ class Model:
 
         Args:
             train_generator: Generator-like object for the training dataset.
-                The generator must yield a tuple ``(x_1, x_2, ..., x_n, y)`` where ``x`` is a
-                batch of the training dataset and ``y`` is the corresponding
-                ground truths. The last element will be considered as the target (``y``).
-                The first n elements are considered as inputs (``x``).
-                ``y`` should be a Tensor or a Numpy array with
-                the first dimension being the batch size since ``len(y)`` is
-                taken as the batch size. The loss and the metrics are averaged
-                using this batch size. If ``y`` is not a Tensor or a Numpy
-                array, then a warning is raised and the "batch size" defaults
-                to 1.
+                The generator must yield a batch in the form of a tuple 
+                (x_1, x_2, ..., x_n, y) where the ``x_i``s are n inputs and y 
+                is the corresponding ground truths. The last element will be 
+                considered as the target (``y``). The first n elements are 
+                considered as inputs (``x``). ``y`` should be a Tensor or a 
+                Numpy array with the first dimension being the batch size since 
+                ``len(y)`` is taken as the batch size. The loss and the metrics 
+                are averaged using this batch size. If ``y`` is not a Tensor 
+                or a Numpy array, then a warning is raised and the "batch size" 
+                defaults to 1.
 
                 If the generator does not have a method ``__len__()``, either
                 the ``steps_per_epoch`` argument must be provided, or the
