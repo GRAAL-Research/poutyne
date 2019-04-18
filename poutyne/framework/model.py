@@ -135,8 +135,8 @@ class Model:
 
         Args:
             *data (Union[Tensor, np.ndarray]): Training dataset. ``data`` should
-                contain ``(x_1, ..., x_n, y)`` where the ``x_i``s are are n
-                inputs and y is the corresponding ground truths.
+                contain ``(x_1, ..., x_n, y)`` where the ``x_i``'s are are ``n``
+                inputs and ``y`` is the corresponding ground truths.
             validation_data (Optional[Union[tuple, list] of Union[Tensor,
                 np.ndarray]]): Validation dataset. Same format as ``data`` The
                 validation datset is optional. (Default value = None)
@@ -169,8 +169,7 @@ class Model:
 
                 model = Model(pytorch_module, optimizer, loss_function)
                 history = model.fit(train_x, train_y,
-                                    validation_x=valid_x,
-                                    validation_y=valid_y,
+                                    validation_data=(valid_x, valid_y)
                                     epochs=num_epochs,
                                     batch_size=batch_size,
                                     verbose=False)
@@ -215,9 +214,9 @@ class Model:
         Args:
             train_generator: Generator-like object for the training dataset.
                 The generator must yield a batch in the form of a tuple
-                (x_1, x_2, ..., x_n, y) where the ``x_i``s are n inputs and y
-                is the corresponding ground truths. The last element will be
-                considered as the target (``y``). The first n elements are
+                (x_1, x_2, ..., x_n, y) where the ``x_i``'s are ``n`` inputs and
+                ``y`` is the corresponding ground truths. The last element will
+                be considered as the target (``y``). The first n elements are
                 considered as inputs (``x``). ``y`` should be a Tensor or a
                 Numpy array with the first dimension being the batch size since
                 ``len(y)`` is taken as the batch size. The loss and the metrics
@@ -343,8 +342,8 @@ class Model:
 
         Args:
             *batch: Batch. Should contain ``(x_1, ..., x_n, y)`` where
-                the ``x_i``s are are n inputs and y is the corresponding ground
-                truths.
+                the ``x_i``'s are are ``n`` inputs and ``y`` is the
+                corresponding ground truths.
             return_pred (bool, optional): Whether to return the predictions.
                 (Default value = False)
 
@@ -385,9 +384,9 @@ class Model:
 
         Args:
             *x_data (Union[Tensor, np.ndarray]): Dataset for which to predict.
-                Should contain ``(x_1, ..., x_n)`` where the ``x_i``s are are n
-                inputs. Should NOT contain the ground truths ``y`` as the last
-                element contrary to the other methods.
+                Should contain ``(x_1, ..., x_n)`` where the ``x_i``s are are
+                ``n`` inputs. Should NOT contain the ground truths ``y`` as the
+                last element contrary to the other methods.
             batch_size (int): Number of samples given to the network at one
                 time. (Default value = 32)
 
@@ -434,7 +433,7 @@ class Model:
 
         Args:
             x: Batch for which to predict. Should contain ``(x_1, ..., x_n)``
-                where the ``x_i``s are are n inputs. Should NOT contain the
+                where the ``x_i``'s are are ``n`` inputs. Should NOT contain the
                 ground truths ``y`` as the last element contrary to the other
                 methods.
 
@@ -453,8 +452,8 @@ class Model:
 
         Args:
             *data (Union[Tensor, np.ndarray]): Dataset. Should contain
-                ``(x_1, ..., x_n, y)`` where the ``x_i``s are are n inputs and y
-                is the corresponding ground truths.
+                ``(x_1, ..., x_n, y)`` where the ``x_i``'s are are ``n`` inputs
+                and ``y`` is the corresponding ground truths.
             batch_size (int): Number of samples given to the network at one
                 time. (Default value = 32)
             return_pred (bool, optional): Whether to return the predictions.
@@ -555,8 +554,8 @@ class Model:
 
         Args:
             *batch: Batch. Should contain ``(x_1, ..., x_n, y)`` where the
-                ``x_i``s are are n inputs and y is the corresponding ground
-                truths.
+                ``x_i``'s are are ``n`` inputs and ``y`` is the corresponding
+                ground truths.
             return_pred (bool, optional): Whether to return the predictions for
                 ``batch``. (Default value = False)
 
