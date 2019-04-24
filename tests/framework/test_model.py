@@ -9,8 +9,8 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch.utils.data import DataLoader, TensorDataset
-
+from torch.utils.data import DataLoader #, TensorDataset
+from poutyne.framework import TensorDataset
 from poutyne.framework import Model
 from poutyne.framework import warning_settings
 
@@ -37,7 +37,14 @@ def some_data_tensor_generator_multi_input(batch_size):
         x1 = torch.rand(batch_size, 1)
         x2 = torch.rand(batch_size, 1)
         y = torch.rand(batch_size, 1)
-        yield x1, x2, y
+        yield (x1, x2), y
+
+def some_data_tensor_generator_multi_output(batch_size):
+    while True:
+        x = torch.rand(batch_size, 1)
+        y1 = torch.rand(batch_size, 1)
+        y2 = torch.rand(batch_size, 1)
+        yield x, (y1, y2)
 
 def some_ndarray_generator(batch_size):
     while True:
@@ -97,6 +104,31 @@ class MultiInputModel(nn.Module):
 
         return self.output(torch.cat(to_cat, dim=1))
 
+class MultiOutputModel(nn.Module):
+    """MultiInputModel to test multiple inputs"""
+    def __init__(self, num_output=2):
+        super(MultiOutputModel, self).__init__()
+        self.input = nn.Linear(1, 1)
+        self.output1 = nn.Linear(1, 1)
+        self.output2 = nn.Linear(1, 1)
+
+    def forward(self, *x):
+        out1 = self.output1(self.input(x))
+        out2 = self.output2(self.input(x))
+        return out1, out2
+
+class DictOutputModel(nn.Module):
+    """MultiInputModel to test multiple inputs"""
+    def __init__(self, num_output=2):
+        super(DictOutputModel, self).__init__()
+        self.input = nn.Linear(1, 1)
+        self.output1 = nn.Linear(1, 1)
+        self.output2 = nn.Linear(1, 1)
+
+    def forward(self, x):
+        out1 = self.output1(self.input(x))
+        out2 = self.output2(self.input(x))
+        return {'out1': out1, 'out2': out2}
 
 class ModelTest(TestCase):
     # pylint: disable=too-many-public-methods
@@ -122,7 +154,18 @@ class ModelTest(TestCase):
 
         self.multi_input_model = Model(MultiInputModel(), self.optimizer,
                                        self.loss_function, metrics=self.metrics)
+        self.multi_output_model = Model(
+            MultiOutputModel(),
+            self.optimizer,
+            self.loss_function,
+            metrics=self.metrics
+        )
 
+        self.dict_output_model = Model(
+            DictOutputModel(),
+            self.optimizer,
+            lambda y: self.loss_function(y[0]),
+        )
         self.mock_callback = MagicMock()
 
     def test_fitting_tensor_generator(self):
@@ -248,8 +291,8 @@ class ModelTest(TestCase):
         valid_x = (torch.rand(valid_size, 1), torch.rand(valid_size, 1))
         valid_y = torch.rand(valid_size, 1)
 
-        logs = self.multi_input_model.fit(*train_x, train_y,
-                                          validation_data=(*valid_x, valid_y),
+        logs = self.multi_input_model.fit(train_x, train_y,
+                                          validation_data=(valid_x, valid_y),
                                           epochs=ModelTest.epochs,
                                           batch_size=train_batch_size,
                                           steps_per_epoch=None,
@@ -392,7 +435,7 @@ class ModelTest(TestCase):
         x1 = torch.rand(ModelTest.batch_size, 1)
         x2 = torch.rand(ModelTest.batch_size, 1)
         y = torch.rand(ModelTest.batch_size, 1)
-        loss, metrics = self.multi_input_model.train_on_batch(x1, x2, y)
+        loss, metrics = self.multi_input_model.train_on_batch((x1, x2), y)
         self.assertEqual(type(loss), float)
         self.assertEqual(type(metrics), np.ndarray)
         self.assertEqual(metrics.tolist(), [some_metric_1_value, some_metric_2_value])
@@ -401,17 +444,26 @@ class ModelTest(TestCase):
         x1 = torch.rand(ModelTest.batch_size, 1)
         x2 = torch.rand(ModelTest.batch_size, 1)
         y = torch.rand(ModelTest.batch_size, 1)
-        loss, metrics, pred_y = self.multi_input_model.train_on_batch(x1, x2, y, return_pred=True)
+        loss, metrics, pred_y = self.multi_input_model.train_on_batch((x1, x2), y, return_pred=True)
         self.assertEqual(type(loss), float)
         self.assertEqual(type(metrics), np.ndarray)
         self.assertEqual(metrics.tolist(), [some_metric_1_value, some_metric_2_value])
         self.assertEqual(pred_y.shape, (ModelTest.batch_size, 1))
 
+    # def test_ndarray_train_on_batch_dict_output(self):
+    #     x = np.random.rand(ModelTest.batch_size, 1).astype(np.float32)
+    #     y1 = np.random.rand(ModelTest.batch_size, 1).astype(np.float32)
+    #     y2 = np.random.rand(ModelTest.batch_size, 1).astype(np.float32)
+    #     loss, metrics = self.dict_output_model.train_on_batch(x, y1, y2)
+    #     self.assertEqual(type(loss), float)
+    #     self.assertEqual(type(metrics), np.ndarray)
+    #     self.assertEqual(metrics.tolist(), [some_metric_1_value, some_metric_2_value])
+
     def test_ndarray_train_on_batch_multi_input(self):
         x1 = np.random.rand(ModelTest.batch_size, 1).astype(np.float32)
         x2 = np.random.rand(ModelTest.batch_size, 1).astype(np.float32)
         y = np.random.rand(ModelTest.batch_size, 1).astype(np.float32)
-        loss, metrics = self.multi_input_model.train_on_batch(x1, x2, y, y)
+        loss, metrics = self.multi_input_model.train_on_batch((x1, x2), y)
         self.assertEqual(type(loss), float)
         self.assertEqual(type(metrics), np.ndarray)
         self.assertEqual(metrics.tolist(), [some_metric_1_value, some_metric_2_value])
@@ -428,7 +480,7 @@ class ModelTest(TestCase):
         x1 = torch.rand(ModelTest.evaluate_dataset_len, 1)
         x2 = torch.rand(ModelTest.evaluate_dataset_len, 1)
         y = torch.rand(ModelTest.evaluate_dataset_len, 1)
-        loss, metrics = self.multi_input_model.evaluate(x1, x2, y, batch_size=ModelTest.batch_size)
+        loss, metrics = self.multi_input_model.evaluate((x1, x2), y, batch_size=ModelTest.batch_size)
         self.assertEqual(type(loss), float)
         self.assertEqual(type(metrics), np.ndarray)
         self.assertEqual(metrics.tolist(), [some_metric_1_value, some_metric_2_value])
@@ -452,7 +504,7 @@ class ModelTest(TestCase):
         # We also test the unpacking.
         # pylint: disable=unused-variable
         loss, metrics, pred_y = self.multi_input_model.evaluate(
-            *x, y,
+            x, y,
             batch_size=ModelTest.batch_size,
             return_pred=True
         )
@@ -476,7 +528,7 @@ class ModelTest(TestCase):
         )
         y = np.random.rand(ModelTest.evaluate_dataset_len, 1).astype(np.float32)
         loss, metrics, pred_y = self.multi_input_model.evaluate(
-            *x, y,
+            x, y,
             batch_size=ModelTest.batch_size,
             return_pred=True
         )
@@ -500,7 +552,7 @@ class ModelTest(TestCase):
         x1 = torch.rand(ModelTest.evaluate_dataset_len, 1)
         x2 = torch.rand(ModelTest.evaluate_dataset_len, 1)
         y = torch.rand(ModelTest.evaluate_dataset_len, 1)
-        dataset = TensorDataset(x1, x2, y)
+        dataset = TensorDataset((x1, x2), y)
         generator = DataLoader(dataset, ModelTest.batch_size)
         loss, metrics, pred_y = self.multi_input_model.evaluate_generator(
             generator, return_pred=True
@@ -585,7 +637,7 @@ class ModelTest(TestCase):
         x1 = torch.rand(ModelTest.batch_size, 1)
         x2 = torch.rand(ModelTest.batch_size, 1)
         y = torch.rand(ModelTest.batch_size, 1)
-        loss, metrics = self.multi_input_model.evaluate_on_batch(x1, x2, y)
+        loss, metrics = self.multi_input_model.evaluate_on_batch((x1, x2), y)
         self.assertEqual(type(loss), float)
         self.assertEqual(type(metrics), np.ndarray)
         self.assertEqual(metrics.tolist(), [some_metric_1_value, some_metric_2_value])
@@ -617,7 +669,7 @@ class ModelTest(TestCase):
             torch.rand(ModelTest.evaluate_dataset_len, 1),
             torch.rand(ModelTest.evaluate_dataset_len, 1)
         )
-        pred_y = self.multi_input_model.predict(*x, batch_size=ModelTest.batch_size)
+        pred_y = self.multi_input_model.predict(x, batch_size=ModelTest.batch_size)
         self.assertEqual(pred_y.shape, (ModelTest.evaluate_dataset_len, 1))
 
     def test_predict_with_np_array(self):
@@ -630,7 +682,7 @@ class ModelTest(TestCase):
             np.random.rand(ModelTest.evaluate_dataset_len, 1).astype(np.float32),
             np.random.rand(ModelTest.evaluate_dataset_len, 1).astype(np.float32)
         )
-        pred_y = self.multi_input_model.predict(*x, batch_size=ModelTest.batch_size)
+        pred_y = self.multi_input_model.predict(x, batch_size=ModelTest.batch_size)
         self.assertEqual(pred_y.shape, (ModelTest.evaluate_dataset_len, 1))
 
     def test_predict_data_loader(self):
@@ -652,7 +704,7 @@ class ModelTest(TestCase):
     def test_predict_generator_multi_input(self):
         num_steps = 10
         generator = some_data_tensor_generator_multi_input(ModelTest.batch_size)
-        generator = (x for *x, _ in generator)
+        generator = (x for x, _ in generator)
         pred_y = self.multi_input_model.predict_generator(
             generator,
             steps=num_steps
@@ -684,7 +736,7 @@ class ModelTest(TestCase):
     def test_tensor_predict_on_batch_multi_input(self):
         x1 = torch.rand(ModelTest.batch_size, 1)
         x2 = torch.rand(ModelTest.batch_size, 1)
-        pred_y = self.multi_input_model.predict_on_batch(x1, x2)
+        pred_y = self.multi_input_model.predict_on_batch((x1, x2))
         self.assertEqual(pred_y.shape, (ModelTest.batch_size, 1))
 
     def test_ndarray_predict_on_batch(self):
@@ -759,9 +811,9 @@ class ModelTest(TestCase):
                 self.l1 = nn.Linear(1, 1)
                 self.l2 = nn.Linear(1, 1)
 
-            def forward(self, x):
+            def forward(self, x1, x2):
                 # pylint: disable=arguments-differ
-                x1, x2 = x
+                # x1, x2 = x
                 return self.l1(x1), self.l2(x2)
 
         def loss_function(y_pred, y_true):

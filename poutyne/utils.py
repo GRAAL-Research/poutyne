@@ -70,6 +70,17 @@ def _apply(obj, func):
         return {k:_apply(el, func) for k, el in obj.items()}
     return func(obj)
 
+def _concat(obj):
+    if isinstance(obj[0], (list, tuple)):
+        return tuple([_concat(ele) for ele in zip(*obj)])
+    elif isinstance(obj[0], dict):
+        concat_dict = {}
+        for key in obj[0].keys():
+            concat_dict[key] = _concat([o[key] for o in obj])
+        return concat_dict
+    else:
+        return np.concatenate(obj)
+
 def numpy_to_torch(obj):
     """
     Convert to tensors all Numpy arrays inside a Python object composed of the

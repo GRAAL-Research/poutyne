@@ -2,7 +2,7 @@ import warnings
 import numpy as np
 
 import torch
-from torch.utils.data import DataLoader, TensorDataset
+from torch.utils.data import DataLoader #, TensorDataset
 
 from poutyne import torch_to_numpy, numpy_to_torch, torch_to
 from .iterators import EpochIterator, StepIterator, _get_step_iterator
@@ -10,6 +10,51 @@ from .callbacks import CallbackList, ProgressionCallback, Callback
 from .metrics import get_loss_or_metric
 from .optimizers import get_optimizer
 from .warning_manager import warning_settings
+from ..utils import _concat
+from torch.utils.data import Dataset
+
+
+class TensorDataset(Dataset):
+    """Dataset wrapping tensors.
+
+    Each sample will be retrieved by indexing tensors along the first dimension.
+
+    Arguments:
+        *tensors (Tensor): tensors that have the same size of the first dimension.
+    """
+
+    def __init__(self, *tensors):
+        # assert all(tensors[0].size(0) == tensor.size(0) for tensor in tensors)
+        self.tensors = tensors
+
+    def __getitem__(self, index):
+        return self._rabbit_hole(self.tensors, index)
+        # return tuple(tensor[index] for tensor in self.tensors)
+
+    def __len__(self):
+        _len = None
+
+        def _rabbit(obj):
+            nonlocal _len
+            if isinstance(obj, (list, tuple)):
+                [_rabbit(o) for o in obj]
+            elif isinstance(obj, dict):
+                [self._rabbit(val) for val in obj.values()]
+            else:
+                if _len is None:
+                    _len = len(obj)
+                else:
+                    assert _len == len(obj)
+        _rabbit(self.tensors)
+        return _len
+
+    def _rabbit_hole(self, obj, idx):
+        if isinstance(obj, (list, tuple)):
+            return type(obj)(self._rabbit_hole(o, idx) for o in obj)
+        elif isinstance(obj, dict):
+            return {k: self._rabbit_hole(val, idx) for k, val in obj.items()}
+        else:
+            return obj[idx]
 
 
 class Model:
@@ -125,7 +170,7 @@ class Model:
         self.metrics_names = [metric.__name__ for metric in self.metrics]
         self.device = None
 
-    def fit(self, *data, validation_data=None,
+    def fit(self, x, y, validation_data=None,
             batch_size=32, epochs=1000, steps_per_epoch=None, validation_steps=None,
             initial_epoch=1, verbose=True, callbacks=[]):
         # pylint: disable=line-too-long
@@ -183,10 +228,10 @@ class Model:
                 ...
 
         """
-        train_generator = self._dataloader_from_data(*data, batch_size=batch_size)
+        train_generator = self._dataloader_from_data((x, y), batch_size=batch_size)
         valid_generator = None
         if validation_data is not None:
-            valid_generator = self._dataloader_from_data(*validation_data,
+            valid_generator = self._dataloader_from_data(validation_data,
                                                          batch_size=batch_size)
 
         return self.fit_generator(train_generator,
@@ -198,7 +243,7 @@ class Model:
                                   verbose=verbose,
                                   callbacks=callbacks)
 
-    def _dataloader_from_data(self, *args, batch_size):
+    def _dataloader_from_data(self, args, batch_size):
         args = numpy_to_torch(args)
         dataset = TensorDataset(*args) if len(args) > 1 else args[0]
         generator = DataLoader(dataset, batch_size)
@@ -302,7 +347,7 @@ class Model:
         for train_step_iterator, valid_step_iterator in epoch_iterator:
             self.model.train(True)
             with torch.enable_grad():
-                for step, (*x, y) in train_step_iterator:
+                for step, (x, y) in train_step_iterator:
                     step.loss, step.metrics, _ = self._fit_batch(x, y,
                                                                  callback=callback_list,
                                                                  step=step.number)
@@ -360,7 +405,7 @@ class Model:
             ``pred_y`` is the predictions with tensors converted into Numpy
             arrays.
         """
-        *x, y = batch
+        x, y = batch
         self.model.train(True)
         with torch.enable_grad():
             self._transfer_optimizer_state_to_right_device()
@@ -377,7 +422,7 @@ class Model:
 
         return ret[0] if len(ret) == 1 else ret
 
-    def predict(self, *x_data, batch_size=32):
+    def predict(self, x_data, batch_size=32):
         """
         Returns the predictions of the network given a dataset ``x``, where the
         tensors are converted into Numpy arrays.
@@ -393,8 +438,10 @@ class Model:
         Returns:
             Numpy arrays of the predictions.
         """
-        generator = self._dataloader_from_data(*x_data, batch_size=batch_size)
+        x_data = x_data if isinstance(x_data, (tuple, list)) else (x_data,)
+        generator = self._dataloader_from_data(x_data, batch_size=batch_size)
         pred_y = self.predict_generator(generator)
+        return _concat(pred_y)
         return np.concatenate(pred_y)
 
     def predict_generator(self, generator, *, steps=None):
@@ -422,11 +469,11 @@ class Model:
         with torch.no_grad():
             for _, x in _get_step_iterator(steps, generator):
                 x = self._process_input(x)
-                x = x if isinstance(x, tuple) or isinstance(x, list) else (x,)
+                x = x if isinstance(x, (tuple, list)) else (x,)
                 pred_y.append(torch_to_numpy(self.model(*x)))
         return pred_y
 
-    def predict_on_batch(self, *x):
+    def predict_on_batch(self, x):
         """
         Returns the predictions of the network given a batch ``x``, where the
         tensors are converted into Numpy arrays.
@@ -443,9 +490,10 @@ class Model:
         self.model.eval()
         with torch.no_grad():
             x = self._process_input(x)
+            x = x if isinstance(x, tuple) or isinstance(x, list) else (x,)
             return torch_to_numpy(self.model(*x))
 
-    def evaluate(self, *data, batch_size=32, return_pred=False):
+    def evaluate(self, x, y, batch_size=32, return_pred=False):
         """
         Computes the loss and the metrics of the network on batches of samples
         and optionaly returns the predictions.
@@ -471,7 +519,7 @@ class Model:
             Tuple ``(loss, metrics, pred_y)`` if ``return_pred`` is true where
             ``pred_y`` is a Numpy array of the predictions.
         """
-        generator = self._dataloader_from_data(*data, batch_size=batch_size)
+        generator = self._dataloader_from_data((x, y), batch_size=batch_size)
         ret = self.evaluate_generator(generator, steps=len(generator), return_pred=return_pred)
         if return_pred:
             ret = (*ret[:-1], np.concatenate(ret[-1]))
@@ -572,7 +620,7 @@ class Model:
             ``pred_y`` is the list of the predictions of each batch with tensors
             converted into Numpy arrays.
         """
-        *x, y = batch
+        x, y = batch
         self.model.eval()
         with torch.no_grad():
             loss, metrics, pred_y = self._compute_loss_and_metrics(x, y, return_pred=return_pred)
@@ -585,7 +633,7 @@ class Model:
 
         self.model.eval()
         with torch.no_grad():
-            for step, (*x, y) in step_iterator:
+            for step, (x, y) in step_iterator:
                 step.loss, step.metrics, pred_y = self._compute_loss_and_metrics(
                     x, y, return_pred=return_pred
                 )
@@ -598,6 +646,7 @@ class Model:
 
     def _compute_loss_and_metrics(self, x, y, return_loss_tensor=False, return_pred=False):
         x, y = self._process_input(x, y)
+        x = x if isinstance(x, (list, tuple)) else (x,)
         pred_y = self.model(*x)
         loss = self.loss_function(pred_y, y)
         if not return_loss_tensor:
