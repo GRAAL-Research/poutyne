@@ -2,7 +2,7 @@ import warnings
 import numpy as np
 
 import torch
-from torch.utils.data import DataLoader #, TensorDataset
+from torch.utils.data import DataLoader
 
 from poutyne import torch_to_numpy, numpy_to_torch, torch_to
 from .iterators import EpochIterator, StepIterator, _get_step_iterator
@@ -12,49 +12,7 @@ from .optimizers import get_optimizer
 from .warning_manager import warning_settings
 from ..utils import _concat
 from torch.utils.data import Dataset
-
-
-class TensorDataset(Dataset):
-    """Dataset wrapping tensors.
-
-    Each sample will be retrieved by indexing tensors along the first dimension.
-
-    Arguments:
-        *tensors (Tensor): tensors that have the same size of the first dimension.
-    """
-
-    def __init__(self, *tensors):
-        # assert all(tensors[0].size(0) == tensor.size(0) for tensor in tensors)
-        self.tensors = tensors
-
-        _len = None
-
-        def down_the_rabbit_hole(obj):
-            nonlocal _len
-            if isinstance(obj, (list, tuple)):
-                [down_the_rabbit_hole(o) for o in obj]
-            elif isinstance(obj, dict):
-                [down_the_rabbit_hole(val) for val in obj.values()]
-            else:
-                if _len is None:
-                    _len = len(obj)
-                else:
-                    assert _len == len(obj), "Tensors are not all of same length"
-        down_the_rabbit_hole(self.tensors)
-        self._len = _len
-
-    def __getitem__(self, index):
-        def _rabbit_hole(obj, idx):
-            if isinstance(obj, (list, tuple)):
-                return type(obj)(_rabbit_hole(o, idx) for o in obj)
-            elif isinstance(obj, dict):
-                return {k: _rabbit_hole(val, idx) for k, val in obj.items()}
-            else:
-                return obj[idx]
-        return _rabbit_hole(self.tensors, index)
-
-    def __len__(self):
-        return self._len
+from poutyne.utils import TensorDataset
 
 
 class Model:

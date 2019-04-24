@@ -1,10 +1,11 @@
 import unittest
 from unittest import TestCase
 from unittest.mock import MagicMock, call
-
+from poutyne.utils import TensorDataset
 import torch
-
+import numpy as np
 from poutyne import torch_apply
+
 
 class TorchApplyTest(TestCase):
     def test_apply_on_list(self):
@@ -80,6 +81,65 @@ class TorchApplyTest(TestCase):
         print(mock_list)
         for mock in mock_list:
             self.assertEqual(mock.method_calls, [call.cpu()])
+
+
+class TensorDatasetTest(TestCase):
+
+    def test_one_tensor(self):
+        dataset = TensorDataset(
+            np.zeros((20, 1))
+        )
+        self.assertEqual(len(dataset), 20)
+        self.assertEqual(dataset[0], np.array([0]))
+
+    def test_multiple_tensors(self):
+        dataset = TensorDataset(
+            np.zeros((20, 1)),
+            np.zeros((20, 1)),
+            np.zeros((20, 1))
+        )
+        self.assertEqual(len(dataset), 20)
+        item = dataset[0]
+        self.assertEqual(type(item), tuple)
+        for meti in item:
+            self.assertEqual(type(meti), np.ndarray)
+
+    def test_list_of_tensors(self):
+        dataset = TensorDataset(
+            (
+                np.zeros((20, 1)),
+                np.zeros((20, 1))
+            ),
+            np.zeros((20, 1))
+        )
+        self.assertEqual(len(dataset), 20)
+        item = dataset[0]
+        self.assertEqual(type(item), tuple)
+        self.assertEqual(type(item[0]), tuple)
+        self.assertEqual(type(item[-1]), np.ndarray)
+        for meti in item[0]:
+            self.assertEqual(type(meti), np.ndarray)
+
+        dataset = TensorDataset(
+            (
+                np.zeros((20, 1)),
+                np.zeros((20, 1))
+            ),
+            (
+                np.zeros((20, 1)),
+                np.zeros((20, 1))
+            )
+        )
+        self.assertEqual(len(dataset), 20)
+        item = dataset[0]
+        self.assertEqual(type(item), tuple)
+        self.assertEqual(type(item[0]), tuple)
+        self.assertEqual(type(item[1]), tuple)
+        for meti in item[0]:
+            self.assertEqual(type(meti), np.ndarray)
+        for meti in item[1]:
+            self.assertEqual(type(meti), np.ndarray)
+
 
 if __name__ == '__main__':
     unittest.main()
