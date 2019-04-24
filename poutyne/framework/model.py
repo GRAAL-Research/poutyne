@@ -522,9 +522,9 @@ class Model:
         generator = self._dataloader_from_data((x, y), batch_size=batch_size)
         ret = self.evaluate_generator(generator, steps=len(generator), return_pred=return_pred)
         if return_pred:
-            ret = (*ret[:-1], np.concatenate(ret[-1]))
+            ret = (*ret[:-1], _concat(ret[-1]))
+            # ret = (*ret[:-1], np.concatenate(ret[-1]))
         return ret
-
 
     def evaluate_generator(self, generator, *, steps=None, return_pred=False):
         """
