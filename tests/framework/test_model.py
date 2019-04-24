@@ -46,6 +46,14 @@ def some_data_tensor_generator_multi_output(batch_size):
         y2 = torch.rand(batch_size, 1)
         yield x, (y1, y2)
 
+def some_data_tensor_generator_multi_io(batch_size):
+    while True:
+        x1 = torch.rand(batch_size, 1)
+        x2 = torch.rand(batch_size, 1)
+        y1 = torch.rand(batch_size, 1)
+        y2 = torch.rand(batch_size, 1)
+        yield (x1, x2), (y1, y2)
+
 def some_ndarray_generator(batch_size):
     while True:
         x = np.random.rand(batch_size, 1).astype(np.float32)
@@ -104,18 +112,34 @@ class MultiInputModel(nn.Module):
 
         return self.output(torch.cat(to_cat, dim=1))
 
-class MultiOutputModel(nn.Module):
+
+class MultiIOModel(nn.Module):
     """MultiInputModel to test multiple inputs"""
-    def __init__(self, num_output=2):
-        super(MultiOutputModel, self).__init__()
-        self.input = nn.Linear(1, 1)
-        self.output1 = nn.Linear(1, 1)
-        self.output2 = nn.Linear(1, 1)
+    def __init__(self, num_input=2, num_output=2):
+        super(MultiIOModel, self).__init__()
+        inputs = []
+        for _ in range(num_input):
+            inputs.append(nn.Linear(1, 1))
+        self.inputs = nn.ModuleList(inputs)
+
+        outputs = []
+        for _ in range(num_output):
+            outputs.append(nn.Linear(num_input, 1))
+        self.outputs = nn.ModuleList(outputs)
 
     def forward(self, *x):
-        out1 = self.output1(self.input(x))
-        out2 = self.output2(self.input(x))
-        return out1, out2
+        inp_to_cat = []
+        for i, inp in enumerate(self.inputs):
+            inp_to_cat.append(inp(x[i]))
+        inp_cat = torch.cat(inp_to_cat, dim=1)
+
+        outputs = []
+        for out in self.outputs:
+            outputs.append(out(inp_cat))
+
+        outputs = outputs if len(outputs) > 1 else outputs[0]
+        return outputs
+
 
 class DictOutputModel(nn.Module):
     """MultiInputModel to test multiple inputs"""
@@ -129,6 +153,7 @@ class DictOutputModel(nn.Module):
         out1 = self.output1(self.input(x))
         out2 = self.output2(self.input(x))
         return {'out1': out1, 'out2': out2}
+
 
 class ModelTest(TestCase):
     # pylint: disable=too-many-public-methods
@@ -152,12 +177,24 @@ class ModelTest(TestCase):
         self.model = Model(self.pytorch_module, self.optimizer, self.loss_function,
                            metrics=self.metrics)
 
-        self.multi_input_model = Model(MultiInputModel(), self.optimizer,
-                                       self.loss_function, metrics=self.metrics)
-        self.multi_output_model = Model(
-            MultiOutputModel(),
+        self.multi_input_model = Model(
+            MultiIOModel(num_input=1, num_output=1),
             self.optimizer,
             self.loss_function,
+            metrics=self.metrics
+        )
+
+        self.multi_output_model = Model(
+            MultiIOModel(num_input=1, num_output=2),
+            self.optimizer,
+            lambda y_pred, y_true: self.loss_function(y_pred[0], y_true[0]) + self.loss_function(y_pred[1], y_true[1]),
+            metrics=self.metrics
+        )
+
+        self.multi_io_model = Model(
+            MultiIOModel(num_input=2, num_output=2),
+            self.optimizer,
+            lambda y_pred, y_true: self.loss_function(y_pred[0], y_true[0]) + self.loss_function(y_pred[1], y_true[1]),
             metrics=self.metrics
         )
 
@@ -192,6 +229,34 @@ class ModelTest(TestCase):
         )
         params = {'epochs': ModelTest.epochs, 'steps': ModelTest.steps_per_epoch}
         self._test_fitting(params, logs, multi_input=True)
+
+    def test_fitting_tensor_generator_multi_output(self):
+        train_generator = some_data_tensor_generator_multi_output(ModelTest.batch_size)
+        valid_generator = some_data_tensor_generator_multi_output(ModelTest.batch_size)
+        logs = self.multi_output_model.fit_generator(
+            train_generator,
+            valid_generator,
+            epochs=ModelTest.epochs,
+            steps_per_epoch=ModelTest.steps_per_epoch,
+            validation_steps=ModelTest.steps_per_epoch,
+            callbacks=[self.mock_callback]
+        )
+        params = {'epochs': ModelTest.epochs, 'steps': ModelTest.steps_per_epoch}
+        self._test_fitting(params, logs, multi_input=False, multi_output=True)
+
+    def test_fitting_tensor_generator_multi_io(self):
+        train_generator = some_data_tensor_generator_multi_io(ModelTest.batch_size)
+        valid_generator = some_data_tensor_generator_multi_io(ModelTest.batch_size)
+        logs = self.multi_io_model.fit_generator(
+            train_generator,
+            valid_generator,
+            epochs=ModelTest.epochs,
+            steps_per_epoch=ModelTest.steps_per_epoch,
+            validation_steps=ModelTest.steps_per_epoch,
+            callbacks=[self.mock_callback]
+        )
+        params = {'epochs': ModelTest.epochs, 'steps': ModelTest.steps_per_epoch}
+        self._test_fitting(params, logs, multi_input=True, multi_output=True)
 
     def test_fitting_without_valid_generator(self):
         train_generator = some_data_tensor_generator(ModelTest.batch_size)
@@ -301,6 +366,68 @@ class ModelTest(TestCase):
         params = {'epochs': ModelTest.epochs, 'steps': train_real_steps_per_epoch}
         self._test_fitting(params, logs, multi_input=True)
 
+    def test_fitting_with_tensor_multi_output(self):
+        # pylint: disable=too-many-locals
+        train_real_steps_per_epoch = 30
+        train_batch_size = ModelTest.batch_size
+        train_final_batch_missing_samples = 7
+        train_size = train_real_steps_per_epoch * train_batch_size - \
+                     train_final_batch_missing_samples
+        train_x = torch.rand(train_size, 1)
+        train_y = (torch.rand(train_size, 1), torch.rand(train_size, 1))
+
+        valid_real_steps_per_epoch = 10
+        # valid_batch_size will be the same as train_batch_size in the fit method.
+        valid_batch_size = train_batch_size
+        valid_final_batch_missing_samples = 3
+        valid_size = valid_real_steps_per_epoch * valid_batch_size - \
+                     valid_final_batch_missing_samples
+        valid_x = torch.rand(valid_size, 1)
+        valid_y = (torch.rand(valid_size, 1), torch.rand(valid_size, 1))
+
+        logs = self.multi_output_model.fit(
+            train_x, train_y,
+            validation_data=(valid_x, valid_y),
+            epochs=ModelTest.epochs,
+            batch_size=train_batch_size,
+            steps_per_epoch=None,
+            validation_steps=None,
+            callbacks=[self.mock_callback]
+        )
+        params = {'epochs': ModelTest.epochs, 'steps': train_real_steps_per_epoch}
+        self._test_fitting(params, logs, multi_input=False, multi_output=True)
+
+    def test_fitting_with_tensor_multi_io(self):
+        # pylint: disable=too-many-locals
+        train_real_steps_per_epoch = 30
+        train_batch_size = ModelTest.batch_size
+        train_final_batch_missing_samples = 7
+        train_size = train_real_steps_per_epoch * train_batch_size - \
+                     train_final_batch_missing_samples
+        train_x = (torch.rand(train_size, 1), torch.rand(train_size, 1))
+        train_y = (torch.rand(train_size, 1), torch.rand(train_size, 1))
+
+        valid_real_steps_per_epoch = 10
+        # valid_batch_size will be the same as train_batch_size in the fit method.
+        valid_batch_size = train_batch_size
+        valid_final_batch_missing_samples = 3
+        valid_size = valid_real_steps_per_epoch * valid_batch_size - \
+                     valid_final_batch_missing_samples
+        valid_x = (torch.rand(valid_size, 1), torch.rand(valid_size, 1))
+        valid_y = (torch.rand(valid_size, 1), torch.rand(valid_size, 1))
+
+        logs = self.multi_io_model.fit(
+            train_x, train_y,
+            validation_data=(valid_x, valid_y),
+            epochs=ModelTest.epochs,
+            batch_size=train_batch_size,
+            steps_per_epoch=None,
+            validation_steps=None,
+            callbacks=[self.mock_callback]
+        )
+        params = {'epochs': ModelTest.epochs, 'steps': train_real_steps_per_epoch}
+        self._test_fitting(params, logs, multi_input=True, multi_output=True)
+
     def test_fitting_with_np_array(self):
         # pylint: disable=too-many-locals
         train_real_steps_per_epoch = 30
@@ -365,7 +492,8 @@ class ModelTest(TestCase):
             logs,
             has_valid=True,
             steps=None,
-            multi_input=False
+            multi_input=False,
+            multi_output=False
         ):
         # pylint: disable=too-many-locals
         # pylint: disable=too-many-arguments
@@ -397,8 +525,12 @@ class ModelTest(TestCase):
         call_list.append(call.on_train_end({}))
 
         method_calls = self.mock_callback.method_calls
-        if multi_input:
+        if multi_input and not multi_output:
             self.assertIn(call.set_model(self.multi_input_model), method_calls[:2])
+        elif multi_input and multi_output:
+            self.assertIn(call.set_model(self.multi_io_model), method_calls[:2])
+        elif not multi_input and multi_output:
+            self.assertIn(call.set_model(self.multi_output_model), method_calls[:2])
         else:
             self.assertIn(call.set_model(self.model), method_calls[:2])
         self.assertIn(call.set_params(params), method_calls[:2])
@@ -440,6 +572,25 @@ class ModelTest(TestCase):
         self.assertEqual(type(metrics), np.ndarray)
         self.assertEqual(metrics.tolist(), [some_metric_1_value, some_metric_2_value])
 
+    def test_tensor_train_on_batch_multi_output(self):
+        x = torch.rand(ModelTest.batch_size, 1)
+        y1 = torch.rand(ModelTest.batch_size, 1)
+        y2 = torch.rand(ModelTest.batch_size, 1)
+        loss, metrics = self.multi_output_model.train_on_batch(x, (y1, y2))
+        self.assertEqual(type(loss), float)
+        self.assertEqual(type(metrics), np.ndarray)
+        self.assertEqual(metrics.tolist(), [some_metric_1_value, some_metric_2_value])
+
+    def test_tensor_train_on_batch_multi_io(self):
+        x1 = torch.rand(ModelTest.batch_size, 1)
+        x2 = torch.rand(ModelTest.batch_size, 1)
+        y1 = torch.rand(ModelTest.batch_size, 1)
+        y2 = torch.rand(ModelTest.batch_size, 1)
+        loss, metrics = self.multi_io_model.train_on_batch((x1, x2), (y1, y2))
+        self.assertEqual(type(loss), float)
+        self.assertEqual(type(metrics), np.ndarray)
+        self.assertEqual(metrics.tolist(), [some_metric_1_value, some_metric_2_value])
+
     def test_train_on_batch_with_pred_multi_input(self):
         x1 = torch.rand(ModelTest.batch_size, 1)
         x2 = torch.rand(ModelTest.batch_size, 1)
@@ -464,6 +615,25 @@ class ModelTest(TestCase):
         x2 = np.random.rand(ModelTest.batch_size, 1).astype(np.float32)
         y = np.random.rand(ModelTest.batch_size, 1).astype(np.float32)
         loss, metrics = self.multi_input_model.train_on_batch((x1, x2), y)
+        self.assertEqual(type(loss), float)
+        self.assertEqual(type(metrics), np.ndarray)
+        self.assertEqual(metrics.tolist(), [some_metric_1_value, some_metric_2_value])
+
+    def test_ndarray_train_on_batch_multi_output(self):
+        x = np.random.rand(ModelTest.batch_size, 1).astype(np.float32)
+        y1 = np.random.rand(ModelTest.batch_size, 1).astype(np.float32)
+        y2 = np.random.rand(ModelTest.batch_size, 1).astype(np.float32)
+        loss, metrics = self.multi_output_model.train_on_batch(x, (y1, y2))
+        self.assertEqual(type(loss), float)
+        self.assertEqual(type(metrics), np.ndarray)
+        self.assertEqual(metrics.tolist(), [some_metric_1_value, some_metric_2_value])
+
+    def test_ndarray_train_on_batch_multi_io(self):
+        x1 = np.random.rand(ModelTest.batch_size, 1).astype(np.float32)
+        x2 = np.random.rand(ModelTest.batch_size, 1).astype(np.float32)
+        y1 = np.random.rand(ModelTest.batch_size, 1).astype(np.float32)
+        y2 = np.random.rand(ModelTest.batch_size, 1).astype(np.float32)
+        loss, metrics = self.multi_io_model.train_on_batch((x1, x2), (y1, y2))
         self.assertEqual(type(loss), float)
         self.assertEqual(type(metrics), np.ndarray)
         self.assertEqual(metrics.tolist(), [some_metric_1_value, some_metric_2_value])

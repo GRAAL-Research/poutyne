@@ -27,34 +27,34 @@ class TensorDataset(Dataset):
         # assert all(tensors[0].size(0) == tensor.size(0) for tensor in tensors)
         self.tensors = tensors
 
-    def __getitem__(self, index):
-        return self._rabbit_hole(self.tensors, index)
-        # return tuple(tensor[index] for tensor in self.tensors)
-
-    def __len__(self):
         _len = None
 
-        def _rabbit(obj):
+        def down_the_rabbit_hole(obj):
             nonlocal _len
             if isinstance(obj, (list, tuple)):
-                [_rabbit(o) for o in obj]
+                [down_the_rabbit_hole(o) for o in obj]
             elif isinstance(obj, dict):
-                [self._rabbit(val) for val in obj.values()]
+                [down_the_rabbit_hole(val) for val in obj.values()]
             else:
                 if _len is None:
                     _len = len(obj)
                 else:
-                    assert _len == len(obj)
-        _rabbit(self.tensors)
-        return _len
+                    assert _len == len(obj), "Tensors are not all of same length"
+        down_the_rabbit_hole(self.tensors)
+        self._len = _len
 
-    def _rabbit_hole(self, obj, idx):
-        if isinstance(obj, (list, tuple)):
-            return type(obj)(self._rabbit_hole(o, idx) for o in obj)
-        elif isinstance(obj, dict):
-            return {k: self._rabbit_hole(val, idx) for k, val in obj.items()}
-        else:
-            return obj[idx]
+    def __getitem__(self, index):
+        def _rabbit_hole(obj, idx):
+            if isinstance(obj, (list, tuple)):
+                return type(obj)(_rabbit_hole(o, idx) for o in obj)
+            elif isinstance(obj, dict):
+                return {k: _rabbit_hole(val, idx) for k, val in obj.items()}
+            else:
+                return obj[idx]
+        return _rabbit_hole(self.tensors, index)
+
+    def __len__(self):
+        return self._len
 
 
 class Model:
