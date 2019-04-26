@@ -1,7 +1,7 @@
 import unittest
 from unittest import TestCase
 from unittest.mock import MagicMock, call
-from poutyne.utils import TensorDataset
+from poutyne.utils import TensorDataset, _concat
 import torch
 import numpy as np
 from poutyne import torch_apply
@@ -140,6 +140,117 @@ class TensorDatasetTest(TestCase):
         for meti in item[1]:
             self.assertEqual(type(meti), np.ndarray)
 
+class ConcatTest(TestCase):
+    def test_single_array(self):
+        """
+        Test the concatenation of a single array
+        """
+        obj = [np.ones(5)] * 5
+        concat = _concat(obj)
+        self.assertEqual(concat.shape, (25,))
+
+    def test_tuple_1(self):
+        """
+        Test the concatenation of a [([], [])]
+        """
+        obj = [(np.ones(5), np.ones(5) * 2)] * 5
+        concat = _concat(obj)
+        self.assertEqual(concat[0].shape, (25,))
+        self.assertEqual(concat[1].shape, (25,))
+        self.assertTrue((concat[0] == 1).all())
+        self.assertTrue((concat[1] == 2).all())
+
+    def test_tuple_2(self):
+        """
+        Test the concatenation of a [([], ([], []))]
+        """
+        obj = [(np.ones(5), (np.ones(5) * 2, np.ones(5) * 3))] * 5
+        concat = _concat(obj)
+        self.assertEqual(concat[0].shape, (25,))
+        self.assertEqual(concat[1][0].shape, (25,))
+        self.assertEqual(concat[1][1].shape, (25,))
+        self.assertTrue((concat[0] == 1).all())
+        self.assertTrue((concat[1][0] == 2).all())
+        self.assertTrue((concat[1][1] == 3).all())
+
+    def test_tuple_3(self):
+        """
+        Test the concatenation of a [(([], []), ([], []))]
+        """
+        obj = [((np.zeros(5), np.ones(5)), (np.ones(5) * 2, np.ones(5) * 3))] * 5
+        concat = _concat(obj)
+        self.assertEqual(concat[0][0].shape, (25,))
+        self.assertEqual(concat[0][1].shape, (25,))
+        self.assertEqual(concat[1][0].shape, (25,))
+        self.assertEqual(concat[1][1].shape, (25,))
+        self.assertTrue((concat[0][0] == 0).all())
+        self.assertTrue((concat[0][1] == 1).all())
+        self.assertTrue((concat[1][0] == 2).all())
+        self.assertTrue((concat[1][1] == 3).all())
+
+    def test_array_1(self):
+        """
+        Test the concatenation of a [[[], []]]
+        """
+        obj = [[np.ones(5), np.ones(5) * 2]] * 5
+        concat = _concat(obj)
+        self.assertEqual(concat[0].shape, (25,))
+        self.assertEqual(concat[1].shape, (25,))
+        self.assertTrue((concat[0] == 1).all())
+        self.assertTrue((concat[1] == 2).all())
+
+    def test_array_2(self):
+        """
+        Test the concatenation of a [[[], ([], [])]]
+        """
+        obj = [[np.ones(5), [np.ones(5) * 2, np.ones(5) * 3]]] * 5
+        concat = _concat(obj)
+        self.assertEqual(concat[0].shape, (25,))
+        self.assertEqual(concat[1][0].shape, (25,))
+        self.assertEqual(concat[1][1].shape, (25,))
+        self.assertTrue((concat[0] == 1).all())
+        self.assertTrue((concat[1][0] == 2).all())
+        self.assertTrue((concat[1][1] == 3).all())
+
+    def test_array_3(self):
+        """
+        Test the concatenation of a [[[[], []], [[], []]]]
+        """
+        obj = [[[np.zeros(5), np.ones(5)], [np.ones(5) * 2, np.ones(5) * 3]]] * 5
+        concat = _concat(obj)
+        self.assertEqual(concat[0][0].shape, (25,))
+        self.assertEqual(concat[0][1].shape, (25,))
+        self.assertEqual(concat[1][0].shape, (25,))
+        self.assertEqual(concat[1][1].shape, (25,))
+        self.assertTrue((concat[0][0] == 0).all())
+        self.assertTrue((concat[0][1] == 1).all())
+        self.assertTrue((concat[1][0] == 2).all())
+        self.assertTrue((concat[1][1] == 3).all())
+
+    def test_dict_1(self):
+        """
+        Test list of dictionaries
+        """
+        obj = [{'a': np.ones(5), 'b': np.ones(5) * 2}] * 5
+        concat = _concat(obj)
+        self.assertEqual(concat['a'].shape, (25,))
+        self.assertEqual(concat['b'].shape, (25,))
+        self.assertTrue((concat['a'] == 1).all())
+        self.assertTrue((concat['b'] == 2).all())
+
+    def test_dict_2(self):
+        """
+        Test list of dictionaries
+        """
+        obj = [{'a': (np.zeros(5), np.ones(5)), 'b': np.ones(5) * 2}] * 5
+        concat = _concat(obj)
+        self.assertEqual(concat['a'][0].shape, (25,))
+        self.assertEqual(concat['a'][1].shape, (25,))
+        self.assertEqual(concat['b'].shape, (25,))
+
+        self.assertTrue((concat['a'][0] == 0).all())
+        self.assertTrue((concat['a'][1] == 1).all())
+        self.assertTrue((concat['b'] == 2).all())
 
 if __name__ == '__main__':
     unittest.main()
