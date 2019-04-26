@@ -1,9 +1,9 @@
-import unittest
 from unittest import TestCase
 from unittest.mock import MagicMock, call
-from poutyne.utils import TensorDataset, _concat
+import unittest
 import torch
 import numpy as np
+from poutyne.utils import TensorDataset, _concat
 from poutyne import torch_apply
 
 
@@ -251,6 +251,7 @@ class ConcatTest(TestCase):
         self.assertTrue((concat['a'][0] == 0).all())
         self.assertTrue((concat['a'][1] == 1).all())
         self.assertTrue((concat['b'] == 2).all())
+
 
 if __name__ == '__main__':
     unittest.main()
