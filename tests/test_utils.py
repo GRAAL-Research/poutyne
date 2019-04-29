@@ -94,58 +94,68 @@ class TensorDatasetTest(TestCase):
 
     def test_one_tensor(self):
         dataset = TensorDataset(
-            np.zeros((20, 1))
+                np.arange(20)[:, None]
         )
         self.assertEqual(len(dataset), 20)
-        self.assertEqual(dataset[0], np.array([0]))
+        for i in range(20):
+            self.assertEqual(dataset[i], np.array([i]))
 
     def test_multiple_tensors(self):
         dataset = TensorDataset(
-            np.zeros((20, 1)),
-            np.zeros((20, 1)),
-            np.zeros((20, 1))
+            np.arange(20)[:, None],
+            np.arange(20)[:, None] * 2,
+            np.arange(20)[:, None] * 3,
         )
         self.assertEqual(len(dataset), 20)
-        item = dataset[0]
-        self.assertEqual(type(item), tuple)
-        for meti in item:
-            self.assertEqual(type(meti), np.ndarray)
+        self.assertEqual(type(dataset[0]), tuple)
+        for i in range(20):
+            self.assertEqual(dataset[i][0], i)
+            self.assertEqual(dataset[i][1], i * 2)
+            self.assertEqual(dataset[i][2], i * 3)
 
     def test_list_of_tensors(self):
         dataset = TensorDataset(
             (
-                np.zeros((20, 1)),
-                np.zeros((20, 1))
+                np.arange(20)[:, None],
+                np.arange(20)[:, None] * 2,
             ),
-            np.zeros((20, 1))
+            np.arange(20)[:, None] * 3,
         )
         self.assertEqual(len(dataset), 20)
-        item = dataset[0]
-        self.assertEqual(type(item), tuple)
-        self.assertEqual(type(item[0]), tuple)
-        self.assertEqual(type(item[-1]), np.ndarray)
-        for meti in item[0]:
-            self.assertEqual(type(meti), np.ndarray)
+        self.assertEqual(type(dataset[0]), tuple)
+        self.assertEqual(type(dataset[0][0]), tuple)
+        self.assertEqual(type(dataset[0][-1]), np.ndarray)
+        for i in range(20):
+            self.assertEqual(dataset[i][0][0], i)
+            self.assertEqual(dataset[i][0][1], i * 2)
+            self.assertEqual(dataset[i][1], i * 3)
 
         dataset = TensorDataset(
             (
-                np.zeros((20, 1)),
-                np.zeros((20, 1))
+                np.arange(20)[:, None],
+                np.arange(20)[:, None] * 2,
             ),
             (
-                np.zeros((20, 1)),
-                np.zeros((20, 1))
+                np.arange(20)[:, None] * 3,
+                np.arange(20)[:, None] * 4,
             )
         )
         self.assertEqual(len(dataset), 20)
-        item = dataset[0]
-        self.assertEqual(type(item), tuple)
-        self.assertEqual(type(item[0]), tuple)
-        self.assertEqual(type(item[1]), tuple)
-        for meti in item[0]:
-            self.assertEqual(type(meti), np.ndarray)
-        for meti in item[1]:
-            self.assertEqual(type(meti), np.ndarray)
+
+        self.assertEqual(type(dataset[0]), tuple)
+        self.assertEqual(type(dataset[1]), tuple)
+        self.assertEqual(type(dataset[0][0]), tuple)
+        self.assertEqual(type(dataset[0][1]), tuple)
+        for i in range(20):
+            self.assertEqual(type(dataset[i][0][0]), np.ndarray)
+            self.assertEqual(type(dataset[i][0][1]), np.ndarray)
+            self.assertEqual(dataset[i][0][0], i)
+            self.assertEqual(dataset[i][0][1], i * 2)
+            self.assertEqual(type(dataset[i][1][0]), np.ndarray)
+            self.assertEqual(type(dataset[i][1][1]), np.ndarray)
+            self.assertEqual(dataset[i][1][0], i * 3)
+            self.assertEqual(dataset[i][1][1], i * 4)
+
 
 class ConcatTest(TestCase):
     def test_single_array(self):
