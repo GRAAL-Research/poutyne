@@ -75,13 +75,12 @@ def _apply(obj, func):
 def _concat(obj):
     if isinstance(obj[0], (list, tuple)):
         return tuple([_concat(ele) for ele in zip(*obj)])
-    elif isinstance(obj[0], dict):
+    if isinstance(obj[0], dict):
         concat_dict = {}
         for key in obj[0].keys():
             concat_dict[key] = _concat([o[key] for o in obj])
         return concat_dict
-    else:
-        return np.concatenate(obj)
+    return np.concatenate(obj)
 
 def numpy_to_torch(obj):
     """
@@ -135,8 +134,7 @@ class TensorDataset(Dataset):
                 for length in lengths[1:]:
                     assert length == lengths[0]
                 return lengths[0]
-            else:
-                return len(obj)
+            return len(obj)
         _len = _rabbit_hole(self.tensors)
         self._len = _len
 
@@ -144,8 +142,7 @@ class TensorDataset(Dataset):
         def _rabbit_hole(obj, idx):
             if isinstance(obj, (list, tuple)):
                 return type(obj)(_rabbit_hole(o, idx) for o in obj)
-            else:
-                return obj[idx]
+            return obj[idx]
         return _rabbit_hole(self.tensors, index)
 
     def __len__(self):

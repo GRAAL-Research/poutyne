@@ -622,12 +622,12 @@ class Model:
     def _get_batch_size(self, x, y):
         if torch.is_tensor(x) or isinstance(x, np.ndarray):
             return len(x)
-        elif isinstance(x, (tuple, list)):
+        if isinstance(x, (tuple, list)):
             if torch.is_tensor(x[0]) or isinstance(x[0], np.ndarray):
                 return len(x[0])
         if torch.is_tensor(y) or isinstance(y, np.ndarray):
             return len(y)
-        elif isinstance(y, (tuple, list)):
+        if isinstance(y, (tuple, list)):
             if torch.is_tensor(y[0]) or isinstance(y[0], np.ndarray):
                 return len(y[0])
 

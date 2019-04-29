@@ -94,7 +94,7 @@ class TensorDatasetTest(TestCase):
 
     def test_one_tensor(self):
         dataset = TensorDataset(
-                np.arange(20)[:, None]
+            np.arange(20)[:, None]
         )
         self.assertEqual(len(dataset), 20)
         for i in range(20):
