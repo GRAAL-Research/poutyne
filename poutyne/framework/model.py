@@ -147,9 +147,10 @@ class Model:
                 Target. Union[Tensor, np.ndarray] if the model has a
                 single output. Union[tuple, list] of Union[Tensor, np.ndarray]
                 if the model has multiple outputs.
-            validation_data (Optional[Union[tuple, list] of Union[Tensor,
-                np.ndarray]]): Validation dataset. Same format as ``x`` and
-                ``y``. The validation datset is optional.
+            validation_data (Optional[tuple of (``x_val``, ``y_val``)]):
+                Same format as ``x`` and ``y`` previously described.
+                Validation dataset on which to evaluate the loss and any model
+                metrics at the end of each epoch. The model will not be trained on this data.
                 (Default value = None)
             batch_size (int): Number of samples given to the network at one
                 time. (Default value = 32)
@@ -412,7 +413,8 @@ class Model:
 
         generator: Generator-like object for the dataset. The generator must
             yield a batch of samples. See the ``fit_generator()`` method for
-            details on the types of generators supported.
+            details on the types of generators supported. This should only
+            yield input data ``x`` and not the target ``y``.
         steps (int, optional): Number of iterations done on
             ``generator``. (Defaults the number of steps needed to see the
             entire dataset)

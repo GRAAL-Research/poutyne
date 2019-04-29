@@ -1,10 +1,4 @@
-#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# File              : test_utils.py
-# Author            : Alexis Tremblay <atremblay@explorance.com>
-# Date              : 29.04.2019
-# Last Modified Date: 29.04.2019
-# Last Modified By  : Alexis Tremblay <atremblay@explorance.com>
 from unittest import TestCase
 from unittest.mock import MagicMock, call
 import unittest

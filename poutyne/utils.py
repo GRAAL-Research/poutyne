@@ -135,8 +135,7 @@ class TensorDataset(Dataset):
                     assert length == lengths[0]
                 return lengths[0]
             return len(obj)
-        _len = _rabbit_hole(self.tensors)
-        self._len = _len
+        self._len = _rabbit_hole(self.tensors)
 
     def __getitem__(self, index):
         def _rabbit_hole(obj, idx):
