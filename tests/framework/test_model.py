@@ -9,7 +9,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch.utils.data import DataLoader #, TensorDataset
+from torch.utils.data import DataLoader
 from poutyne.utils import TensorDataset
 from poutyne.framework import Model
 from poutyne.framework import warning_settings

@@ -225,9 +225,7 @@ class Model:
         Args:
             train_generator: Generator-like object for the training dataset.
                 The generator must yield a batch in the form of a tuple
-                (x, y). ``x`` (inputs) and ``y`` (targets) can either be a
-                Union[Tensor, np.ndarray] (single {in|out}put) or
-                Union[tuple, list] of Union[Tensor, np.ndarray] (multi {in|out}put).
+                (x, y) where ``x`` is the input and ``y`` is the target
                 ``len(x)`` is taken as the batch size (or the first element
                 of ``x`` in case of multi inputs). The loss and the metrics
                 are averaged using this batch size. If the batch size cannot be,
@@ -351,16 +349,8 @@ class Model:
         loss and the metrics, and optionaly returns the predictions.
 
         Args:
-            x (Union[Tensor, np.ndarray] or Union[tuple, list] of
-                Union[Tensor, np.ndarray]):
-                Training batch. Union[Tensor, np.ndarray] if the model has a
-                single input. Union[tuple, list] of Union[Tensor, np.ndarray]
-                if the model has multiple inputs.
-            y (Union[Tensor, np.ndarray] or Union[tuple, list] of
-                Union[Tensor, np.ndarray]):
-                Target batch. Union[Tensor, np.ndarray] if the model has a
-                single output. Union[tuple, list] of Union[Tensor, np.ndarray]
-                if the model has multiple outputs.
+            x: Input data as a batch.
+            y: Target data as a batch.
             return_pred (bool, optional): Whether to return the predictions.
                 (Default value = False)
 
@@ -448,11 +438,7 @@ class Model:
         tensors are converted into Numpy arrays.
 
         Args:
-            x (Union[Tensor, np.ndarray] or Union[tuple, list] of
-                Union[Tensor, np.ndarray]):
-                Input batch to the model. Union[Tensor, np.ndarray] if the model has a
-                single input. Union[tuple, list] of Union[Tensor, np.ndarray]
-                if the model has multiple inputs.
+            x: Input data as a batch.
         Returns:
             The predictions with tensors converted into Numpy arrays.
         """
@@ -499,7 +485,6 @@ class Model:
         ret = self.evaluate_generator(generator, steps=len(generator), return_pred=return_pred)
         if return_pred:
             ret = (*ret[:-1], _concat(ret[-1]))
-            # ret = (*ret[:-1], np.concatenate(ret[-1]))
         return ret
 
     def evaluate_generator(self, generator, *, steps=None, return_pred=False):
@@ -577,16 +562,8 @@ class Model:
         samples and optionaly returns the predictions.
 
         Args:
-            x (Union[Tensor, np.ndarray] or Union[tuple, list] of
-                Union[Tensor, np.ndarray]):
-                Batch of data to evaluate. Union[Tensor, np.ndarray] if the model has a
-                single input. Union[tuple, list] of Union[Tensor, np.ndarray]
-                if the model has multiple inputs.
-            y (Union[Tensor, np.ndarray] or Union[tuple, list] of
-                Union[Tensor, np.ndarray]):
-                Ground truth of the data to evaluate. Union[Tensor, np.ndarray]
-                if the model has a single output. Union[tuple, list] of
-                Union[Tensor, np.ndarray] if the model has multiple outputs.
+            x: Input data as a batch.
+            y: Target data as a batch.
             return_pred (bool, optional): Whether to return the predictions for
                 ``batch``. (Default value = False)
 
