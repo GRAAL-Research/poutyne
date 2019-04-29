@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import numpy as np
 import torch
 from torch.utils.data import Dataset
@@ -128,18 +129,15 @@ class TensorDataset(Dataset):
     def __init__(self, *tensors):
         self.tensors = tensors
 
-        _len = None
-
-        def down_the_rabbit_hole(obj):
-            nonlocal _len
+        def _rabbit_hole(obj):
             if isinstance(obj, (list, tuple)):
-                [down_the_rabbit_hole(o) for o in obj]
+                lengths = [_rabbit_hole(o) for o in obj]
+                for length in lengths[1:]:
+                    assert length == lengths[0]
+                return lengths[0]
             else:
-                if _len is None:
-                    _len = len(obj)
-                else:
-                    assert _len == len(obj), "Tensors are not all of same length"
-        down_the_rabbit_hole(self.tensors)
+                return len(obj)
+        _len = _rabbit_hole(self.tensors)
         self._len = _len
 
     def __getitem__(self, index):
