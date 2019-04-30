@@ -1,5 +1,7 @@
+# -*- coding: utf-8 -*-
 import numpy as np
 import torch
+from torch.utils.data import Dataset
 
 
 def torch_to_numpy(obj, copy=False):
@@ -70,6 +72,16 @@ def _apply(obj, func):
         return {k:_apply(el, func) for k, el in obj.items()}
     return func(obj)
 
+def _concat(obj):
+    if isinstance(obj[0], (list, tuple)):
+        return tuple([_concat(ele) for ele in zip(*obj)])
+    if isinstance(obj[0], dict):
+        concat_dict = {}
+        for key in obj[0].keys():
+            concat_dict[key] = _concat([o[key] for o in obj])
+        return concat_dict
+    return np.concatenate(obj)
+
 def numpy_to_torch(obj):
     """
     Convert to tensors all Numpy arrays inside a Python object composed of the
@@ -102,3 +114,35 @@ def numpy_to_torch(obj):
     """
     fn = lambda a: torch.from_numpy(a) if isinstance(a, np.ndarray) else a
     return _apply(obj, fn)
+
+
+class TensorDataset(Dataset):
+    """Dataset wrapping tensors.
+
+    Each sample will be retrieved by indexing tensors along the first dimension.
+
+    Arguments:
+        *tensors (Tensor): tensors that have the same size of the first dimension.
+    """
+
+    def __init__(self, *tensors):
+        self.tensors = tensors
+
+        def _rabbit_hole(obj):
+            if isinstance(obj, (list, tuple)):
+                lengths = [_rabbit_hole(o) for o in obj]
+                for length in lengths[1:]:
+                    assert length == lengths[0]
+                return lengths[0]
+            return len(obj)
+        self._len = _rabbit_hole(self.tensors)
+
+    def __getitem__(self, index):
+        def _rabbit_hole(obj, idx):
+            if isinstance(obj, (list, tuple)):
+                return type(obj)(_rabbit_hole(o, idx) for o in obj)
+            return obj[idx]
+        return _rabbit_hole(self.tensors, index)
+
+    def __len__(self):
+        return self._len

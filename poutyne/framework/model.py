@@ -2,14 +2,16 @@ import warnings
 import numpy as np
 
 import torch
-from torch.utils.data import DataLoader, TensorDataset
+from torch.utils.data import DataLoader
 
 from poutyne import torch_to_numpy, numpy_to_torch, torch_to
+from poutyne.utils import TensorDataset
 from .iterators import EpochIterator, StepIterator, _get_step_iterator
 from .callbacks import CallbackList, ProgressionCallback, Callback
 from .metrics import get_loss_or_metric
 from .optimizers import get_optimizer
 from .warning_manager import warning_settings
+from ..utils import _concat
 
 
 class Model:
@@ -125,21 +127,31 @@ class Model:
         self.metrics_names = [metric.__name__ for metric in self.metrics]
         self.device = None
 
-    def fit(self, *data, validation_data=None,
+    def fit(self, x, y, validation_data=None,
             batch_size=32, epochs=1000, steps_per_epoch=None, validation_steps=None,
             initial_epoch=1, verbose=True, callbacks=[]):
         # pylint: disable=line-too-long
+        # pylint: disable=too-many-arguments
         """
         Trains the model on a dataset. This method creates generators and calls
         the ``fit_generator`` method.
 
         Args:
-            *data (Union[Tensor, np.ndarray]): Training dataset. ``data`` should
-                contain ``(x_1, ..., x_n, y)`` where the ``x_i``'s are are ``n``
-                inputs and ``y`` is the corresponding ground truths.
-            validation_data (Optional[Union[tuple, list] of Union[Tensor,
-                np.ndarray]]): Validation dataset. Same format as ``data`` The
-                validation datset is optional. (Default value = None)
+            x (Union[Tensor, np.ndarray] or Union[tuple, list] of
+                Union[Tensor, np.ndarray]):
+                Training dataset. Union[Tensor, np.ndarray] if the model has a
+                single input. Union[tuple, list] of Union[Tensor, np.ndarray]
+                if the model has multiple inputs.
+            y (Union[Tensor, np.ndarray] or Union[tuple, list] of
+                Union[Tensor, np.ndarray]):
+                Target. Union[Tensor, np.ndarray] if the model has a
+                single output. Union[tuple, list] of Union[Tensor, np.ndarray]
+                if the model has multiple outputs.
+            validation_data (Optional[tuple of (``x_val``, ``y_val``)]):
+                Same format as ``x`` and ``y`` previously described.
+                Validation dataset on which to evaluate the loss and any model
+                metrics at the end of each epoch. The model will not be trained on this data.
+                (Default value = None)
             batch_size (int): Number of samples given to the network at one
                 time. (Default value = 32)
             epochs (int): Number of times the entire training dataset is seen.
@@ -183,10 +195,10 @@ class Model:
                 ...
 
         """
-        train_generator = self._dataloader_from_data(*data, batch_size=batch_size)
+        train_generator = self._dataloader_from_data((x, y), batch_size=batch_size)
         valid_generator = None
         if validation_data is not None:
-            valid_generator = self._dataloader_from_data(*validation_data,
+            valid_generator = self._dataloader_from_data(validation_data,
                                                          batch_size=batch_size)
 
         return self.fit_generator(train_generator,
@@ -198,7 +210,7 @@ class Model:
                                   verbose=verbose,
                                   callbacks=callbacks)
 
-    def _dataloader_from_data(self, *args, batch_size):
+    def _dataloader_from_data(self, args, batch_size):
         args = numpy_to_torch(args)
         dataset = TensorDataset(*args) if len(args) > 1 else args[0]
         generator = DataLoader(dataset, batch_size)
@@ -214,14 +226,11 @@ class Model:
         Args:
             train_generator: Generator-like object for the training dataset.
                 The generator must yield a batch in the form of a tuple
-                (x_1, x_2, ..., x_n, y) where the ``x_i``'s are ``n`` inputs and
-                ``y`` is the corresponding ground truths. The last element will
-                be considered as the target (``y``). The first n elements are
-                considered as inputs (``x``). ``y`` should be a Tensor or a
-                Numpy array with the first dimension being the batch size since
-                ``len(y)`` is taken as the batch size. The loss and the metrics
-                are averaged using this batch size. If ``y`` is not a Tensor
-                or a Numpy array, then a warning is raised and the "batch size"
+                (x, y) where ``x`` is the input and ``y`` is the target
+                ``len(x)`` is taken as the batch size (or the first element
+                of ``x`` in case of multi inputs). The loss and the metrics
+                are averaged using this batch size. If the batch size cannot be,
+                infered then a warning is raised and the "batch size"
                 defaults to 1.
 
                 If the generator does not have a method ``__len__()``, either
@@ -302,7 +311,7 @@ class Model:
         for train_step_iterator, valid_step_iterator in epoch_iterator:
             self.model.train(True)
             with torch.enable_grad():
-                for step, (*x, y) in train_step_iterator:
+                for step, (x, y) in train_step_iterator:
                     step.loss, step.metrics, _ = self._fit_batch(x, y,
                                                                  callback=callback_list,
                                                                  step=step.number)
@@ -335,15 +344,14 @@ class Model:
             args = torch_to(args, self.device)
         return args[0] if len(args) == 1 else args
 
-    def train_on_batch(self, *batch, return_pred=False):
+    def train_on_batch(self, x, y, return_pred=False):
         """
-        Trains the model for the batch ``(x_1, ..., x_n, y)`` and computes the
+        Trains the model for the batch ``(x, y)`` and computes the
         loss and the metrics, and optionaly returns the predictions.
 
         Args:
-            *batch: Batch. Should contain ``(x_1, ..., x_n, y)`` where
-                the ``x_i``'s are are ``n`` inputs and ``y`` is the
-                corresponding ground truths.
+            x: Input data as a batch.
+            y: Target data as a batch.
             return_pred (bool, optional): Whether to return the predictions.
                 (Default value = False)
 
@@ -360,7 +368,6 @@ class Model:
             ``pred_y`` is the predictions with tensors converted into Numpy
             arrays.
         """
-        *x, y = batch
         self.model.train(True)
         with torch.enable_grad():
             self._transfer_optimizer_state_to_right_device()
@@ -377,25 +384,27 @@ class Model:
 
         return ret[0] if len(ret) == 1 else ret
 
-    def predict(self, *x_data, batch_size=32):
+    def predict(self, x, batch_size=32):
         """
         Returns the predictions of the network given a dataset ``x``, where the
         tensors are converted into Numpy arrays.
 
         Args:
-            *x_data (Union[Tensor, np.ndarray]): Dataset for which to predict.
-                Should contain ``(x_1, ..., x_n)`` where the ``x_i``s are are
-                ``n`` inputs. Should NOT contain the ground truths ``y`` as the
-                last element contrary to the other methods.
+            x (Union[Tensor, np.ndarray] or Union[tuple, list] of
+                Union[Tensor, np.ndarray]):
+                Input to the model. Union[Tensor, np.ndarray] if the model has a
+                single input. Union[tuple, list] of Union[Tensor, np.ndarray]
+                if the model has multiple inputs.
             batch_size (int): Number of samples given to the network at one
                 time. (Default value = 32)
 
         Returns:
             Numpy arrays of the predictions.
         """
-        generator = self._dataloader_from_data(*x_data, batch_size=batch_size)
+        x = x if isinstance(x, (tuple, list)) else (x,)
+        generator = self._dataloader_from_data(x, batch_size=batch_size)
         pred_y = self.predict_generator(generator)
-        return np.concatenate(pred_y)
+        return _concat(pred_y)
 
     def predict_generator(self, generator, *, steps=None):
         """
@@ -404,9 +413,8 @@ class Model:
 
         generator: Generator-like object for the dataset. The generator must
             yield a batch of samples. See the ``fit_generator()`` method for
-            details on the types of generators supported. The batches should NOT
-            contain the ground truths ``y`` as the last element contrary to the
-            other methods.
+            details on the types of generators supported. This should only
+            yield input data ``x`` and not the target ``y``.
         steps (int, optional): Number of iterations done on
             ``generator``. (Defaults the number of steps needed to see the
             entire dataset)
@@ -422,38 +430,42 @@ class Model:
         with torch.no_grad():
             for _, x in _get_step_iterator(steps, generator):
                 x = self._process_input(x)
-                x = x if isinstance(x, tuple) or isinstance(x, list) else (x,)
+                x = x if isinstance(x, (tuple, list)) else (x,)
                 pred_y.append(torch_to_numpy(self.model(*x)))
         return pred_y
 
-    def predict_on_batch(self, *x):
+    def predict_on_batch(self, x):
         """
         Returns the predictions of the network given a batch ``x``, where the
         tensors are converted into Numpy arrays.
 
         Args:
-            x: Batch for which to predict. Should contain ``(x_1, ..., x_n)``
-                where the ``x_i``'s are are ``n`` inputs. Should NOT contain the
-                ground truths ``y`` as the last element contrary to the other
-                methods.
-
+            x: Input data as a batch.
         Returns:
             The predictions with tensors converted into Numpy arrays.
         """
         self.model.eval()
         with torch.no_grad():
             x = self._process_input(x)
+            x = x if isinstance(x, (tuple, list)) else (x,)
             return torch_to_numpy(self.model(*x))
 
-    def evaluate(self, *data, batch_size=32, return_pred=False):
+    def evaluate(self, x, y, batch_size=32, return_pred=False):
         """
         Computes the loss and the metrics of the network on batches of samples
         and optionaly returns the predictions.
 
         Args:
-            *data (Union[Tensor, np.ndarray]): Dataset. Should contain
-                ``(x_1, ..., x_n, y)`` where the ``x_i``'s are are ``n`` inputs
-                and ``y`` is the corresponding ground truths.
+            x (Union[Tensor, np.ndarray] or Union[tuple, list] of
+                Union[Tensor, np.ndarray]):
+                Input to the model. Union[Tensor, np.ndarray] if the model has a
+                single input. Union[tuple, list] of Union[Tensor, np.ndarray]
+                if the model has multiple inputs.
+            y (Union[Tensor, np.ndarray] or Union[tuple, list] of
+                Union[Tensor, np.ndarray]):
+                Target, corresponding ground truth. Union[Tensor, np.ndarray]
+                if the model has a single output. Union[tuple, list] of
+                Union[Tensor, np.ndarray] if the model has multiple outputs.
             batch_size (int): Number of samples given to the network at one
                 time. (Default value = 32)
             return_pred (bool, optional): Whether to return the predictions.
@@ -471,12 +483,11 @@ class Model:
             Tuple ``(loss, metrics, pred_y)`` if ``return_pred`` is true where
             ``pred_y`` is a Numpy array of the predictions.
         """
-        generator = self._dataloader_from_data(*data, batch_size=batch_size)
+        generator = self._dataloader_from_data((x, y), batch_size=batch_size)
         ret = self.evaluate_generator(generator, steps=len(generator), return_pred=return_pred)
         if return_pred:
-            ret = (*ret[:-1], np.concatenate(ret[-1]))
+            ret = (*ret[:-1], _concat(ret[-1]))
         return ret
-
 
     def evaluate_generator(self, generator, *, steps=None, return_pred=False):
         """
@@ -547,15 +558,14 @@ class Model:
         loss, metrics, pred_y = self._validate(step_iterator, return_pred=return_pred)
         return self._format_return(loss, metrics, pred_y, return_pred)
 
-    def evaluate_on_batch(self, *batch, return_pred=False):
+    def evaluate_on_batch(self, x, y, return_pred=False):
         """
         Computes the loss and the metrics of the network on a single batch of
         samples and optionaly returns the predictions.
 
         Args:
-            *batch: Batch. Should contain ``(x_1, ..., x_n, y)`` where the
-                ``x_i``'s are are ``n`` inputs and ``y`` is the corresponding
-                ground truths.
+            x: Input data as a batch.
+            y: Target data as a batch.
             return_pred (bool, optional): Whether to return the predictions for
                 ``batch``. (Default value = False)
 
@@ -572,7 +582,6 @@ class Model:
             ``pred_y`` is the list of the predictions of each batch with tensors
             converted into Numpy arrays.
         """
-        *x, y = batch
         self.model.eval()
         with torch.no_grad():
             loss, metrics, pred_y = self._compute_loss_and_metrics(x, y, return_pred=return_pred)
@@ -585,7 +594,7 @@ class Model:
 
         self.model.eval()
         with torch.no_grad():
-            for step, (*x, y) in step_iterator:
+            for step, (x, y) in step_iterator:
                 step.loss, step.metrics, pred_y = self._compute_loss_and_metrics(
                     x, y, return_pred=return_pred
                 )
@@ -598,6 +607,7 @@ class Model:
 
     def _compute_loss_and_metrics(self, x, y, return_loss_tensor=False, return_pred=False):
         x, y = self._process_input(x, y)
+        x = x if isinstance(x, (list, tuple)) else (x,)
         pred_y = self.model(*x)
         loss = self.loss_function(pred_y, y)
         if not return_loss_tensor:
@@ -614,8 +624,15 @@ class Model:
     def _get_batch_size(self, x, y):
         if torch.is_tensor(x) or isinstance(x, np.ndarray):
             return len(x)
+        if isinstance(x, (tuple, list)):
+            if torch.is_tensor(x[0]) or isinstance(x[0], np.ndarray):
+                return len(x[0])
         if torch.is_tensor(y) or isinstance(y, np.ndarray):
             return len(y)
+        if isinstance(y, (tuple, list)):
+            if torch.is_tensor(y[0]) or isinstance(y[0], np.ndarray):
+                return len(y[0])
+
         if warning_settings['batch_size'] == 'warn':
             warnings.warn("When 'x' or 'y' are not tensors nor Numpy arrays, "
                           "the batch size is set to 1 and, thus, the computed "
