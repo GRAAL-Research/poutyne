@@ -4,6 +4,7 @@ rate schedulers <http://pytorch.org/docs/master/optim.html#how-to-adjust-learnin
 and thus have the same arguments except for the optimizer that has to be
 omitted.
 """
+import sys
 import inspect
 import torch.optim.lr_scheduler
 from torch.optim.lr_scheduler import _LRScheduler
@@ -43,19 +44,23 @@ class _PyTorchLRSchedulerWrapper(Callback):
         torch.save(self.scheduler.state_dict(), f)
 
 
-for name, cls in torch.optim.lr_scheduler.__dict__.items():
-    if inspect.isclass(cls) and issubclass(cls, _LRScheduler) and cls != _LRScheduler:
-        # pylint: disable=exec-used
-        exec('''class {name}(_PyTorchLRSchedulerWrapper):
-    """
-    See:
-        `PyTorch {name}
-        <http://pytorch.org/docs/master/optim.html#torch.optim.lr_scheduler.{name}>`_
-    """
-    def __init__(self, *args, **kwargs):
-        super().__init__(torch.optim.lr_scheduler.{name}, *args, **kwargs)'''.format(name=name),
-             globals(),
-             locals())
+def new_init(torch_lr_scheduler):
+    def f(self, *args, **kwargs):
+        super(type(self), self).__init__(torch_lr_scheduler, *args, **kwargs)
+    return f
+
+for name, module_cls in torch.optim.lr_scheduler.__dict__.items():
+    if inspect.isclass(module_cls) and \
+            issubclass(module_cls, _LRScheduler) and \
+            module_cls != _LRScheduler:
+        _new_cls = type(name,
+                        (_PyTorchLRSchedulerWrapper,),
+                        {'__init__': new_init(module_cls),
+                         '__doc__' : """
+                                     See:
+                                         `PyTorch {name} <http://pytorch.org/docs/master/optim.html#torch.optim.lr_scheduler.{name}>`_
+                                     """.format(name=name)})
+        setattr(sys.modules[__name__], name, _new_cls)
 
 
 class ReduceLROnPlateau(Callback):
