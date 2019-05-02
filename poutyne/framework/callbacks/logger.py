@@ -104,12 +104,13 @@ class TensorBoardLogger(Logger):
     Callback that output the result of each epoch or batch into a Tensorboard experiment folder.
 
     Args:
-        writer (tensorboardX.SummaryWriter): The tensorboard writer.
+        writer (SummaryWriter): The tensorboard writer.
 
     Example:
-        Using tensorboardX::
+        Using TensorBoardLogger::
 
             from tensorboardX import SummaryWriter
+            # or from torch.utils.tensorboard import SummaryWriter
             from poutyne.framework import Model
             from poutyne.framework.callbacks import TensorBoardLogger
 

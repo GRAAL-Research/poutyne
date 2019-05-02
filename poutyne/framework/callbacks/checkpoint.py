@@ -1,7 +1,7 @@
 import warnings
 
 from .periodic import PeriodicSaveCallback
-from .lr_scheduler import PyTorchLRSchedulerWrapper, ReduceLROnPlateau
+from .lr_scheduler import _PyTorchLRSchedulerWrapper, ReduceLROnPlateau
 
 
 class ModelCheckpoint(PeriodicSaveCallback):
@@ -83,7 +83,7 @@ class LRSchedulerCheckpoint(PeriodicSaveCallback):
         super().__init__(*args, **kwargs)
         self.lr_scheduler = lr_scheduler
 
-        if not isinstance(self.lr_scheduler, (PyTorchLRSchedulerWrapper, ReduceLROnPlateau)):
+        if not isinstance(self.lr_scheduler, (_PyTorchLRSchedulerWrapper, ReduceLROnPlateau)):
             raise ValueError("Unknown scheduler callback '%s'." % lr_scheduler)
 
     def save_file(self, fd, epoch, logs):
