@@ -12,9 +12,15 @@ import torch
 import torch.nn as nn
 
 try:
-    from tensorboardX import SummaryWriter
+    from torch.utils.tensorboard import SummaryWriter as TorchSummaryWriter
 except ImportError:
-    SummaryWriter = None
+    TorchSummaryWriter = None
+
+try:
+    from tensorboardX import SummaryWriter as XSummaryWriter
+except ImportError:
+    XSummaryWriter = None
+
 
 from poutyne.framework import Model
 from poutyne.framework.callbacks import CSVLogger, Callback, TensorBoardLogger
@@ -110,8 +116,8 @@ class CSVLoggerTest(TestCase):
                     self.assertEqual(str(row[k]), str(hist_entry[k]))
 
 
-@skipIf(SummaryWriter is None, "Needs tensorboardX to run this test")
-class TensorBoardLoggerTest(TestCase):
+class BaseTensorBoardLoggerTest:
+    SummaryWriter = None
     batch_size = 20
     lr = 1e-3
 
@@ -120,10 +126,10 @@ class TensorBoardLoggerTest(TestCase):
         self.pytorch_module = nn.Linear(1, 1)
         self.loss_function = nn.MSELoss()
         self.optimizer = torch.optim.SGD(self.pytorch_module.parameters(),
-                                         lr=TensorBoardLoggerTest.lr)
+                                         lr=BaseTensorBoardLoggerTest.lr)
         self.model = Model(self.pytorch_module, self.optimizer, self.loss_function)
         self.temp_dir_obj = TemporaryDirectory()
-        self.writer = SummaryWriter(self.temp_dir_obj.name)
+        self.writer = self.SummaryWriter(self.temp_dir_obj.name)
         self.writer.add_scalars = MagicMock()
 
     def tearDown(self):
@@ -161,8 +167,15 @@ class TensorBoardLoggerTest(TestCase):
                     h['epoch']
                 )
             )
-        print(self.writer.add_scalars.mock_calls)
         self.writer.add_scalars.assert_has_calls(calls, any_order=True)
+
+@skipIf(XSummaryWriter is None, "Needs tensorboardX to run this test")
+class TensorboardXLoggerTest(BaseTensorBoardLoggerTest, TestCase):
+    SummaryWriter = XSummaryWriter
+
+@skipIf(TorchSummaryWriter is None, "Unable to import SummaryWriter from torch")
+class TorchTensorboardLoggerTest(BaseTensorBoardLoggerTest, TestCase):
+    SummaryWriter = TorchSummaryWriter
 
 
 if __name__ == '__main__':
