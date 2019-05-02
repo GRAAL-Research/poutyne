@@ -9,3 +9,12 @@ script:
   - pytest
   - cd docs
   - ./rebuild_html_doc.sh
+  - cd ..
+deploy:
+  target-branch: gh-pages
+  github_token: "$GITHUB_TOKEN"
+  skip-cleanup: true
+  local-dir: "./docs/_build/html/"
+  provider: pages
+  on:
+    branch: stable
