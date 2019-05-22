@@ -12,8 +12,14 @@ class Step:
         self.metrics = None
         self.size = None
 
+def cycle(iterable):  # Equivalent to itertools cycle, without any extra memory requirement
+    while True:
+        for x in iterable:
+            yield x
+
 def _get_step_iterator(steps, generator):
     count_iterator = range(1, steps + 1) if steps is not None else itertools.count(1)
+    generator = cycle(generator) if steps is not None else generator
     return zip(count_iterator, generator)
 
 class StepIterator:
