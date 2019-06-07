@@ -7,6 +7,7 @@ omitted.
 import sys
 import inspect
 import torch.optim.lr_scheduler
+from torch.optim import Optimizer
 from torch.optim.lr_scheduler import _LRScheduler
 
 from .callbacks import Callback
@@ -16,6 +17,10 @@ class _PyTorchLRSchedulerWrapper(Callback):
     def __init__(self, torch_lr_scheduler, *args, **kwargs):
         super().__init__()
         self.torch_lr_scheduler = torch_lr_scheduler
+        if len(args) > 0 and isinstance(args[0], Optimizer):
+            raise ValueError("In the LR scheduler callbacks, the optimizer is "
+                             "automatically passed to the PyTorch's LR scheduler. "
+                             "You must remove it from the arguments.")
         self.args = args
         self.kwargs = kwargs
         self.scheduler = None
@@ -75,6 +80,10 @@ class ReduceLROnPlateau(Callback):
         super().__init__()
         self.monitor = monitor
         self.args = args
+        if len(args) > 0 and isinstance(args[0], Optimizer):
+            raise ValueError("In the LR scheduler callbacks, the optimizer is "
+                             "automatically passed to the PyTorch's LR scheduler. "
+                             "You must remove it from the arguments.")
         self.kwargs = kwargs
         self.scheduler = None
         self.loaded_state = None

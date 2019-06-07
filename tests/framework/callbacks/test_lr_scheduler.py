@@ -60,6 +60,9 @@ class LRSchedulersTest(TestCase):
                                  steps_per_epoch=LRSchedulersTest.steps_per_epoch,
                                  callbacks=[callback])
 
+    def test_exception_is_thrown_on_optimizer_argument(self):
+        with self.assertRaises(ValueError):
+            step_lr = StepLR(self.optimizer, step_size=3)
 
 if __name__ == '__main__':
     unittest.main()
