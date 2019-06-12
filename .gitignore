@@ -110,3 +110,6 @@ ENV/
 
 # VScode projects
 .vscode/
+
+# VScode XDG
+XDG_*
