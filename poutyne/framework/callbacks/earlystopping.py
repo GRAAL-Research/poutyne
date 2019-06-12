@@ -49,6 +49,7 @@ SOFTWARE.
 import numpy as np
 from .callbacks import Callback
 
+
 class EarlyStopping(Callback):
     """
     The source code of this class is under the MIT License and was copied from
@@ -71,8 +72,7 @@ class EarlyStopping(Callback):
             (Default value = 'min')
     """
 
-    def __init__(self, *, monitor='val_loss',
-                 min_delta=0, patience=0, verbose=False, mode='min'):
+    def __init__(self, *, monitor='val_loss', min_delta=0, patience=0, verbose=False, mode='min'):
         super(EarlyStopping, self).__init__()
 
         self.monitor = monitor

@@ -127,9 +127,17 @@ class Model:
         self.metrics_names = [metric.__name__ for metric in self.metrics]
         self.device = None
 
-    def fit(self, x, y, validation_data=None,
-            batch_size=32, epochs=1000, steps_per_epoch=None, validation_steps=None,
-            initial_epoch=1, verbose=True, callbacks=[]):
+    def fit(self,
+            x,
+            y,
+            validation_data=None,
+            batch_size=32,
+            epochs=1000,
+            steps_per_epoch=None,
+            validation_steps=None,
+            initial_epoch=1,
+            verbose=True,
+            callbacks=[]):
         # pylint: disable=line-too-long
         # pylint: disable=too-many-arguments
         """
@@ -198,8 +206,7 @@ class Model:
         train_generator = self._dataloader_from_data((x, y), batch_size=batch_size)
         valid_generator = None
         if validation_data is not None:
-            valid_generator = self._dataloader_from_data(validation_data,
-                                                         batch_size=batch_size)
+            valid_generator = self._dataloader_from_data(validation_data, batch_size=batch_size)
 
         return self.fit_generator(train_generator,
                                   valid_generator=valid_generator,
@@ -216,9 +223,16 @@ class Model:
         generator = DataLoader(dataset, batch_size)
         return generator
 
-    def fit_generator(self, train_generator, valid_generator=None, *,
-                      epochs=1000, steps_per_epoch=None, validation_steps=None,
-                      initial_epoch=1, verbose=True, callbacks=[]):
+    def fit_generator(self,
+                      train_generator,
+                      valid_generator=None,
+                      *,
+                      epochs=1000,
+                      steps_per_epoch=None,
+                      validation_steps=None,
+                      initial_epoch=1,
+                      verbose=True,
+                      callbacks=[]):
         # pylint: disable=too-many-locals, line-too-long
         """
         Trains the model on a dataset using a generator.
@@ -300,7 +314,8 @@ class Model:
         callback_list.set_model(self)
 
         self.stop_training = False
-        epoch_iterator = EpochIterator(train_generator, valid_generator,
+        epoch_iterator = EpochIterator(train_generator,
+                                       valid_generator,
                                        epochs=epochs,
                                        steps_per_epoch=steps_per_epoch,
                                        validation_steps=validation_steps,
@@ -312,9 +327,7 @@ class Model:
             self.model.train(True)
             with torch.enable_grad():
                 for step, (x, y) in train_step_iterator:
-                    step.loss, step.metrics, _ = self._fit_batch(x, y,
-                                                                 callback=callback_list,
-                                                                 step=step.number)
+                    step.loss, step.metrics, _ = self._fit_batch(x, y, callback=callback_list, step=step.number)
                     step.size = self._get_batch_size(x, y)
 
             if valid_step_iterator is not None:
@@ -327,9 +340,10 @@ class Model:
     def _fit_batch(self, x, y, *, callback=Callback(), step=None, return_pred=False):
         self.optimizer.zero_grad()
 
-        loss_tensor, metrics, pred_y = self._compute_loss_and_metrics(
-            x, y, return_loss_tensor=True, return_pred=return_pred
-        )
+        loss_tensor, metrics, pred_y = self._compute_loss_and_metrics(x,
+                                                                      y,
+                                                                      return_loss_tensor=True,
+                                                                      return_pred=return_pred)
 
         loss_tensor.backward()
         callback.on_backward_end(step)
@@ -375,12 +389,12 @@ class Model:
         return self._format_return(loss, metrics, pred_y, return_pred)
 
     def _format_return(self, loss, metrics, pred_y, return_pred):
-        ret = (loss,)
+        ret = (loss, )
 
-        ret += tuple(metrics.tolist()) if len(metrics) <= 1 else (metrics,)
+        ret += tuple(metrics.tolist()) if len(metrics) <= 1 else (metrics, )
 
         if return_pred:
-            ret += (pred_y,)
+            ret += (pred_y, )
 
         return ret[0] if len(ret) == 1 else ret
 
@@ -401,7 +415,7 @@ class Model:
         Returns:
             Numpy arrays of the predictions.
         """
-        x = x if isinstance(x, (tuple, list)) else (x,)
+        x = x if isinstance(x, (tuple, list)) else (x, )
         generator = self._dataloader_from_data(x, batch_size=batch_size)
         pred_y = self.predict_generator(generator)
         return _concat(pred_y)
@@ -430,7 +444,7 @@ class Model:
         with torch.no_grad():
             for _, x in _get_step_iterator(steps, generator):
                 x = self._process_input(x)
-                x = x if isinstance(x, (tuple, list)) else (x,)
+                x = x if isinstance(x, (tuple, list)) else (x, )
                 pred_y.append(torch_to_numpy(self.model(*x)))
         return pred_y
 
@@ -447,7 +461,7 @@ class Model:
         self.model.eval()
         with torch.no_grad():
             x = self._process_input(x)
-            x = x if isinstance(x, (tuple, list)) else (x,)
+            x = x if isinstance(x, (tuple, list)) else (x, )
             return torch_to_numpy(self.model(*x))
 
     def evaluate(self, x, y, batch_size=32, return_pred=False):
@@ -595,9 +609,7 @@ class Model:
         self.model.eval()
         with torch.no_grad():
             for step, (x, y) in step_iterator:
-                step.loss, step.metrics, pred_y = self._compute_loss_and_metrics(
-                    x, y, return_pred=return_pred
-                )
+                step.loss, step.metrics, pred_y = self._compute_loss_and_metrics(x, y, return_pred=return_pred)
                 if return_pred:
                     pred_list.append(pred_y)
 
@@ -607,7 +619,7 @@ class Model:
 
     def _compute_loss_and_metrics(self, x, y, return_loss_tensor=False, return_pred=False):
         x, y = self._process_input(x, y)
-        x = x if isinstance(x, (list, tuple)) else (x,)
+        x = x if isinstance(x, (list, tuple)) else (x, )
         pred_y = self.model(*x)
         loss = self.loss_function(pred_y, y)
         if not return_loss_tensor:

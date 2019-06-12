@@ -97,9 +97,17 @@ class PeriodicSaveCallback(Callback):
             (Default value = 'wb')
     """
 
-    def __init__(self, filename, *,
-                 monitor='val_loss', mode='min', save_best_only=False, period=1, verbose=False,
-                 temporary_filename=None, atomic_write=True, open_mode='wb'):
+    def __init__(self,
+                 filename,
+                 *,
+                 monitor='val_loss',
+                 mode='min',
+                 save_best_only=False,
+                 period=1,
+                 verbose=False,
+                 temporary_filename=None,
+                 atomic_write=True,
+                 open_mode='wb'):
         super().__init__()
         self.filename = filename
         self.monitor = monitor
@@ -142,13 +150,10 @@ class PeriodicSaveCallback(Callback):
                 os.replace(tmp_filename, filename)
             except OSError as e:
                 # This may happen if the temp filesystem is not the same as the final destination's.
-                warnings.warn(
-                    "Impossible to move the file to its final destination: "
-                    "os.replace(%s, %s) -> %s\nYou may want to specify the "
-                    "'temporary_filename' argument to %s." % (
-                        tmp_filename, filename, e, self.__class__.__name__
-                    )
-                )
+                warnings.warn("Impossible to move the file to its final destination: "
+                              "os.replace(%s, %s) -> %s\nYou may want to specify the "
+                              "'temporary_filename' argument to %s." %
+                              (tmp_filename, filename, e, self.__class__.__name__))
                 os.remove(tmp_filename)
 
                 warnings.warn('Saving %s non-atomically instead.' % filename)
@@ -157,7 +162,6 @@ class PeriodicSaveCallback(Callback):
         else:
             with open(filename, self.open_mode) as fd:
                 self.save_file(fd, epoch, logs)
-
 
     def on_epoch_end(self, epoch, logs):
         filename = self.filename.format_map(logs)
@@ -169,13 +173,14 @@ class PeriodicSaveCallback(Callback):
                 self.best_filename = filename
 
                 if self.verbose:
-                    print('Epoch %d: %s improved from %0.5f to %0.5f, saving file to %s'
-                          % (epoch, self.monitor, old_best, self.current_best, self.best_filename))
+                    print('Epoch %d: %s improved from %0.5f to %0.5f, saving file to %s' %
+                          (epoch, self.monitor, old_best, self.current_best, self.best_filename))
                 self._save_file(self.best_filename, epoch, logs)
         elif epoch % self.period == 0:
             if self.verbose:
                 print('Epoch %d: saving file to %s' % (epoch, filename))
             self._save_file(filename, epoch, logs)
+
 
 class PeriodicSaveLambda(PeriodicSaveCallback):
     """
@@ -189,6 +194,7 @@ class PeriodicSaveLambda(PeriodicSaveCallback):
     See:
         poutyne.framework.PeriodicSaveCallback
     """
+
     def __init__(self, func, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.func = func

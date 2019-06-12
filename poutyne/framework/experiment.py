@@ -23,6 +23,7 @@ try:
 except ImportError:
     SummaryWriter = None
 
+
 class Experiment:
     BEST_CHECKPOINT_FILENAME = 'checkpoint_epoch_{epoch}.ckpt'
     BEST_CHECKPOINT_TMP_FILENAME = 'checkpoint_epoch.tmp.ckpt'
@@ -38,9 +39,18 @@ class Experiment:
     LR_SCHEDULER_TMP_FILENAME = 'lr_sched_%d.tmp.lrsched'
     TEST_LOG_FILENAME = 'test_log.tsv'
 
-    def __init__(self, directory, module, *, device=None, logging=True,
-                 optimizer='sgd', loss_function=None, metrics=[],
-                 monitor_metric=None, monitor_mode=None, type=None):
+    def __init__(self,
+                 directory,
+                 module,
+                 *,
+                 device=None,
+                 logging=True,
+                 optimizer='sgd',
+                 loss_function=None,
+                 metrics=[],
+                 monitor_metric=None,
+                 monitor_mode=None,
+                 type=None):
         self.directory = directory
         self.logging = logging
 
@@ -62,9 +72,7 @@ class Experiment:
         self.model_checkpoint_filename = join_dir(Experiment.MODEL_CHECKPOINT_FILENAME)
         self.model_checkpoint_tmp_filename = join_dir(Experiment.MODEL_CHECKPOINT_TMP_FILENAME)
         self.optimizer_checkpoint_filename = join_dir(Experiment.OPTIMIZER_CHECKPOINT_FILENAME)
-        self.optimizer_checkpoint_tmp_filename = join_dir(
-            Experiment.OPTIMIZER_CHECKPOINT_TMP_FILENAME
-        )
+        self.optimizer_checkpoint_tmp_filename = join_dir(Experiment.OPTIMIZER_CHECKPOINT_TMP_FILENAME)
         self.log_filename = join_dir(Experiment.LOG_FILENAME)
         self.tensorboard_directory = join_dir(Experiment.TENSORBOARD_DIRECTORY)
         self.epoch_filename = join_dir(Experiment.EPOCH_FILENAME)
@@ -131,9 +139,8 @@ class Experiment:
                 print(e)
             if os.path.isfile(self.model_checkpoint_filename):
                 try:
-                    print("Loading weights from %s and starting at epoch %d." % (
-                        self.model_checkpoint_filename, initial_epoch
-                    ))
+                    print("Loading weights from %s and starting at epoch %d." %
+                          (self.model_checkpoint_filename, initial_epoch))
                     self.model.load_weights(self.model_checkpoint_filename)
                 except Exception as e:
                     print(e)
@@ -141,9 +148,8 @@ class Experiment:
                 self._warn_missing_file(self.model_checkpoint_filename)
             if os.path.isfile(self.optimizer_checkpoint_filename):
                 try:
-                    print("Loading optimizer state from %s and starting at epoch %d." % (
-                        self.optimizer_checkpoint_filename, initial_epoch
-                    ))
+                    print("Loading optimizer state from %s and starting at epoch %d." %
+                          (self.optimizer_checkpoint_filename, initial_epoch))
                     self.model.load_optimizer_state(self.optimizer_checkpoint_filename)
                 except Exception as e:
                     print(e)
@@ -153,9 +159,8 @@ class Experiment:
                 filename = self.lr_scheduler_filename % i
                 if os.path.isfile(filename):
                     try:
-                        print("Loading LR scheduler state from %s and starting at epoch %d." % (
-                            filename, initial_epoch
-                        ))
+                        print("Loading LR scheduler state from %s and starting at epoch %d." %
+                              (filename, initial_epoch))
                         lr_scheduler.load_state(filename)
                     except Exception as e:
                         print(e)
@@ -175,9 +180,7 @@ class Experiment:
         callbacks.append(best_checkpoint)
 
         if save_every_epoch:
-            best_restore = BestModelRestore(monitor=self.monitor_metric,
-                                            mode=self.monitor_mode,
-                                            verbose=True)
+            best_restore = BestModelRestore(monitor=self.monitor_metric, mode=self.monitor_mode, verbose=True)
             callbacks.append(best_restore)
 
         if initial_epoch > 1:
@@ -215,23 +218,25 @@ class Experiment:
             for i, lr_scheduler in enumerate(lr_schedulers):
                 filename = self.lr_scheduler_filename % i
                 tmp_filename = self.lr_scheduler_tmp_filename % i
-                callbacks += [LRSchedulerCheckpoint(
-                    lr_scheduler,
-                    filename,
-                    verbose=False,
-                    temporary_filename=tmp_filename
-                )]
+                callbacks += [
+                    LRSchedulerCheckpoint(lr_scheduler, filename, verbose=False, temporary_filename=tmp_filename)
+                ]
         else:
             callbacks += lr_schedulers
-            callbacks += [BestModelRestore(monitor=self.monitor_metric,
-                                           mode=self.monitor_mode,
-                                           verbose=True)]
+            callbacks += [BestModelRestore(monitor=self.monitor_metric, mode=self.monitor_mode, verbose=True)]
         return callbacks
 
-    def train(self, train_loader, valid_loader=None, *,
-              callbacks=[], lr_schedulers=[], save_every_epoch=False,
+    def train(self,
+              train_loader,
+              valid_loader=None,
+              *,
+              callbacks=[],
+              lr_schedulers=[],
+              save_every_epoch=False,
               disable_tensorboard=False,
-              epochs=1000, steps_per_epoch=None, validation_steps=None,
+              epochs=1000,
+              steps_per_epoch=None,
+              validation_steps=None,
               seed=42):
         if seed is not None:
             # Make training deterministic.
@@ -254,23 +259,25 @@ class Experiment:
             callbacks += [CSVLogger(self.log_filename, separator='\t', append=initial_epoch != 1)]
 
             callbacks += self._init_model_restoring_callbacks(initial_epoch, save_every_epoch)
-            callbacks += [ModelCheckpoint(
-                self.model_checkpoint_filename,
-                verbose=False,
-                temporary_filename=self.model_checkpoint_tmp_filename
-            )]
-            callbacks += [OptimizerCheckpoint(
-                self.optimizer_checkpoint_filename,
-                verbose=False,
-                temporary_filename=self.optimizer_checkpoint_tmp_filename
-            )]
+            callbacks += [
+                ModelCheckpoint(self.model_checkpoint_filename,
+                                verbose=False,
+                                temporary_filename=self.model_checkpoint_tmp_filename)
+            ]
+            callbacks += [
+                OptimizerCheckpoint(self.optimizer_checkpoint_filename,
+                                    verbose=False,
+                                    temporary_filename=self.optimizer_checkpoint_tmp_filename)
+            ]
 
             # We save the last epoch number after the end of the epoch so that the
             # _load_epoch_state() knows which epoch to restart the optimization.
-            callbacks += [PeriodicSaveLambda(lambda fd, epoch, logs: print(epoch, file=fd),
-                                             self.epoch_filename,
-                                             temporary_filename=self.epoch_tmp_filename,
-                                             open_mode='w')]
+            callbacks += [
+                PeriodicSaveLambda(lambda fd, epoch, logs: print(epoch, file=fd),
+                                   self.epoch_filename,
+                                   temporary_filename=self.epoch_tmp_filename,
+                                   open_mode='w')
+            ]
 
             tensorboard_writer, cb_list = self._init_tensorboard_callbacks(disable_tensorboard)
             callbacks += cb_list
@@ -280,7 +287,8 @@ class Experiment:
         callbacks += self._init_lr_scheduler_callbacks(lr_schedulers)
 
         try:
-            return self.model.fit_generator(train_loader, valid_loader,
+            return self.model.fit_generator(train_loader,
+                                            valid_loader,
                                             epochs=epochs,
                                             steps_per_epoch=steps_per_epoch,
                                             validation_steps=validation_steps,
@@ -310,9 +318,7 @@ class Experiment:
     def load_last_checkpoint(self):
         self.model.load_weights(self.model_checkpoint_filename)
 
-    def test(self, test_loader, *, steps=None,
-             load_best_checkpoint=True, load_last_checkpoint=False,
-             seed=42):
+    def test(self, test_loader, *, steps=None, load_best_checkpoint=True, load_last_checkpoint=False, seed=42):
         if seed is not None:
             # Make training deterministic.
             random.seed(seed)
@@ -334,8 +340,7 @@ class Experiment:
         test_metrics_values = np.concatenate(([test_loss], test_metrics))
 
         test_metrics_dict = {col: val for col, val in zip(test_metrics_names, test_metrics_values)}
-        test_metrics_str = ', '.join('%s: %g' % (col, val)
-                                     for col, val in test_metrics_dict.items())
+        test_metrics_str = ', '.join('%s: %g' % (col, val) for col, val in test_metrics_dict.items())
         print("On best model: %s" % test_metrics_str)
 
         if self.logging:

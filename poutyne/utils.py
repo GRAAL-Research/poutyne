@@ -43,8 +43,10 @@ def torch_to_numpy(obj, copy=False):
         func = lambda t: t.cpu().detach().numpy()
     return torch_apply(obj, func)
 
+
 def torch_to(obj, *args, **kargs):
     return torch_apply(obj, lambda t: t.to(*args, **kargs))
+
 
 def torch_apply(obj, func):
     """
@@ -65,12 +67,14 @@ def torch_apply(obj, func):
     fn = lambda t: func(t) if torch.is_tensor(t) else t
     return _apply(obj, fn)
 
+
 def _apply(obj, func):
     if isinstance(obj, (list, tuple)):
         return type(obj)(_apply(el, func) for el in obj)
     if isinstance(obj, dict):
-        return {k:_apply(el, func) for k, el in obj.items()}
+        return {k: _apply(el, func) for k, el in obj.items()}
     return func(obj)
+
 
 def _concat(obj):
     if isinstance(obj[0], (list, tuple)):
@@ -81,6 +85,7 @@ def _concat(obj):
             concat_dict[key] = _concat([o[key] for o in obj])
         return concat_dict
     return np.concatenate(obj)
+
 
 def numpy_to_torch(obj):
     """
@@ -135,6 +140,7 @@ class TensorDataset(Dataset):
                     assert length == lengths[0]
                 return lengths[0]
             return len(obj)
+
         self._len = _rabbit_hole(self.tensors)
 
     def __getitem__(self, index):
@@ -142,6 +148,7 @@ class TensorDataset(Dataset):
             if isinstance(obj, (list, tuple)):
                 return type(obj)(_rabbit_hole(o, idx) for o in obj)
             return obj[idx]
+
         return _rabbit_hole(self.tensors, index)
 
     def __len__(self):

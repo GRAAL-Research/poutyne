@@ -25,15 +25,11 @@ class ProgressionCallback(Callback):
 
         metrics_str = self._get_metrics_string(logs)
         if self.steps is not None:
-            print("\rEpoch %d/%d %.2fs Step %d/%d: %s" % (
-                self.epoch, self.epochs, epoch_total_time, self.steps, self.steps,
-                metrics_str
-            ))
+            print("\rEpoch %d/%d %.2fs Step %d/%d: %s" %
+                  (self.epoch, self.epochs, epoch_total_time, self.steps, self.steps, metrics_str))
         else:
-            print("\rEpoch %d/%d %.2fs: Step %d/%d: %s" % (
-                self.epoch, self.epochs, epoch_total_time, self.last_step, self.last_step,
-                metrics_str
-            ))
+            print("\rEpoch %d/%d %.2fs: Step %d/%d: %s" %
+                  (self.epoch, self.epochs, epoch_total_time, self.last_step, self.last_step, metrics_str))
 
     def on_batch_begin(self, batch, logs):
         pass
@@ -47,20 +43,17 @@ class ProgressionCallback(Callback):
         if self.steps is not None:
             remaining_time = times_mean * (self.steps - batch)
 
-            sys.stdout.write("\rEpoch %d/%d ETA %.0fs Step %d/%d: %s" % (
-                self.epoch, self.epochs, remaining_time, batch, self.steps, metrics_str
-            ))
+            sys.stdout.write("\rEpoch %d/%d ETA %.0fs Step %d/%d: %s" %
+                             (self.epoch, self.epochs, remaining_time, batch, self.steps, metrics_str))
             sys.stdout.flush()
         else:
-            sys.stdout.write("\rEpoch %d/%d %.2fs/step Step %d: %s" % (
-                self.epoch, self.epochs, times_mean, batch, metrics_str
-            ))
+            sys.stdout.write("\rEpoch %d/%d %.2fs/step Step %d: %s" %
+                             (self.epoch, self.epochs, times_mean, batch, metrics_str))
             sys.stdout.flush()
             self.last_step = batch
 
     def _get_metrics_string(self, logs):
-        train_metrics_str_gen = ('{}: {:f}'.format(k, logs[k])
-                                 for k in self.metrics if logs.get(k) is not None)
-        val_metrics_str_gen = ('{}: {:f}'.format('val_' + k, logs['val_' + k])
-                               for k in self.metrics if logs.get('val_' + k) is not None)
+        train_metrics_str_gen = ('{}: {:f}'.format(k, logs[k]) for k in self.metrics if logs.get(k) is not None)
+        val_metrics_str_gen = ('{}: {:f}'.format('val_' + k, logs['val_' + k]) for k in self.metrics
+                               if logs.get('val_' + k) is not None)
         return ', '.join(itertools.chain(train_metrics_str_gen, val_metrics_str_gen))

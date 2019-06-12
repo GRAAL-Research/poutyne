@@ -110,6 +110,7 @@ class Callback:
         model (Model): a reference to the `Model` object which is using the
             callback.
     """
+
     def __init__(self):
         self.model = None
 

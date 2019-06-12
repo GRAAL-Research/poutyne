@@ -1,4 +1,1 @@
-
-warning_settings = {
-    'batch_size': 'warn'
-}
+warning_settings = {'batch_size': 'warn'}

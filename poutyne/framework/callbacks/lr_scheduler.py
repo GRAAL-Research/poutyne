@@ -52,19 +52,24 @@ class _PyTorchLRSchedulerWrapper(Callback):
 def new_init(torch_lr_scheduler):
     def f(self, *args, **kwargs):
         super(type(self), self).__init__(torch_lr_scheduler, *args, **kwargs)
+
     return f
+
 
 for name, module_cls in torch.optim.lr_scheduler.__dict__.items():
     if inspect.isclass(module_cls) and \
             issubclass(module_cls, _LRScheduler) and \
             module_cls != _LRScheduler:
-        _new_cls = type(name,
-                        (_PyTorchLRSchedulerWrapper,),
-                        {'__init__': new_init(module_cls),
-                         '__doc__' : """
+        _new_cls = type(
+            name, (_PyTorchLRSchedulerWrapper, ), {
+                '__init__':
+                new_init(module_cls),
+                '__doc__':
+                """
                                      See:
                                          `PyTorch {name} <http://pytorch.org/docs/master/optim.html#torch.optim.lr_scheduler.{name}>`_
-                                     """.format(name=name)})
+                                     """.format(name=name)
+            })
         setattr(sys.modules[__name__], name, _new_cls)
 
 
@@ -76,6 +81,7 @@ class ReduceLROnPlateau(Callback):
         `PyTorch ReduceLROnPlateau
         <http://pytorch.org/docs/master/optim.html#torch.optim.lr_scheduler.ReduceLROnPlateau>`_
     """
+
     def __init__(self, *args, monitor='val_loss', **kwargs):
         super().__init__()
         self.monitor = monitor
@@ -90,9 +96,7 @@ class ReduceLROnPlateau(Callback):
 
     def on_train_begin(self, logs):
         optimizer = self.model.optimizer
-        self.scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
-            optimizer, *self.args, **self.kwargs
-        )
+        self.scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, *self.args, **self.kwargs)
 
         # Load state if the scheduler was not initialized when the user asked
         # to load its state

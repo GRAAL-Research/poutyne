@@ -49,10 +49,7 @@ class linspace:
         return i / (self.steps - 1)
 
     def __iter__(self):
-        return (
-            self.start + self._progress(i) * (self.end - self.start)
-            for i in range(self.steps)
-        )
+        return (self.start + self._progress(i) * (self.end - self.start) for i in range(self.steps))
 
 
 class cosinespace:
@@ -79,10 +76,7 @@ class cosinespace:
         return i / (self.steps - 1)
 
     def __iter__(self):
-        return (
-            self.end + (self.start - self.end) * (1 + cos(self._progress(i) * pi)) / 2
-            for i in range(self.steps)
-        )
+        return (self.end + (self.start - self.end) * (1 + cos(self._progress(i) * pi)) / 2 for i in range(self.steps))
 
 
 ###############################################################################
@@ -115,15 +109,10 @@ class Phase:
             yield {name: value for name, value in zip(names, values)}
 
     def __repr__(self):
-        return "\n".join(
-            [
-                "Phase:",
-                *[
-                    "    {}: {}".format(name, val)
-                    for name, val in self.configuration.items()
-                ],
-            ]
-        )
+        return "\n".join([
+            "Phase:",
+            *["    {}: {}".format(name, val) for name, val in self.configuration.items()],
+        ])
 
     def plot(self, param_name: str = "lr", ax=None):
         """
@@ -159,7 +148,7 @@ def one_cycle_phases(
         momentum: Tuple[float, float] = (0.95, 0.85),
         finetune_lr: float = .01,
         finetune_fraction: float = 0.1,
-    ) -> List[Phase]:
+) -> List[Phase]:
     """
     The "one-cycle" policy as described in the paper
     "Super-Convergence: Very Fast Training of Neural Networks Using Large Learning Rates".
@@ -207,7 +196,7 @@ def sgdr_phases(
         cycles: int,
         lr: Tuple[float, float] = (1., 0.1),
         cycle_mult: int = 2,
-    ) -> List[Phase]:
+) -> List[Phase]:
     """
     The "SGDR" policy as described in the paper
     "SGDR: Stochastic Gradient Descent with Warm Restarts".
@@ -232,7 +221,7 @@ def sgdr_phases(
             Ilya Loshchilov, Frank Hutter
             https://arxiv.org/abs/1608.03983
     """
-    steps = [base_cycle_length * (cycle_mult ** i) for i in range(cycles)]
+    steps = [base_cycle_length * (cycle_mult**i) for i in range(cycles)]
     return [Phase(lr=cosinespace(lr[0], lr[1], step)) for step in steps]
 
 
@@ -277,9 +266,7 @@ class OptimizerPolicy(Callback):
         return chain.from_iterable(self.phases)
 
     def __repr__(self):
-        return "OptimizerPolicy:\n    phases: {}\n    current_step: {}".format(
-            self.current_step, len(self.phases)
-        )
+        return "OptimizerPolicy:\n    phases: {}\n    current_step: {}".format(self.current_step, len(self.phases))
 
     def _update_optimizer(self, param_dict: Dict):
         for param_name, param_value in param_dict.items():

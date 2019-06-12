@@ -1,5 +1,5 @@
-
 from .callbacks import Callback, CallbackList
+
 
 class DelayCallback(Callback):
     """
@@ -17,6 +17,7 @@ class DelayCallback(Callback):
             method is called on the callback(s) before the ``on_batch_begin``
             method.
     """
+
     def __init__(self, callbacks, *, epoch_delay=None, batch_delay=None):
         super().__init__()
         if isinstance(callbacks, CallbackList):
