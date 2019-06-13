@@ -58,10 +58,10 @@ class PeriodicSaveCallback(Callback):
     `filename` is `weights.{epoch:02d}-{val_loss:.2f}.txt`, then `save_file()` will be called with a
     file descriptor for a file with the epoch number and the validation loss in the filename.
 
-    By default, the file are written atomically to the specified filename so that the training can
+    By default, the saves are written atomically to the specified filename so that the training can
     be killed and restarted later using the same filename for periodic file saving. To do so, a
-    temporary file is created using the system's `tmp` directory and then is moved a the final
-    destination after the checkpoint is made. Sometimes, this move is not possible on some system.
+    temporary file is created using the system's `tmp` directory and then is moved to the final
+    destination after the checkpoint is made. Sometimes, this move is not possible on some systems.
     To address this problem, it is possible to specify the destination of the temporary file using
     the ``temporary_filename`` argument.
 
@@ -84,7 +84,7 @@ class PeriodicSaveCallback(Callback):
         temporary_filename (string, optional): Temporary filename for the checkpoint so that the
             last checkpoint can be written atomically. See the ``atomic_write`` argument.
         atomic_write (bool): Whether to write atomically the checkpoint. See the description above
-            for details. 
+            for details.
             (Default value = True)
         open_mode (str): ``mode`` option passed to ``open()``.
             (Default value = 'wb')
