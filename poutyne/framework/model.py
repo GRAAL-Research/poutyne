@@ -33,7 +33,7 @@ class Model:
             loss function (either the functional or object name). 'accuracy' (or just 'acc') is also a
             valid metric. Each metric function is called on each batch of the optimization and on the
             validation batches at the end of the epoch. 
-            (Default value = [])
+            (Default value = None)
 
     Attributes:
         model (torch.nn.Module): The associated PyTorch module.
@@ -116,7 +116,9 @@ class Model:
 
     """
 
-    def __init__(self, model, optimizer, loss_function, *, metrics=[]):
+    def __init__(self, model, optimizer, loss_function, *, metrics=None):
+        metrics = [] if metrics is None else metrics
+
         self.model = model
         self.optimizer = get_optimizer(optimizer, self.model)
         self.loss_function = get_loss_or_metric(loss_function)
@@ -134,7 +136,7 @@ class Model:
             validation_steps=None,
             initial_epoch=1,
             verbose=True,
-            callbacks=[]):
+            callbacks=None):
         # pylint: disable=line-too-long
         # pylint: disable=too-many-arguments
         """
@@ -172,7 +174,7 @@ class Model:
                 (Default value = True)
             callbacks (list of poutyne.framework.Callback): List of callbacks that will be called
                 during training.
-                (Default value = [])
+                (Default value = None)
 
         Returns:
             List of dict containing the history of each epoch.
@@ -225,7 +227,7 @@ class Model:
                       validation_steps=None,
                       initial_epoch=1,
                       verbose=True,
-                      callbacks=[]):
+                      callbacks=None):
         # pylint: disable=too-many-locals, line-too-long
         """
         Trains the model on a dataset using a generator.
@@ -267,7 +269,7 @@ class Model:
             verbose (bool): Whether to display the progress of the training.
                 (Default value = True)
             callbacks (list of poutyne.framework.Callback): List of callbacks that will be called during training.
-                (Default value = [])
+                (Default value = None)
 
         Returns:
             List of dict containing the history of each epoch.
@@ -291,6 +293,8 @@ class Model:
 
         """
         self._transfer_optimizer_state_to_right_device()
+
+        callbacks = [] if callbacks is None else callbacks
 
         if verbose:
             callbacks = [ProgressionCallback()] + callbacks
@@ -508,7 +512,7 @@ class Model:
             .. code-block:: python
 
                 model = Model(pytorch_module, optimizer, loss_function,
-                              metrics=[])
+                              metrics=None)
                 loss = model.evaluate_generator(test_generator)
 
             With only one metric:

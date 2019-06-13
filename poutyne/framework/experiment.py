@@ -47,7 +47,7 @@ class Experiment:
                  logging=True,
                  optimizer='sgd',
                  loss_function=None,
-                 metrics=[],
+                 metrics=None,
                  monitor_metric=None,
                  monitor_mode=None,
                  type=None):
@@ -56,6 +56,8 @@ class Experiment:
 
         if type is not None and not type.startswith('classif') and not type.startswith('reg'):
             raise ValueError("Invalid type '%s'" % type)
+
+        metrics = [] if metrics is None else metrics
 
         loss_function = self._get_loss_function(loss_function, module, type)
         metrics = self._get_metrics(metrics, module, type)
@@ -230,8 +232,8 @@ class Experiment:
               train_loader,
               valid_loader=None,
               *,
-              callbacks=[],
-              lr_schedulers=[],
+              callbacks=None,
+              lr_schedulers=None,
               save_every_epoch=False,
               disable_tensorboard=False,
               epochs=1000,
@@ -243,6 +245,9 @@ class Experiment:
             random.seed(seed)
             np.random.seed(seed)
             torch.manual_seed(seed)
+
+        callbacks = [] if callbacks is None else callbacks
+        lr_schedulers = [] if lr_schedulers is None else lr_schedulers
 
         # Copy callback list.
         callbacks = list(callbacks)
