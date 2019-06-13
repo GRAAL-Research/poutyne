@@ -5,8 +5,8 @@ import torch.nn as nn
 
 class Flatten(nn.Module):
     """
-    Flattens the input tensor such that the dimension 0 is the batch.
-    Equivalent to ``x.flatten(1)``.
+    Flattens the input tensor such that the dimension 0 is the batch. Equivalent to
+    ``x.flatten(1)``.
     """
 
     def forward(self, x):
@@ -15,8 +15,8 @@ class Flatten(nn.Module):
 
 class Identity(nn.Module):
     """
-    Returns the same tensor as the input. This module can be useful when
-    removing a module from a third-party module.
+    Returns the same tensor as the input. This module can be useful when removing a module from a
+    third-party module.
     """
 
     def forward(self, x):

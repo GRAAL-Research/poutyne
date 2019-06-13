@@ -1,13 +1,10 @@
 """
-The ``policies`` module is an alternative way to configure your training process.
-It gives you fine grained control over the process.
+The ``policies`` module is an alternative way to configure your training process. It gives you fine
+grained control over the process.
 
-The training is divided into phases with the ``Phase`` class.
-A ``Phase`` contains parameter spaces
-(e.g. learning rate, or momentum, or both)
-for the optimizer.
-You chain ``Phase`` instances by passing them to the ``OptimizerPolicy``
-``OptimizerPolicy`` is a ``Callback`` that uses the phasese,
+The training is divided into phases with the ``Phase`` class. A ``Phase`` contains parameter spaces
+(e.g. learning rate, or momentum, or both) for the optimizer. You chain ``Phase`` instances by
+passing them to the ``OptimizerPolicy`` ``OptimizerPolicy`` is a ``Callback`` that uses the phasese,
 steps through them, and sets the parameters of the optimizer.
 
 """
@@ -27,8 +24,7 @@ from .callbacks import Callback
 # A space is just an iterable
 class linspace:
     """
-    A lazy linear parameter space that goes from ``start`` to ``end`` in
-    ``steps`` steps.
+    A lazy linear parameter space that goes from ``start`` to ``end`` in ``steps`` steps.
 
     Args:
         start: the start point.
@@ -54,8 +50,7 @@ class linspace:
 
 class cosinespace:
     """
-    A lazy cosine parameter space that goes from ``start`` to ``end`` in
-    ``steps`` steps.
+    A lazy cosine parameter space that goes from ``start`` to ``end`` in ``steps`` steps.
 
     Args:
         start: the start point.
@@ -84,8 +79,7 @@ class Phase:
     """
     A ``Phase`` defines how to configure an optimizer.
 
-    For each train step it returns a dictionary that contains the configuration
-    for the optimizer.
+    For each train step it returns a dictionary that contains the configuration for the optimizer.
 
     Args:
         lr: a configuration space for the learning rate (optional).
@@ -150,8 +144,8 @@ def one_cycle_phases(
         finetune_fraction: float = 0.1,
 ) -> List[Phase]:
     """
-    The "one-cycle" policy as described in the paper
-    "Super-Convergence: Very Fast Training of Neural Networks Using Large Learning Rates".
+    The "one-cycle" policy as described in the paper "Super-Convergence: Very Fast Training of
+    Neural Networks Using Large Learning Rates".
 
     You might want to read the paper and adjust the parameters.
 
@@ -159,8 +153,8 @@ def one_cycle_phases(
         steps: the total number of steps to take.
         lr: tuple for the triangular learning rate (start, middle).
         momentum: tuple for the triangular momentum (start, middle).
-        finetune_lr: target learning rate for the final finetuning.
-            Should be smaller than `min(lr)`.
+        finetune_lr: target learning rate for the final finetuning. Should be smaller than
+            `min(lr)`.
         finetune_fraction: fraction of steps used for the finetuning.
             Must be between 0 and 1.
 
@@ -198,11 +192,11 @@ def sgdr_phases(
         cycle_mult: int = 2,
 ) -> List[Phase]:
     """
-    The "SGDR" policy as described in the paper
-    "SGDR: Stochastic Gradient Descent with Warm Restarts".
+    The "SGDR" policy as described in the paper "SGDR: Stochastic Gradient Descent with Warm
+    Restarts".
 
-    Note the total number of steps is calculated like this:
-    `total_steps = sum(base_cycle_length * (cycle_mult ** i) for i in range(cycles))`
+    Note the total number of steps is calculated like this: `total_steps = sum(base_cycle_length *
+    (cycle_mult ** i) for i in range(cycles))`
 
     You might want to read the paper and adjust the parameters.
 
@@ -210,8 +204,8 @@ def sgdr_phases(
         base_cycle_length: number of steps for the first cycle.
         cycles: the number of repetitions.
         lr: tuple for the learning rate for one cycle: (start, end).
-        cycle_mult: multiply the last cycle length with this every cycle.
-            The length of a cycle grows exponentially.
+        cycle_mult: multiply the last cycle length with this every cycle. The length of a cycle
+            grows exponentially.
 
     Returns:
         A list of configured ``Phase`` instances.
@@ -228,8 +222,8 @@ def sgdr_phases(
 ###############################################################################
 class OptimizerPolicy(Callback):
     """
-    Combine different ``Phase`` instances in an ``OptimizerPolicy``
-    and execute the policies in a row.
+    Combine different ``Phase`` instances in an ``OptimizerPolicy`` and execute the policies in a
+    row.
 
     Args:
         phases: A list of ``Phase`` instances.

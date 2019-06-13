@@ -1,8 +1,7 @@
 """
-Poutyne's callbacks for learning rate schedulers are just wrappers around `PyTorch's learning
-rate schedulers <http://pytorch.org/docs/master/optim.html#how-to-adjust-learning-rate>`_
-and thus have the same arguments except for the optimizer that has to be
-omitted.
+Poutyne's callbacks for learning rate schedulers are just wrappers around `PyTorch's learning rate
+schedulers <http://pytorch.org/docs/master/optim.html#how-to-adjust-learning-rate>`_ and thus have
+the same arguments except for the optimizer that has to be omitted.
 """
 import sys
 import inspect

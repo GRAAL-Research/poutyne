@@ -1,6 +1,5 @@
 """
-The source code of this file was copied from the Keras project, and has been
-modified.
+The source code of this file was copied from the Keras project, and has been modified.
 
 COPYRIGHT
 
@@ -20,30 +19,27 @@ All other contributions:
 Copyright (c) 2015 - 2017, the respective contributors.
 All rights reserved.
 
-Each contributor holds copyright over their respective contributions.
-The project versioning (Git) records all such contribution source information.
+Each contributor holds copyright over their respective contributions. The project versioning (Git)
+records all such contribution source information.
 
 LICENSE
 
 The MIT License (MIT)
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
+associated documentation files (the "Software"), to deal in the Software without restriction,
+including without limitation the rights to use, copy, modify, merge, publish, distribute,
+sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+The above copyright notice and this permission notice shall be included in all copies or substantial
+portions of the Software.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
+NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES
+OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 import os
 import warnings
@@ -54,45 +50,42 @@ from .callbacks import Callback
 
 class PeriodicSaveCallback(Callback):
     """
-    The source code of this class is under the MIT License and was copied from
-    the Keras project, and has been modified.
+    The source code of this class is under the MIT License and was copied from the Keras project,
+    and has been modified.
 
-    Write a file after every epoch. `filename` can contain named formatting
-    options, which will be filled the value of `epoch` and keys in `logs`
-    (passed in `on_epoch_end`). For example: if `filename` is
-    `weights.{epoch:02d}-{val_loss:.2f}.txt`, then `save_file()` will be called
-    with a file descriptor for a file with the epoch number and the validation
-    loss in the filename.
+    Write a file after every epoch. `filename` can contain named formatting options, which will be
+    filled the value of `epoch` and keys in `logs` (passed in `on_epoch_end`). For example: if
+    `filename` is `weights.{epoch:02d}-{val_loss:.2f}.txt`, then `save_file()` will be called with a
+    file descriptor for a file with the epoch number and the validation loss in the filename.
 
-    By default, the file are written atomically to the specified filename
-    so that the training can be killed and restarted later using the same
-    filename for periodic file saving. To do so, a temporary file is created
-    using the system's `tmp` directory and then is moved a the final destination
-    after the checkpoint is made. Sometimes, this move is not possible on some
-    system. To address this problem, it is possible to specify the destination
-    of the temporary file using the ``temporary_filename`` argument.
+    By default, the file are written atomically to the specified filename so that the training can
+    be killed and restarted later using the same filename for periodic file saving. To do so, a
+    temporary file is created using the system's `tmp` directory and then is moved a the final
+    destination after the checkpoint is made. Sometimes, this move is not possible on some system.
+    To address this problem, it is possible to specify the destination of the temporary file using
+    the ``temporary_filename`` argument.
 
     Args:
         filename (string): Path to save the model file.
-        monitor (string): Quantity to monitor. (Default value = 'val_loss')
-        verbose (bool): Whether to display a message when saving and restoring
-            a checkpoint. (Default value = False)
-        save_best_only (bool): If `save_best_only` is true, the latest best
-            model according to the quantity monitored will not be overwritten.
+        monitor (string): Quantity to monitor. 
+            (Default value = 'val_loss')
+        verbose (bool): Whether to display a message when saving and restoring a checkpoint.
             (Default value = False)
-        mode (string): One of {min, max}.
-            If `save_best_only` is true, the decision to overwrite the current
-            save file is made based on either the maximization or the
-            minimization of the monitored quantity. For `val_accuracy`, this
-            should be `max`, for `val_loss` this should be `min`, etc.
+        save_best_only (bool): If `save_best_only` is true, the latest best model according to the
+            quantity monitored will not be overwritten. 
+            (Default value = False)
+        mode (string): One of {'min', 'max'}.
+            If `save_best_only` is true, the decision to overwrite the current save file is made based
+            on either the maximization or the minimization of the monitored quantity. For
+            `val_accuracy`, this should be `max`, for `val_loss` this should be `min`, etc.
             (Default value = 'min')
         period (int): Interval (number of epochs) between checkpoints.
             (Default value = 1)
-        temporary_filename (string, optional): Temporary filename for the
-            checkpoint so that the last checkpoint can be written
-            atomically. See the ``atomic_write`` argument.
-        atomic_write (bool): Whether to right atomically the checkpoint. See
-            the description above for details. (Default value = True)
+        temporary_filename (string, optional): Temporary filename for the checkpoint so that the
+            last checkpoint can be written atomically. See the ``atomic_write`` argument.
+        atomic_write (bool): Whether to write atomically the checkpoint. See the description above
+            for details. 
+            (Default value = True)
         open_mode (str): ``mode`` option passed to ``open()``.
             (Default value = 'wb')
     """
@@ -188,8 +181,8 @@ class PeriodicSaveLambda(PeriodicSaveCallback):
     `poutyne.framework.PeriodicSaveCallback` for the arguments' descriptions.
 
     Args:
-        func (fd, int, dict -> None): The lambda that will be called with a
-            file descriptor, the epoch number and the epoch logs.
+        func (fd, int, dict -> None): The lambda that will be called with a file descriptor, the
+            epoch number and the epoch logs.
 
     See:
         poutyne.framework.PeriodicSaveCallback

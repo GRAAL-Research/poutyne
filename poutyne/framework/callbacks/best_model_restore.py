@@ -5,17 +5,17 @@ from .callbacks import Callback
 
 class BestModelRestore(Callback):
     """
-    Restore the weights of the best model at the end of the training depending
-    on a monitored quantity.
+    Restore the weights of the best model at the end of the training depending on a monitored quantity.
 
     Args:
         monitor (string): Quantity to monitor. (Default value = 'val_loss')
-        mode (string): One of {min, max}.
-            Whether the monitored has to be maximized or minimized. For
-            instance, for `val_accuracy`, this should be `max`, and for
-            `val_loss`, this should be `min`, etc. (Default value = 'min')
-        verbose (bool): Whether to display a message when the model has improved
-            or when restoring the best model. (Default value = False)
+        mode (string): One of {'min', 'max'}.
+            Whether the monitored has to be maximized or minimized. For instance, for `val_accuracy`,
+            this should be `max`, and for `val_loss`, this should be `min`, etc. 
+            (Default value = 'min')
+        verbose (bool): Whether to display a message when the model has improved or when restoring
+            the best model. 
+            (Default value = False)
     """
 
     def __init__(self, *, monitor='val_loss', mode='min', verbose=False):
