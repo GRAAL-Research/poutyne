@@ -38,6 +38,25 @@ We use GitHub issues to track public bugs. Report a bug by [opening a new issue]
 - What actually happens
 - Notes (possibly including why you think this might be happening, or stuff you tried that didn't work)
 
+## Do you have a suggestion for an enhancement?
+
+We use GitHub issues to track enhancement requests.  Before you create an enhancement request:
+
+* Make sure you have a clear idea of the enhancement you would like.  If you have a vague idea, consider discussing
+it first on the users list.
+
+* Check the documentation to make sure your feature does not already exist.
+
+* Do [a quick search](https://github.com/allenai/allennlp/issues) to see whether your enhancement has already been suggested.
+
+When creating your enhancement request, please:
+
+* Provide a clear title and description.
+
+* Explain why the enhancement would be useful.  It may be helpful to highlight the feature in other libraries.
+
+* Include code examples to demonstrate how the enhancement would be used.
+
 ## Use a Consistent Coding Style
 
 All of the code is formatted using [yapf](https://github.com/google/yapf) with the associated [config file](https://github.com/GRAAL-Research/poutyne/blob/master/.style.yapf). In order to format the code of your submission, simply run
