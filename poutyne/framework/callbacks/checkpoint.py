@@ -24,7 +24,7 @@ class ModelCheckpoint(PeriodicSaveCallback):
 
         self.restore_best = restore_best
         if self.restore_best and not self.save_best_only:
-            raise ValueError("The 'restore_best' argument only works when " "'save_best_only' is also true.")
+            raise ValueError("The 'restore_best' argument only works when 'save_best_only' is also true.")
 
     def save_file(self, fd, epoch, logs):
         self.model.save_weights(fd)
