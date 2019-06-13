@@ -51,7 +51,7 @@ class Logger(Callback):
         pass
 
     def _get_logs_without_unknown_keys(self, logs):
-        return {k:logs[k] for k in self.fieldnames if logs.get(k) is not None}
+        return {k: logs[k] for k in self.fieldnames if logs.get(k) is not None}
 
     def _get_current_learning_rates(self):
         learning_rates = [param_group['lr'] for param_group in self.model.optimizer.param_groups]
@@ -64,13 +64,14 @@ class CSVLogger(Logger):
 
     Args:
         filename (string): The filename of the CSV.
-        batch_granularity (bool): Whether to also output the result of each
-            batch in addition to the epochs. (Default value = False)
-        separator (string): The separator to use in the CSV.
+        batch_granularity (bool): Whether to also output the result of each batch in addition to the epochs. 
+            (Default value = False)
+        separator (string): The separator to use in the CSV. 
             (Default value = ',')
         append (bool): Whether to append to an existing file.
 
     """
+
     def __init__(self, filename, *, batch_granularity=False, separator=',', append=False):
         super().__init__(batch_granularity=batch_granularity)
         self.filename = filename
@@ -80,9 +81,7 @@ class CSVLogger(Logger):
     def _on_train_begin_write(self, logs):
         open_flag = 'a' if self.append else 'w'
         self.csvfile = open(self.filename, open_flag, newline='')
-        self.writer = csv.DictWriter(self.csvfile,
-                                     fieldnames=self.fieldnames,
-                                     delimiter=self.separator)
+        self.writer = csv.DictWriter(self.csvfile, fieldnames=self.fieldnames, delimiter=self.separator)
         if not self.append:
             self.writer.writeheader()
             self.csvfile.flush()
@@ -120,6 +119,7 @@ class TensorBoardLogger(Logger):
             model = Model(...)
             model.fit_generator(..., callbacks=[tb_logger])
     """
+
     def __init__(self, writer):
         super().__init__(batch_granularity=False)
         self.writer = writer
@@ -145,11 +145,7 @@ class TensorBoardLogger(Logger):
         for k, v in grouped_items.items():
             self.writer.add_scalars(k, v, epoch)
         lr = self._get_current_learning_rates()
-        if isinstance(lr, (list,)):
-            self.writer.add_scalars(
-                'lr',
-                {str(i): v for i, v in enumerate(lr)},
-                epoch
-            )
+        if isinstance(lr, (list, )):
+            self.writer.add_scalars('lr', {str(i): v for i, v in enumerate(lr)}, epoch)
         else:
             self.writer.add_scalars('lr', {'lr': lr}, epoch)

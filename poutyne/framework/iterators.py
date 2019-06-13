@@ -4,6 +4,7 @@ import numpy as np
 
 from .callbacks import Callback
 
+
 class Step:
     def __init__(self, number):
         self.number = number
@@ -12,15 +13,18 @@ class Step:
         self.metrics = None
         self.size = None
 
+
 def cycle(iterable):  # Equivalent to itertools cycle, without any extra memory requirement
     while True:
         for x in iterable:
             yield x
 
+
 def _get_step_iterator(steps, generator):
     count_iterator = range(1, steps + 1) if steps is not None else itertools.count(1)
     generator = cycle(generator) if steps is not None else generator
     return zip(count_iterator, generator)
+
 
 class StepIterator:
     def __init__(self, generator, steps_per_epoch, callback, metrics_names):
@@ -55,14 +59,27 @@ class StepIterator:
 
             batch_total_time = timeit.default_timer() - batch_begin_time
             metrics_dict = dict(zip(self.metrics_names, step_data.metrics))
-            batch_logs = {'batch': step, 'size': step_data.size, 'time': batch_total_time,
-                          'loss': step_data.loss, **metrics_dict}
+            batch_logs = {
+                'batch': step,
+                'size': step_data.size,
+                'time': batch_total_time,
+                'loss': step_data.loss,
+                **metrics_dict
+            }
             self.callback.on_batch_end(step, batch_logs)
 
+
 class EpochIterator:
-    def __init__(self, train_generator, valid_generator, *,
-                 epochs, steps_per_epoch, validation_steps,
-                 initial_epoch=1, callback, metrics_names):
+    def __init__(self,
+                 train_generator,
+                 valid_generator,
+                 *,
+                 epochs,
+                 steps_per_epoch,
+                 validation_steps,
+                 initial_epoch=1,
+                 callback,
+                 metrics_names):
         self.train_generator = train_generator
         self.valid_generator = valid_generator
         self.epochs = epochs
@@ -96,16 +113,12 @@ class EpochIterator:
             self.callback.on_epoch_begin(epoch, {})
             epoch_begin_time = timeit.default_timer()
 
-            train_step_iterator = StepIterator(self.train_generator,
-                                               self.steps_per_epoch,
-                                               self.callback,
+            train_step_iterator = StepIterator(self.train_generator, self.steps_per_epoch, self.callback,
                                                self.metrics_names)
 
             valid_step_iterator = None
             if self.valid_generator is not None:
-                valid_step_iterator = StepIterator(self.valid_generator,
-                                                   self.validation_steps,
-                                                   Callback(),
+                valid_step_iterator = StepIterator(self.valid_generator, self.validation_steps, Callback(),
                                                    self.metrics_names)
 
             yield train_step_iterator, valid_step_iterator
@@ -113,15 +126,20 @@ class EpochIterator:
             val_dict = {}
             if valid_step_iterator is not None:
                 val_metrics_dict = {
-                    'val_' + metric_name:metric
+                    'val_' + metric_name: metric
                     for metric_name, metric in zip(self.metrics_names, valid_step_iterator.metrics)
                 }
                 val_dict = {'val_loss': valid_step_iterator.loss, **val_metrics_dict}
 
             epoch_total_time = timeit.default_timer() - epoch_begin_time
             metrics_dict = dict(zip(self.metrics_names, train_step_iterator.metrics))
-            epoch_log = {'epoch': epoch, 'loss': train_step_iterator.loss, 'time': epoch_total_time,
-                         **metrics_dict, **val_dict}
+            epoch_log = {
+                'epoch': epoch,
+                'loss': train_step_iterator.loss,
+                'time': epoch_total_time,
+                **metrics_dict,
+                **val_dict
+            }
             self.callback.on_epoch_end(epoch, epoch_log)
 
             self.epoch_logs.append(epoch_log)

@@ -13,6 +13,7 @@ all_optimizers_dict = dict(
     sgd=optim.SGD,
 )
 
+
 def get_optimizer(optimizer, module):
     if isinstance(optimizer, str):
         optimizer = optimizer.lower()

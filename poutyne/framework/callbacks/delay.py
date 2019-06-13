@@ -1,22 +1,19 @@
-
 from .callbacks import Callback, CallbackList
+
 
 class DelayCallback(Callback):
     """
-    Delays one or many callbacks for a certain number of epochs or number of
-    batches. If both ``epoch_delay`` and ``batch_delay`` are provided, the
-    longer one has precedence.
+    Delays one or many callbacks for a certain number of epochs or number of batches. If both
+    ``epoch_delay`` and ``batch_delay`` are provided, the longer one has precedence.
 
     Args:
-        callbacks (Callback, list of Callback): A callback or a list of
-            callbacks to delay.
+        callbacks (Callback, list of Callback): A callback or a list of callbacks to delay.
         epoch_delay (int, optional): Number of epochs to delay.
-        batch_delay (int, optional): Number of batches to delay. The number of
-            batches can span many epochs. When the batch delay expires (i.e.
-            there are more than `batch_delay` done), the ``on_epoch_begin``
-            method is called on the callback(s) before the ``on_batch_begin``
-            method.
+        batch_delay (int, optional): Number of batches to delay. The number of batches can span many
+            epochs. When the batch delay expires (i.e. there are more than `batch_delay` done), the
+            ``on_epoch_begin`` method is called on the callback(s) before the ``on_batch_begin`` method.
     """
+
     def __init__(self, callbacks, *, epoch_delay=None, batch_delay=None):
         super().__init__()
         if isinstance(callbacks, CallbackList):

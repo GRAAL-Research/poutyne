@@ -10,9 +10,8 @@ class ModelCheckpoint(PeriodicSaveCallback):
     `poutyne.framework.PeriodicSaveCallback` for the arguments' descriptions.
 
     Args:
-        restore_best (bool): If `restore_best` is true, the weights of the
-            network will be reset to the last best checkpoint done. This option
-            only works when `save_best_only` is also true.
+        restore_best (bool): If `restore_best` is true, the weights of the network will be reset to
+            the last best checkpoint done. This option only works when `save_best_only` is also true.
             (Default value = False)
 
     See:
@@ -24,8 +23,7 @@ class ModelCheckpoint(PeriodicSaveCallback):
 
         self.restore_best = restore_best
         if self.restore_best and not self.save_best_only:
-            raise ValueError("The 'restore_best' argument only works when "
-                             "'save_best_only' is also true.")
+            raise ValueError("The 'restore_best' argument only works when 'save_best_only' is also true.")
 
     def save_file(self, fd, epoch, logs):
         self.model.save_weights(fd)
@@ -39,39 +37,38 @@ class ModelCheckpoint(PeriodicSaveCallback):
             else:
                 warnings.warn('No  weights to restore!')
 
+
 class OptimizerCheckpoint(PeriodicSaveCallback):
     """
-    Save the state of the optimizer after every epoch. The optimizer can be
-    reloaded as follows.
+    Save the state of the optimizer after every epoch. The optimizer can be reloaded as follows.
 
     .. code-block:: python
 
         model = Model(model, optimizer, loss_function)
         model.load_optimizer_state(filename)
 
-    See `poutyne.framework.PeriodicSaveCallback` for the arguments'
-    descriptions.
+    See `poutyne.framework.PeriodicSaveCallback` for the arguments' descriptions.
 
     See:
         poutyne.framework.PeriodicSaveCallback
     """
+
     def save_file(self, fd, epoch, logs):
         self.model.save_optimizer_state(fd)
 
+
 class LRSchedulerCheckpoint(PeriodicSaveCallback):
     """
-    Save the state of an LR scheduler callback after every epoch. The LR
-    scheduler callback should not be passed to the fit*() methods since it is
-    called by this callback instead. The LR scheduler can be reloaded as
-    follows.
+    Save the state of an LR scheduler callback after every epoch. The LR scheduler callback should
+    not be passed to the fit*() methods since it is called by this callback instead. The LR
+    scheduler can be reloaded as follows.
 
     .. code-block:: python
 
         lr_scheduler = AnLRSchedulerCallback(...)
         lr_scheduler.load_state(filename)
 
-    See `poutyne.framework.PeriodicSaveCallback` for the arguments'
-    descriptions.
+    See `poutyne.framework.PeriodicSaveCallback` for the arguments' descriptions.
 
     Args:
         lr_scheduler: An LR scheduler callback.
@@ -79,6 +76,7 @@ class LRSchedulerCheckpoint(PeriodicSaveCallback):
     See:
         poutyne.framework.PeriodicSaveCallback
     """
+
     def __init__(self, lr_scheduler, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.lr_scheduler = lr_scheduler

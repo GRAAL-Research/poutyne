@@ -1,6 +1,5 @@
 """
-The source code of this file was copied from the Keras project, and has been
-modified.
+The source code of this file was copied from the Keras project, and has been modified.
 
 COPYRIGHT
 
@@ -20,30 +19,27 @@ All other contributions:
 Copyright (c) 2015 - 2017, the respective contributors.
 All rights reserved.
 
-Each contributor holds copyright over their respective contributions.
-The project versioning (Git) records all such contribution source information.
+Each contributor holds copyright over their respective contributions. The project versioning (Git)
+records all such contribution source information.
 
 LICENSE
 
 The MIT License (MIT)
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
+associated documentation files (the "Software"), to deal in the Software without restriction,
+including without limitation the rights to use, copy, modify, merge, publish, distribute,
+sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+The above copyright notice and this permission notice shall be included in all copies or substantial
+portions of the Software.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
+NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES
+OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
 
@@ -104,12 +100,11 @@ class CallbackList:
 class Callback:
     """
     Attributes:
-        params (dict): Contains a key 'epoch' and a key 'steps_per_epoch'
-            which are passed to the `fit` function in `Model`. It may
-            contain other keys.
-        model (Model): a reference to the `Model` object which is using the
-            callback.
+        params (dict): Contains a key 'epoch' and a key 'steps_per_epoch' which are passed to the
+            `fit` function in `Model`. It may contain other keys.
+        model (Model): a reference to the `Model` object which is using the callback.
     """
+
     def __init__(self):
         self.model = None
 
@@ -140,12 +135,9 @@ class Callback:
                  * 'epoch': The epoch number.
                  * 'loss': The average loss of the batches.
                  * 'time': The computation time of the epoch.
-                 * Other metrics: One key for each type of metrics. The metrics
-                   are also averaged.
-                 * val_loss': The average loss of the batches on the validation
-                   set.
-                 * Other metrics: One key for each type of metrics on the
-                   validation set. The metrics are also averaged.
+                 * Other metrics: One key for each type of metrics. The metrics are also averaged.
+                 * val_loss': The average loss of the batches on the validation set.
+                 * Other metrics: One key for each type of metrics on the validation set. The metrics are also averaged.
 
         Example::
 

@@ -6,18 +6,16 @@ from torch.utils.data import Dataset
 
 def torch_to_numpy(obj, copy=False):
     """
-    Convert to Numpy arrays all tensors inside a Python object composed of the
-    supported types.
+    Convert to Numpy arrays all tensors inside a Python object composed of the supported types.
 
     Args:
         obj: The Python object to convert.
-        copy (bool): Whether to copy the memory. By default, if a tensor is
-            already on CPU, the Numpy array will be a view of the tensor.
+        copy (bool): Whether to copy the memory. By default, if a tensor is already on CPU, the
+            Numpy array will be a view of the tensor.
 
     Returns:
-        A new Python object with the same structure as `obj` but where the
-        tensors are now Numpy arrays. Not supported type are left as reference
-        in the new object.
+        A new Python object with the same structure as `obj` but where the tensors are now Numpy
+        arrays. Not supported type are left as reference in the new object.
 
     Example:
         .. code-block:: python
@@ -43,13 +41,14 @@ def torch_to_numpy(obj, copy=False):
         func = lambda t: t.cpu().detach().numpy()
     return torch_apply(obj, func)
 
+
 def torch_to(obj, *args, **kargs):
     return torch_apply(obj, lambda t: t.to(*args, **kargs))
 
+
 def torch_apply(obj, func):
     """
-    Apply a function to all tensors inside a Python object composed of the
-    supported types.
+    Apply a function to all tensors inside a Python object composed of the supported types.
 
     Supported types are: list, tuple and dict.
 
@@ -58,19 +57,20 @@ def torch_apply(obj, func):
         func: The function to apply.
 
     Returns:
-        A new Python object with the same structure as `obj` but where the
-        tensors have been applied the function `func`. Not supported type are
-        left as reference in the new object.
+        A new Python object with the same structure as `obj` but where the tensors have been applied
+        the function `func`. Not supported type are left as reference in the new object.
     """
     fn = lambda t: func(t) if torch.is_tensor(t) else t
     return _apply(obj, fn)
+
 
 def _apply(obj, func):
     if isinstance(obj, (list, tuple)):
         return type(obj)(_apply(el, func) for el in obj)
     if isinstance(obj, dict):
-        return {k:_apply(el, func) for k, el in obj.items()}
+        return {k: _apply(el, func) for k, el in obj.items()}
     return func(obj)
+
 
 def _concat(obj):
     if isinstance(obj[0], (list, tuple)):
@@ -82,18 +82,17 @@ def _concat(obj):
         return concat_dict
     return np.concatenate(obj)
 
+
 def numpy_to_torch(obj):
     """
-    Convert to tensors all Numpy arrays inside a Python object composed of the
-    supported types.
+    Convert to tensors all Numpy arrays inside a Python object composed of the supported types.
 
     Args:
         obj: The Python object to convert.
 
     Returns:
-        A new Python object with the same structure as `obj` but where the
-        Numpy arrays are now tensors. Not supported type are left as reference
-        in the new object.
+        A new Python object with the same structure as `obj` but where the Numpy arrays are now
+        tensors. Not supported type are left as reference in the new object.
 
     Example:
         .. code-block:: python
@@ -135,6 +134,7 @@ class TensorDataset(Dataset):
                     assert length == lengths[0]
                 return lengths[0]
             return len(obj)
+
         self._len = _rabbit_hole(self.tensors)
 
     def __getitem__(self, index):
@@ -142,6 +142,7 @@ class TensorDataset(Dataset):
             if isinstance(obj, (list, tuple)):
                 return type(obj)(_rabbit_hole(o, idx) for o in obj)
             return obj[idx]
+
         return _rabbit_hole(self.tensors, index)
 
     def __len__(self):

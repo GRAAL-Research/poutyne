@@ -5,18 +5,19 @@ from .callbacks import Callback
 
 class BestModelRestore(Callback):
     """
-    Restore the weights of the best model at the end of the training depending
-    on a monitored quantity.
+    Restore the weights of the best model at the end of the training depending on a monitored quantity.
 
     Args:
         monitor (string): Quantity to monitor. (Default value = 'val_loss')
-        mode (string): One of {min, max}.
-            Whether the monitored has to be maximized or minimized. For
-            instance, for `val_accuracy`, this should be `max`, and for
-            `val_loss`, this should be `min`, etc. (Default value = 'min')
-        verbose (bool): Whether to display a message when the model has improved
-            or when restoring the best model. (Default value = False)
+        mode (string): One of {'min', 'max'}.
+            Whether the monitored has to be maximized or minimized. For instance, for `val_accuracy`,
+            this should be `max`, and for `val_loss`, this should be `min`, etc. 
+            (Default value = 'min')
+        verbose (bool): Whether to display a message when the model has improved or when restoring
+            the best model. 
+            (Default value = False)
     """
+
     def __init__(self, *, monitor='val_loss', mode='min', verbose=False):
         super().__init__()
         self.monitor = monitor
@@ -38,9 +39,7 @@ class BestModelRestore(Callback):
             self.current_best = logs[self.monitor]
 
             if self.verbose:
-                print('Epoch %d: %s improved from %0.5f to %0.5f' % (
-                    epoch, self.monitor, old_best, self.current_best
-                ))
+                print('Epoch %d: %s improved from %0.5f to %0.5f' % (epoch, self.monitor, old_best, self.current_best))
             self.best_weights = self.model.get_weight_copies()
 
     def on_train_end(self, logs):
