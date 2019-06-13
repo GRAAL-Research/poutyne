@@ -65,9 +65,9 @@ for name, module_cls in torch.optim.lr_scheduler.__dict__.items():
                 new_init(module_cls),
                 '__doc__':
                 """
-                                     See:
-                                         `PyTorch {name} <http://pytorch.org/docs/master/optim.html#torch.optim.lr_scheduler.{name}>`_
-                                     """.format(name=name)
+                See:
+                    `PyTorch {name} <http://pytorch.org/docs/master/optim.html#torch.optim.lr_scheduler.{name}>`_
+                """.format(name=name)
             })
         setattr(sys.modules[__name__], name, _new_cls)
 

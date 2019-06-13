@@ -64,9 +64,9 @@ class CSVLogger(Logger):
 
     Args:
         filename (string): The filename of the CSV.
-        batch_granularity (bool): Whether to also output the result of each batch in addition to the epochs. 
+        batch_granularity (bool): Whether to also output the result of each batch in addition to the epochs.
             (Default value = False)
-        separator (string): The separator to use in the CSV. 
+        separator (string): The separator to use in the CSV.
             (Default value = ',')
         append (bool): Whether to append to an existing file.
 

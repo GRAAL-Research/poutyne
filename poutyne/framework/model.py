@@ -32,7 +32,7 @@ class Model:
             can be any PyTorch loss function. It can also be a string with the same name as a PyTorch
             loss function (either the functional or object name). 'accuracy' (or just 'acc') is also a
             valid metric. Each metric function is called on each batch of the optimization and on the
-            validation batches at the end of the epoch. 
+            validation batches at the end of the epoch.
             (Default value = None)
 
     Attributes:
@@ -148,7 +148,7 @@ class Model:
                 Training dataset. Union[Tensor, np.ndarray] if the model has a single input.
                 Union[tuple, list] of Union[Tensor, np.ndarray] if the model has multiple inputs.
             y (Union[Tensor, np.ndarray] or Union[tuple, list] of Union[Tensor, np.ndarray]):
-                Target. Union[Tensor, np.ndarray] if the model has a single output. 
+                Target. Union[Tensor, np.ndarray] if the model has a single output.
                 Union[tuple, list] of Union[Tensor, np.ndarray] if the model has multiple outputs.
                 validation_data (Optional[tuple of (``x_val``, ``y_val``)]):
                 Same format as ``x`` and ``y`` previously described. Validation dataset on which to
@@ -164,7 +164,7 @@ class Model:
                 multiple times.
                 (Defaults the number of steps needed to see the entire training dataset)
             validation_steps (int, optional): Same as for ``steps_per_epoch`` but for the validation
-                dataset. 
+                dataset.
                 (Defaults to ``steps_per_epoch`` if provided or the number of steps needed to
                 see the entire validation dataset)
             initial_epoch (int, optional): Epoch at which to start training
@@ -241,10 +241,10 @@ class Model:
 
                 If the generator does not have a method ``__len__()``, either the ``steps_per_epoch``
                 argument must be provided, or the iterator returned raises a StopIteration exception at
-                the end of the training dataset. PyTorch DataLoaders object do provide a ``__len__()`` 
+                the end of the training dataset. PyTorch DataLoaders object do provide a ``__len__()``
                 method.
 
-                Before each epoch, the method ``__iter__()`` on the generator is called and the method 
+                Before each epoch, the method ``__iter__()`` on the generator is called and the method
                 ``__next__()`` is called for each step on resulting object returned by ``__iter__()``.
                 Notice that a call to ``__iter__()`` on a generator made using the python keyword
                 ``yield`` returns the generator itself.
@@ -413,7 +413,7 @@ class Model:
         generator: Generator-like object for the dataset. The generator must yield a batch of
             samples. See the ``fit_generator()`` method for details on the types of generators
             supported. This should only yield input data ``x`` and not the target ``y``.
-        steps (int, optional): Number of iterations done on ``generator``. 
+        steps (int, optional): Number of iterations done on ``generator``.
             (Defaults the number of steps needed to see the entire dataset)
 
         Returns:
@@ -456,10 +456,10 @@ class Model:
                 Input to the model. Union[Tensor, np.ndarray] if the model has a single input.
                 Union[tuple, list] of Union[Tensor, np.ndarray] if the model has multiple inputs.
             y (Union[Tensor, np.ndarray] or Union[tuple, list] of Union[Tensor, np.ndarray]):
-                Target, corresponding ground truth. 
-                Union[Tensor, np.ndarray] if the model has a single output. 
+                Target, corresponding ground truth.
+                Union[Tensor, np.ndarray] if the model has a single output.
                 Union[tuple, list] of Union[Tensor, np.ndarray] if the model has multiple outputs.
-            batch_size (int): Number of samples given to the network at one time. 
+            batch_size (int): Number of samples given to the network at one time.
                 (Default value = 32)
             return_pred (bool, optional): Whether to return the predictions.
                 (Default value = False)
@@ -489,7 +489,7 @@ class Model:
         Args:
             generator: Generator-like object for the dataset. See the ``fit_generator()`` method for
                 details on the types of generators supported.
-            steps (int, optional): Number of iterations done on ``generator``. 
+            steps (int, optional): Number of iterations done on ``generator``.
                 (Defaults the number of steps needed to see the entire dataset)
             return_pred (bool, optional): Whether to return the predictions.
                 (Default value = False)

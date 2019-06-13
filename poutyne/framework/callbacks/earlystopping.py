@@ -56,7 +56,7 @@ class EarlyStopping(Callback):
     Args:
         monitor (int): Quantity to be monitored.
         min_delta (float): Minimum change in the monitored quantity to qualify as an improvement,
-            i.e. an absolute change of less than min_delta, will count as no improvement. 
+            i.e. an absolute change of less than min_delta, will count as no improvement.
             (Default value = 0)
         patience (int): Number of epochs with no improvement after which training will be stopped.
             (Default value = 0)
@@ -64,7 +64,7 @@ class EarlyStopping(Callback):
             (Default value = False)
         mode (string): One of {'min', 'max'}. In `min` mode, training will stop when the quantity
             monitored has stopped decreasing; in `max` mode it will stop when the quantity monitored has
-            stopped increasing. 
+            stopped increasing.
             (Default value = 'min')
     """
 

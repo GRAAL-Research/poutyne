@@ -67,12 +67,12 @@ class PeriodicSaveCallback(Callback):
 
     Args:
         filename (string): Path to save the model file.
-        monitor (string): Quantity to monitor. 
+        monitor (string): Quantity to monitor.
             (Default value = 'val_loss')
         verbose (bool): Whether to display a message when saving and restoring a checkpoint.
             (Default value = False)
         save_best_only (bool): If `save_best_only` is true, the latest best model according to the
-            quantity monitored will not be overwritten. 
+            quantity monitored will not be overwritten.
             (Default value = False)
         mode (string): One of {'min', 'max'}.
             If `save_best_only` is true, the decision to overwrite the current save file is made based
