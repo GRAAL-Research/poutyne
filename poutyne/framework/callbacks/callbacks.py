@@ -141,8 +141,8 @@ class Callback:
 
         Example::
 
-            logs = {'epoch': 6, 'time': 3.141519837, 'loss': 4.34462,
-                    'accuracy': 0.766, 'val_loss': 5.2352, 'val_accuracy': 0.682}
+            logs = {'epoch': 6, 'time': 3.141519837, 'loss': 4.34462, 'accuracy': 0.766,
+                    'val_loss': 5.2352, 'val_accuracy': 0.682}
         """
         pass
 
