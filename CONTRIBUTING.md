@@ -30,7 +30,7 @@ We use GitHub issues to track public bugs. Report a bug by [opening a new issue]
 
 **Great Bug Reports** tend to have:
 
-- A quick summary and/or background
+- A quick and clear summary and/or background
 - Steps to reproduce
   - Be specific!
   - Give sample code if you can. Try to reduce the bug to the minimum amount of code needed to reproduce: it will help in our troubleshooting procedure.
