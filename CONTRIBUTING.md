@@ -47,7 +47,7 @@ it first on the users list.
 
 * Check the documentation to make sure your feature does not already exist.
 
-* Do [a quick search](https://github.com/allenai/allennlp/issues) to see whether your enhancement has already been suggested.
+* Do a [quick search](https://github.com/GRAAL-Research/poutyne/issues) to see whether your enhancement has already been suggested.
 
 When creating your enhancement request, please:
 
