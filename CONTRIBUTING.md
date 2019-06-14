@@ -16,7 +16,7 @@ Pull requests are the best way to propose changes to the codebase. We actively w
 1. Fork the repo and create your branch from `master`.
 2. If you've added code that should be tested, you **must** ensure it is properly tested.
 3. If you've changed APIs, update the documentation.
-4. Ensure the test suite passes.
+4. Ensure the Travis test suite passes.
 5. Make sure your code lints.
 6. Submit that pull request!
 
