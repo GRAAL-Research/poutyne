@@ -32,7 +32,7 @@ We use GitHub issues to track public bugs. Report a bug by [opening a new issue]
 
 - A quick and clear summary and/or background
 - Steps to reproduce
-  - Be specific!
+  - Be specific and clear!
   - Give sample code if you can. Try to reduce the bug to the minimum amount of code needed to reproduce: it will help in our troubleshooting procedure.
 - What you expected would happen
 - What actually happens
