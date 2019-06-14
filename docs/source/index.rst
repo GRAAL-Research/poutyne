@@ -135,6 +135,11 @@ Before installing Poutyne, you must have the latest version of `PyTorch <https:/
     pip install -U git+https://github.com/GRAAL-Research/poutyne.git
 
 
+Contributing to Poutyne
+=======================
+
+We welcome user input, whether it is regarding bugs found in the library or feature propositions ! Make sure to have a look at our `contributing guidelines <https://github.com/GRAAL-Research/poutyne/blob/master/CONTRIBUTING.md>`_ for more details on this matter.
+
 
 Why this name, Poutyne?
 =======================
