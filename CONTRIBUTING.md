@@ -25,7 +25,7 @@ In short, when you submit code changes, your submissions are understood to be un
 
 ## Write bug reports with detail, background, and sample code
 
-We use GitHub issues to track public bugs. Report a bug by [opening a new issue](https://github.com/GRAAL-Research/poutyne/issues); it's that easy!
+We use GitHub issues to track public bugs. Report a bug by [opening a new issue](https://github.com/GRAAL-Research/poutyne/issues). You should use one of our [proposed templates](https://github.com/GRAAL-Research/poutyne/tree/master/.github/ISSUE_TEMPLATE) when appropriate; they are integrated with GitHub and do most of the formatting for you. It's that easy!
 
 **Great Bug Reports** tend to have:
 
