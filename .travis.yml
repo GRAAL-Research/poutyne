@@ -5,7 +5,9 @@ python:
 install:
   - pip install -q -r requirements.txt
   - pip install -q -r docs/requirements.txt
+  - pip install -q yapf
 script:
+  - yapf poutyne --recursive --in-place
   - pytest
   - cd docs
   - ./rebuild_html_doc.sh
