@@ -7,7 +7,7 @@ install:
   - pip install -q -r docs/requirements.txt
   - pip install -q yapf
 script:
-  - yapf poutyne --recursive --in-place
+  - yapf --diff --recursive poutyne/
   - pytest
   - cd docs
   - ./rebuild_html_doc.sh
