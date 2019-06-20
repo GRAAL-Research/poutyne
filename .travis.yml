@@ -6,8 +6,11 @@ install:
   - pip install -q -r requirements.txt
   - pip install -q -r docs/requirements.txt
   - pip install -q yapf
+  - pip install -q pylint==2.3.1
 script:
   - yapf --diff --recursive poutyne/
+  - pylint poutyne/
+  - pylint tests/
   - pytest
   - cd docs
   - ./rebuild_html_doc.sh

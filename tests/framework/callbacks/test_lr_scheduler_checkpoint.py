@@ -1,3 +1,5 @@
+# Because of the way the callbacks are generated, we have to disable linting here.
+# pylint: disable=no-name-in-module
 import os
 
 import unittest

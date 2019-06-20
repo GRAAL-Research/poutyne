@@ -1,3 +1,5 @@
+# Because of the way the callbacks are generated, we have to disable linting here.
+# pylint: disable=no-name-in-module
 import unittest
 from unittest import TestCase
 
@@ -62,7 +64,7 @@ class LRSchedulersTest(TestCase):
 
     def test_exception_is_thrown_on_optimizer_argument(self):
         with self.assertRaises(ValueError):
-            step_lr = StepLR(self.optimizer, step_size=3)
+            StepLR(self.optimizer, step_size=3)
 
 if __name__ == '__main__':
     unittest.main()

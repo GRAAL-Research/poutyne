@@ -129,6 +129,7 @@ class BaseTensorBoardLoggerTest:
                                          lr=BaseTensorBoardLoggerTest.lr)
         self.model = Model(self.pytorch_module, self.optimizer, self.loss_function)
         self.temp_dir_obj = TemporaryDirectory()
+        # pylint: disable=not-callable
         self.writer = self.SummaryWriter(self.temp_dir_obj.name)
         self.writer.add_scalars = MagicMock()
 
