@@ -3,7 +3,7 @@ import numpy as np
 import torch
 from torch.utils.data import Dataset
 
-long_long_long_long_lionelong_long_long_long_lionelong_long_long_long_lionelong_long_long_long_lionelong_long_long_long_lionelong_long_long_long_lionelong_long_long_long_lionelong_long_long_long_lione = ""
+
 def torch_to_numpy(obj, copy=False):
     """
     Convert to Numpy arrays all tensors inside a Python object composed of the supported types.
