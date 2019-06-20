@@ -9,6 +9,7 @@ install:
   - pip install -q pylint==2.3.1
 script:
   - yapf --diff --recursive poutyne/
+  - yapf --diff --recursive tests/
   - pylint poutyne/
   - pylint tests/
   - pytest

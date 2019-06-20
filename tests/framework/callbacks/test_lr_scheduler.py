@@ -17,6 +17,7 @@ def some_data_generator(batch_size):
         y = torch.rand(batch_size, 1)
         yield x, y
 
+
 class LRSchedulersTest(TestCase):
     batch_size = 20
     epochs = 10
@@ -32,7 +33,7 @@ class LRSchedulersTest(TestCase):
         self.valid_gen = some_data_generator(20)
 
     def test_lambda_lr_integration(self):
-        my_lambda = lambda epoch: 0.95 ** epoch
+        my_lambda = lambda epoch: 0.95**epoch
         lambda_lr = LambdaLR(lr_lambda=[my_lambda])
         self._fit_with_callback_integration(lambda_lr)
 
@@ -57,7 +58,8 @@ class LRSchedulersTest(TestCase):
         self._fit_with_callback_integration(reduce_lr)
 
     def _fit_with_callback_integration(self, callback):
-        self.model.fit_generator(self.train_gen, self.valid_gen,
+        self.model.fit_generator(self.train_gen,
+                                 self.valid_gen,
                                  epochs=LRSchedulersTest.epochs,
                                  steps_per_epoch=LRSchedulersTest.steps_per_epoch,
                                  callbacks=[callback])
@@ -65,6 +67,7 @@ class LRSchedulersTest(TestCase):
     def test_exception_is_thrown_on_optimizer_argument(self):
         with self.assertRaises(ValueError):
             StepLR(self.optimizer, step_size=3)
+
 
 if __name__ == '__main__':
     unittest.main()

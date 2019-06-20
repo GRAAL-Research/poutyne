@@ -18,6 +18,7 @@ def some_data_generator(batch_size):
         y = torch.rand(batch_size, 1)
         yield x, y
 
+
 class OptimizerCheckpointTest(TestCase):
     batch_size = 20
     epochs = 10
@@ -29,8 +30,7 @@ class OptimizerCheckpointTest(TestCase):
         self.optimizer = torch.optim.Adam(self.pytorch_module.parameters(), lr=1e-3)
         self.model = Model(self.pytorch_module, self.optimizer, self.loss_function)
         self.temp_dir_obj = TemporaryDirectory()
-        self.checkpoint_filename = os.path.join(self.temp_dir_obj.name,
-                                                'my_checkpoint_{epoch}.optim')
+        self.checkpoint_filename = os.path.join(self.temp_dir_obj.name, 'my_checkpoint_{epoch}.optim')
 
     def tearDown(self):
         self.temp_dir_obj.cleanup()
@@ -39,7 +39,8 @@ class OptimizerCheckpointTest(TestCase):
         train_gen = some_data_generator(OptimizerCheckpointTest.batch_size)
         valid_gen = some_data_generator(OptimizerCheckpointTest.batch_size)
         checkpointer = OptimizerCheckpoint(self.checkpoint_filename, period=1)
-        self.model.fit_generator(train_gen, valid_gen,
+        self.model.fit_generator(train_gen,
+                                 valid_gen,
                                  epochs=OptimizerCheckpointTest.epochs,
                                  steps_per_epoch=5,
                                  callbacks=[checkpointer])
@@ -59,9 +60,7 @@ class OptimizerCheckpointTest(TestCase):
             checkpointer.on_epoch_begin(epoch, {})
             checkpointer.on_batch_begin(1, {})
             loss = self._update_model(generator)
-            checkpointer.on_batch_end(
-                1, {'batch': 1, 'size': OptimizerCheckpointTest.batch_size, 'loss': loss}
-            )
+            checkpointer.on_batch_end(1, {'batch': 1, 'size': OptimizerCheckpointTest.batch_size, 'loss': loss})
             checkpointer.on_epoch_end(epoch, {'epoch': epoch, 'loss': loss, 'val_loss': 1})
             filename = self.checkpoint_filename.format(epoch=epoch)
             self.assertTrue(os.path.isfile(filename))
@@ -89,6 +88,7 @@ class OptimizerCheckpointTest(TestCase):
             saved_optimizer_state = torch_to_numpy(self.optimizer.state_dict())
 
             self.assertEqual(epoch_optimizer_state, saved_optimizer_state)
+
 
 if __name__ == '__main__':
     unittest.main()
