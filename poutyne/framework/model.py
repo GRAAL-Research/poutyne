@@ -788,7 +788,7 @@ class Model:
 
             Since Poutyne supposes that the optimizer has ben initialized before the Poutyne Model,
             necessarily the parameters are not guaranteed to be in sync with those contained in the
-            optimizer once the PyTorch module is transfered to another device. Thus, this method
+            optimizer once the PyTorch module is transferred to another device. Thus, this method
             takes care of this inconsistency by updating the parameters inside the optimizer.
 
         Returns:
