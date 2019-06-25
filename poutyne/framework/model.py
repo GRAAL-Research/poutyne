@@ -750,8 +750,8 @@ class Model:
 
         Note:
             PyTorch optimizers assume that the parameters have been transfered to the right device
-            before their creations. Furthermore, future versions of PyTorch won't modify in-place
-            anymore the parameters of a PyTorch module when transfering them to another device.
+            before their creations. Furthermore, future versions of PyTorch will no longer modify
+            the parameters of a PyTorch module in-place when transferring them to another device.
             See this `issue <https://github.com/pytorch/pytorch/issues/7844>`_ and this
             `pull request <https://github.com/pytorch/pytorch/pull/21613>`_ for details.
 
@@ -781,8 +781,8 @@ class Model:
 
         Note:
             PyTorch optimizers assume that the parameters have been transfered to the right device
-            before their creations. Furthermore, future versions of PyTorch won't modify in-place
-            anymore the parameters of a PyTorch module when transfering them to another device.
+            before their creations. Furthermore, future versions of PyTorch will no longer modify
+            the parameters of a PyTorch module in-place when transferring them to another device.
             See this `issue <https://github.com/pytorch/pytorch/issues/7844>`_ and this
             `pull request <https://github.com/pytorch/pytorch/pull/21613>`_ for details.
 
@@ -811,8 +811,8 @@ class Model:
 
         Note:
             PyTorch optimizers assume that the parameters have been transfered to the right device
-            before their creations. Furthermore, future versions of PyTorch won't modify in-place
-            anymore the parameters of a PyTorch module when transfering them to another device.
+            before their creations. Furthermore, future versions of PyTorch will no longer modify
+            the parameters of a PyTorch module in-place when transferring them to another device.
             See this `issue <https://github.com/pytorch/pytorch/issues/7844>`_ and this
             `pull request <https://github.com/pytorch/pytorch/pull/21613>`_ for details.
 
