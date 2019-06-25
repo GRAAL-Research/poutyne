@@ -709,7 +709,7 @@ class Model:
         self.optimizer.state = {name_to_param[name]: state for name, state in named_state}
 
     @contextlib.contextmanager
-    def _update_optim_device_context_manager(self):
+    def _update_optim_device(self):
         param_name_groups, named_state = self._get_named_optimizer_attrs()
         try:
             yield
@@ -763,7 +763,7 @@ class Model:
         Returns:
             `self`.
         """
-        with self._update_optim_device_context_manager():
+        with self._update_optim_device():
             self.model.cuda(*args, **kwargs)
 
         # Assuming the PyTorch module has at least one parameter.
@@ -794,7 +794,7 @@ class Model:
         Returns:
             `self`.
         """
-        with self._update_optim_device_context_manager():
+        with self._update_optim_device():
             self.model.cpu(*args, **kwargs)
 
         # Assuming the PyTorch module has at least one parameter.
@@ -828,7 +828,7 @@ class Model:
             `self`.
         """
         self.device = device
-        with self._update_optim_device_context_manager():
+        with self._update_optim_device():
             self.model.to(self.device)
         self._transfer_loss_and_metrics_modules_to_right_device()
         return self
