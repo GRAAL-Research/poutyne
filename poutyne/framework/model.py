@@ -1,4 +1,5 @@
 import warnings
+import contextlib
 import numpy as np
 
 import torch
@@ -685,6 +686,36 @@ class Model:
                         if torch.is_tensor(v) and p.device != v.device:
                             v.data = v.data.to(p.device)
 
+    def _get_named_optimizer_attrs(self):
+        param_to_name = {param: name for name, param in self.model.named_parameters()}
+
+        param_name_groups = []
+        for group in self.optimizer.param_groups:
+            param_name_groups.append([param_to_name[param] for param in group['params']])
+
+        named_state = {param_to_name[param]: state for param, state in self.optimizer.state.items()}
+
+        return param_name_groups, named_state
+
+    def _set_named_optimizer_attrs(self, param_name_groups, named_state):
+        name_to_param = dict(self.model.named_parameters())
+
+        for param_name_group, optim_group in zip(param_name_groups, self.optimizer.param_groups):
+            optim_group['params'] = [
+                name_to_param[param_name] if optim_param is not name_to_param[param_name] else optim_param
+                for param_name, optim_param in zip(param_name_group, optim_group['params'])
+            ]
+
+        self.optimizer.state = {name_to_param[name]: state for name, state in named_state}
+
+    @contextlib.contextmanager
+    def _update_optim_device(self):
+        param_name_groups, named_state = self._get_named_optimizer_attrs()
+        try:
+            yield
+        finally:
+            self._set_named_optimizer_attrs(param_name_groups, named_state)
+
     def get_weights(self):
         """
         Returns a dictionary containing the parameters of the network. The tensors are just
@@ -717,10 +748,23 @@ class Model:
         method. Notice that the device is saved so that the batches can send to the right device
         before passing it to the network.
 
+        Note:
+            PyTorch optimizers assume that the parameters have been transfered to the right device
+            before their creations. Furthermore, future versions of PyTorch will no longer modify
+            the parameters of a PyTorch module in-place when transferring them to another device.
+            See this `issue <https://github.com/pytorch/pytorch/issues/7844>`_ and this
+            `pull request <https://github.com/pytorch/pytorch/pull/21613>`_ for details.
+
+            Since Poutyne supposes that the optimizer has been initialized before the Poutyne Model,
+            necessarily the parameters are not guaranteed to be in sync with those contained in the
+            optimizer once the PyTorch module is transferred to another device. Thus, this method
+            takes care of this inconsistency by updating the parameters inside the optimizer.
+
         Returns:
             `self`.
         """
-        self.model.cuda(*args, **kwargs)
+        with self._update_optim_device():
+            self.model.cuda(*args, **kwargs)
 
         # Assuming the PyTorch module has at least one parameter.
         self.device = next(self.model.parameters()).device
@@ -735,10 +779,23 @@ class Model:
         method. Notice that the device is saved so that the batches can send to the right device
         before passing it to the network.
 
+        Note:
+            PyTorch optimizers assume that the parameters have been transfered to the right device
+            before their creations. Furthermore, future versions of PyTorch will no longer modify
+            the parameters of a PyTorch module in-place when transferring them to another device.
+            See this `issue <https://github.com/pytorch/pytorch/issues/7844>`_ and this
+            `pull request <https://github.com/pytorch/pytorch/pull/21613>`_ for details.
+
+            Since Poutyne supposes that the optimizer has been initialized before the Poutyne Model,
+            necessarily the parameters are not guaranteed to be in sync with those contained in the
+            optimizer once the PyTorch module is transferred to another device. Thus, this method
+            takes care of this inconsistency by updating the parameters inside the optimizer.
+
         Returns:
             `self`.
         """
-        self.model.cpu(*args, **kwargs)
+        with self._update_optim_device():
+            self.model.cpu(*args, **kwargs)
 
         # Assuming the PyTorch module has at least one parameter.
         self.device = next(self.model.parameters()).device
@@ -752,6 +809,18 @@ class Model:
         Tranfers the network on the specified device. The device is saved so that the batches can
         send to the right device before passing it to the network.
 
+        Note:
+            PyTorch optimizers assume that the parameters have been transfered to the right device
+            before their creations. Furthermore, future versions of PyTorch will no longer modify
+            the parameters of a PyTorch module in-place when transferring them to another device.
+            See this `issue <https://github.com/pytorch/pytorch/issues/7844>`_ and this
+            `pull request <https://github.com/pytorch/pytorch/pull/21613>`_ for details.
+
+            Since Poutyne supposes that the optimizer has been initialized before the Poutyne Model,
+            necessarily the parameters are not guaranteed to be in sync with those contained in the
+            optimizer once the PyTorch module is transferred to another device. Thus, this method
+            takes care of this inconsistency by updating the parameters inside the optimizer.
+
         Args:
             device (torch.device): The device to which the network is sent.
 
@@ -759,7 +828,8 @@ class Model:
             `self`.
         """
         self.device = device
-        self.model.to(self.device)
+        with self._update_optim_device():
+            self.model.to(self.device)
         self._transfer_loss_and_metrics_modules_to_right_device()
         return self
 
