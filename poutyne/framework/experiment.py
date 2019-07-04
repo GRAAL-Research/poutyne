@@ -50,18 +50,18 @@ class Experiment:
                  metrics=None,
                  monitor_metric=None,
                  monitor_mode=None,
-                 type=None):
+                 exp_type=None):
         self.directory = directory
         self.logging = logging
 
-        if type is not None and not type.startswith('classif') and not type.startswith('reg'):
-            raise ValueError("Invalid type '%s'" % type)
+        if exp_type is not None and not exp_type.startswith('classif') and not exp_type.startswith('reg'):
+            raise ValueError("Invalid exp_type '%s'" % exp_type)
 
         metrics = [] if metrics is None else metrics
 
-        loss_function = self._get_loss_function(loss_function, module, type)
-        metrics = self._get_metrics(metrics, module, type)
-        self._set_monitor(monitor_metric, monitor_mode, type)
+        loss_function = self._get_loss_function(loss_function, module, exp_type)
+        metrics = self._get_metrics(metrics, module, exp_type)
+        self._set_monitor(monitor_metric, monitor_mode, exp_type)
 
         self.model = Model(module, optimizer, loss_function, metrics=metrics)
         if device is not None:
@@ -83,26 +83,26 @@ class Experiment:
         self.lr_scheduler_tmp_filename = join_dir(Experiment.LR_SCHEDULER_TMP_FILENAME)
         self.test_log_filename = join_dir(Experiment.TEST_LOG_FILENAME)
 
-    def _get_loss_function(self, loss_function, module, type):
+    def _get_loss_function(self, loss_function, module, exp_type):
         if loss_function is None:
             if hasattr(module, 'loss_function'):
                 return module.loss_function
-            if type is not None:
-                if type.startswith('classif'):
+            if exp_type is not None:
+                if exp_type.startswith('classif'):
                     return 'cross_entropy'
-                if type.startswith('reg'):
+                if exp_type.startswith('reg'):
                     return 'mse'
         return loss_function
 
-    def _get_metrics(self, metrics, module, type):
+    def _get_metrics(self, metrics, module, exp_type):
         if metrics is None or len(metrics) == 0:
             if hasattr(module, 'metrics'):
                 return module.metrics
-            if type is not None and type.startswith('classif'):
+            if exp_type is not None and exp_type.startswith('classif'):
                 return ['accuracy']
         return metrics
 
-    def _set_monitor(self, monitor_metric, monitor_mode, type):
+    def _set_monitor(self, monitor_metric, monitor_mode, exp_type):
         if monitor_mode is not None and monitor_mode not in ['min', 'max']:
             raise ValueError("Invalid mode '%s'" % monitor_mode)
 
@@ -112,7 +112,7 @@ class Experiment:
             self.monitor_metric = monitor_metric
             if monitor_mode is not None:
                 self.monitor_mode = monitor_mode
-        elif type is not None and type.startswith('classif'):
+        elif exp_type is not None and exp_type.startswith('classif'):
             self.monitor_metric = 'val_acc'
             self.monitor_mode = 'max'
 
