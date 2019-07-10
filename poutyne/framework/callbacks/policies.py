@@ -4,7 +4,7 @@ grained control over the process.
 
 The training is divided into phases with the ``Phase`` class. A ``Phase`` contains parameter spaces
 (e.g. learning rate, or momentum, or both) for the optimizer. You chain ``Phase`` instances by
-passing them to the ``OptimizerPolicy`` ``OptimizerPolicy`` is a ``Callback`` that uses the phasese,
+passing them to the ``OptimizerPolicy`` ``OptimizerPolicy`` is a ``Callback`` that uses the phases,
 steps through them, and sets the parameters of the optimizer.
 
 """
@@ -153,9 +153,9 @@ def one_cycle_phases(
         steps: the total number of steps to take.
         lr: tuple for the triangular learning rate (start, middle).
         momentum: tuple for the triangular momentum (start, middle).
-        finetune_lr: target learning rate for the final finetuning. Should be smaller than
+        finetune_lr: target learning rate for the final fine tuning. Should be smaller than
             `min(lr)`.
-        finetune_fraction: fraction of steps used for the finetuning.
+        finetune_fraction: fraction of steps used for the fine tuning.
             Must be between 0 and 1.
 
     Returns:
