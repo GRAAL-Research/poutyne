@@ -1,5 +1,6 @@
 import warnings
 import contextlib
+from collections import defaultdict
 import numpy as np
 
 import torch
@@ -706,7 +707,7 @@ class Model:
                 for param_name, optim_param in zip(param_name_group, optim_group['params'])
             ]
 
-        self.optimizer.state = {name_to_param[name]: state for name, state in named_state}
+        self.optimizer.state = defaultdict(dict, {name_to_param[name]: state for name, state in named_state})
 
     @contextlib.contextmanager
     def _update_optim_device(self):
