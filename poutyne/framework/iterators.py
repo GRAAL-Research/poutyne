@@ -49,7 +49,6 @@ class StepIterator:
         time_since_last_batch = timeit.default_timer()
         for step, data in _get_step_iterator(self.steps_per_epoch, self.generator):
             self.callback.on_batch_begin(step, {})
-            batch_begin_time = timeit.default_timer()
 
             step_data = Step(step)
             yield step_data, data
