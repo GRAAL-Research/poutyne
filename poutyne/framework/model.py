@@ -128,6 +128,14 @@ class Model:
         self.metrics_names = [metric.__name__ for metric in self.metrics]
         self.device = None
 
+    @contextlib.contextmanager
+    def _set_training_mode(self, training):
+        old_training = self.model.training
+        self.model.train(training)
+        with torch.set_grad_enabled(training):
+            yield
+        self.model.train(old_training)
+
     def fit(self,
             x,
             y,
@@ -314,8 +322,7 @@ class Model:
                                        metrics_names=self.metrics_names)
 
         for train_step_iterator, valid_step_iterator in epoch_iterator:
-            self.model.train(True)
-            with torch.enable_grad():
+            with self._set_training_mode(True):
                 for step, (x, y) in train_step_iterator:
                     step.loss, step.metrics, _ = self._fit_batch(x, y, callback=callback_list, step=step.number)
                     step.size = self._get_batch_size(x, y)
@@ -371,8 +378,7 @@ class Model:
             ``pred_y`` is the predictions with tensors converted into Numpy
             arrays.
         """
-        self.model.train(True)
-        with torch.enable_grad():
+        with self._set_training_mode(True):
             self._transfer_optimizer_state_to_right_device()
             loss, metrics, pred_y = self._fit_batch(x, y, return_pred=return_pred)
         return self._format_return(loss, metrics, pred_y, return_pred)
@@ -424,8 +430,7 @@ class Model:
         if steps is None and hasattr(generator, '__len__'):
             steps = len(generator)
         pred_y = []
-        self.model.eval()
-        with torch.no_grad():
+        with self._set_training_mode(False):
             for _, x in _get_step_iterator(steps, generator):
                 x = self._process_input(x)
                 x = x if isinstance(x, (tuple, list)) else (x, )
@@ -442,8 +447,7 @@ class Model:
         Returns:
             The predictions with tensors converted into Numpy arrays.
         """
-        self.model.eval()
-        with torch.no_grad():
+        with self._set_training_mode(False):
             x = self._process_input(x)
             x = x if isinstance(x, (tuple, list)) else (x, )
             return torch_to_numpy(self.model(*x))
@@ -572,8 +576,7 @@ class Model:
             ``pred_y`` is the list of the predictions of each batch with tensors
             converted into Numpy arrays.
         """
-        self.model.eval()
-        with torch.no_grad():
+        with self._set_training_mode(False):
             loss, metrics, pred_y = self._compute_loss_and_metrics(x, y, return_pred=return_pred)
         return self._format_return(loss, metrics, pred_y, return_pred)
 
@@ -582,8 +585,7 @@ class Model:
         if return_pred:
             pred_list = []
 
-        self.model.eval()
-        with torch.no_grad():
+        with self._set_training_mode(False):
             for step, (x, y) in step_iterator:
                 step.loss, step.metrics, pred_y = self._compute_loss_and_metrics(x, y, return_pred=return_pred)
                 if return_pred:
