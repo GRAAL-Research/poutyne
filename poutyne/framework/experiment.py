@@ -9,6 +9,10 @@ try:
 except ImportError:
     pd = None
 import torch
+try:
+    from torch.utils.tensorboard import SummaryWriter
+except ImportError:
+    SummaryWriter = None
 
 from poutyne.framework import Model
 from poutyne.framework.callbacks import ModelCheckpoint, \
@@ -18,10 +22,6 @@ from poutyne.framework.callbacks import ModelCheckpoint, \
                                         CSVLogger, \
                                         TensorBoardLogger, \
                                         BestModelRestore
-try:
-    from torch.utils.tensorboard import SummaryWriter
-except ImportError:
-    SummaryWriter = None
 
 
 class Experiment:
