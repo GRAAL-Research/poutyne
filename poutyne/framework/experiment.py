@@ -9,7 +9,6 @@ try:
 except ImportError:
     pd = None
 import torch
-from torch.utils.tensorboard import SummaryWriter
 
 from poutyne.framework import Model
 from poutyne.framework.callbacks import ModelCheckpoint, \
@@ -19,6 +18,10 @@ from poutyne.framework.callbacks import ModelCheckpoint, \
                                         CSVLogger, \
                                         TensorBoardLogger, \
                                         BestModelRestore
+try:
+    from torch.utils.tensorboard import SummaryWriter
+except ImportError:
+    SummaryWriter = None
 
 
 class Experiment:
@@ -198,6 +201,19 @@ class Experiment:
 
         return callbacks
 
+    def _init_tensorboard_callbacks(self, disable_tensorboard):
+        tensorboard_writer = None
+        callbacks = []
+        if not disable_tensorboard:
+            if SummaryWriter is None:
+                warnings.warn("tensorboard does not seem to be installed. "
+                              "To remove this warning, set the 'disable_tensorboard' "
+                              "flag to True or install tensorboard.")
+            else:
+                tensorboard_writer = SummaryWriter(self.tensorboard_directory)
+                callbacks += [TensorBoardLogger(tensorboard_writer)]
+        return tensorboard_writer, callbacks
+
     def _init_lr_scheduler_callbacks(self, lr_schedulers):
         callbacks = []
         if self.logging:
@@ -219,6 +235,7 @@ class Experiment:
               callbacks=None,
               lr_schedulers=None,
               save_every_epoch=False,
+              disable_tensorboard=False,
               epochs=1000,
               steps_per_epoch=None,
               validation_steps=None,
@@ -267,8 +284,8 @@ class Experiment:
                                    open_mode='w')
             ]
 
-            tensorboard_writer = SummaryWriter(self.tensorboard_directory)
-            callbacks += [TensorBoardLogger(tensorboard_writer)]
+            tensorboard_writer, cb_list = self._init_tensorboard_callbacks(disable_tensorboard)
+            callbacks += cb_list
 
         # This method returns callbacks that checkpoints the LR scheduler if logging is enabled.
         # Otherwise, it just returns the list of LR schedulers with a BestModelRestore callback.
