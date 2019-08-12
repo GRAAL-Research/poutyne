@@ -46,9 +46,9 @@ class StepIterator:
         return self.metrics_sum / self.sizes_sum
 
     def __iter__(self):
+        time_since_last_batch = timeit.default_timer()
         for step, data in _get_step_iterator(self.steps_per_epoch, self.generator):
             self.callback.on_batch_begin(step, {})
-            batch_begin_time = timeit.default_timer()
 
             step_data = Step(step)
             yield step_data, data
@@ -57,7 +57,9 @@ class StepIterator:
             self.metrics_sum += step_data.metrics * step_data.size
             self.sizes_sum += step_data.size
 
-            batch_total_time = timeit.default_timer() - batch_begin_time
+            batch_end_time = timeit.default_timer()
+            batch_total_time = batch_end_time - time_since_last_batch
+            time_since_last_batch = batch_end_time
             metrics_dict = dict(zip(self.metrics_names, step_data.metrics))
             batch_logs = {
                 'batch': step,

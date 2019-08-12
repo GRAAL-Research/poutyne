@@ -108,8 +108,7 @@ class TensorBoardLogger(Logger):
     Example:
         Using TensorBoardLogger::
 
-            from tensorboardX import SummaryWriter
-            # or from torch.utils.tensorboard import SummaryWriter
+            from torch.utils.tensorboard import SummaryWriter
             from poutyne.framework import Model
             from poutyne.framework.callbacks import TensorBoardLogger
 
