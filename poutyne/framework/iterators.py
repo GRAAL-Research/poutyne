@@ -53,7 +53,7 @@ class StepIterator:
         for step, data in _get_step_iterator(self.steps_per_epoch, self.generator):
             self.callback.on_batch_begin(step, {})
 
-            zero_all_gradients = ((step + 1) % self.steps_between_backprops == 0)
+            zero_all_gradients = (steps % self.steps_between_backprops == 1)
             do_backprop = (step % self.steps_between_backprops == 0) or (step == self.steps_per_epoch)
 
             step_data = Step(step, zero_all_gradients, do_backprop)
