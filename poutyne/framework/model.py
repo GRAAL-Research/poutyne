@@ -117,7 +117,6 @@ class Model:
             ...
 
     """
-
     def __init__(self, model, optimizer, loss_function, *, metrics=None):
         metrics = [] if metrics is None else metrics
 
@@ -237,7 +236,8 @@ class Model:
                       validation_steps=None,
                       initial_epoch=1,
                       verbose=True,
-                      callbacks=None):
+                      callbacks=None,
+                      steps_between_backprops=1):
         # pylint: disable=too-many-locals, line-too-long
         """
         Trains the model on a dataset using a generator.
@@ -319,12 +319,18 @@ class Model:
                                        validation_steps=validation_steps,
                                        initial_epoch=initial_epoch,
                                        callback=callback_list,
-                                       metrics_names=self.metrics_names)
+                                       metrics_names=self.metrics_names,
+                                       steps_between_backprops=steps_between_backprops)
 
         for train_step_iterator, valid_step_iterator in epoch_iterator:
             with self._set_training_mode(True):
                 for step, (x, y) in train_step_iterator:
-                    step.loss, step.metrics, _ = self._fit_batch(x, y, callback=callback_list, step=step.number)
+                    step.loss, step.metrics, _ = self._fit_batch(x,
+                                                                 y,
+                                                                 callback=callback_list,
+                                                                 step=step.number,
+                                                                 zero_all_gradients=step.zero_all_gradients,
+                                                                 do_backprop=step.do_backprop)
                     step.size = self._get_batch_size(x, y)
 
             if valid_step_iterator is not None:
@@ -334,17 +340,30 @@ class Model:
 
         return epoch_iterator.epoch_logs
 
-    def _fit_batch(self, x, y, *, callback=Callback(), step=None, return_pred=False):
-        self.optimizer.zero_grad()
+    def _fit_batch(self,
+                   x,
+                   y,
+                   *,
+                   callback=Callback(),
+                   step=None,
+                   return_pred=False,
+                   zero_all_gradients=True,
+                   do_backprop=True,
+                   steps_between_backprops=1):
+        if zero_all_gradients:
+            self.optimizer.zero_grad()
 
         loss_tensor, metrics, pred_y = self._compute_loss_and_metrics(x,
                                                                       y,
                                                                       return_loss_tensor=True,
                                                                       return_pred=return_pred)
 
+        loss_tensor = loss_tensor / steps_between_backprops
         loss_tensor.backward()
         callback.on_backward_end(step)
-        self.optimizer.step()
+
+        if do_backprop:
+            self.optimizer.step()
 
         loss = float(loss_tensor)
         return loss, metrics, pred_y
