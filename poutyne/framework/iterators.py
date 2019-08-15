@@ -30,6 +30,7 @@ def _get_step_iterator(steps, generator):
 
 class StepIterator:
     def __init__(self, generator, steps_per_epoch, callback, metrics_names, batches_between_backprops=1):
+        # pylint: disable=too-many-arguments
         self.generator = generator
         self.steps_per_epoch = steps_per_epoch
         self.callback = callback

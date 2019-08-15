@@ -241,6 +241,7 @@ class Experiment:
               validation_steps=None,
               seed=42,
               batches_between_backprops=1):
+        # pylint: disable=too-many-locals
         if seed is not None:
             # Make training deterministic.
             random.seed(seed)

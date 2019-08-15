@@ -185,7 +185,7 @@ class Model:
             callbacks (list of poutyne.framework.Callback): List of callbacks that will be called
                 during training.
                 (Default value = None)
-            batches_between_backprops (int): Number of batches on which to compute the running loss before 
+            batches_between_backprops (int): Number of batches on which to compute the running loss before
                 backpropagating it through the network. Note that the total loss used for backpropagation is
                 the mean of the `batches_between_backprops` batch losses.
                 (Default value = 1)
@@ -286,7 +286,7 @@ class Model:
                 (Default value = True)
             callbacks (list of poutyne.framework.Callback): List of callbacks that will be called during training.
                 (Default value = None)
-            batches_between_backprops (int): Number of batches on which to compute the running loss before 
+            batches_between_backprops (int): Number of batches on which to compute the running loss before
                 backpropagating it through the network. Note that the total loss used for backpropagation is
                 the mean of the `batches_between_backprops` batch losses.
                 (Default value = 1)
