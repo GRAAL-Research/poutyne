@@ -239,7 +239,8 @@ class Experiment:
               epochs=1000,
               steps_per_epoch=None,
               validation_steps=None,
-              seed=42):
+              seed=42,
+              batches_between_backprops=1):
         if seed is not None:
             # Make training deterministic.
             random.seed(seed)
@@ -298,7 +299,8 @@ class Experiment:
                                             steps_per_epoch=steps_per_epoch,
                                             validation_steps=validation_steps,
                                             initial_epoch=initial_epoch,
-                                            callbacks=callbacks)
+                                            callbacks=callbacks,
+                                            batches_between_backprops=batches_between_backprops)
         finally:
             if tensorboard_writer is not None:
                 tensorboard_writer.close()

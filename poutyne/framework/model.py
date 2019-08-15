@@ -145,7 +145,8 @@ class Model:
             validation_steps=None,
             initial_epoch=1,
             verbose=True,
-            callbacks=None):
+            callbacks=None,
+            batches_between_backprops=1):
         # pylint: disable=line-too-long
         # pylint: disable=too-many-arguments
         """
@@ -184,6 +185,10 @@ class Model:
             callbacks (list of poutyne.framework.Callback): List of callbacks that will be called
                 during training.
                 (Default value = None)
+            batches_between_backprops (int): Number of batches on which to compute the running loss before 
+                backpropagating it through the network. Note that the total loss used for backpropagation is
+                the mean of the `batches_between_backprops` batch losses.
+                (Default value = 1)
 
         Returns:
             List of dict containing the history of each epoch.
@@ -219,7 +224,8 @@ class Model:
                                   validation_steps=validation_steps,
                                   initial_epoch=initial_epoch,
                                   verbose=verbose,
-                                  callbacks=callbacks)
+                                  callbacks=callbacks,
+                                  batches_between_backprops=batches_between_backprops)
 
     def _dataloader_from_data(self, args, batch_size):
         args = numpy_to_torch(args)
