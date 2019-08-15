@@ -237,7 +237,7 @@ class Model:
                       initial_epoch=1,
                       verbose=True,
                       callbacks=None,
-                      steps_between_backprops=1):
+                      batches_between_backprops=1):
         # pylint: disable=too-many-locals, line-too-long
         """
         Trains the model on a dataset using a generator.
@@ -280,6 +280,10 @@ class Model:
                 (Default value = True)
             callbacks (list of poutyne.framework.Callback): List of callbacks that will be called during training.
                 (Default value = None)
+            batches_between_backprops (int): Number of batches on which to compute the running loss before 
+                backpropagating it through the network. Note that the total loss used for backpropagation is
+                the mean of the `batches_between_backprops` batch losses.
+                (Default value = 1)
 
         Returns:
             List of dict containing the history of each epoch.
@@ -320,7 +324,7 @@ class Model:
                                        initial_epoch=initial_epoch,
                                        callback=callback_list,
                                        metrics_names=self.metrics_names,
-                                       steps_between_backprops=steps_between_backprops)
+                                       batches_between_backprops=batches_between_backprops)
 
         for train_step_iterator, valid_step_iterator in epoch_iterator:
             with self._set_training_mode(True):
@@ -349,7 +353,7 @@ class Model:
                    return_pred=False,
                    zero_all_gradients=True,
                    do_backprop=True,
-                   steps_between_backprops=1):
+                   batches_between_backprops=1):
         if zero_all_gradients:
             self.optimizer.zero_grad()
 
@@ -358,7 +362,7 @@ class Model:
                                                                       return_loss_tensor=True,
                                                                       return_pred=return_pred)
 
-        loss_tensor = loss_tensor / steps_between_backprops
+        loss_tensor = loss_tensor / batches_between_backprops
         loss_tensor.backward()
         callback.on_backward_end(step)
 

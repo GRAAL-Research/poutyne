@@ -29,12 +29,12 @@ def _get_step_iterator(steps, generator):
 
 
 class StepIterator:
-    def __init__(self, generator, steps_per_epoch, callback, metrics_names, steps_between_backprops=1):
+    def __init__(self, generator, steps_per_epoch, callback, metrics_names, batches_between_backprops=1):
         self.generator = generator
         self.steps_per_epoch = steps_per_epoch
         self.callback = callback
         self.metrics_names = metrics_names
-        self.steps_between_backprops = steps_between_backprops
+        self.batches_between_backprops = batches_between_backprops
 
         self.losses_sum = 0.
         self.metrics_sum = np.zeros(len(self.metrics_names))
@@ -53,8 +53,8 @@ class StepIterator:
         for step, data in _get_step_iterator(self.steps_per_epoch, self.generator):
             self.callback.on_batch_begin(step, {})
 
-            zero_all_gradients = (step % self.steps_between_backprops == 1)
-            do_backprop = (step % self.steps_between_backprops == 0) or (step == self.steps_per_epoch)
+            zero_all_gradients = (step % self.batches_between_backprops == 1)
+            do_backprop = (step % self.batches_between_backprops == 0) or (step == self.steps_per_epoch)
 
             step_data = Step(step, zero_all_gradients, do_backprop)
             yield step_data, data
@@ -88,7 +88,7 @@ class EpochIterator:
                  initial_epoch=1,
                  callback,
                  metrics_names,
-                 steps_between_backprops=1):
+                 batches_between_backprops=1):
         self.train_generator = train_generator
         self.valid_generator = valid_generator
         self.epochs = epochs
@@ -97,7 +97,7 @@ class EpochIterator:
         self.initial_epoch = initial_epoch
         self.callback = callback
         self.metrics_names = metrics_names
-        self.steps_between_backprops = steps_between_backprops
+        self.batches_between_backprops = batches_between_backprops
         self.epoch_logs = []
         self.stop_training = False
 
@@ -124,12 +124,12 @@ class EpochIterator:
             epoch_begin_time = timeit.default_timer()
 
             train_step_iterator = StepIterator(self.train_generator, self.steps_per_epoch, self.callback,
-                                               self.metrics_names, self.steps_between_backprops)
+                                               self.metrics_names, self.batches_between_backprops)
 
             valid_step_iterator = None
             if self.valid_generator is not None:
                 valid_step_iterator = StepIterator(self.valid_generator, self.validation_steps, Callback(),
-                                                   self.metrics_names, self.steps_between_backprops)
+                                                   self.metrics_names, self.batches_between_backprops)
 
             yield train_step_iterator, valid_step_iterator
 
