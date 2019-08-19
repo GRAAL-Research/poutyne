@@ -336,12 +336,15 @@ class Model:
         for train_step_iterator, valid_step_iterator in epoch_iterator:
             with self._set_training_mode(True):
                 for step, (x, y) in train_step_iterator:
+                    zero_all_gradients = ((step.number - 1) % batches_per_step == 0)
+                    do_backprop = (step.number % batches_per_step == 0) or (step.number == steps_per_epoch)
+
                     step.loss, step.metrics, _ = self._fit_batch(x,
                                                                  y,
                                                                  callback=callback_list,
                                                                  step=step.number,
-                                                                 zero_all_gradients=step.zero_all_gradients,
-                                                                 do_backprop=step.do_backprop,
+                                                                 zero_all_gradients=zero_all_gradients,
+                                                                 do_backprop=do_backprop,
                                                                  batches_per_step=batches_per_step)
                     step.size = self._get_batch_size(x, y)
 
