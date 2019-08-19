@@ -273,7 +273,7 @@ class ModelTest(TestCase):
                                                   None,
                                                   epochs=1,
                                                   steps_per_epoch=1,
-                                                  batches_between_backprops=1)
+                                                  batches_per_step=1)
 
         self.assertEqual(1, self.mocked_optimizer.step.call_count)
         self.assertEqual(1, self.mocked_optimizer.zero_grad.call_count)
@@ -289,12 +289,12 @@ class ModelTest(TestCase):
         _ = self.mocked_optim_model.fit_generator(list(zip(x, y)),
                                                   None,
                                                   epochs=1,
-                                                  batches_between_backprops=n_batches)
+                                                  batches_per_step=n_batches)
 
         self.assertEqual(1, self.mocked_optimizer.step.call_count)
         self.assertEqual(1, self.mocked_optimizer.zero_grad.call_count)
 
-    def test_fitting_generator_n_batches_between_backprops(self):
+    def test_fitting_generator_n_batches_per_step(self):
         total_batch_size = 6
 
         x = torch.rand(1, total_batch_size, 1)
@@ -305,22 +305,22 @@ class ModelTest(TestCase):
         self.model.fit_generator(list(zip(x, y)),
                                  None,
                                  epochs=1,
-                                 batches_between_backprops=1)
+                                 batches_per_step=1)
 
         expected_params = list(self.model.get_weight_copies().values())
 
         for mini_batch_size in [1, 2, 5]:
             self.model.set_weights(initial_params)
 
-            n_batches_between_backprops = int(total_batch_size / mini_batch_size)
+            n_batches_per_step = int(total_batch_size / mini_batch_size)
 
-            x.resize_((n_batches_between_backprops, mini_batch_size, 1))
-            y.resize_((n_batches_between_backprops, mini_batch_size, 1))
+            x.resize_((n_batches_per_step, mini_batch_size, 1))
+            y.resize_((n_batches_per_step, mini_batch_size, 1))
 
             self.model.fit_generator(list(zip(x, y)),
                                      None,
                                      epochs=1,
-                                     batches_between_backprops=n_batches_between_backprops)
+                                     batches_per_step=n_batches_per_step)
 
             returned_params = list(self.model.get_weight_copies().values())
 

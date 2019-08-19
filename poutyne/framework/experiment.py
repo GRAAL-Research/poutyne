@@ -240,7 +240,7 @@ class Experiment:
               steps_per_epoch=None,
               validation_steps=None,
               seed=42,
-              batches_between_backprops=1):
+              batches_per_step=1):
         # pylint: disable=too-many-locals
         if seed is not None:
             # Make training deterministic.
@@ -301,7 +301,7 @@ class Experiment:
                                             validation_steps=validation_steps,
                                             initial_epoch=initial_epoch,
                                             callbacks=callbacks,
-                                            batches_between_backprops=batches_between_backprops)
+                                            batches_per_step=batches_per_step)
         finally:
             if tensorboard_writer is not None:
                 tensorboard_writer.close()
