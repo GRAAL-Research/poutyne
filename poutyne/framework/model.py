@@ -340,7 +340,8 @@ class Model:
                                                                  callback=callback_list,
                                                                  step=step.number,
                                                                  zero_all_gradients=step.zero_all_gradients,
-                                                                 do_backprop=step.do_backprop)
+                                                                 do_backprop=step.do_backprop,
+                                                                 batches_between_backprops=batches_between_backprops)
                     step.size = self._get_batch_size(x, y)
 
             if valid_step_iterator is not None:

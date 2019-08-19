@@ -69,6 +69,12 @@ def some_ndarray_generator(batch_size):
         yield x, y
 
 
+def some_mocked_optimizer():
+    optim = MagicMock()
+
+    return optim
+
+
 class SomeDataGeneratorUsingStopIteration:
     def __init__(self, batch_size, length):
         self.batch_size = batch_size
@@ -193,6 +199,13 @@ class ModelTest(TestCase):
             self.optimizer,
             lambda y_p, y_t: self.loss_function(y_p['out1'], y_t[0]) + self.loss_function(y_p['out2'], y_t[1]),
             metrics=self.metrics)
+
+        self.mocked_optimizer = some_mocked_optimizer()
+        self.mocked_optim_model = Model(self.pytorch_module,
+                                        self.mocked_optimizer,
+                                        self.loss_function,
+                                        metrics=self.metrics)
+
         self.mock_callback = MagicMock()
 
     def test_fitting_tensor_generator(self):
@@ -252,6 +265,66 @@ class ModelTest(TestCase):
                                         callbacks=[self.mock_callback])
         params = {'epochs': ModelTest.epochs, 'steps': ModelTest.steps_per_epoch}
         self._test_fitting(params, logs, has_valid=False)
+
+    def test_correct_optim_calls_1_batch_per_step(self):
+        train_generator = some_data_tensor_generator(ModelTest.batch_size)
+
+        _ = self.mocked_optim_model.fit_generator(train_generator,
+                                                  None,
+                                                  epochs=1,
+                                                  steps_per_epoch=1,
+                                                  batches_between_backprops=1)
+
+        self.assertEqual(1, self.mocked_optimizer.step.call_count)
+        self.assertEqual(1, self.mocked_optimizer.zero_grad.call_count)
+
+
+    def test_correct_optim_calls__valid_n_batches_per_step(self):
+        n_batches = 5
+        items_per_batch = int(ModelTest.batch_size / n_batches)
+
+        x = torch.rand(n_batches, items_per_batch, 1)
+        y = torch.rand(n_batches, items_per_batch, 1)
+
+        _ = self.mocked_optim_model.fit_generator(list(zip(x, y)),
+                                                  None,
+                                                  epochs=1,
+                                                  batches_between_backprops=n_batches)
+
+        self.assertEqual(1, self.mocked_optimizer.step.call_count)
+        self.assertEqual(1, self.mocked_optimizer.zero_grad.call_count)
+
+    def test_fitting_generator_n_batches_between_backprops(self):
+        total_batch_size = 6
+
+        x = torch.rand(1, total_batch_size, 1)
+        y = torch.rand(1, total_batch_size, 1)
+
+        initial_params = self.model.get_weight_copies()
+
+        self.model.fit_generator(list(zip(x, y)),
+                                 None,
+                                 epochs=1,
+                                 batches_between_backprops=1)
+
+        expected_params = list(self.model.get_weight_copies().values())
+
+        for mini_batch_size in [1, 2, 5]:
+            self.model.set_weights(initial_params)
+
+            n_batches_between_backprops = int(total_batch_size / mini_batch_size)
+
+            x.resize_((n_batches_between_backprops, mini_batch_size, 1))
+            y.resize_((n_batches_between_backprops, mini_batch_size, 1))
+
+            self.model.fit_generator(list(zip(x, y)),
+                                     None,
+                                     epochs=1,
+                                     batches_between_backprops=n_batches_between_backprops)
+
+            returned_params = list(self.model.get_weight_copies().values())
+
+            np.testing.assert_almost_equal(returned_params, expected_params, decimal=4)
 
     def test_fitting_ndarray_generator(self):
         train_generator = some_ndarray_generator(ModelTest.batch_size)
