@@ -6,10 +6,8 @@ from .callbacks import Callback
 
 
 class Step:
-    def __init__(self, number, zero_all_gradients=True, do_backprop=True):
+    def __init__(self, number):
         self.number = number
-        self.zero_all_gradients = zero_all_gradients
-        self.do_backprop = do_backprop
 
         self.loss = None
         self.metrics = None
@@ -54,10 +52,7 @@ class StepIterator:
         for step, data in _get_step_iterator(self.steps_per_epoch, self.generator):
             self.callback.on_batch_begin(step, {})
 
-            zero_all_gradients = ((step - 1) % self.batches_per_step == 0)
-            do_backprop = (step % self.batches_per_step == 0) or (step == self.steps_per_epoch)
-
-            step_data = Step(step, zero_all_gradients, do_backprop)
+            step_data = Step(step)
             yield step_data, data
 
             self.losses_sum += step_data.loss * step_data.size
