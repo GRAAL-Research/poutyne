@@ -140,6 +140,7 @@ class Model:
             x,
             y,
             validation_data=None,
+            *,
             batch_size=32,
             epochs=1000,
             steps_per_epoch=None,
@@ -148,7 +149,6 @@ class Model:
             verbose=True,
             callbacks=None):
         # pylint: disable=line-too-long
-        # pylint: disable=too-many-arguments
         """
         Trains the model on a dataset. This method creates generators and calls
         the ``fit_generator`` method.
@@ -383,13 +383,17 @@ class Model:
             loss, metrics, pred_y = self._fit_batch(x, y, return_pred=return_pred)
         return self._format_return(loss, metrics, pred_y, return_pred)
 
-    def _format_return(self, loss, metrics, pred_y, return_pred):
+    def _format_return(self, loss, metrics, pred_y, return_pred, true_y=None, return_ground_truth=False):
+        # pylint: disable=too-many-arguments
         ret = (loss, )
 
         ret += tuple(metrics.tolist()) if len(metrics) <= 1 else (metrics, )
 
         if return_pred:
             ret += (pred_y, )
+
+        if return_ground_truth:
+            ret += (true_y, )
 
         return ret[0] if len(ret) == 1 else ret
 
@@ -471,15 +475,15 @@ class Model:
                 (Default value = False)
 
         Returns:
-            Float ``loss`` if no metrics were specified and ``return_pred`` is false.
+            Tuple ``(loss, metrics, pred_y)`` where specific elements are omitted if not
+            applicable. If only loss is applicable, then it is returned as a float.
 
-            Otherwise, tuple ``(loss, metrics)`` if ``return_pred`` is false.
-            ``metrics`` is a Numpy array of size ``n``, where ``n`` is the
+            `metrics`` is a Numpy array of size ``n``, where ``n`` is the
             number of metrics if ``n > 1``. If ``n == 1``, then ``metrics`` is a
             float. If ``n == 0``, the ``metrics`` is omitted.
 
-            Tuple ``(loss, metrics, pred_y)`` if ``return_pred`` is true where
-            ``pred_y`` is a Numpy array of the predictions.
+            If ``return_pred`` is True, ``pred_y`` is the list of the predictions
+            of each batch with tensors converted into Numpy arrays. It is otherwise ommited.
         """
         generator = self._dataloader_from_data((x, y), batch_size=batch_size)
         ret = self.evaluate_generator(generator, steps=len(generator), return_pred=return_pred)
@@ -487,7 +491,7 @@ class Model:
             ret = (*ret[:-1], _concat(ret[-1]))
         return ret
 
-    def evaluate_generator(self, generator, *, steps=None, return_pred=False):
+    def evaluate_generator(self, generator, *, steps=None, return_pred=False, return_ground_truth=False):
         """
         Computes the loss and the metrics of the network on batches of samples and optionaly returns
         the predictions.
@@ -499,19 +503,23 @@ class Model:
                 (Defaults the number of steps needed to see the entire dataset)
             return_pred (bool, optional): Whether to return the predictions.
                 (Default value = False)
+            return_ground_truth (bool, optional): Whether to return the ground truths.
+                (Default value = False)
 
         Returns:
-            Float ``loss`` if no metrics were specified and ``return_pred`` is false.
+            Tuple ``(loss, metrics, pred_y, true_y)`` where specific elements are
+            omitted if not applicable. If only loss is applicable, then it is returned
+            as a float.
 
-            Otherwise, tuple ``(loss, metrics)`` if ``return_pred`` is false.
-            ``metrics`` is a Numpy array of size ``n``, where ``n`` is the
+            `metrics`` is a Numpy array of size ``n``, where ``n`` is the
             number of metrics if ``n > 1``. If ``n == 1``, then ``metrics`` is a
             float. If ``n == 0``, the ``metrics`` is omitted.
 
-            Tuple ``(loss, metrics, pred_y)`` if ``return_pred`` is true where
-            ``pred_y`` is the list of the predictions of each batch with tensors
-            converted into Numpy arrays.
+            If ``return_pred`` is True, ``pred_y`` is the list of the predictions
+            of each batch with tensors converted into Numpy arrays. It is otherwise ommited.
 
+            If ``return_ground_truth`` is True, ``true_y`` is the list of the ground truths
+            of each batch with tensors converted into Numpy arrays. It is otherwise ommited.
         Example:
             With no metrics:
 
@@ -546,14 +554,26 @@ class Model:
                 loss, (my_metric1, my_metric2), pred_y = model.evaluate_generator(
                     test_generator, return_pred=True
                 )
+
+            With metrics, ``return_pred`` and ``return_ground_truth`` flags:
+
+            .. code-block:: python
+
+                model = Model(pytorch_module, optimizer, loss_function,
+                              metrics=[my_metric1_fn, my_metric2_fn])
+                loss, (my_metric1, my_metric2), pred_y, true_y = model.evaluate_generator(
+                    test_generator, return_pred=True, return_ground_truth=True
+                )
         """
         if steps is None:
             steps = len(generator)
         step_iterator = StepIterator(generator, steps, Callback(), self.metrics_names)
-        loss, metrics, pred_y = self._validate(step_iterator, return_pred=return_pred)
-        return self._format_return(loss, metrics, pred_y, return_pred)
+        loss, metrics, pred_y, true_y = self._validate(step_iterator,
+                                                       return_pred=return_pred,
+                                                       return_ground_truth=return_ground_truth)
+        return self._format_return(loss, metrics, pred_y, return_pred, true_y, return_ground_truth)
 
-    def evaluate_on_batch(self, x, y, return_pred=False):
+    def evaluate_on_batch(self, x, y, *, return_pred=False):
         """
         Computes the loss and the metrics of the network on a single batch of samples and optionally
         returns the predictions.
@@ -565,35 +585,39 @@ class Model:
                 (Default value = False)
 
         Returns:
-            Float ``loss`` if no metrics were specified and ``return_pred`` is false.
+            Tuple ``(loss, metrics, pred_y)`` where specific elements are omitted if not
+            applicable. If only loss is applicable, then it is returned as a float.
 
-            Otherwise, tuple ``(loss, metrics)`` if ``return_pred`` is false.
-            ``metrics`` is a Numpy array of size ``n``, where ``n`` is the
+            `metrics`` is a Numpy array of size ``n``, where ``n`` is the
             number of metrics if ``n > 1``. If ``n == 1``, then ``metrics`` is a
             float. If ``n == 0``, the ``metrics`` is omitted.
 
-            Tuple ``(loss, metrics, pred_y)`` if ``return_pred`` is true where
-            ``pred_y`` is the list of the predictions of each batch with tensors
-            converted into Numpy arrays.
+            If ``return_pred`` is True, ``pred_y`` is the list of the predictions
+            of each batch with tensors converted into Numpy arrays. It is otherwise ommited.
         """
         with self._set_training_mode(False):
             loss, metrics, pred_y = self._compute_loss_and_metrics(x, y, return_pred=return_pred)
         return self._format_return(loss, metrics, pred_y, return_pred)
 
-    def _validate(self, step_iterator, return_pred=False):
+    def _validate(self, step_iterator, return_pred=False, return_ground_truth=False):
         pred_list = None
+        true_list = None
         if return_pred:
             pred_list = []
+        if return_ground_truth:
+            true_list = []
 
         with self._set_training_mode(False):
             for step, (x, y) in step_iterator:
                 step.loss, step.metrics, pred_y = self._compute_loss_and_metrics(x, y, return_pred=return_pred)
                 if return_pred:
                     pred_list.append(pred_y)
+                if return_ground_truth:
+                    true_list.append(torch_to_numpy(y))
 
                 step.size = self._get_batch_size(x, y)
 
-        return step_iterator.loss, step_iterator.metrics, pred_list
+        return step_iterator.loss, step_iterator.metrics, pred_list, true_list
 
     def _compute_loss_and_metrics(self, x, y, return_loss_tensor=False, return_pred=False):
         x, y = self._process_input(x, y)

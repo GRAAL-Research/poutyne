@@ -786,6 +786,24 @@ class ModelTest(TestCase):
             self.assertEqual(pred.shape, (ModelTest.batch_size, 1))
         self.assertEqual(np.concatenate(pred_y).shape, (num_steps * ModelTest.batch_size, 1))
 
+    def test_evaluate_generator_with_ground_truth(self):
+        num_steps = 10
+        generator = some_data_tensor_generator(ModelTest.batch_size)
+        loss, metrics, pred_y, true_y = self.model.evaluate_generator(generator,
+                                                                      steps=num_steps,
+                                                                      return_pred=True,
+                                                                      return_ground_truth=True)
+        self.assertEqual(type(loss), float)
+        self.assertEqual(type(metrics), np.ndarray)
+        self.assertEqual(metrics.tolist(), [some_metric_1_value, some_metric_2_value])
+        for pred, true in zip(pred_y, true_y):
+            self.assertEqual(type(pred), np.ndarray)
+            self.assertEqual(pred.shape, (ModelTest.batch_size, 1))
+            self.assertEqual(type(true), np.ndarray)
+            self.assertEqual(true.shape, (ModelTest.batch_size, 1))
+        self.assertEqual(np.concatenate(pred_y).shape, (num_steps * ModelTest.batch_size, 1))
+        self.assertEqual(np.concatenate(true_y).shape, (num_steps * ModelTest.batch_size, 1))
+
     def test_evaluate_generator_multi_input(self):
         num_steps = 10
         generator = some_data_tensor_generator_multi_input(ModelTest.batch_size)
