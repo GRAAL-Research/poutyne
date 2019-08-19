@@ -278,7 +278,6 @@ class ModelTest(TestCase):
         self.assertEqual(1, self.mocked_optimizer.step.call_count)
         self.assertEqual(1, self.mocked_optimizer.zero_grad.call_count)
 
-
     def test_correct_optim_calls__valid_n_batches_per_step(self):
         n_batches = 5
         items_per_batch = int(ModelTest.batch_size / n_batches)
@@ -286,10 +285,7 @@ class ModelTest(TestCase):
         x = torch.rand(n_batches, items_per_batch, 1)
         y = torch.rand(n_batches, items_per_batch, 1)
 
-        _ = self.mocked_optim_model.fit_generator(list(zip(x, y)),
-                                                  None,
-                                                  epochs=1,
-                                                  batches_per_step=n_batches)
+        _ = self.mocked_optim_model.fit_generator(list(zip(x, y)), None, epochs=1, batches_per_step=n_batches)
 
         self.assertEqual(1, self.mocked_optimizer.step.call_count)
         self.assertEqual(1, self.mocked_optimizer.zero_grad.call_count)
@@ -302,10 +298,7 @@ class ModelTest(TestCase):
 
         initial_params = self.model.get_weight_copies()
 
-        self.model.fit_generator(list(zip(x, y)),
-                                 None,
-                                 epochs=1,
-                                 batches_per_step=1)
+        self.model.fit_generator(list(zip(x, y)), None, epochs=1, batches_per_step=1)
 
         expected_params = list(self.model.get_weight_copies().values())
 
@@ -317,10 +310,7 @@ class ModelTest(TestCase):
             x.resize_((n_batches_per_step, mini_batch_size, 1))
             y.resize_((n_batches_per_step, mini_batch_size, 1))
 
-            self.model.fit_generator(list(zip(x, y)),
-                                     None,
-                                     epochs=1,
-                                     batches_per_step=n_batches_per_step)
+            self.model.fit_generator(list(zip(x, y)), None, epochs=1, batches_per_step=n_batches_per_step)
 
             returned_params = list(self.model.get_weight_copies().values())
 

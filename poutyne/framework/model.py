@@ -117,6 +117,7 @@ class Model:
             ...
 
     """
+
     def __init__(self, model, optimizer, loss_function, *, metrics=None):
         metrics = [] if metrics is None else metrics
 
