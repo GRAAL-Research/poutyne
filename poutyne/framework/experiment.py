@@ -239,8 +239,8 @@ class Experiment:
               epochs=1000,
               steps_per_epoch=None,
               validation_steps=None,
-              seed=42,
-              batches_per_step=1):
+              batches_per_step=1,
+              seed=42):
         # pylint: disable=too-many-locals
         if seed is not None:
             # Make training deterministic.

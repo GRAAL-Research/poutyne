@@ -144,10 +144,10 @@ class Model:
             epochs=1000,
             steps_per_epoch=None,
             validation_steps=None,
+            batches_per_step=1,
             initial_epoch=1,
             verbose=True,
-            callbacks=None,
-            batches_per_step=1):
+            callbacks=None):
         # pylint: disable=line-too-long
         # pylint: disable=too-many-arguments
         """
@@ -178,6 +178,10 @@ class Model:
                 dataset.
                 (Defaults to ``steps_per_epoch`` if provided or the number of steps needed to
                 see the entire validation dataset)
+            batches_per_step (int): Number of batches on which to compute the running loss before
+                backpropagating it through the network. Note that the total loss used for backpropagation is
+                the mean of the `batches_per_step` batch losses.
+                (Default value = 1)
             initial_epoch (int, optional): Epoch at which to start training
                 (useful for resuming a previous training run).
                 (Default value = 1)
@@ -186,10 +190,6 @@ class Model:
             callbacks (list of poutyne.framework.Callback): List of callbacks that will be called
                 during training.
                 (Default value = None)
-            batches_per_step (int): Number of batches on which to compute the running loss before
-                backpropagating it through the network. Note that the total loss used for backpropagation is
-                the mean of the `batches_per_step` batch losses.
-                (Default value = 1)
 
         Returns:
             List of dict containing the history of each epoch.
@@ -241,10 +241,10 @@ class Model:
                       epochs=1000,
                       steps_per_epoch=None,
                       validation_steps=None,
+                      batches_per_step=1,
                       initial_epoch=1,
                       verbose=True,
-                      callbacks=None,
-                      batches_per_step=1):
+                      callbacks=None):
         # pylint: disable=too-many-locals, line-too-long
         """
         Trains the model on a dataset using a generator.
@@ -280,6 +280,10 @@ class Model:
             validation_steps (int, optional): Same as for ``steps_per_epoch`` but for the validation dataset.
                 (Defaults to ``steps_per_epoch`` if provided or the number of steps needed to see the entire
                 validation dataset)
+            batches_per_step (int): Number of batches on which to compute the running loss before
+                backpropagating it through the network. Note that the total loss used for backpropagation is
+                the mean of the `batches_per_step` batch losses.
+                (Default value = 1)
             initial_epoch (int, optional): Epoch at which to start training (useful for resuming a previous
                 training run).
                 (Default value = 1)
@@ -287,10 +291,6 @@ class Model:
                 (Default value = True)
             callbacks (list of poutyne.framework.Callback): List of callbacks that will be called during training.
                 (Default value = None)
-            batches_per_step (int): Number of batches on which to compute the running loss before
-                backpropagating it through the network. Note that the total loss used for backpropagation is
-                the mean of the `batches_per_step` batch losses.
-                (Default value = 1)
 
         Returns:
             List of dict containing the history of each epoch.
