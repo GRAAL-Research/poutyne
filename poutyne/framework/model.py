@@ -330,8 +330,7 @@ class Model:
                                        validation_steps=validation_steps,
                                        initial_epoch=initial_epoch,
                                        callback=callback_list,
-                                       metrics_names=self.metrics_names,
-                                       batches_per_step=batches_per_step)
+                                       metrics_names=self.metrics_names)
 
         for train_step_iterator, valid_step_iterator in epoch_iterator:
             with self._set_training_mode(True):
