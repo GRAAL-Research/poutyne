@@ -27,13 +27,12 @@ def _get_step_iterator(steps, generator):
 
 
 class StepIterator:
-    def __init__(self, generator, steps_per_epoch, callback, metrics_names, batches_per_step=1):
+    def __init__(self, generator, steps_per_epoch, callback, metrics_names):
         # pylint: disable=too-many-arguments
         self.generator = generator
         self.steps_per_epoch = steps_per_epoch
         self.callback = callback
         self.metrics_names = metrics_names
-        self.batches_per_step = batches_per_step
 
         self.losses_sum = 0.
         self.metrics_sum = np.zeros(len(self.metrics_names))
@@ -83,8 +82,7 @@ class EpochIterator:
                  validation_steps,
                  initial_epoch=1,
                  callback,
-                 metrics_names,
-                 batches_per_step=1):
+                 metrics_names):
         self.train_generator = train_generator
         self.valid_generator = valid_generator
         self.epochs = epochs
@@ -93,7 +91,6 @@ class EpochIterator:
         self.initial_epoch = initial_epoch
         self.callback = callback
         self.metrics_names = metrics_names
-        self.batches_per_step = batches_per_step
         self.epoch_logs = []
         self.stop_training = False
 
@@ -120,12 +117,12 @@ class EpochIterator:
             epoch_begin_time = timeit.default_timer()
 
             train_step_iterator = StepIterator(self.train_generator, self.steps_per_epoch, self.callback,
-                                               self.metrics_names, self.batches_per_step)
+                                               self.metrics_names)
 
             valid_step_iterator = None
             if self.valid_generator is not None:
                 valid_step_iterator = StepIterator(self.valid_generator, self.validation_steps, Callback(),
-                                                   self.metrics_names, self.batches_per_step)
+                                                   self.metrics_names)
 
             yield train_step_iterator, valid_step_iterator
 
