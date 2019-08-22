@@ -334,9 +334,18 @@ class Model:
 
         for train_step_iterator, valid_step_iterator in epoch_iterator:
             with self._set_training_mode(True):
+                examples_in_step = 0
+
                 for step, (x, y) in train_step_iterator:
                     zero_all_gradients = ((step.number - 1) % batches_per_step == 0)
                     do_backprop = (step.number % batches_per_step == 0) or (step.number == steps_per_epoch)
+
+                    step.size = self._get_batch_size(x, y)
+
+                    if zero_all_gradients:
+                        examples_in_step = 0
+
+                    examples_in_step += step.size
 
                     step.loss, step.metrics, _ = self._fit_batch(x,
                                                                  y,
@@ -344,8 +353,8 @@ class Model:
                                                                  step=step.number,
                                                                  zero_all_gradients=zero_all_gradients,
                                                                  do_backprop=do_backprop,
-                                                                 batches_per_step=batches_per_step)
-                    step.size = self._get_batch_size(x, y)
+                                                                 batch_size=step.size,
+                                                                 examples_in_step=examples_in_step)
 
             if valid_step_iterator is not None:
                 self._validate(valid_step_iterator)
@@ -363,7 +372,8 @@ class Model:
                    return_pred=False,
                    zero_all_gradients=True,
                    do_backprop=True,
-                   batches_per_step=1):
+                   batch_size=None,
+                   examples_in_step=None):
         if zero_all_gradients:
             self.optimizer.zero_grad()
 
@@ -372,15 +382,27 @@ class Model:
                                                                       return_loss_tensor=True,
                                                                       return_pred=return_pred)
 
-        loss_tensor = loss_tensor / batches_per_step
-        loss_tensor.backward()
+        if batch_size is not None:
+            adjusted_loss_tensor = loss_tensor * batch_size
+            adjusted_loss_tensor.backward()
+        else:
+            loss_tensor.backward()
+
         callback.on_backward_end(step)
 
         if do_backprop:
+            if examples_in_step is not None:
+                self._adjust_step_size(examples_in_step)
+
             self.optimizer.step()
 
         loss = float(loss_tensor)
         return loss, metrics, pred_y
+
+    def _adjust_step_size(self, examples_in_step):
+        for param in self.model.parameters():
+            if param.grad is not None:
+                param.grad /= examples_in_step
 
     def _process_input(self, *args):
         args = numpy_to_torch(args)
