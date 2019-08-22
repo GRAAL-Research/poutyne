@@ -299,9 +299,9 @@ class Experiment:
                                             epochs=epochs,
                                             steps_per_epoch=steps_per_epoch,
                                             validation_steps=validation_steps,
+                                            batches_per_step=batches_per_step,
                                             initial_epoch=initial_epoch,
-                                            callbacks=callbacks,
-                                            batches_per_step=batches_per_step)
+                                            callbacks=callbacks)
         finally:
             if tensorboard_writer is not None:
                 tensorboard_writer.close()

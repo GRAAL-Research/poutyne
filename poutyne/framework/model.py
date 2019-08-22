@@ -223,10 +223,10 @@ class Model:
                                   epochs=epochs,
                                   steps_per_epoch=steps_per_epoch,
                                   validation_steps=validation_steps,
+                                  batches_per_step=batches_per_step,
                                   initial_epoch=initial_epoch,
                                   verbose=verbose,
-                                  callbacks=callbacks,
-                                  batches_per_step=batches_per_step)
+                                  callbacks=callbacks)
 
     def _dataloader_from_data(self, args, batch_size):
         args = numpy_to_torch(args)
