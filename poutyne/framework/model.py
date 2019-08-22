@@ -145,6 +145,7 @@ class Model:
             epochs=1000,
             steps_per_epoch=None,
             validation_steps=None,
+            batches_per_step=1,
             initial_epoch=1,
             verbose=True,
             callbacks=None):
@@ -177,6 +178,10 @@ class Model:
                 dataset.
                 (Defaults to ``steps_per_epoch`` if provided or the number of steps needed to
                 see the entire validation dataset)
+            batches_per_step (int): Number of batches on which to compute the running loss before
+                backpropagating it through the network. Note that the total loss used for backpropagation is
+                the mean of the `batches_per_step` batch losses.
+                (Default value = 1)
             initial_epoch (int, optional): Epoch at which to start training
                 (useful for resuming a previous training run).
                 (Default value = 1)
@@ -218,6 +223,7 @@ class Model:
                                   epochs=epochs,
                                   steps_per_epoch=steps_per_epoch,
                                   validation_steps=validation_steps,
+                                  batches_per_step=batches_per_step,
                                   initial_epoch=initial_epoch,
                                   verbose=verbose,
                                   callbacks=callbacks)
@@ -235,6 +241,7 @@ class Model:
                       epochs=1000,
                       steps_per_epoch=None,
                       validation_steps=None,
+                      batches_per_step=1,
                       initial_epoch=1,
                       verbose=True,
                       callbacks=None):
@@ -273,6 +280,10 @@ class Model:
             validation_steps (int, optional): Same as for ``steps_per_epoch`` but for the validation dataset.
                 (Defaults to ``steps_per_epoch`` if provided or the number of steps needed to see the entire
                 validation dataset)
+            batches_per_step (int): Number of batches on which to compute the running loss before
+                backpropagating it through the network. Note that the total loss used for backpropagation is
+                the mean of the `batches_per_step` batch losses.
+                (Default value = 1)
             initial_epoch (int, optional): Epoch at which to start training (useful for resuming a previous
                 training run).
                 (Default value = 1)
@@ -321,6 +332,73 @@ class Model:
                                        callback=callback_list,
                                        metrics_names=self.metrics_names)
 
+        if batches_per_step > 1:
+            self._fit_generator_n_batches_per_step(epoch_iterator, callback_list, batches_per_step)
+        else:
+            self._fit_generator_one_batch_per_step(epoch_iterator, callback_list)
+
+        return epoch_iterator.epoch_logs
+
+    def _fit_generator_n_batches_per_step(self, epoch_iterator, callback_list, batches_per_step):
+        for train_step_iterator, valid_step_iterator in epoch_iterator:
+            examples_in_step = 0
+
+            with self._set_training_mode(True):
+                for step, (x, y) in train_step_iterator:
+                    step.size = self._get_batch_size(x, y)
+
+                    examples_in_step += step.size
+
+                    step.loss, step.metrics, did_backprop, _ = self._fit_batch_n_batches_per_step(
+                        x, y, batches_per_step, examples_in_step, callback=callback_list, step=step)
+
+                    if did_backprop:
+                        examples_in_step = 0
+
+            if not did_backprop:
+                # Did not step after last batch
+                self._adjust_step_size(examples_in_step)
+                self.optimizer.step()
+
+            if valid_step_iterator is not None:
+                self._validate(valid_step_iterator)
+
+            epoch_iterator.stop_training = self.stop_training
+
+    def _fit_batch_n_batches_per_step(self,
+                                      x,
+                                      y,
+                                      batches_per_step,
+                                      examples_in_step,
+                                      *,
+                                      callback=Callback(),
+                                      step=None,
+                                      return_pred=False):
+        # pylint: disable=too-many-locals
+        zero_all_gradients = ((step.number - 1) % batches_per_step == 0)
+        do_backprop = (step.number % batches_per_step == 0)
+
+        if zero_all_gradients:
+            self.optimizer.zero_grad()
+
+        loss_tensor, metrics, pred_y = self._compute_loss_and_metrics(x,
+                                                                      y,
+                                                                      return_loss_tensor=True,
+                                                                      return_pred=return_pred)
+
+        adjusted_loss_tensor = loss_tensor * step.size
+        adjusted_loss_tensor.backward()
+
+        callback.on_backward_end(step)
+
+        if do_backprop:
+            self._adjust_step_size(examples_in_step)
+            self.optimizer.step()
+
+        loss = float(loss_tensor)
+        return loss, metrics, do_backprop, pred_y
+
+    def _fit_generator_one_batch_per_step(self, epoch_iterator, callback_list):
         for train_step_iterator, valid_step_iterator in epoch_iterator:
             with self._set_training_mode(True):
                 for step, (x, y) in train_step_iterator:
@@ -331,8 +409,6 @@ class Model:
                 self._validate(valid_step_iterator)
 
             epoch_iterator.stop_training = self.stop_training
-
-        return epoch_iterator.epoch_logs
 
     def _fit_batch(self, x, y, *, callback=Callback(), step=None, return_pred=False):
         self.optimizer.zero_grad()
@@ -348,6 +424,11 @@ class Model:
 
         loss = float(loss_tensor)
         return loss, metrics, pred_y
+
+    def _adjust_step_size(self, examples_in_step):
+        for param in self.model.parameters():
+            if param.grad is not None:
+                param.grad /= examples_in_step
 
     def _process_input(self, *args):
         args = numpy_to_torch(args)
