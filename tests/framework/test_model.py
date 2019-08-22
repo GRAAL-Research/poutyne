@@ -4,13 +4,13 @@ import unittest
 from unittest import TestCase, skipIf
 from unittest.mock import MagicMock, call, ANY
 
+from math import ceil
 import numpy as np
 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
-from math import ceil
 from poutyne.utils import TensorDataset
 from poutyne.framework import Model
 from poutyne.framework import warning_settings
