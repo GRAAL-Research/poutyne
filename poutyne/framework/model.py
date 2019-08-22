@@ -332,20 +332,28 @@ class Model:
                                        callback=callback_list,
                                        metrics_names=self.metrics_names)
 
+        modify_gradients = (batches_per_step > 1)
+
+        examples_in_step = None
+        batch_size = None
+        zero_all_gradients = True
+        do_backprop = True
+
         for train_step_iterator, valid_step_iterator in epoch_iterator:
             with self._set_training_mode(True):
-                examples_in_step = 0
-
                 for step, (x, y) in train_step_iterator:
-                    zero_all_gradients = ((step.number - 1) % batches_per_step == 0)
-                    do_backprop = (step.number % batches_per_step == 0) or (step.number == steps_per_epoch)
-
                     step.size = self._get_batch_size(x, y)
 
-                    if zero_all_gradients:
-                        examples_in_step = 0
+                    if modify_gradients:
+                        zero_all_gradients = ((step.number - 1) % batches_per_step == 0)
+                        do_backprop = (step.number % batches_per_step == 0) or (step.number == steps_per_epoch)
 
-                    examples_in_step += step.size
+                        if zero_all_gradients:
+                            examples_in_step = 0
+
+                        examples_in_step += step.size
+
+                        batch_size = step.size
 
                     step.loss, step.metrics, _ = self._fit_batch(x,
                                                                  y,
@@ -353,7 +361,7 @@ class Model:
                                                                  step=step.number,
                                                                  zero_all_gradients=zero_all_gradients,
                                                                  do_backprop=do_backprop,
-                                                                 batch_size=step.size,
+                                                                 batch_size=batch_size,
                                                                  examples_in_step=examples_in_step)
 
             if valid_step_iterator is not None:
