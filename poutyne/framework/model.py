@@ -332,57 +332,52 @@ class Model:
                                        callback=callback_list,
                                        metrics_names=self.metrics_names)
 
-        modify_gradients = (batches_per_step > 1)
+        if batches_per_step > 1:
+            self._fit_generator_n_batches_per_step(epoch_iterator, callback_list, batches_per_step)
+        else:
+            self._fit_generator_one_batch_per_step(epoch_iterator, callback_list)
 
-        examples_in_step = None
-        batch_size = None
-        zero_all_gradients = True
-        do_backprop = True
+        return epoch_iterator.epoch_logs
 
+    def _fit_generator_n_batches_per_step(self, epoch_iterator, callback_list, batches_per_step):
         for train_step_iterator, valid_step_iterator in epoch_iterator:
+            examples_in_step = 0
+
             with self._set_training_mode(True):
                 for step, (x, y) in train_step_iterator:
                     step.size = self._get_batch_size(x, y)
 
-                    if modify_gradients:
-                        zero_all_gradients = ((step.number - 1) % batches_per_step == 0)
-                        do_backprop = (step.number % batches_per_step == 0) or (step.number == steps_per_epoch)
+                    examples_in_step += step.size
 
-                        if zero_all_gradients:
-                            examples_in_step = 0
+                    step.loss, step.metrics, did_backprop, _ = self._fit_batch_n_batches_per_step(
+                        x, y, batches_per_step, examples_in_step, callback=callback_list, step=step)
 
-                        examples_in_step += step.size
+                    if did_backprop:
+                        examples_in_step = 0
 
-                        batch_size = step.size
-
-                    step.loss, step.metrics, _ = self._fit_batch(x,
-                                                                 y,
-                                                                 callback=callback_list,
-                                                                 step=step.number,
-                                                                 zero_all_gradients=zero_all_gradients,
-                                                                 do_backprop=do_backprop,
-                                                                 batch_size=batch_size,
-                                                                 examples_in_step=examples_in_step)
+            if not did_backprop:
+                # Did not step after last batch
+                self._adjust_step_size(examples_in_step)
+                self.optimizer.step()
 
             if valid_step_iterator is not None:
                 self._validate(valid_step_iterator)
 
             epoch_iterator.stop_training = self.stop_training
 
-        return epoch_iterator.epoch_logs
-
-    def _fit_batch(self,
-                   x,
-                   y,
-                   *,
-                   callback=Callback(),
-                   step=None,
-                   return_pred=False,
-                   zero_all_gradients=True,
-                   do_backprop=True,
-                   batch_size=None,
-                   examples_in_step=None):
+    def _fit_batch_n_batches_per_step(self,
+                                      x,
+                                      y,
+                                      batches_per_step,
+                                      examples_in_step,
+                                      *,
+                                      callback=Callback(),
+                                      step=None,
+                                      return_pred=False):
         # pylint: disable=too-many-locals
+        zero_all_gradients = ((step.number - 1) % batches_per_step == 0)
+        do_backprop = (step.number % batches_per_step == 0)
+
         if zero_all_gradients:
             self.optimizer.zero_grad()
 
@@ -391,19 +386,41 @@ class Model:
                                                                       return_loss_tensor=True,
                                                                       return_pred=return_pred)
 
-        if batch_size is not None:
-            adjusted_loss_tensor = loss_tensor * batch_size
-            adjusted_loss_tensor.backward()
-        else:
-            loss_tensor.backward()
+        adjusted_loss_tensor = loss_tensor * step.size
+        adjusted_loss_tensor.backward()
 
         callback.on_backward_end(step)
 
         if do_backprop:
-            if examples_in_step is not None:
-                self._adjust_step_size(examples_in_step)
-
+            self._adjust_step_size(examples_in_step)
             self.optimizer.step()
+
+        loss = float(loss_tensor)
+        return loss, metrics, do_backprop, pred_y
+
+    def _fit_generator_one_batch_per_step(self, epoch_iterator, callback_list):
+        for train_step_iterator, valid_step_iterator in epoch_iterator:
+            with self._set_training_mode(True):
+                for step, (x, y) in train_step_iterator:
+                    step.loss, step.metrics, _ = self._fit_batch(x, y, callback=callback_list, step=step.number)
+                    step.size = self._get_batch_size(x, y)
+
+            if valid_step_iterator is not None:
+                self._validate(valid_step_iterator)
+
+            epoch_iterator.stop_training = self.stop_training
+
+    def _fit_batch(self, x, y, *, callback=Callback(), step=None, return_pred=False):
+        self.optimizer.zero_grad()
+
+        loss_tensor, metrics, pred_y = self._compute_loss_and_metrics(x,
+                                                                      y,
+                                                                      return_loss_tensor=True,
+                                                                      return_pred=return_pred)
+
+        loss_tensor.backward()
+        callback.on_backward_end(step)
+        self.optimizer.step()
 
         loss = float(loss_tensor)
         return loss, metrics, pred_y
