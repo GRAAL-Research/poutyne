@@ -10,6 +10,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
+from math import ceil
 from poutyne.utils import TensorDataset
 from poutyne.framework import Model
 from poutyne.framework import warning_settings
@@ -311,6 +312,41 @@ class ModelTest(TestCase):
             y.resize_((n_batches_per_step, mini_batch_size, 1))
 
             self.model.fit_generator(list(zip(x, y)), None, epochs=1, batches_per_step=n_batches_per_step)
+
+            returned_params = list(self.model.get_weight_copies().values())
+
+            np.testing.assert_almost_equal(returned_params, expected_params, decimal=4)
+
+
+    def test_fitting_generator_n_batches_per_step_uneven_batches(self):
+        total_batch_size = 6
+
+        x = torch.rand(1, total_batch_size, 1)
+        y = torch.rand(1, total_batch_size, 1)
+
+        initial_params = self.model.get_weight_copies()
+
+        self.model.fit_generator(list(zip(x, y)), None, epochs=1, batches_per_step=1)
+
+        expected_params = list(self.model.get_weight_copies().values())
+
+        x.squeeze_(dim=0)
+        y.squeeze_(dim=0)
+
+        uneven_chunk_sizes = [4, 5]
+
+        for chunk_size in uneven_chunk_sizes:
+            self.model.set_weights(initial_params)
+
+            splitted_x = x.split(chunk_size)
+            splitted_y = y.split(chunk_size)
+
+            n_batches_per_step = ceil(total_batch_size/chunk_size)
+
+            self.model.fit_generator(list(zip(splitted_x, splitted_y)),
+                                     None,
+                                     epochs=1,
+                                     batches_per_step=n_batches_per_step)
 
             returned_params = list(self.model.get_weight_copies().values())
 
