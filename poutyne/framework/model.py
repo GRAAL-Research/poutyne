@@ -374,6 +374,7 @@ class Model:
                    do_backprop=True,
                    batch_size=None,
                    examples_in_step=None):
+        # pylint: disable=too-many-locals
         if zero_all_gradients:
             self.optimizer.zero_grad()
 
