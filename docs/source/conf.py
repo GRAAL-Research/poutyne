@@ -18,7 +18,6 @@ sys.path.insert(0, os.path.abspath('../..'))
 
 from poutyne import __version__ as version
 
-
 # -- Project information -----------------------------------------------------
 
 project = 'Poutyne'
@@ -30,7 +29,6 @@ version = version
 # The full version, including alpha/beta/rc tags
 release = version
 
-
 # -- General configuration ---------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
@@ -41,15 +39,9 @@ release = version
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    'sphinx.ext.autodoc',
-    'sphinx.ext.doctest',
-    'sphinx.ext.todo',
-    'sphinx.ext.coverage',
-    'sphinx.ext.mathjax',
-    'sphinx.ext.ifconfig',
-    'sphinx.ext.viewcode',
-    'sphinx.ext.githubpages',
-    'sphinx.ext.napoleon'
+    'sphinx.ext.autodoc', 'sphinx.ext.doctest', 'sphinx.ext.todo', 'sphinx.ext.coverage', 'sphinx.ext.mathjax',
+    'sphinx.ext.ifconfig', 'sphinx.ext.viewcode', 'sphinx.ext.githubpages', 'sphinx.ext.napoleon',
+    'sphinx.ext.intersphinx'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -78,7 +70,6 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = 'sphinx'
-
 
 # -- Options for HTML output -------------------------------------------------
 
@@ -110,12 +101,10 @@ html_extra_path = ['CNAME']
 #
 # html_sidebars = {}
 
-
 # -- Options for HTMLHelp output ---------------------------------------------
 
 # Output file base name for HTML help builder.
 htmlhelp_basename = 'Poutynedoc'
-
 
 # -- Options for LaTeX output ------------------------------------------------
 
@@ -141,20 +130,14 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'Poutyne.tex', 'Poutyne Documentation',
-     'Frédérik Paradis', 'manual'),
+    (master_doc, 'Poutyne.tex', 'Poutyne Documentation', 'Frédérik Paradis', 'manual'),
 ]
-
 
 # -- Options for manual page output ------------------------------------------
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [
-    (master_doc, 'poutyne', 'Poutyne Documentation',
-     [author], 1)
-]
-
+man_pages = [(master_doc, 'poutyne', 'Poutyne Documentation', [author], 1)]
 
 # -- Options for Texinfo output ----------------------------------------------
 
@@ -162,11 +145,17 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'Poutyne', 'Poutyne Documentation',
-     author, 'Poutyne', 'One line description of project.',
+    (master_doc, 'Poutyne', 'Poutyne Documentation', author, 'Poutyne', 'One line description of project.',
      'Miscellaneous'),
 ]
 
+# -- Intersphinx mappings ----------------------------------------------------
+
+intersphinx_mapping = {
+    'PyTorch': ('https://pytorch.org/docs/master/', None),
+    'python': ('https://docs.python.org/3', None),
+    'numpy': ('http://docs.scipy.org/doc/numpy/', None)
+}
 
 # -- Extension configuration -------------------------------------------------
 
