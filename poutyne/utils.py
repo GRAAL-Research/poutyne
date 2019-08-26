@@ -33,7 +33,7 @@ def torch_to_numpy(obj, copy=False):
             }
 
     See:
-        `poutyne.torch_apply` for supported types.
+        :meth:`~poutyne.torch_apply` for supported types.
     """
     if copy:
         func = lambda t: t.cpu().detach().numpy().copy()
