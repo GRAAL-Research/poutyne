@@ -152,15 +152,15 @@ class Model:
         # pylint: disable=line-too-long
         """
         Trains the model on a dataset. This method creates generators and calls
-        the ``fit_generator`` method.
+        the :func:`~Model.fit_generator()` method.
 
         Args:
-            x (Union[Tensor, np.ndarray] or Union[tuple, list] of Union[Tensor, np.ndarray]):
-                Training dataset. Union[Tensor, np.ndarray] if the model has a single input.
-                Union[tuple, list] of Union[Tensor, np.ndarray] if the model has multiple inputs.
-            y (Union[Tensor, np.ndarray] or Union[tuple, list] of Union[Tensor, np.ndarray]):
-                Target. Union[Tensor, np.ndarray] if the model has a single output.
-                Union[tuple, list] of Union[Tensor, np.ndarray] if the model has multiple outputs.
+            x (Union[~torch.Tensor, ~numpy.ndarray] or Union[tuple, list] of Union[~torch.Tensor, ~numpy.ndarray]):
+                Training dataset. Union[Tensor, ndarray] if the model has a single input.
+                Union[tuple, list] of Union[Tensor, ndarray] if the model has multiple inputs.
+            y (Union[~torch.Tensor, ~numpy.ndarray] or Union[tuple, list] of Union[~torch.Tensor, ~numpy.ndarray]):
+                Target. Union[Tensor, ndarray] if the model has a single output.
+                Union[tuple, list] of Union[Tensor, ndarray] if the model has multiple outputs.
                 validation_data (Optional[tuple of (``x_val``, ``y_val``)]):
                 Same format as ``x`` and ``y`` previously described. Validation dataset on which to
                 evaluate the loss and any model metrics at the end of each epoch. The model will not be
@@ -187,7 +187,7 @@ class Model:
                 (Default value = 1)
             verbose (bool): Whether to display the progress of the training.
                 (Default value = True)
-            callbacks (list of poutyne.framework.Callback): List of callbacks that will be called
+            callbacks (List[~poutyne.framework.callbacks.Callback]): List of callbacks that will be called
                 during training.
                 (Default value = None)
 
@@ -289,7 +289,7 @@ class Model:
                 (Default value = 1)
             verbose (bool): Whether to display the progress of the training.
                 (Default value = True)
-            callbacks (list of poutyne.framework.Callback): List of callbacks that will be called during training.
+            callbacks (List[~poutyne.framework.callbacks.Callback]): List of callbacks that will be called during training.
                 (Default value = None)
 
         Returns:
@@ -484,9 +484,9 @@ class Model:
         converted into Numpy arrays.
 
         Args:
-            x (Union[Tensor, np.ndarray] or Union[tuple, list] of Union[Tensor, np.ndarray]):
-                Input to the model. Union[Tensor, np.ndarray] if the model has a single input.
-                Union[tuple, list] of Union[Tensor, np.ndarray] if the model has multiple inputs.
+            x (Union[~torch.Tensor, ~numpy.ndarray] or Union[tuple, list] of Union[~torch.Tensor, ~numpy.ndarray]):
+                Input to the model. Union[Tensor, ndarray] if the model has a single input.
+                Union[tuple, list] of Union[Tensor, ndarray] if the model has multiple inputs.
             batch_size (int): Number of samples given to the network at one time.
                 (Default value = 32)
 
@@ -504,7 +504,7 @@ class Model:
         converted into Numpy arrays.
 
         generator: Generator-like object for the dataset. The generator must yield a batch of
-            samples. See the ``fit_generator()`` method for details on the types of generators
+            samples. See the :func:`fit_generator()` method for details on the types of generators
             supported. This should only yield input data ``x`` and not the target ``y``.
         steps (int, optional): Number of iterations done on ``generator``.
             (Defaults the number of steps needed to see the entire dataset)
@@ -543,13 +543,13 @@ class Model:
         returns the predictions.
 
         Args:
-            x (Union[Tensor, np.ndarray] or Union[tuple, list] of Union[Tensor, np.ndarray]):
-                Input to the model. Union[Tensor, np.ndarray] if the model has a single input.
-                Union[tuple, list] of Union[Tensor, np.ndarray] if the model has multiple inputs.
-            y (Union[Tensor, np.ndarray] or Union[tuple, list] of Union[Tensor, np.ndarray]):
+            x (Union[~torch.Tensor, ~numpy.ndarray] or Union[tuple, list] of Union[~torch.Tensor, ~numpy.ndarray]):
+                Input to the model. Union[Tensor, ndarray] if the model has a single input.
+                Union[tuple, list] of Union[Tensor, ndarray] if the model has multiple inputs.
+            y (Union[~torch.Tensor, ~numpy.ndarray] or Union[tuple, list] of Union[~torch.Tensor, ~numpy.ndarray]):
                 Target, corresponding ground truth.
-                Union[Tensor, np.ndarray] if the model has a single output.
-                Union[tuple, list] of Union[Tensor, np.ndarray] if the model has multiple outputs.
+                Union[Tensor, ndarray] if the model has a single output.
+                Union[tuple, list] of Union[Tensor, ndarray] if the model has multiple outputs.
             batch_size (int): Number of samples given to the network at one time.
                 (Default value = 32)
             return_pred (bool, optional): Whether to return the predictions.
@@ -578,7 +578,7 @@ class Model:
         the predictions.
 
         Args:
-            generator: Generator-like object for the dataset. See the ``fit_generator()`` method for
+            generator: Generator-like object for the dataset. See the :func:`~Model.fit_generator()` method for
                 details on the types of generators supported.
             steps (int, optional): Number of iterations done on ``generator``.
                 (Defaults the number of steps needed to see the entire dataset)
@@ -740,8 +740,8 @@ class Model:
 
     def load_weights(self, f):
         """
-        Loads the weights saved using the ``torch.save()`` method or the ``save_weights()`` method
-        of this class. Contrary to ``torch.load()``, the weights are not transfered to the device
+        Loads the weights saved using the :func:`torch.save()` method or the :func:`save_weights()` method
+        of this class. Contrary to :func:`torch.load()`, the weights are not transfered to the device
         from which they were saved from. In other words, the PyTorch module will stay on the same
         device it already is on.
 
@@ -763,8 +763,8 @@ class Model:
 
     def load_optimizer_state(self, f):
         """
-        Loads the optimizer state saved using the ``torch.save()`` method or the
-        ``save_optimizer_state()`` method of this class.
+        Loads the optimizer state saved using the :func:`torch.save()` method or the
+        :func:`save_optimizer_state()` method of this class.
 
         Args:
             f: File-like object (has to implement fileno that returns a file descriptor) or string
@@ -827,7 +827,7 @@ class Model:
     def get_weights(self):
         """
         Returns a dictionary containing the parameters of the network. The tensors are just
-        references to the parameters. To get copies of the weights, see the ``get_weight_copies()``
+        references to the parameters. To get copies of the weights, see the :func:`get_weight_copies()`
         method.
         """
         return self.model.state_dict()
@@ -846,15 +846,15 @@ class Model:
         Modifies the weights of the network with the given weights.
 
         Args:
-            weights (dict): Weights returned by either ``get_weights()`` or ``get_weight_copies()``.
+            weights (dict): Weights returned by either :func:`get_weights()` or :func:`get_weight_copies()`.
         """
         self.model.load_state_dict(weights)
 
     def cuda(self, *args, **kwargs):
         """
-        Tranfers the network on the GPU. The arguments are passed to the ``torch.nn.Module.cuda()``
-        method. Notice that the device is saved so that the batches can send to the right device
-        before passing it to the network.
+        Tranfers the network on the GPU. The arguments are passed to the :meth:`torch.nn.Module.cuda()` method.
+        Notice that the device is saved so that the batches can send to the right device before passing it to
+        the network.
 
         Note:
             PyTorch optimizers assume that the parameters have been transfered to the right device
@@ -883,7 +883,7 @@ class Model:
 
     def cpu(self, *args, **kwargs):
         """
-        Tranfers the network on the CPU. The arguments are passed to the ``torch.nn.Module.cpu()``
+        Tranfers the network on the CPU. The arguments are passed to the :meth:`torch.nn.Module.cpu()`
         method. Notice that the device is saved so that the batches can send to the right device
         before passing it to the network.
 
@@ -930,7 +930,7 @@ class Model:
             takes care of this inconsistency by updating the parameters inside the optimizer.
 
         Args:
-            device (torch.device): The device to which the network is sent.
+            device (torch.torch.device): The device to which the network is sent.
 
         Returns:
             `self`.
