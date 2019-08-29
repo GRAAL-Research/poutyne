@@ -2,11 +2,12 @@
 The ``policies`` module is an alternative way to configure your training process. It gives you fine
 grained control over the process.
 
-The training is divided into phases with the ``Phase`` class. A ``Phase`` contains parameter spaces
-(e.g. learning rate, or momentum, or both) for the optimizer. You chain ``Phase`` instances by
-passing them to the ``OptimizerPolicy`` ``OptimizerPolicy`` is a ``Callback`` that uses the phases,
-steps through them, and sets the parameters of the optimizer.
-
+The training is divided into phases with the :class:`~poutyne.framework.callbacks.policies.Phase` class.
+A :class:`~poutyne.framework.callbacks.policies.Phase` contains parameter spaces (e.g. learning rate,
+or momentum, or both) for the optimizer. You chain :class:`~poutyne.framework.callbacks.policies.Phase`
+instances by passing them to the :class:`~poutyne.framework.callbacks.policies.OptimizerPolicy`.
+:class:`~poutyne.framework.callbacks.policies.OptimizerPolicy` is a :class:`~poutyne.framework.callbacks.Callback`
+that uses the phases, steps through them, and sets the parameters of the optimizer.
 """
 # pylint: disable=inconsistent-return-statements
 ###############################################################################
@@ -27,9 +28,9 @@ class linspace:
     A lazy linear parameter space that goes from ``start`` to ``end`` in ``steps`` steps.
 
     Args:
-        start: the start point.
-        end: the end point.
-        steps: the number of steps between start and end.
+        start (int): the start point.
+        end (int): the end point.
+        steps (int): the number of steps between start and end.
 
     Example:
         >>> list(linspace(0, 1, 3))
@@ -53,9 +54,9 @@ class cosinespace:
     A lazy cosine parameter space that goes from ``start`` to ``end`` in ``steps`` steps.
 
     Args:
-        start: the start point.
-        end: the end point.
-        steps: the number of steps between start and end.
+        start (int): the start point.
+        end (int): the end point.
+        steps (int): the number of steps between start and end.
 
     Example:
         >>> list(cosinespace(0, 1, 3))
@@ -77,13 +78,13 @@ class cosinespace:
 ###############################################################################
 class Phase:
     """
-    A ``Phase`` defines how to configure an optimizer.
+    Defines how to configure an optimizer.
 
     For each train step it returns a dictionary that contains the configuration for the optimizer.
 
     Args:
-        lr: a configuration space for the learning rate (optional).
-        momentum: a configuration space for the momentum (optional).
+        lr (List[float], optional): a configuration space for the learning rate.
+        momentum (List[float], optional): a configuration space for the momentum.
     """
 
     def __init__(self, *, lr=None, momentum=None):
@@ -113,8 +114,8 @@ class Phase:
         Plot the phase for the given `param_name`.
 
         Args:
-            param_name: the name of the parameter to plot (optional)
-            ax: a matplotlib axis to plot on, if given (optional).
+            param_name (str, optional): the name of the parameter to plot.
+            ax (~matplotlib.pyplot.axis, optional): a matplotlib axis to plot on, if given.
 
         Returns:
             The matplotlib axis.
@@ -144,27 +145,26 @@ def one_cycle_phases(
         finetune_fraction: float = 0.1,
 ) -> List[Phase]:
     """
-    The "one-cycle" policy as described in the paper "Super-Convergence: Very Fast Training of
-    Neural Networks Using Large Learning Rates".
+    The "one-cycle" policy as described in the paper `Super-Convergence: Very Fast Training of
+    Neural Networks Using Large Learning Rates <https://arxiv.org/abs/1708.07120>`_.
 
     You might want to read the paper and adjust the parameters.
 
     Args:
-        steps: the total number of steps to take.
-        lr: tuple for the triangular learning rate (start, middle).
-        momentum: tuple for the triangular momentum (start, middle).
-        finetune_lr: target learning rate for the final fine tuning. Should be smaller than
+        steps (int): the total number of steps to take.
+        lr (Tuple[float, float]): tuple for the triangular learning rate (start, middle).
+        momentum (Tuple[float, float]): tuple for the triangular momentum (start, middle).
+        finetune_lr (float): target learning rate for the final fine tuning. Should be smaller than
             `min(lr)`.
-        finetune_fraction: fraction of steps used for the fine tuning.
+        finetune_fraction (float): fraction of steps used for the fine tuning.
             Must be between 0 and 1.
 
     Returns:
-        A list of configured ``Phase`` instances.
+        A list of configured :class:`~poutyne.framework.callbacks.policies.Phase` instances.
 
     References:
-        "Super-Convergence: Very Fast Training of Neural Networks Using Large Learning Rates"
-            Leslie N. Smith, Nicholay Topin
-            https://arxiv.org/abs/1708.07120
+        `Super-Convergence: Very Fast Training of Neural Networks Using Large Learning Rates
+        <https://arxiv.org/abs/1708.07120>`_
     """
     steps_annealing = int(steps * finetune_fraction)
     steps_up = (steps - steps_annealing) // 2
@@ -192,8 +192,8 @@ def sgdr_phases(
         cycle_mult: int = 2,
 ) -> List[Phase]:
     """
-    The "SGDR" policy as described in the paper "SGDR: Stochastic Gradient Descent with Warm
-    Restarts".
+    The "SGDR" policy as described in the paper `SGDR: Stochastic Gradient Descent with Warm Restarts
+    <https://arxiv.org/abs/1608.03983>`_.
 
     Note the total number of steps is calculated like this: `total_steps = sum(base_cycle_length *
     (cycle_mult ** i) for i in range(cycles))`
@@ -201,19 +201,18 @@ def sgdr_phases(
     You might want to read the paper and adjust the parameters.
 
     Args:
-        base_cycle_length: number of steps for the first cycle.
-        cycles: the number of repetitions.
-        lr: tuple for the learning rate for one cycle: (start, end).
-        cycle_mult: multiply the last cycle length with this every cycle. The length of a cycle
+        base_cycle_length (int): number of steps for the first cycle.
+        cycles (int): the number of repetitions.
+        lr (Typle[float, float]): tuple for the learning rate for one cycle: (start, end).
+        cycle_mult (float): multiply the last cycle length with this every cycle. The length of a cycle
             grows exponentially.
 
     Returns:
-        A list of configured ``Phase`` instances.
+        A list of configured :class:`~poutyne.framework.callbacks.policies.Phase` instances.
 
     References:
-        "SGDR: Stochastic Gradient Descent with Warm Restarts"
-            Ilya Loshchilov, Frank Hutter
-            https://arxiv.org/abs/1608.03983
+        `SGDR: Stochastic Gradient Descent with Warm Restarts
+        <https://arxiv.org/abs/1608.03983>`_
     """
     steps = [base_cycle_length * (cycle_mult**i) for i in range(cycles)]
     return [Phase(lr=cosinespace(lr[0], lr[1], step)) for step in steps]
@@ -222,12 +221,14 @@ def sgdr_phases(
 ###############################################################################
 class OptimizerPolicy(Callback):
     """
-    Combine different ``Phase`` instances in an ``OptimizerPolicy`` and execute the policies in a
+    Combine different :class:`~poutyne.framework.callbacks.policies.Phase` instances
+    in an :class:`~poutyne.framework.callbacks.policies.OptimizerPolicy` and execute the policies in a
     row.
 
     Args:
-        phases: A list of ``Phase`` instances.
-        initial_step: The step to start the policy in. Used for restarting.
+        phases (List[~poutyne.framework.callbacks.policies.Phase]):
+            A list of :class:`~poutyne.framework.callbacks.policies.Phase` instances.
+        initial_step (int): The step to start the policy in. Used for restarting.
     """
 
     def __init__(self, phases: List, *, initial_step: int = 0):
@@ -269,11 +270,12 @@ class OptimizerPolicy(Callback):
 
     def plot(self, param_name: str = "lr", ax=None):
         """
-        Visualize all `Phase`s of this `OptimizerPolicy`.
+        Visualize all  :class:`~poutyne.framework.callbacks.policies.Phase`s of
+        this  :class:`~poutyne.framework.callbacks.policies.OptimizerPolicy`.
 
         Args:
-            param_name: the name of the parameter to plot (optional)
-            ax: a matplotlib axis to plot on, if given (optional).
+            param_name (str, optional): the name of the parameter to plot.
+            ax (~matplotlib.pyplot.axis): a matplotlib axis to plot on, if given.
 
         Returns:
             The matplotlib axis.
