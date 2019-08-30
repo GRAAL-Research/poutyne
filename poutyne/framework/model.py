@@ -140,27 +140,28 @@ class Model:
             x,
             y,
             validation_data=None,
+            *,
             batch_size=32,
             epochs=1000,
             steps_per_epoch=None,
             validation_steps=None,
+            batches_per_step=1,
             initial_epoch=1,
             verbose=True,
             callbacks=None):
         # pylint: disable=line-too-long
-        # pylint: disable=too-many-arguments
         """
         Trains the model on a dataset. This method creates generators and calls
-        the ``fit_generator`` method.
+        the :func:`~Model.fit_generator()` method.
 
         Args:
-            x (Union[Tensor, np.ndarray] or Union[tuple, list] of Union[Tensor, np.ndarray]):
-                Training dataset. Union[Tensor, np.ndarray] if the model has a single input.
-                Union[tuple, list] of Union[Tensor, np.ndarray] if the model has multiple inputs.
-            y (Union[Tensor, np.ndarray] or Union[tuple, list] of Union[Tensor, np.ndarray]):
-                Target. Union[Tensor, np.ndarray] if the model has a single output.
-                Union[tuple, list] of Union[Tensor, np.ndarray] if the model has multiple outputs.
-                validation_data (Optional[tuple of (``x_val``, ``y_val``)]):
+            x (Union[~torch.Tensor, ~numpy.ndarray] or Union[tuple, list] of Union[~torch.Tensor, ~numpy.ndarray]):
+                Training dataset. Union[Tensor, ndarray] if the model has a single input.
+                Union[tuple, list] of Union[Tensor, ndarray] if the model has multiple inputs.
+            y (Union[~torch.Tensor, ~numpy.ndarray] or Union[tuple, list] of Union[~torch.Tensor, ~numpy.ndarray]):
+                Target. Union[Tensor, ndarray] if the model has a single output.
+                Union[tuple, list] of Union[Tensor, ndarray] if the model has multiple outputs.
+            validation_data (Tuple[``x_val``, ``y_val``]):
                 Same format as ``x`` and ``y`` previously described. Validation dataset on which to
                 evaluate the loss and any model metrics at the end of each epoch. The model will not be
                 trained on this data.
@@ -177,12 +178,16 @@ class Model:
                 dataset.
                 (Defaults to ``steps_per_epoch`` if provided or the number of steps needed to
                 see the entire validation dataset)
+            batches_per_step (int): Number of batches on which to compute the running loss before
+                backpropagating it through the network. Note that the total loss used for backpropagation is
+                the mean of the `batches_per_step` batch losses.
+                (Default value = 1)
             initial_epoch (int, optional): Epoch at which to start training
                 (useful for resuming a previous training run).
                 (Default value = 1)
             verbose (bool): Whether to display the progress of the training.
                 (Default value = True)
-            callbacks (list of poutyne.framework.Callback): List of callbacks that will be called
+            callbacks (List[~poutyne.framework.callbacks.Callback]): List of callbacks that will be called
                 during training.
                 (Default value = None)
 
@@ -218,6 +223,7 @@ class Model:
                                   epochs=epochs,
                                   steps_per_epoch=steps_per_epoch,
                                   validation_steps=validation_steps,
+                                  batches_per_step=batches_per_step,
                                   initial_epoch=initial_epoch,
                                   verbose=verbose,
                                   callbacks=callbacks)
@@ -235,6 +241,7 @@ class Model:
                       epochs=1000,
                       steps_per_epoch=None,
                       validation_steps=None,
+                      batches_per_step=1,
                       initial_epoch=1,
                       verbose=True,
                       callbacks=None):
@@ -273,12 +280,16 @@ class Model:
             validation_steps (int, optional): Same as for ``steps_per_epoch`` but for the validation dataset.
                 (Defaults to ``steps_per_epoch`` if provided or the number of steps needed to see the entire
                 validation dataset)
+            batches_per_step (int): Number of batches on which to compute the running loss before
+                backpropagating it through the network. Note that the total loss used for backpropagation is
+                the mean of the `batches_per_step` batch losses.
+                (Default value = 1)
             initial_epoch (int, optional): Epoch at which to start training (useful for resuming a previous
                 training run).
                 (Default value = 1)
             verbose (bool): Whether to display the progress of the training.
                 (Default value = True)
-            callbacks (list of poutyne.framework.Callback): List of callbacks that will be called during training.
+            callbacks (List[~poutyne.framework.callbacks.Callback]): List of callbacks that will be called during training.
                 (Default value = None)
 
         Returns:
@@ -321,6 +332,73 @@ class Model:
                                        callback=callback_list,
                                        metrics_names=self.metrics_names)
 
+        if batches_per_step > 1:
+            self._fit_generator_n_batches_per_step(epoch_iterator, callback_list, batches_per_step)
+        else:
+            self._fit_generator_one_batch_per_step(epoch_iterator, callback_list)
+
+        return epoch_iterator.epoch_logs
+
+    def _fit_generator_n_batches_per_step(self, epoch_iterator, callback_list, batches_per_step):
+        for train_step_iterator, valid_step_iterator in epoch_iterator:
+            examples_in_step = 0
+
+            with self._set_training_mode(True):
+                for step, (x, y) in train_step_iterator:
+                    step.size = self._get_batch_size(x, y)
+
+                    examples_in_step += step.size
+
+                    step.loss, step.metrics, did_backprop, _ = self._fit_batch_n_batches_per_step(
+                        x, y, batches_per_step, examples_in_step, callback=callback_list, step=step)
+
+                    if did_backprop:
+                        examples_in_step = 0
+
+            if not did_backprop:
+                # Did not step after last batch
+                self._adjust_step_size(examples_in_step)
+                self.optimizer.step()
+
+            if valid_step_iterator is not None:
+                self._validate(valid_step_iterator)
+
+            epoch_iterator.stop_training = self.stop_training
+
+    def _fit_batch_n_batches_per_step(self,
+                                      x,
+                                      y,
+                                      batches_per_step,
+                                      examples_in_step,
+                                      *,
+                                      callback=Callback(),
+                                      step=None,
+                                      return_pred=False):
+        # pylint: disable=too-many-locals
+        zero_all_gradients = ((step.number - 1) % batches_per_step == 0)
+        do_backprop = (step.number % batches_per_step == 0)
+
+        if zero_all_gradients:
+            self.optimizer.zero_grad()
+
+        loss_tensor, metrics, pred_y = self._compute_loss_and_metrics(x,
+                                                                      y,
+                                                                      return_loss_tensor=True,
+                                                                      return_pred=return_pred)
+
+        adjusted_loss_tensor = loss_tensor * step.size
+        adjusted_loss_tensor.backward()
+
+        callback.on_backward_end(step)
+
+        if do_backprop:
+            self._adjust_step_size(examples_in_step)
+            self.optimizer.step()
+
+        loss = float(loss_tensor)
+        return loss, metrics, do_backprop, pred_y
+
+    def _fit_generator_one_batch_per_step(self, epoch_iterator, callback_list):
         for train_step_iterator, valid_step_iterator in epoch_iterator:
             with self._set_training_mode(True):
                 for step, (x, y) in train_step_iterator:
@@ -331,8 +409,6 @@ class Model:
                 self._validate(valid_step_iterator)
 
             epoch_iterator.stop_training = self.stop_training
-
-        return epoch_iterator.epoch_logs
 
     def _fit_batch(self, x, y, *, callback=Callback(), step=None, return_pred=False):
         self.optimizer.zero_grad()
@@ -348,6 +424,11 @@ class Model:
 
         loss = float(loss_tensor)
         return loss, metrics, pred_y
+
+    def _adjust_step_size(self, examples_in_step):
+        for param in self.model.parameters():
+            if param.grad is not None:
+                param.grad /= examples_in_step
 
     def _process_input(self, *args):
         args = numpy_to_torch(args)
@@ -383,13 +464,17 @@ class Model:
             loss, metrics, pred_y = self._fit_batch(x, y, return_pred=return_pred)
         return self._format_return(loss, metrics, pred_y, return_pred)
 
-    def _format_return(self, loss, metrics, pred_y, return_pred):
+    def _format_return(self, loss, metrics, pred_y, return_pred, true_y=None, return_ground_truth=False):
+        # pylint: disable=too-many-arguments
         ret = (loss, )
 
         ret += tuple(metrics.tolist()) if len(metrics) <= 1 else (metrics, )
 
         if return_pred:
             ret += (pred_y, )
+
+        if return_ground_truth:
+            ret += (true_y, )
 
         return ret[0] if len(ret) == 1 else ret
 
@@ -399,9 +484,9 @@ class Model:
         converted into Numpy arrays.
 
         Args:
-            x (Union[Tensor, np.ndarray] or Union[tuple, list] of Union[Tensor, np.ndarray]):
-                Input to the model. Union[Tensor, np.ndarray] if the model has a single input.
-                Union[tuple, list] of Union[Tensor, np.ndarray] if the model has multiple inputs.
+            x (Union[~torch.Tensor, ~numpy.ndarray] or Union[tuple, list] of Union[~torch.Tensor, ~numpy.ndarray]):
+                Input to the model. Union[Tensor, ndarray] if the model has a single input.
+                Union[tuple, list] of Union[Tensor, ndarray] if the model has multiple inputs.
             batch_size (int): Number of samples given to the network at one time.
                 (Default value = 32)
 
@@ -419,7 +504,7 @@ class Model:
         converted into Numpy arrays.
 
         generator: Generator-like object for the dataset. The generator must yield a batch of
-            samples. See the ``fit_generator()`` method for details on the types of generators
+            samples. See the :func:`fit_generator()` method for details on the types of generators
             supported. This should only yield input data ``x`` and not the target ``y``.
         steps (int, optional): Number of iterations done on ``generator``.
             (Defaults the number of steps needed to see the entire dataset)
@@ -458,28 +543,28 @@ class Model:
         returns the predictions.
 
         Args:
-            x (Union[Tensor, np.ndarray] or Union[tuple, list] of Union[Tensor, np.ndarray]):
-                Input to the model. Union[Tensor, np.ndarray] if the model has a single input.
-                Union[tuple, list] of Union[Tensor, np.ndarray] if the model has multiple inputs.
-            y (Union[Tensor, np.ndarray] or Union[tuple, list] of Union[Tensor, np.ndarray]):
+            x (Union[~torch.Tensor, ~numpy.ndarray] or Union[tuple, list] of Union[~torch.Tensor, ~numpy.ndarray]):
+                Input to the model. Union[Tensor, ndarray] if the model has a single input.
+                Union[tuple, list] of Union[Tensor, ndarray] if the model has multiple inputs.
+            y (Union[~torch.Tensor, ~numpy.ndarray] or Union[tuple, list] of Union[~torch.Tensor, ~numpy.ndarray]):
                 Target, corresponding ground truth.
-                Union[Tensor, np.ndarray] if the model has a single output.
-                Union[tuple, list] of Union[Tensor, np.ndarray] if the model has multiple outputs.
+                Union[Tensor, ndarray] if the model has a single output.
+                Union[tuple, list] of Union[Tensor, ndarray] if the model has multiple outputs.
             batch_size (int): Number of samples given to the network at one time.
                 (Default value = 32)
             return_pred (bool, optional): Whether to return the predictions.
                 (Default value = False)
 
         Returns:
-            Float ``loss`` if no metrics were specified and ``return_pred`` is false.
+            Tuple ``(loss, metrics, pred_y)`` where specific elements are omitted if not
+            applicable. If only loss is applicable, then it is returned as a float.
 
-            Otherwise, tuple ``(loss, metrics)`` if ``return_pred`` is false.
-            ``metrics`` is a Numpy array of size ``n``, where ``n`` is the
+            `metrics`` is a Numpy array of size ``n``, where ``n`` is the
             number of metrics if ``n > 1``. If ``n == 1``, then ``metrics`` is a
             float. If ``n == 0``, the ``metrics`` is omitted.
 
-            Tuple ``(loss, metrics, pred_y)`` if ``return_pred`` is true where
-            ``pred_y`` is a Numpy array of the predictions.
+            If ``return_pred`` is True, ``pred_y`` is the list of the predictions
+            of each batch with tensors converted into Numpy arrays. It is otherwise ommited.
         """
         generator = self._dataloader_from_data((x, y), batch_size=batch_size)
         ret = self.evaluate_generator(generator, steps=len(generator), return_pred=return_pred)
@@ -487,31 +572,35 @@ class Model:
             ret = (*ret[:-1], _concat(ret[-1]))
         return ret
 
-    def evaluate_generator(self, generator, *, steps=None, return_pred=False):
+    def evaluate_generator(self, generator, *, steps=None, return_pred=False, return_ground_truth=False):
         """
         Computes the loss and the metrics of the network on batches of samples and optionaly returns
         the predictions.
 
         Args:
-            generator: Generator-like object for the dataset. See the ``fit_generator()`` method for
+            generator: Generator-like object for the dataset. See the :func:`~Model.fit_generator()` method for
                 details on the types of generators supported.
             steps (int, optional): Number of iterations done on ``generator``.
                 (Defaults the number of steps needed to see the entire dataset)
             return_pred (bool, optional): Whether to return the predictions.
                 (Default value = False)
+            return_ground_truth (bool, optional): Whether to return the ground truths.
+                (Default value = False)
 
         Returns:
-            Float ``loss`` if no metrics were specified and ``return_pred`` is false.
+            Tuple ``(loss, metrics, pred_y, true_y)`` where specific elements are
+            omitted if not applicable. If only loss is applicable, then it is returned
+            as a float.
 
-            Otherwise, tuple ``(loss, metrics)`` if ``return_pred`` is false.
-            ``metrics`` is a Numpy array of size ``n``, where ``n`` is the
+            `metrics`` is a Numpy array of size ``n``, where ``n`` is the
             number of metrics if ``n > 1``. If ``n == 1``, then ``metrics`` is a
             float. If ``n == 0``, the ``metrics`` is omitted.
 
-            Tuple ``(loss, metrics, pred_y)`` if ``return_pred`` is true where
-            ``pred_y`` is the list of the predictions of each batch with tensors
-            converted into Numpy arrays.
+            If ``return_pred`` is True, ``pred_y`` is the list of the predictions
+            of each batch with tensors converted into Numpy arrays. It is otherwise ommited.
 
+            If ``return_ground_truth`` is True, ``true_y`` is the list of the ground truths
+            of each batch with tensors converted into Numpy arrays. It is otherwise ommited.
         Example:
             With no metrics:
 
@@ -546,14 +635,26 @@ class Model:
                 loss, (my_metric1, my_metric2), pred_y = model.evaluate_generator(
                     test_generator, return_pred=True
                 )
+
+            With metrics, ``return_pred`` and ``return_ground_truth`` flags:
+
+            .. code-block:: python
+
+                model = Model(pytorch_module, optimizer, loss_function,
+                              metrics=[my_metric1_fn, my_metric2_fn])
+                loss, (my_metric1, my_metric2), pred_y, true_y = model.evaluate_generator(
+                    test_generator, return_pred=True, return_ground_truth=True
+                )
         """
         if steps is None:
             steps = len(generator)
         step_iterator = StepIterator(generator, steps, Callback(), self.metrics_names)
-        loss, metrics, pred_y = self._validate(step_iterator, return_pred=return_pred)
-        return self._format_return(loss, metrics, pred_y, return_pred)
+        loss, metrics, pred_y, true_y = self._validate(step_iterator,
+                                                       return_pred=return_pred,
+                                                       return_ground_truth=return_ground_truth)
+        return self._format_return(loss, metrics, pred_y, return_pred, true_y, return_ground_truth)
 
-    def evaluate_on_batch(self, x, y, return_pred=False):
+    def evaluate_on_batch(self, x, y, *, return_pred=False):
         """
         Computes the loss and the metrics of the network on a single batch of samples and optionally
         returns the predictions.
@@ -565,35 +666,39 @@ class Model:
                 (Default value = False)
 
         Returns:
-            Float ``loss`` if no metrics were specified and ``return_pred`` is false.
+            Tuple ``(loss, metrics, pred_y)`` where specific elements are omitted if not
+            applicable. If only loss is applicable, then it is returned as a float.
 
-            Otherwise, tuple ``(loss, metrics)`` if ``return_pred`` is false.
-            ``metrics`` is a Numpy array of size ``n``, where ``n`` is the
+            `metrics`` is a Numpy array of size ``n``, where ``n`` is the
             number of metrics if ``n > 1``. If ``n == 1``, then ``metrics`` is a
             float. If ``n == 0``, the ``metrics`` is omitted.
 
-            Tuple ``(loss, metrics, pred_y)`` if ``return_pred`` is true where
-            ``pred_y`` is the list of the predictions of each batch with tensors
-            converted into Numpy arrays.
+            If ``return_pred`` is True, ``pred_y`` is the list of the predictions
+            of each batch with tensors converted into Numpy arrays. It is otherwise ommited.
         """
         with self._set_training_mode(False):
             loss, metrics, pred_y = self._compute_loss_and_metrics(x, y, return_pred=return_pred)
         return self._format_return(loss, metrics, pred_y, return_pred)
 
-    def _validate(self, step_iterator, return_pred=False):
+    def _validate(self, step_iterator, return_pred=False, return_ground_truth=False):
         pred_list = None
+        true_list = None
         if return_pred:
             pred_list = []
+        if return_ground_truth:
+            true_list = []
 
         with self._set_training_mode(False):
             for step, (x, y) in step_iterator:
                 step.loss, step.metrics, pred_y = self._compute_loss_and_metrics(x, y, return_pred=return_pred)
                 if return_pred:
                     pred_list.append(pred_y)
+                if return_ground_truth:
+                    true_list.append(torch_to_numpy(y))
 
                 step.size = self._get_batch_size(x, y)
 
-        return step_iterator.loss, step_iterator.metrics, pred_list
+        return step_iterator.loss, step_iterator.metrics, pred_list, true_list
 
     def _compute_loss_and_metrics(self, x, y, return_loss_tensor=False, return_pred=False):
         x, y = self._process_input(x, y)
@@ -635,8 +740,8 @@ class Model:
 
     def load_weights(self, f):
         """
-        Loads the weights saved using the ``torch.save()`` method or the ``save_weights()`` method
-        of this class. Contrary to ``torch.load()``, the weights are not transfered to the device
+        Loads the weights saved using the :func:`torch.save()` method or the :func:`save_weights()` method
+        of this class. Contrary to :func:`torch.load()`, the weights are not transfered to the device
         from which they were saved from. In other words, the PyTorch module will stay on the same
         device it already is on.
 
@@ -658,8 +763,8 @@ class Model:
 
     def load_optimizer_state(self, f):
         """
-        Loads the optimizer state saved using the ``torch.save()`` method or the
-        ``save_optimizer_state()`` method of this class.
+        Loads the optimizer state saved using the :func:`torch.save()` method or the
+        :func:`save_optimizer_state()` method of this class.
 
         Args:
             f: File-like object (has to implement fileno that returns a file descriptor) or string
@@ -722,7 +827,7 @@ class Model:
     def get_weights(self):
         """
         Returns a dictionary containing the parameters of the network. The tensors are just
-        references to the parameters. To get copies of the weights, see the ``get_weight_copies()``
+        references to the parameters. To get copies of the weights, see the :func:`get_weight_copies()`
         method.
         """
         return self.model.state_dict()
@@ -741,15 +846,15 @@ class Model:
         Modifies the weights of the network with the given weights.
 
         Args:
-            weights (dict): Weights returned by either ``get_weights()`` or ``get_weight_copies()``.
+            weights (dict): Weights returned by either :func:`get_weights()` or :func:`get_weight_copies()`.
         """
         self.model.load_state_dict(weights)
 
     def cuda(self, *args, **kwargs):
         """
-        Tranfers the network on the GPU. The arguments are passed to the ``torch.nn.Module.cuda()``
-        method. Notice that the device is saved so that the batches can send to the right device
-        before passing it to the network.
+        Tranfers the network on the GPU. The arguments are passed to the :meth:`torch.nn.Module.cuda()` method.
+        Notice that the device is saved so that the batches can send to the right device before passing it to
+        the network.
 
         Note:
             PyTorch optimizers assume that the parameters have been transfered to the right device
@@ -778,7 +883,7 @@ class Model:
 
     def cpu(self, *args, **kwargs):
         """
-        Tranfers the network on the CPU. The arguments are passed to the ``torch.nn.Module.cpu()``
+        Tranfers the network on the CPU. The arguments are passed to the :meth:`torch.nn.Module.cpu()`
         method. Notice that the device is saved so that the batches can send to the right device
         before passing it to the network.
 
@@ -825,7 +930,7 @@ class Model:
             takes care of this inconsistency by updating the parameters inside the optimizer.
 
         Args:
-            device (torch.device): The device to which the network is sent.
+            device (torch.torch.device): The device to which the network is sent.
 
         Returns:
             `self`.

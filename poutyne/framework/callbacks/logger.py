@@ -60,13 +60,13 @@ class Logger(Callback):
 
 class CSVLogger(Logger):
     """
-    Callback that output the result of each epoch or batch into a CSV file.
+    Callback that outputs the result of each epoch or batch into a CSV file.
 
     Args:
-        filename (string): The filename of the CSV.
+        filename (str): The filename of the CSV.
         batch_granularity (bool): Whether to also output the result of each batch in addition to the epochs.
             (Default value = False)
-        separator (string): The separator to use in the CSV.
+        separator (str): The separator to use in the CSV.
             (Default value = ',')
         append (bool): Whether to append to an existing file.
 
@@ -100,10 +100,10 @@ class CSVLogger(Logger):
 
 class TensorBoardLogger(Logger):
     """
-    Callback that output the result of each epoch or batch into a Tensorboard experiment folder.
+    Callback that outputs the result of each epoch or batch into a Tensorboard experiment folder.
 
     Args:
-        writer (SummaryWriter): The tensorboard writer.
+        writer (~torch.utils.tensorboard.writer.SummaryWriter): The tensorboard writer.
 
     Example:
         Using TensorBoardLogger::

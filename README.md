@@ -33,7 +33,7 @@ Poutyne is compatible with  the __latest version of PyTorch__ and  __Python >= 3
 
 ## Getting started: few seconds to Poutyne
 
-The core data structure of Poutyne is a ``Model``, a way to train your own [PyTorch](https://pytorch.org/docs/master/nn.html) neural networks.
+The core data structure of Poutyne is a [Model](poutyne/framework/model.py), a way to train your own [PyTorch](https://pytorch.org/docs/master/nn.html) neural networks.
 
 How Poutyne works is that you create your [PyTorch](https://pytorch.org/docs/master/nn.html) module (neural network) as usual but when comes the time to train it you feed it into the Poutyne Model, which handles all the steps, stats and callbacks, similar to what [Keras](https://keras.io) does.
 

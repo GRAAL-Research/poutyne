@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 current_file_path = os.path.abspath(os.path.dirname(__file__))
 
 readme_file_path = os.path.join(current_file_path, 'README.md')
-with open(readme_file_path, 'r') as f:
+with open(readme_file_path, 'r', encoding='utf-8') as f:
     readme = f.read()
 
 version_file_path = os.path.join(current_file_path, 'poutyne/version.py')

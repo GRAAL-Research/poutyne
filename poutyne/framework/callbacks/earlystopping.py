@@ -62,7 +62,7 @@ class EarlyStopping(Callback):
             (Default value = 0)
         verbose (bool): Whether to print when early stopping is done.
             (Default value = False)
-        mode (string): One of {'min', 'max'}. In `min` mode, training will stop when the quantity
+        mode (str): One of {'min', 'max'}. In `min` mode, training will stop when the quantity
             monitored has stopped decreasing; in `max` mode it will stop when the quantity monitored has
             stopped increasing.
             (Default value = 'min')

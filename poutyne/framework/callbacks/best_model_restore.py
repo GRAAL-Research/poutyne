@@ -8,8 +8,8 @@ class BestModelRestore(Callback):
     Restore the weights of the best model at the end of the training depending on a monitored quantity.
 
     Args:
-        monitor (string): Quantity to monitor. (Default value = 'val_loss')
-        mode (string): One of {'min', 'max'}.
+        monitor (str): Quantity to monitor. (Default value = 'val_loss')
+        mode (str): One of {'min', 'max'}.
             Whether the monitored has to be maximized or minimized. For instance, for `val_accuracy`,
             this should be `max`, and for `val_loss`, this should be `min`, etc.
             (Default value = 'min')

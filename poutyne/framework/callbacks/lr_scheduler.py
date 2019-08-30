@@ -66,7 +66,7 @@ for name, module_cls in torch.optim.lr_scheduler.__dict__.items():
                 '__doc__':
                 """
                 See:
-                    `PyTorch {name} <http://pytorch.org/docs/master/optim.html#torch.optim.lr_scheduler.{name}>`_
+                    :class:`~torch.optim.lr_scheduler.{name}`
                 """.format(name=name)
             })
         setattr(sys.modules[__name__], name, _new_cls)
@@ -75,10 +75,9 @@ for name, module_cls in torch.optim.lr_scheduler.__dict__.items():
 class ReduceLROnPlateau(Callback):
     """
     Args:
-        monitor (string): The quantity to monitor. (Default value = 'val_loss')
+        monitor (str): The quantity to monitor. (Default value = 'val_loss')
     See:
-        `PyTorch ReduceLROnPlateau
-        <http://pytorch.org/docs/master/optim.html#torch.optim.lr_scheduler.ReduceLROnPlateau>`_
+        :class:`~torch.optim.lr_scheduler.ReduceLROnPlateau`
     """
 
     def __init__(self, *args, monitor='val_loss', **kwargs):

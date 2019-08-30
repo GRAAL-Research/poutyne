@@ -239,7 +239,9 @@ class Experiment:
               epochs=1000,
               steps_per_epoch=None,
               validation_steps=None,
+              batches_per_step=1,
               seed=42):
+        # pylint: disable=too-many-locals
         if seed is not None:
             # Make training deterministic.
             random.seed(seed)
@@ -297,6 +299,7 @@ class Experiment:
                                             epochs=epochs,
                                             steps_per_epoch=steps_per_epoch,
                                             validation_steps=validation_steps,
+                                            batches_per_step=batches_per_step,
                                             initial_epoch=initial_epoch,
                                             callbacks=callbacks)
         finally:

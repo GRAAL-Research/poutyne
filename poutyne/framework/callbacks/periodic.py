@@ -66,27 +66,27 @@ class PeriodicSaveCallback(Callback):
     the ``temporary_filename`` argument.
 
     Args:
-        filename (string): Path to save the model file.
-        monitor (string): Quantity to monitor.
+        filename (str): Path to save the model file.
+        monitor (str): Quantity to monitor.
             (Default value = 'val_loss')
         verbose (bool): Whether to display a message when saving and restoring a checkpoint.
             (Default value = False)
         save_best_only (bool): If `save_best_only` is true, the latest best model according to the
             quantity monitored will not be overwritten.
             (Default value = False)
-        mode (string): One of {'min', 'max'}.
+        mode (str): One of {'min', 'max'}.
             If `save_best_only` is true, the decision to overwrite the current save file is made based
             on either the maximization or the minimization of the monitored quantity. For
             `val_accuracy`, this should be `max`, for `val_loss` this should be `min`, etc.
             (Default value = 'min')
         period (int): Interval (number of epochs) between checkpoints.
             (Default value = 1)
-        temporary_filename (string, optional): Temporary filename for the checkpoint so that the
+        temporary_filename (str, optional): Temporary filename for the checkpoint so that the
             last checkpoint can be written atomically. See the ``atomic_write`` argument.
         atomic_write (bool): Whether to write atomically the checkpoint. See the description above
             for details.
             (Default value = True)
-        open_mode (str): ``mode`` option passed to ``open()``.
+        open_mode (str): ``mode`` option passed to :func:`open()`.
             (Default value = 'wb')
     """
 
@@ -178,14 +178,14 @@ class PeriodicSaveCallback(Callback):
 class PeriodicSaveLambda(PeriodicSaveCallback):
     """
     Call a lambda with a file descriptor after every epoch. See
-    `poutyne.framework.PeriodicSaveCallback` for the arguments' descriptions.
+    :class:`~poutyne.framework.callbacks.PeriodicSaveCallback` for the arguments' descriptions.
 
     Args:
-        func (fd, int, dict -> None): The lambda that will be called with a file descriptor, the
+        func (Callable[[fd, int, dict], None]): The lambda that will be called with a file descriptor, the
             epoch number and the epoch logs.
 
     See:
-        poutyne.framework.PeriodicSaveCallback
+        :class:`~poutyne.framework.callbacks.PeriodicSaveCallback`
     """
 
     def __init__(self, func, *args, **kwargs):

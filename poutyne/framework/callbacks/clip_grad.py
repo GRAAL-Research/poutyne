@@ -5,13 +5,11 @@ from .callbacks import Callback
 
 class ClipNorm(Callback):
     """
-    Uses PyTorch `torch.nn.utils.clip_grad_norm_
-    <http://pytorch.org/docs/stable/nn.html#torch.nn.utils.clip_grad_norm_>`_
+    Uses PyTorch's :func:`~torch.nn.utils.clip_grad_norm_()`
     method to clip gradient.
 
     See:
-        `torch.nn.utils.clip_grad_norm_
-        <http://pytorch.org/docs/stable/nn.html#torch.nn.utils.clip_grad_norm_>`_
+        :func:`torch.nn.utils.clip_grad_norm_()`
 
     """
 
@@ -27,13 +25,11 @@ class ClipNorm(Callback):
 
 class ClipValue(Callback):
     """
-    Uses PyTorch `torch.nn.utils.clip_grad_value_
-    <http://pytorch.org/docs/stable/nn.html#torch.nn.utils.clip_grad_value_>`_
+    Uses PyTorch's :func:`~torch.nn.utils.clip_grad_value_()`
     method to clip gradient.
 
     See:
-        `torch.nn.utils.clip_grad_value_
-        <http://pytorch.org/docs/stable/nn.html#torch.nn.utils.clip_grad_value_>`_
+        :func:`torch.nn.utils.clip_grad_value_()`
 
     """
 

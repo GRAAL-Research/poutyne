@@ -8,7 +8,7 @@ class Lambda(nn.Module):
     Applies a function to the input tensor.
 
     Args:
-        func (Tensor -> Tensor): The function to apply.
+        func (Callable[[~torch.Tensor], ~torch.Tensor]): The function to apply.
 
     Example:
 

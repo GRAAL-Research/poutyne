@@ -4,6 +4,7 @@ import unittest
 from unittest import TestCase, skipIf
 from unittest.mock import MagicMock, call, ANY
 
+from math import ceil
 import numpy as np
 
 import torch
@@ -67,6 +68,12 @@ def some_ndarray_generator(batch_size):
         x = np.random.rand(batch_size, 1).astype(np.float32)
         y = np.random.rand(batch_size, 1).astype(np.float32)
         yield x, y
+
+
+def some_mocked_optimizer():
+    optim = MagicMock()
+
+    return optim
 
 
 class SomeDataGeneratorUsingStopIteration:
@@ -193,6 +200,13 @@ class ModelTest(TestCase):
             self.optimizer,
             lambda y_p, y_t: self.loss_function(y_p['out1'], y_t[0]) + self.loss_function(y_p['out2'], y_t[1]),
             metrics=self.metrics)
+
+        self.mocked_optimizer = some_mocked_optimizer()
+        self.mocked_optim_model = Model(self.pytorch_module,
+                                        self.mocked_optimizer,
+                                        self.loss_function,
+                                        metrics=self.metrics)
+
         self.mock_callback = MagicMock()
 
     def test_fitting_tensor_generator(self):
@@ -252,6 +266,110 @@ class ModelTest(TestCase):
                                         callbacks=[self.mock_callback])
         params = {'epochs': ModelTest.epochs, 'steps': ModelTest.steps_per_epoch}
         self._test_fitting(params, logs, has_valid=False)
+
+    def test_correct_optim_calls_1_batch_per_step(self):
+        train_generator = some_data_tensor_generator(ModelTest.batch_size)
+
+        _ = self.mocked_optim_model.fit_generator(train_generator,
+                                                  None,
+                                                  epochs=1,
+                                                  steps_per_epoch=1,
+                                                  batches_per_step=1)
+
+        self.assertEqual(1, self.mocked_optimizer.step.call_count)
+        self.assertEqual(1, self.mocked_optimizer.zero_grad.call_count)
+
+    def test_correct_optim_calls__valid_n_batches_per_step(self):
+        n_batches = 5
+        items_per_batch = int(ModelTest.batch_size / n_batches)
+
+        x = torch.rand(n_batches, items_per_batch, 1)
+        y = torch.rand(n_batches, items_per_batch, 1)
+
+        _ = self.mocked_optim_model.fit_generator(list(zip(x, y)), None, epochs=1, batches_per_step=n_batches)
+
+        self.assertEqual(1, self.mocked_optimizer.step.call_count)
+        self.assertEqual(1, self.mocked_optimizer.zero_grad.call_count)
+
+    def test_fitting_generator_n_batches_per_step(self):
+        total_batch_size = 6
+
+        x = torch.rand(1, total_batch_size, 1)
+        y = torch.rand(1, total_batch_size, 1)
+
+        initial_params = self.model.get_weight_copies()
+
+        self.model.fit_generator(list(zip(x, y)), None, epochs=1, batches_per_step=1)
+
+        expected_params = list(self.model.get_weight_copies().values())
+
+        for mini_batch_size in [1, 2, 5]:
+            self.model.set_weights(initial_params)
+
+            n_batches_per_step = int(total_batch_size / mini_batch_size)
+
+            x.resize_((n_batches_per_step, mini_batch_size, 1))
+            y.resize_((n_batches_per_step, mini_batch_size, 1))
+
+            self.model.fit_generator(list(zip(x, y)), None, epochs=1, batches_per_step=n_batches_per_step)
+
+            returned_params = list(self.model.get_weight_copies().values())
+
+            np.testing.assert_almost_equal(returned_params, expected_params, decimal=4)
+
+    def test_fitting_generator_n_batches_per_step_higher_than_num_batches(self):
+        total_batch_size = 6
+
+        x = torch.rand(1, total_batch_size, 1)
+        y = torch.rand(1, total_batch_size, 1)
+
+        initial_params = self.model.get_weight_copies()
+
+        self.model.fit_generator(list(zip(x, y)), None, epochs=1, batches_per_step=1)
+
+        expected_params = list(self.model.get_weight_copies().values())
+
+        self.model.set_weights(initial_params)
+
+        self.model.fit_generator(list(zip(x, y)), None, epochs=1, batches_per_step=2)
+
+        returned_params = list(self.model.get_weight_copies().values())
+
+        np.testing.assert_almost_equal(returned_params, expected_params, decimal=4)
+
+    def test_fitting_generator_n_batches_per_step_uneven_batches(self):
+        total_batch_size = 6
+
+        x = torch.rand(1, total_batch_size, 1)
+        y = torch.rand(1, total_batch_size, 1)
+
+        initial_params = self.model.get_weight_copies()
+
+        self.model.fit_generator(list(zip(x, y)), None, epochs=1, batches_per_step=1)
+
+        expected_params = list(self.model.get_weight_copies().values())
+
+        x.squeeze_(dim=0)
+        y.squeeze_(dim=0)
+
+        uneven_chunk_sizes = [4, 5]
+
+        for chunk_size in uneven_chunk_sizes:
+            self.model.set_weights(initial_params)
+
+            splitted_x = x.split(chunk_size)
+            splitted_y = y.split(chunk_size)
+
+            n_batches_per_step = ceil(total_batch_size / chunk_size)
+
+            self.model.fit_generator(list(zip(splitted_x, splitted_y)),
+                                     None,
+                                     epochs=1,
+                                     batches_per_step=n_batches_per_step)
+
+            returned_params = list(self.model.get_weight_copies().values())
+
+            np.testing.assert_almost_equal(returned_params, expected_params, decimal=4)
 
     def test_fitting_ndarray_generator(self):
         train_generator = some_ndarray_generator(ModelTest.batch_size)
@@ -785,6 +903,24 @@ class ModelTest(TestCase):
             self.assertEqual(type(pred), np.ndarray)
             self.assertEqual(pred.shape, (ModelTest.batch_size, 1))
         self.assertEqual(np.concatenate(pred_y).shape, (num_steps * ModelTest.batch_size, 1))
+
+    def test_evaluate_generator_with_ground_truth(self):
+        num_steps = 10
+        generator = some_data_tensor_generator(ModelTest.batch_size)
+        loss, metrics, pred_y, true_y = self.model.evaluate_generator(generator,
+                                                                      steps=num_steps,
+                                                                      return_pred=True,
+                                                                      return_ground_truth=True)
+        self.assertEqual(type(loss), float)
+        self.assertEqual(type(metrics), np.ndarray)
+        self.assertEqual(metrics.tolist(), [some_metric_1_value, some_metric_2_value])
+        for pred, true in zip(pred_y, true_y):
+            self.assertEqual(type(pred), np.ndarray)
+            self.assertEqual(pred.shape, (ModelTest.batch_size, 1))
+            self.assertEqual(type(true), np.ndarray)
+            self.assertEqual(true.shape, (ModelTest.batch_size, 1))
+        self.assertEqual(np.concatenate(pred_y).shape, (num_steps * ModelTest.batch_size, 1))
+        self.assertEqual(np.concatenate(true_y).shape, (num_steps * ModelTest.batch_size, 1))
 
     def test_evaluate_generator_multi_input(self):
         num_steps = 10
