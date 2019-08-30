@@ -161,7 +161,7 @@ class Model:
             y (Union[~torch.Tensor, ~numpy.ndarray] or Union[tuple, list] of Union[~torch.Tensor, ~numpy.ndarray]):
                 Target. Union[Tensor, ndarray] if the model has a single output.
                 Union[tuple, list] of Union[Tensor, ndarray] if the model has multiple outputs.
-                validation_data (Optional[tuple of (``x_val``, ``y_val``)]):
+            validation_data (Tuple[``x_val``, ``y_val``]):
                 Same format as ``x`` and ``y`` previously described. Validation dataset on which to
                 evaluate the loss and any model metrics at the end of each epoch. The model will not be
                 trained on this data.
