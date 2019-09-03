@@ -1,14 +1,16 @@
 # pylint: disable=redefined-builtin
 import os
-import warnings
 import random
+import warnings
 
 import numpy as np
+
 try:
     import pandas as pd
 except ImportError:
     pd = None
 import torch
+
 try:
     from torch.utils.tensorboard import SummaryWriter
 except ImportError:
@@ -16,12 +18,12 @@ except ImportError:
 
 from poutyne.framework import Model
 from poutyne.framework.callbacks import ModelCheckpoint, \
-                                        OptimizerCheckpoint, \
-                                        LRSchedulerCheckpoint, \
-                                        PeriodicSaveLambda, \
-                                        CSVLogger, \
-                                        TensorBoardLogger, \
-                                        BestModelRestore
+    OptimizerCheckpoint, \
+    LRSchedulerCheckpoint, \
+    PeriodicSaveLambda, \
+    CSVLogger, \
+    TensorBoardLogger, \
+    BestModelRestore
 
 
 class Experiment:
@@ -118,7 +120,7 @@ class Experiment:
 
     def get_best_epoch_stats(self):
         if pd is None:
-            warnings.warn("pandas needs to be installed to use this function.")
+            raise ImportError("pandas needs to be installed to use this function.")
 
         history = pd.read_csv(self.log_filename, sep='\t')
         if self.monitor_mode == 'min':
@@ -344,7 +346,7 @@ class Experiment:
             test_metrics = np.array([test_metrics])
 
         test_metrics_names = ['test_loss'] + \
-                             ['test_' + metric_name for metric_name in self.model.metrics_names]
+                             ['test_' + metric_name for metric_name in self.model.batch_metrics_names]
         test_metrics_values = np.concatenate(([test_loss], test_metrics))
 
         test_metrics_dict = {col: val for col, val in zip(test_metrics_names, test_metrics_values)}

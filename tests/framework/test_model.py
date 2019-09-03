@@ -21,15 +21,18 @@ some_metric_1_value = 1.
 some_metric_2_value = 2.
 
 
-def some_metric_1(y, y_pred):
+def some_batch_metric_1(y, y_pred):
     # pylint: disable=unused-argument
     return torch.FloatTensor([some_metric_1_value])
 
 
-def some_metric_2(y, y_pred):
+def some_batch_metric_2(y, y_pred):
     # pylint: disable=unused-argument
     return torch.FloatTensor([some_metric_2_value])
 
+def some_epoch_metric(y, y_pred):
+    # pylint: disable=unused-argument
+    return torch.FloatTensor([some_metric_1_value])
 
 def some_data_tensor_generator(batch_size):
     while True:
@@ -172,40 +175,42 @@ class ModelTest(TestCase):
         self.pytorch_module = nn.Linear(1, 1)
         self.loss_function = nn.MSELoss()
         self.optimizer = torch.optim.SGD(self.pytorch_module.parameters(), lr=1e-3)
-        self.metrics = [some_metric_1, some_metric_2]
-        self.metrics_names = ['some_metric_1', 'some_metric_2']
+        self.batch_metrics = [some_batch_metric_1, some_batch_metric_2]
+        self.batch_metrics_names = ['some_batch_metric_1', 'some_batch_metric_2']
+        self.epoch_metrics = [some_epoch_metric]
+        self.epoch_metrics_names = ['some_epoch_metric']
         self.metrics_values = [some_metric_1_value, some_metric_2_value]
 
-        self.model = Model(self.pytorch_module, self.optimizer, self.loss_function, metrics=self.metrics)
+        self.model = Model(self.pytorch_module, self.optimizer, self.loss_function, metrics=self.batch_metrics)
 
         self.multi_input_model = Model(MultiIOModel(num_input=1, num_output=1),
                                        self.optimizer,
                                        self.loss_function,
-                                       metrics=self.metrics)
+                                       metrics=self.batch_metrics)
 
         self.multi_output_model = Model(
             MultiIOModel(num_input=1, num_output=2),
             self.optimizer,
             lambda y_pred, y_true: self.loss_function(y_pred[0], y_true[0]) + self.loss_function(y_pred[1], y_true[1]),
-            metrics=self.metrics)
+            metrics=self.batch_metrics)
 
         self.multi_io_model = Model(
             MultiIOModel(num_input=2, num_output=2),
             self.optimizer,
             lambda y_pred, y_true: self.loss_function(y_pred[0], y_true[0]) + self.loss_function(y_pred[1], y_true[1]),
-            metrics=self.metrics)
+            metrics=self.batch_metrics)
 
         self.dict_output_model = Model(
             DictOutputModel(),
             self.optimizer,
             lambda y_p, y_t: self.loss_function(y_p['out1'], y_t[0]) + self.loss_function(y_p['out2'], y_t[1]),
-            metrics=self.metrics)
+            metrics=self.batch_metrics)
 
         self.mocked_optimizer = some_mocked_optimizer()
         self.mocked_optim_model = Model(self.pytorch_module,
                                         self.mocked_optimizer,
                                         self.loss_function,
-                                        metrics=self.metrics)
+                                        metrics=self.batch_metrics)
 
         self.mock_callback = MagicMock()
 
@@ -636,9 +641,9 @@ class ModelTest(TestCase):
         if steps is None:
             steps = params['steps']
         self.assertEqual(len(logs), params['epochs'])
-        train_dict = dict(zip(self.metrics_names, self.metrics_values), loss=ANY, time=ANY)
+        train_dict = dict(zip(self.batch_metrics_names, self.metrics_values), loss=ANY, time=ANY)
         if has_valid:
-            val_metrics_names = ['val_' + metric_name for metric_name in self.metrics_names]
+            val_metrics_names = ['val_' + metric_name for metric_name in self.batch_metrics_names]
             val_dict = dict(zip(val_metrics_names, self.metrics_values), val_loss=ANY)
             log_dict = {**train_dict, **val_dict}
         else:
@@ -959,7 +964,7 @@ class ModelTest(TestCase):
             self.assertEqual(pred.shape, (num_steps * ModelTest.batch_size, 1))
 
     def test_evaluate_with_only_one_metric(self):
-        self.model = Model(self.pytorch_module, self.optimizer, self.loss_function, metrics=self.metrics[:1])
+        self.model = Model(self.pytorch_module, self.optimizer, self.loss_function, metrics=self.batch_metrics[:1])
         x = torch.rand(ModelTest.evaluate_dataset_len, 1)
         y = torch.rand(ModelTest.evaluate_dataset_len, 1)
         loss, first_metric = self.model.evaluate(x, y, batch_size=ModelTest.batch_size)
