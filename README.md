@@ -70,7 +70,7 @@ pytorch_module = torch.nn.Linear(num_features, num_classes)
 You can now use Poutyne's model to train your network easily;
 
 ```python
-model = Model(pytorch_module, 'sgd', 'cross_entropy', metrics=['accuracy'])
+model = Model(pytorch_module, 'sgd', 'cross_entropy', batch_metrics=['accuracy'])
 model.fit(
     train_x, train_y,
     validation_data=(valid_x, valid_y),
