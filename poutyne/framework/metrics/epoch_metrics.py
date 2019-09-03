@@ -55,10 +55,6 @@ class FBeta(EpochMetric):
             Calculate metrics for each label, and find their unweighted mean.
             This does not take label imbalance into account.
 
-    Attributes:
-        Beta (float): The averaging of recall versus precision.
-        Average (str) or (int): The method to calculate the F-score.
-
     """
 
     def __init__(self, beta=1.0, average='micro'):
