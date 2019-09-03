@@ -5,7 +5,7 @@ python:
 install:
   - pip install -q -r requirements.txt
   - pip install -q -r docs/requirements.txt
-  - pip install -q -r extras_requirements.txt
+  - pip install -q -r extrasrequirements.txt
   - pip install -q yapf==0.27
   - pip install -q pylint==2.3.1
 script:
