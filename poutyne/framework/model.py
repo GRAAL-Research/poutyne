@@ -44,7 +44,7 @@ class Model:
             valid metric. Each metric function is called on each batch of the optimization and on the
             validation batches at the end of the epoch.
             (Default value = None)
-        epoch_metrics (list): List of functions with the same signature as :class:
+        epoch_metrics (list): List of functions with the same signature as :class:`~poutyne.framework.metrics.epoch_metrics.EpochMetric`
             (Default value = None)
 
     Attributes:
