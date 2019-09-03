@@ -11,24 +11,40 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
-from poutyne.utils import TensorDataset
+
 from poutyne.framework import Model
 from poutyne.framework import warning_settings
+from poutyne.utils import TensorDataset
 from poutyne.utils import _concat
 
-#pylint: disable=too-many-lines
+# pylint: disable=too-many-lines
 some_metric_1_value = 1.
 some_metric_2_value = 2.
 
 
-def some_metric_1(y, y_pred):
+def some_batch_metric_1(y, y_pred):
     # pylint: disable=unused-argument
     return torch.FloatTensor([some_metric_1_value])
 
 
-def some_metric_2(y, y_pred):
+def some_batch_metric_2(y, y_pred):
     # pylint: disable=unused-argument
     return torch.FloatTensor([some_metric_2_value])
+
+
+class SomeEpochMetric:
+    def __init__(self):
+        self.__name__ = self.__class__.__name__
+        self.increment = 0.0
+
+    def __call__(self, y, y_pred):
+        # pylint: disable=unused-argument
+        self.increment += 1
+
+    def get_metric(self):
+        increment_value = self.increment
+        self.increment = 0
+        return increment_value
 
 
 def some_data_tensor_generator(batch_size):
@@ -151,7 +167,7 @@ class DictOutputModel(nn.Module):
         self.output2 = nn.Linear(1, 1)
 
     def forward(self, x):
-        #pylint: disable=arguments-differ
+        # pylint: disable=arguments-differ
         out1 = self.output1(self.input(x))
         out2 = self.output2(self.input(x))
         return {'out1': out1, 'out2': out2}
@@ -172,40 +188,42 @@ class ModelTest(TestCase):
         self.pytorch_module = nn.Linear(1, 1)
         self.loss_function = nn.MSELoss()
         self.optimizer = torch.optim.SGD(self.pytorch_module.parameters(), lr=1e-3)
-        self.metrics = [some_metric_1, some_metric_2]
-        self.metrics_names = ['some_metric_1', 'some_metric_2']
+        self.batch_metrics = [some_batch_metric_1, some_batch_metric_2]
+        self.batch_metrics_names = ['some_batch_metric_1', 'some_batch_metric_2']
+        self.epoch_metrics = [SomeEpochMetric()]
+        self.epoch_metrics_names = ['some_epoch_metric']
         self.metrics_values = [some_metric_1_value, some_metric_2_value]
 
-        self.model = Model(self.pytorch_module, self.optimizer, self.loss_function, metrics=self.metrics)
+        self.model = Model(self.pytorch_module, self.optimizer, self.loss_function, batch_metrics=self.batch_metrics)
 
         self.multi_input_model = Model(MultiIOModel(num_input=1, num_output=1),
                                        self.optimizer,
                                        self.loss_function,
-                                       metrics=self.metrics)
+                                       batch_metrics=self.batch_metrics)
 
         self.multi_output_model = Model(
             MultiIOModel(num_input=1, num_output=2),
             self.optimizer,
             lambda y_pred, y_true: self.loss_function(y_pred[0], y_true[0]) + self.loss_function(y_pred[1], y_true[1]),
-            metrics=self.metrics)
+            batch_metrics=self.batch_metrics)
 
         self.multi_io_model = Model(
             MultiIOModel(num_input=2, num_output=2),
             self.optimizer,
             lambda y_pred, y_true: self.loss_function(y_pred[0], y_true[0]) + self.loss_function(y_pred[1], y_true[1]),
-            metrics=self.metrics)
+            batch_metrics=self.batch_metrics)
 
         self.dict_output_model = Model(
             DictOutputModel(),
             self.optimizer,
             lambda y_p, y_t: self.loss_function(y_p['out1'], y_t[0]) + self.loss_function(y_p['out2'], y_t[1]),
-            metrics=self.metrics)
+            batch_metrics=self.batch_metrics)
 
         self.mocked_optimizer = some_mocked_optimizer()
         self.mocked_optim_model = Model(self.pytorch_module,
                                         self.mocked_optimizer,
                                         self.loss_function,
-                                        metrics=self.metrics)
+                                        batch_metrics=self.batch_metrics)
 
         self.mock_callback = MagicMock()
 
@@ -636,9 +654,9 @@ class ModelTest(TestCase):
         if steps is None:
             steps = params['steps']
         self.assertEqual(len(logs), params['epochs'])
-        train_dict = dict(zip(self.metrics_names, self.metrics_values), loss=ANY, time=ANY)
+        train_dict = dict(zip(self.batch_metrics_names, self.metrics_values), loss=ANY, time=ANY)
         if has_valid:
-            val_metrics_names = ['val_' + metric_name for metric_name in self.metrics_names]
+            val_metrics_names = ['val_' + metric_name for metric_name in self.batch_metrics_names]
             val_dict = dict(zip(val_metrics_names, self.metrics_values), val_loss=ANY)
             log_dict = {**train_dict, **val_dict}
         else:
@@ -959,7 +977,10 @@ class ModelTest(TestCase):
             self.assertEqual(pred.shape, (num_steps * ModelTest.batch_size, 1))
 
     def test_evaluate_with_only_one_metric(self):
-        self.model = Model(self.pytorch_module, self.optimizer, self.loss_function, metrics=self.metrics[:1])
+        self.model = Model(self.pytorch_module,
+                           self.optimizer,
+                           self.loss_function,
+                           batch_metrics=self.batch_metrics[:1])
         x = torch.rand(ModelTest.evaluate_dataset_len, 1)
         y = torch.rand(ModelTest.evaluate_dataset_len, 1)
         loss, first_metric = self.model.evaluate(x, y, batch_size=ModelTest.batch_size)
@@ -969,7 +990,7 @@ class ModelTest(TestCase):
 
     def test_metrics_integration(self):
         num_steps = 10
-        self.model = Model(self.pytorch_module, self.optimizer, self.loss_function, metrics=[F.mse_loss])
+        self.model = Model(self.pytorch_module, self.optimizer, self.loss_function, batch_metrics=[F.mse_loss])
         train_generator = some_data_tensor_generator(ModelTest.batch_size)
         valid_generator = some_data_tensor_generator(ModelTest.batch_size)
         self.model.fit_generator(train_generator,
@@ -982,6 +1003,20 @@ class ModelTest(TestCase):
         loss, mse = self.model.evaluate_generator(generator, steps=num_steps)
         self.assertEqual(type(loss), float)
         self.assertEqual(type(mse), float)
+
+    def test_epoch_metrics_integration(self):
+        self.model = Model(self.pytorch_module, self.optimizer, self.loss_function, epoch_metrics=[SomeEpochMetric()])
+        train_generator = some_data_tensor_generator(ModelTest.batch_size)
+        valid_generator = some_data_tensor_generator(ModelTest.batch_size)
+        logs = self.model.fit_generator(train_generator,
+                                        valid_generator,
+                                        epochs=1,
+                                        steps_per_epoch=ModelTest.steps_per_epoch,
+                                        validation_steps=ModelTest.steps_per_epoch,
+                                        callbacks=[self.mock_callback])
+        actual_value = logs[-1]['val_SomeEpochMetric']
+        expected_value = 5
+        self.assertEqual(actual_value, expected_value)
 
     def test_evaluate_with_no_metric(self):
         self.model = Model(self.pytorch_module, self.optimizer, self.loss_function)
@@ -1135,7 +1170,7 @@ class ModelTest(TestCase):
         cur_batch_size = ModelTest.batch_size
 
         def down_the_rabbit_hole(obj, cur_batch_size):
-            #pylint: disable=expression-not-assigned
+            # pylint: disable=expression-not-assigned
             if isinstance(obj, (list, tuple)):
                 [down_the_rabbit_hole(o, cur_batch_size) for o in obj]
             elif isinstance(obj, dict):
@@ -1158,7 +1193,7 @@ class ModelTest(TestCase):
             self.assertEqual(_concat(pred_y).shape, (ModelTest.evaluate_dataset_len, 1))
 
     def _test_size_and_type_for_generator(self, pred_y, expected_size):
-        #pylint: disable=expression-not-assigned
+        # pylint: disable=expression-not-assigned
         if isinstance(pred_y, (list, tuple)):
             [self._test_size_and_type_for_generator(o, expected_size) for o in pred_y]
         elif isinstance(pred_y, dict):

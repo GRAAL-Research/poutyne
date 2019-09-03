@@ -160,6 +160,7 @@ API Reference
 
    utils
    framework
+   metrics
    callbacks
    layers
 
