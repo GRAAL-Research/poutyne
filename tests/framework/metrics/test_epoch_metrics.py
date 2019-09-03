@@ -4,6 +4,11 @@ from unittest import TestCase, skipIf
 import numpy
 import torch
 
+try:
+    import allennlp.training.metrics.fbeta_measure as fbeta_measure
+except ImportError:
+    fbeta_measure = None
+
 from poutyne.framework.metrics import F1, FBeta
 
 fake_predictions = torch.Tensor([[0.35, 0.25, 0.1, 0.1, 0.2], [0.1, 0.6, 0.1, 0.2, 0.0], [0.1, 0.6, 0.1, 0.2, 0.0],
@@ -14,7 +19,7 @@ python_version = ".".join([str(sys.version_info[0]), str(sys.version_info[1]), s
 
 
 class ModelTest(TestCase):
-    @skipIf(python_version < "3.6.1", "Allen nlp is not supported")
+    @skipIf(fbeta_measure is None, "Allen nlp is not installed")
     def test_F1Metric_micro_average_metric(self):
         metric = F1()
         metric(fake_predictions, fake_targets)
@@ -33,7 +38,7 @@ class ModelTest(TestCase):
 
         numpy.testing.assert_almost_equal(fscores, micro_fscore, decimal=2)
 
-    @skipIf(python_version < "3.6.1", "Allen nlp is not supported")
+    @skipIf(fbeta_measure is None, "Allen nlp is not installed")
     def test_F1Metric_macro_average_metric(self):
         metric = F1(average='macro')
         metric(fake_predictions, fake_targets)
@@ -48,7 +53,7 @@ class ModelTest(TestCase):
 
         numpy.testing.assert_almost_equal(fscores, macro_fscore, decimal=2)
 
-    @skipIf(python_version < "3.6.1", "Allen nlp is not supported")
+    @skipIf(fbeta_measure is None, "Allen nlp is not installed")
     def test_FBetaMetric_macro_average_metric(self):
         beta = 0.5
         metric = FBeta(beta=beta, average='macro')
@@ -57,7 +62,7 @@ class ModelTest(TestCase):
 
         desired_precisions = [1.00, 0.25, 0.00, 1.00, 0.00]
         desired_recalls = [0.33, 1.00, 0.00, 1.00, 0.00]
-        desired_fscores = [((1 + beta**2) * p * r) / (beta**2 * p + r) if p + r != 0.0 else 0.0
+        desired_fscores = [((1 + beta ** 2) * p * r) / (beta ** 2 * p + r) if p + r != 0.0 else 0.0
                            for p, r in zip(desired_precisions, desired_recalls)]
 
         macro_fscore = numpy.mean(desired_fscores)
