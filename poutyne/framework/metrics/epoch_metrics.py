@@ -76,7 +76,7 @@ class FBeta(EpochMetric):
         Update the confusion matrix for calculating the F-score.
 
         Args:
-            y_prediction : Prediction of the model.
+            y_predict : Predictions of the model.
             y_true : A tensor of the gold labels. Can also be a tuple of gold_label and a mask.
         """
 
