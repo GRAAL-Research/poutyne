@@ -63,7 +63,7 @@ class FBeta(EpochMetric):
 
     def __init__(self, beta=1.0, average='micro'):
         super().__init__()
-        if sys.version_info[1] < 3.6:
+        if ".".join([str(sys.version_info[0]), str(sys.version_info[1]), str(sys.version_info[2])]) < "3.6.1":
             raise NotImplementedError("allen nlp don't support python version older than 3.6.1.")
         if fbeta_measure is None:
             raise ImportError("allen nlp need to be installed to use this class.")
