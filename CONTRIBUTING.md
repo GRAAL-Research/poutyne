@@ -62,12 +62,14 @@ All of the code is formatted using [yapf](https://github.com/google/yapf) with t
 
 ```
 yapf poutyne --recursive --in-place
+yapf tests --recursive --in-place
 ```
 
 We also have our own `pylint` [config file](https://github.com/GRAAL-Research/poutyne/blob/master/.pylintrc). Try not to introduce code incoherences detected by the linting. You can run the linting procedure with
 
 ```
 pylint poutyne
+pylint tests
 ```
 
 ## Tests
