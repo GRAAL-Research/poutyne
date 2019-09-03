@@ -38,7 +38,7 @@ class EpochMetric(ABC):
         pass
 
 
-class F1(EpochMetric):
+class FBeta(EpochMetric):
     """
     Wrapper around the Allen NLP FBetaMeasure class.
 
@@ -101,6 +101,30 @@ class F1(EpochMetric):
         if self.label is not None:
             return self.running_measure.get_metric(reset=reset)['fscore'][self.label]
         return self.running_measure.get_metric(reset=reset)['fscore']
+
+
+class F1(FBeta):
+    """
+    Wrapper around the Allen NLP FBetaMeasure class in the specific case where beta is equal to one (1).
+
+    Args:
+        average : (str) or (int), ['micro' (default), 'macro', label_number]
+        If the arguments is of type integer, The score for this class (the label number) is calculated. Otherwise, this
+        determines the type of averaging performed on all the data:
+        ``'micro'``:
+            Calculate metrics globally by counting the total true positives,
+            false negatives and false positives.
+        ``'macro'``:
+            Calculate metrics for each label, and find their unweighted mean.
+            This does not take label imbalance into account.
+
+    Attributes:
+        Average (str) or (int): The method to calculate the F-score.
+
+    """
+
+    def __init__(self, average='micro'):
+        super().__init__(beta=1, average=average)
 
 
 all_epochs_metrics_dict = dict(f1=F1)
