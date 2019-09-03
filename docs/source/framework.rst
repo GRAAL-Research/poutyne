@@ -12,9 +12,3 @@ Model
 
 .. autoclass:: Model
     :members:
-
-Model Configuration Error
-------------
-
-.. autoclass:: ModelConfigurationError
-    :members:
