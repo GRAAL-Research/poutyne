@@ -31,9 +31,9 @@ class EpochMetric(ABC):
         self.__name__ = self.__class__.__name__
 
     @abstractmethod
-    def get_metric(self, reset):
+    def get_metric(self):
         """
-        Compute and return the metric. Optionally also reset the running measure.
+        Compute and return the metric.
         """
         pass
 
@@ -85,18 +85,15 @@ class FBeta(EpochMetric):
             y_true, mask = y_true
         self.running_measure(y_prediction, y_true, mask=mask)
 
-    def get_metric(self, reset=True):
+    def get_metric(self):
         """
         Method to get the metric score.
 
-        Args:
-            reset (Bool) : To either or not reset the confusion matrix after calculating the F-score. Default value
-            is True.
         """
 
         if self.label is not None:
-            return self.running_measure.get_metric(reset=reset)['fscore'][self.label]
-        return self.running_measure.get_metric(reset=reset)['fscore']
+            return self.running_measure.get_metric(reset=True)['fscore'][self.label]
+        return self.running_measure.get_metric(reset=True)['fscore']
 
 
 class F1(FBeta):
