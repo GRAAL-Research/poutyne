@@ -1,4 +1,5 @@
-from unittest import TestCase
+import sys
+from unittest import TestCase, skipIf
 
 import numpy
 import torch
@@ -11,6 +12,7 @@ fake_targets = torch.Tensor([0, 4, 1, 0, 3, 0])
 
 
 class ModelTest(TestCase):
+    @skipIf(sys.version_info[1] < 3.6, "Allen nlp is not supported")
     def test_F1Metric_micro_average_metric(self):
         metric = F1()
         metric(fake_predictions, fake_targets)
@@ -29,6 +31,7 @@ class ModelTest(TestCase):
 
         numpy.testing.assert_almost_equal(fscores, micro_fscore, decimal=2)
 
+    @skipIf(sys.version_info[1] < 3.6, "Allen nlp is not supported")
     def test_F1Metric_macro_average_metric(self):
         metric = F1(average='macro')
         metric(fake_predictions, fake_targets)

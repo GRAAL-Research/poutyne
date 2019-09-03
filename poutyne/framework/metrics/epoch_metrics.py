@@ -1,3 +1,5 @@
+import sys
+
 from abc import ABC, abstractmethod
 
 try:
@@ -61,6 +63,8 @@ class F1(EpochMetric):
 
     def __init__(self, beta=1.0, average='micro'):
         super().__init__()
+        if sys.version_info[1] < 3.6:
+            raise NotImplementedError("allen nlp don't support python version older than 3.6.1.")
         if allennlp_metrics is None:
             raise ImportError("allen nlp need to be installed to use this class.")
 
