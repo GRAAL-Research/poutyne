@@ -1,10 +1,12 @@
 import os
+
 import unittest
-from math import ceil
 from unittest import TestCase, skipIf
 from unittest.mock import MagicMock, call, ANY
 
+from math import ceil
 import numpy as np
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -975,7 +977,9 @@ class ModelTest(TestCase):
             self.assertEqual(pred.shape, (num_steps * ModelTest.batch_size, 1))
 
     def test_evaluate_with_only_one_metric(self):
-        self.model = Model(self.pytorch_module, self.optimizer, self.loss_function,
+        self.model = Model(self.pytorch_module,
+                           self.optimizer,
+                           self.loss_function,
                            batch_metrics=self.batch_metrics[:1])
         x = torch.rand(ModelTest.evaluate_dataset_len, 1)
         y = torch.rand(ModelTest.evaluate_dataset_len, 1)
