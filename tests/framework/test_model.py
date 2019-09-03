@@ -30,9 +30,11 @@ def some_batch_metric_2(y, y_pred):
     # pylint: disable=unused-argument
     return torch.FloatTensor([some_metric_2_value])
 
+
 def some_epoch_metric(y, y_pred):
     # pylint: disable=unused-argument
     return torch.FloatTensor([some_metric_1_value])
+
 
 def some_data_tensor_generator(batch_size):
     while True:
