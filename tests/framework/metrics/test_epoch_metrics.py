@@ -55,7 +55,7 @@ class ModelTest(TestCase):
 
         desired_precisions = [1.00, 0.25, 0.00, 1.00, 0.00]
         desired_recalls = [0.33, 1.00, 0.00, 1.00, 0.00]
-        desired_fscores = [((1 + beta ** 2) * p * r) / (beta ** 2 * p + r) if p + r != 0.0 else 0.0
+        desired_fscores = [((1 + beta**2) * p * r) / (beta**2 * p + r) if p + r != 0.0 else 0.0
                            for p, r in zip(desired_precisions, desired_recalls)]
 
         macro_fscore = numpy.mean(desired_fscores)
