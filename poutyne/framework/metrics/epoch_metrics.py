@@ -60,22 +60,6 @@ class F1(EpochMetric):
         return self.running_measure.get_metric(reset=reset)['fscore']
 
 
-class MeanAbsoluteError(EpochMetric):
-    """
-    Wrapper around the Allen NLP MeanAbsoluteError class.
-    """
-
-    def __init__(self):
-        super().__init__()
-        self.running_measure = MeanAbsoluteError()
-
-    def __call__(self, y_prediction, y_true):
-        self.running_measure(y_prediction, y_true)
-
-    def get_metric(self, reset=True):
-        return self.running_measure.get_metric()
-
-
 all_epochs_metrics_dict = dict(f1=F1)
 
 
