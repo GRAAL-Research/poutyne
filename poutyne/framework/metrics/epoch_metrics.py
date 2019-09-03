@@ -3,9 +3,9 @@ import sys
 from abc import ABC, abstractmethod
 
 try:
-    import allennlp.training.metrics.FBetaMeasure as FBetaMeasure
+    import allennlp.training.metrics.fbeta_measure as fbeta_measure
 except ImportError:
-    FBetaMeasure = None
+    fbeta_measure = None
 
 
 class EpochMetric(ABC):
@@ -65,15 +65,15 @@ class FBeta(EpochMetric):
         super().__init__()
         if sys.version_info[1] < 3.6:
             raise NotImplementedError("allen nlp don't support python version older than 3.6.1.")
-        if FBetaMeasure is None:
+        if fbeta_measure is None:
             raise ImportError("allen nlp need to be installed to use this class.")
 
         self.label = None
         if isinstance(average, int):
             self.label = average
-            self.running_measure = FBetaMeasure.FBetaMeasure(beta=beta)
+            self.running_measure = fbeta_measure.FBetaMeasure(beta=beta)
         else:
-            self.running_measure = FBetaMeasure.FBetaMeasure(beta=beta, average=average)
+            self.running_measure = fbeta_measure.FBetaMeasure(beta=beta, average=average)
 
     def __call__(self, y_prediction, y_true):
         """
