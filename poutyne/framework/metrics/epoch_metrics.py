@@ -1,9 +1,9 @@
 from abc import ABC, abstractmethod
 
 try:
-    from allennlp.training.metrics import FBetaMeasure
+    import allennlp.training.metrics as allennlp_metrics
 except ImportError:
-    FBetaMeasure = None
+    allennlp_metrics = None
 
 
 class EpochMetric(ABC):
@@ -53,27 +53,47 @@ class F1(EpochMetric):
             Calculate metrics for each label, and find their unweighted mean.
             This does not take label imbalance into account.
 
+    Attributes:
+        Beta (float): The averaging of recall versus precision.
+        Average (str) or (int): The method to calculate the F-score.
+
     """
 
     def __init__(self, beta=1.0, average='micro'):
         super().__init__()
-        if FBetaMeasure is None:
+        if allennlp_metrics is None:
             raise ImportError("allen nlp need to be installed to use this class.")
 
         self.label = None
         if isinstance(average, int):
             self.label = average
-            self.running_measure = FBetaMeasure(beta=beta)
+            self.running_measure = allennlp_metrics.FBetaMeasure(beta=beta)
         else:
-            self.running_measure = FBetaMeasure(beta=beta, average=average)
+            self.running_measure = allennlp_metrics.FBetaMeasure(beta=beta, average=average)
 
     def __call__(self, y_prediction, y_true):
+        """
+        Update the confusion matrix for calculating the F-score.
+
+        Args:
+            y_prediction : Prediction of the model.
+            y_true : A tensor of the gold labels. Can also be a tuple of gold_label and a mask.
+        """
+
         mask = None
         if isinstance(y_true, tuple):
             y_true, mask = y_true
         self.running_measure(y_prediction, y_true, mask=mask)
 
     def get_metric(self, reset=True):
+        """
+        Method to get the metric score.
+
+        Args:
+            reset (Bool) : To either or not reset the confusion matrix after calculating the F-score. Default value
+            is True.
+        """
+
         if self.label is not None:
             return self.running_measure.get_metric(reset=reset)['fscore'][self.label]
         return self.running_measure.get_metric(reset=reset)['fscore']
