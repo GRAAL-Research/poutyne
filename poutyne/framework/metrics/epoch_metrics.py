@@ -46,7 +46,7 @@ class FBeta(EpochMetric):
         beta : (float), optional (default = 1.0) The strength of recall versus precision in the F-score.
 
         average : (str) or (int), ['micro' (default), 'macro', label_number]
-        If the arguments is of type integer, the score for this class (the label number) is calculated. Otherwise, this
+        If the argument is of type integer, the score for this class (the label number) is calculated. Otherwise, this
         determines the type of averaging performed on all the data:
         ``'micro'``:
             Calculate metrics globally by counting the total true positives,
