@@ -5,8 +5,6 @@
 
 ## Here is Poutyne.
 
-> As you can see, PyToune has changed its name for Poutyne. From now on, please use the new package name `poutyne`. The `pytoune` package has been kept for this release but will be removed in the next release.
-
 Poutyne is a Keras-like framework for [PyTorch](https://pytorch.org/) and handles much of the boilerplating code needed to train neural networks.
 
 Use Poutyne to:
