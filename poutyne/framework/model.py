@@ -156,6 +156,18 @@ class Model:
 
         self.device = None
 
+    @property
+    def metrics(self):
+        warnings.warn('metrics attribute has been deprecated as of version 0.5.1. Use batch_metrics instead.',
+                      Warning)
+        return self.batch_metrics
+
+    @property
+    def metrics_names(self):
+        warnings.warn('metrics_names attribute has been deprecated as of version 0.5.1. Use batch_metrics instead.',
+                      Warning)
+        return self.batch_metrics_names
+
     @contextlib.contextmanager
     def _set_training_mode(self, training):
         old_training = self.model.training
