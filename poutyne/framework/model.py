@@ -1,3 +1,4 @@
+# pylint: disable=too-many-lines
 import contextlib
 import warnings
 from collections import defaultdict
@@ -19,7 +20,7 @@ from ..utils import _concat
 
 
 class Model:
-    # pylint: disable=line-too-long
+    # pylint: disable=line-too-long,too-many-public-methods
     """
     The Model class encapsulates a PyTorch module/network, a PyTorch optimizer, a loss function and
     metric functions. It allows the user to train a neural network without hand-coding the
@@ -158,8 +159,7 @@ class Model:
 
     @property
     def metrics(self):
-        warnings.warn('metrics attribute has been deprecated as of version 0.5.1. Use batch_metrics instead.',
-                      Warning)
+        warnings.warn('metrics attribute has been deprecated as of version 0.5.1. Use batch_metrics instead.', Warning)
         return self.batch_metrics
 
     @property
