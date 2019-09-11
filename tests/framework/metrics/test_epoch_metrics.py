@@ -1,4 +1,3 @@
-import sys
 from unittest import TestCase, skipIf
 
 import numpy
@@ -11,18 +10,16 @@ except ImportError:
 
 from poutyne.framework.metrics import F1, FBeta
 
-fake_predictions = torch.Tensor([[0.35, 0.25, 0.1, 0.1, 0.2], [0.1, 0.6, 0.1, 0.2, 0.0], [0.1, 0.6, 0.1, 0.2, 0.0],
-                                 [0.1, 0.5, 0.1, 0.2, 0.0], [0.1, 0.2, 0.1, 0.7, 0.0], [0.1, 0.6, 0.1, 0.2, 0.0]])
-fake_targets = torch.Tensor([0, 4, 1, 0, 3, 0])
 
-python_version = ".".join([str(sys.version_info[0]), str(sys.version_info[1]), str(sys.version_info[2])])
+class F1MetricTest(TestCase):
+    fake_predictions = torch.Tensor([[0.35, 0.25, 0.1, 0.1, 0.2], [0.1, 0.6, 0.1, 0.2, 0.0], [0.1, 0.6, 0.1, 0.2, 0.0],
+                                     [0.1, 0.5, 0.1, 0.2, 0.0], [0.1, 0.2, 0.1, 0.7, 0.0], [0.1, 0.6, 0.1, 0.2, 0.0]])
+    fake_targets = torch.Tensor([0, 4, 1, 0, 3, 0])
 
-
-class ModelTest(TestCase):
     @skipIf(fbeta_measure is None, "Allen nlp is not installed")
     def test_F1Metric_micro_average_metric(self):
         metric = F1()
-        metric(fake_predictions, fake_targets)
+        metric(F1MetricTest.fake_predictions, F1MetricTest.fake_targets)
         fscores = metric.get_metric()
 
         true_positives = [1, 1, 0, 1, 0]
@@ -41,7 +38,7 @@ class ModelTest(TestCase):
     @skipIf(fbeta_measure is None, "Allen nlp is not installed")
     def test_F1Metric_macro_average_metric(self):
         metric = F1(average='macro')
-        metric(fake_predictions, fake_targets)
+        metric(F1MetricTest.fake_predictions, F1MetricTest.fake_targets)
         fscores = metric.get_metric()
 
         desired_precisions = [1.00, 0.25, 0.00, 1.00, 0.00]
@@ -57,7 +54,7 @@ class ModelTest(TestCase):
     def test_FBetaMetric_macro_average_metric(self):
         beta = 0.5
         metric = FBeta(beta=beta, average='macro')
-        metric(fake_predictions, fake_targets)
+        metric(F1MetricTest.fake_predictions, F1MetricTest.fake_targets)
         fscores = metric.get_metric()
 
         desired_precisions = [1.00, 0.25, 0.00, 1.00, 0.00]
