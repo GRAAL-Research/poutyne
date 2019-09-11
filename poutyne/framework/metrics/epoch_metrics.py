@@ -127,5 +127,5 @@ def get_epoch_metric(epoch_metric):
         epoch_metric = epoch_metric.lower()
         epoch_metric = epoch_metric[:-5] if epoch_metric.endswith('score') else epoch_metric
         epoch_metric = epoch_metric.replace('_', '')
-        return all_epochs_metrics_dict[epoch_metric]
+        return all_epochs_metrics_dict[epoch_metric]()
     return epoch_metric
