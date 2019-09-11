@@ -392,11 +392,15 @@ class Model:
                 self._adjust_step_size(examples_in_step)
                 self.optimizer.step()
 
-            train_step_iterator.epoch_metrics = [epoch_metric.get_metric() for epoch_metric in self.epoch_metrics]
+            train_step_iterator.epoch_metrics = [
+                float(epoch_metric.get_metric()) for epoch_metric in self.epoch_metrics
+            ]
 
             if valid_step_iterator is not None:
                 self._validate(valid_step_iterator)
-                valid_step_iterator.epoch_metrics = [epoch_metric.get_metric() for epoch_metric in self.epoch_metrics]
+                valid_step_iterator.epoch_metrics = [
+                    float(epoch_metric.get_metric()) for epoch_metric in self.epoch_metrics
+                ]
 
             epoch_iterator.stop_training = self.stop_training
 
@@ -440,11 +444,15 @@ class Model:
                     step.loss, step.metrics, _ = self._fit_batch(x, y, callback=callback_list, step=step.number)
                     step.size = self._get_batch_size(x, y)
 
-            train_step_iterator.epoch_metrics = [epoch_metric.get_metric() for epoch_metric in self.epoch_metrics]
+            train_step_iterator.epoch_metrics = [
+                float(epoch_metric.get_metric()) for epoch_metric in self.epoch_metrics
+            ]
 
             if valid_step_iterator is not None:
                 self._validate(valid_step_iterator)
-                valid_step_iterator.epoch_metrics = [epoch_metric.get_metric() for epoch_metric in self.epoch_metrics]
+                valid_step_iterator.epoch_metrics = [
+                    float(epoch_metric.get_metric()) for epoch_metric in self.epoch_metrics
+                ]
 
             epoch_iterator.stop_training = self.stop_training
 
