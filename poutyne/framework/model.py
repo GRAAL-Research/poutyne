@@ -392,15 +392,11 @@ class Model:
                 self._adjust_step_size(examples_in_step)
                 self.optimizer.step()
 
-            train_step_iterator.epoch_metrics = [
-                float(epoch_metric.get_metric()) for epoch_metric in self.epoch_metrics
-            ]
+            train_step_iterator.epoch_metrics = self._get_epoch_metrics()
 
             if valid_step_iterator is not None:
                 self._validate(valid_step_iterator)
-                valid_step_iterator.epoch_metrics = [
-                    float(epoch_metric.get_metric()) for epoch_metric in self.epoch_metrics
-                ]
+                valid_step_iterator.epoch_metrics = self._get_epoch_metrics()
 
             epoch_iterator.stop_training = self.stop_training
 
@@ -444,15 +440,11 @@ class Model:
                     step.loss, step.metrics, _ = self._fit_batch(x, y, callback=callback_list, step=step.number)
                     step.size = self._get_batch_size(x, y)
 
-            train_step_iterator.epoch_metrics = [
-                float(epoch_metric.get_metric()) for epoch_metric in self.epoch_metrics
-            ]
+            train_step_iterator.epoch_metrics = self._get_epoch_metrics()
 
             if valid_step_iterator is not None:
                 self._validate(valid_step_iterator)
-                valid_step_iterator.epoch_metrics = [
-                    float(epoch_metric.get_metric()) for epoch_metric in self.epoch_metrics
-                ]
+                valid_step_iterator.epoch_metrics = self._get_epoch_metrics()
 
             epoch_iterator.stop_training = self.stop_training
 
@@ -605,12 +597,17 @@ class Model:
             Tuple ``(loss, metrics, pred_y)`` where specific elements are omitted if not
             applicable. If only loss is applicable, then it is returned as a float.
 
-            `metrics`` is a Numpy array of size ``n``, where ``n`` is the
-            number of metrics if ``n > 1``. If ``n == 1``, then ``metrics`` is a
-            float. If ``n == 0``, the ``metrics`` is omitted.
+            ``metrics`` is a Numpy array of size ``n``, where ``n`` is the
+            number of batch metrics plus the number of epoch metrics if ``n > 1``. If
+            ``n == 1``, then ``metrics`` is a float. If ``n == 0``, the ``metrics`` is
+            omitted. The first elements of ``metrics`` are the batch metrics and are
+            followed by the epoch metrics. See the :func:`~Model.fit_generator()` method
+            for examples with batch metrics and epoch metrics.
 
             If ``return_pred`` is True, ``pred_y`` is the list of the predictions
             of each batch with tensors converted into Numpy arrays. It is otherwise ommited.
+
+
         """
         generator = self._dataloader_from_data((x, y), batch_size=batch_size)
         ret = self.evaluate_generator(generator, steps=len(generator), return_pred=return_pred)
@@ -638,9 +635,11 @@ class Model:
             omitted if not applicable. If only loss is applicable, then it is returned
             as a float.
 
-            `metrics`` is a Numpy array of size ``n``, where ``n`` is the
-            number of metrics if ``n > 1``. If ``n == 1``, then ``metrics`` is a
-            float. If ``n == 0``, the ``metrics`` is omitted.
+            ``metrics`` is a Numpy array of size ``n``, where ``n`` is the
+            number of batch metrics plus the number of epoch metrics if ``n > 1``. If
+            ``n == 1``, then ``metrics`` is a float. If ``n == 0``, the ``metrics`` is
+            omitted. The first elements of ``metrics`` are the batch metrics and are
+            followed by the epoch metrics.
 
             If ``return_pred`` is True, ``pred_y`` is the list of the predictions
             of each batch with tensors converted into Numpy arrays. It is otherwise ommited.
@@ -653,41 +652,49 @@ class Model:
             .. code-block:: python
 
                 model = Model(pytorch_module, optimizer, loss_function,
-                              metrics=None)
+                              batch_metrics=None)
                 loss = model.evaluate_generator(test_generator)
 
-            With only one metric:
+            With only one batch metric:
 
             .. code-block:: python
 
                 model = Model(pytorch_module, optimizer, loss_function,
-                              metrics=[my_metric_fn])
+                              batch_metrics=[my_metric_fn])
                 loss, my_metric = model.evaluate_generator(test_generator)
 
-            With several metrics:
+            With several batch metrics:
 
             .. code-block:: python
 
                 model = Model(pytorch_module, optimizer, loss_function,
-                              metrics=[my_metric1_fn, my_metric2_fn])
+                              batch_metrics=[my_metric1_fn, my_metric2_fn])
                 loss, (my_metric1, my_metric2) = model.evaluate_generator(test_generator)
 
-            With metrics and ``return_pred`` flag:
+            With one batch metric and one epoch metric:
 
             .. code-block:: python
 
                 model = Model(pytorch_module, optimizer, loss_function,
-                              metrics=[my_metric1_fn, my_metric2_fn])
+                              batch_metrics=[my_metric_fn], epoch_metrics=[MyEpochMetricClass()])
+                loss, (my_batch_metric, my__epoch_metric) = model.evaluate_generator(test_generator)
+
+            With batch metrics and ``return_pred`` flag:
+
+            .. code-block:: python
+
+                model = Model(pytorch_module, optimizer, loss_function,
+                              batch_metrics=[my_metric1_fn, my_metric2_fn])
                 loss, (my_metric1, my_metric2), pred_y = model.evaluate_generator(
                     test_generator, return_pred=True
                 )
 
-            With metrics, ``return_pred`` and ``return_ground_truth`` flags:
+            With batch metrics, ``return_pred`` and ``return_ground_truth`` flags:
 
             .. code-block:: python
 
                 model = Model(pytorch_module, optimizer, loss_function,
-                              metrics=[my_metric1_fn, my_metric2_fn])
+                              batch_metrics=[my_metric1_fn, my_metric2_fn])
                 loss, (my_metric1, my_metric2), pred_y, true_y = model.evaluate_generator(
                     test_generator, return_pred=True, return_ground_truth=True
                 )
@@ -695,9 +702,11 @@ class Model:
         if steps is None:
             steps = len(generator)
         step_iterator = StepIterator(generator, steps, Callback(), self.batch_metrics_names)
-        loss, metrics, pred_y, true_y = self._validate(step_iterator,
-                                                       return_pred=return_pred,
-                                                       return_ground_truth=return_ground_truth)
+        loss, batch_metrics, pred_y, true_y = self._validate(step_iterator,
+                                                             return_pred=return_pred,
+                                                             return_ground_truth=return_ground_truth)
+        epoch_metrics = self._get_epoch_metrics()
+        metrics = np.concatenate((batch_metrics, epoch_metrics))
         return self._format_return(loss, metrics, pred_y, return_pred, true_y, return_ground_truth)
 
     def evaluate_on_batch(self, x, y, *, return_pred=False):
@@ -763,6 +772,9 @@ class Model:
 
     def _compute_metrics(self, pred_y, y):
         return np.array([float(metric(pred_y, y)) for metric in self.batch_metrics])
+
+    def _get_epoch_metrics(self):
+        return np.array([float(epoch_metric.get_metric()) for epoch_metric in self.epoch_metrics])
 
     def _get_batch_size(self, x, y):
         if torch.is_tensor(x) or isinstance(x, np.ndarray):
