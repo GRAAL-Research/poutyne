@@ -9,7 +9,7 @@ class Logger(Callback):
         self.epoch = 0
 
     def on_train_begin(self, logs):
-        metrics = ['loss'] + self.model.batch_metrics_names
+        metrics = ['loss'] + self.model.metrics_names
 
         if self.batch_granularity:
             self.fieldnames = ['epoch', 'batch', 'size', 'time', 'lr']

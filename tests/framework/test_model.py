@@ -990,39 +990,40 @@ class ModelTest(TestCase):
 
     def test_metrics_integration(self):
         num_steps = 10
-        self.model = Model(self.pytorch_module, self.optimizer, self.loss_function, batch_metrics=[F.mse_loss])
+        model = Model(self.pytorch_module, self.optimizer, self.loss_function, batch_metrics=[F.mse_loss])
         train_generator = some_data_tensor_generator(ModelTest.batch_size)
         valid_generator = some_data_tensor_generator(ModelTest.batch_size)
-        self.model.fit_generator(train_generator,
-                                 valid_generator,
-                                 epochs=ModelTest.epochs,
-                                 steps_per_epoch=ModelTest.steps_per_epoch,
-                                 validation_steps=ModelTest.steps_per_epoch,
-                                 callbacks=[self.mock_callback])
+        model.fit_generator(train_generator,
+                            valid_generator,
+                            epochs=ModelTest.epochs,
+                            steps_per_epoch=ModelTest.steps_per_epoch,
+                            validation_steps=ModelTest.steps_per_epoch,
+                            callbacks=[self.mock_callback])
         generator = some_data_tensor_generator(ModelTest.batch_size)
-        loss, mse = self.model.evaluate_generator(generator, steps=num_steps)
+        loss, mse = model.evaluate_generator(generator, steps=num_steps)
         self.assertEqual(type(loss), float)
         self.assertEqual(type(mse), float)
 
     def test_epoch_metrics_integration(self):
-        self.model = Model(self.pytorch_module, self.optimizer, self.loss_function, epoch_metrics=[SomeEpochMetric()])
+        model = Model(self.pytorch_module, self.optimizer, self.loss_function, epoch_metrics=[SomeEpochMetric()])
         train_generator = some_data_tensor_generator(ModelTest.batch_size)
         valid_generator = some_data_tensor_generator(ModelTest.batch_size)
-        logs = self.model.fit_generator(train_generator,
-                                        valid_generator,
-                                        epochs=1,
-                                        steps_per_epoch=ModelTest.steps_per_epoch,
-                                        validation_steps=ModelTest.steps_per_epoch,
-                                        callbacks=[self.mock_callback])
-        actual_value = logs[-1]['val_SomeEpochMetric']
+        logs = model.fit_generator(train_generator,
+                                   valid_generator,
+                                   epochs=1,
+                                   steps_per_epoch=ModelTest.steps_per_epoch,
+                                   validation_steps=ModelTest.steps_per_epoch)
+        actual_value = logs[-1]['SomeEpochMetric']
+        val_actual_value = logs[-1]['val_SomeEpochMetric']
         expected_value = 5
+        self.assertEqual(val_actual_value, expected_value)
         self.assertEqual(actual_value, expected_value)
 
     def test_evaluate_with_no_metric(self):
-        self.model = Model(self.pytorch_module, self.optimizer, self.loss_function)
+        model = Model(self.pytorch_module, self.optimizer, self.loss_function)
         x = torch.rand(ModelTest.evaluate_dataset_len, 1)
         y = torch.rand(ModelTest.evaluate_dataset_len, 1)
-        loss = self.model.evaluate(x, y, batch_size=ModelTest.batch_size)
+        loss = model.evaluate(x, y, batch_size=ModelTest.batch_size)
         self.assertEqual(type(loss), float)
 
     def test_tensor_evaluate_on_batch(self):

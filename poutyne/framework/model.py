@@ -1,4 +1,3 @@
-# pylint: disable=too-many-lines
 import contextlib
 import warnings
 from collections import defaultdict
@@ -20,7 +19,7 @@ from ..utils import _concat
 
 
 class Model:
-    # pylint: disable=line-too-long,too-many-public-methods
+    # pylint: disable=line-too-long
     """
     The Model class encapsulates a PyTorch module/network, a PyTorch optimizer, a loss function and
     metric functions. It allows the user to train a neural network without hand-coding the
@@ -155,18 +154,9 @@ class Model:
         self.epoch_metrics = list(map(get_epoch_metric, epoch_metrics))
         self.epoch_metrics_names = [metric.__name__ for metric in self.epoch_metrics]
 
+        self.metrics_names = self.batch_metrics_names + self.epoch_metrics_names
+
         self.device = None
-
-    @property
-    def metrics(self):
-        warnings.warn('metrics attribute has been deprecated as of version 0.5.1. Use batch_metrics instead.', Warning)
-        return self.batch_metrics
-
-    @property
-    def metrics_names(self):
-        warnings.warn('metrics_names attribute has been deprecated as of version 0.5.1. Use batch_metrics instead.',
-                      Warning)
-        return self.batch_metrics_names
 
     @contextlib.contextmanager
     def _set_training_mode(self, training):

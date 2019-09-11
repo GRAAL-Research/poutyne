@@ -15,20 +15,19 @@ class EpochMetric(ABC):
     of the epoch.
     """
 
+    def __init__(self):
+        self.__name__ = self.__class__.__name__
+
     @abstractmethod
-    def __call__(self, y_prediction, y_true):
+    def __call__(self, y_pred, y_true):
         """
         To define the behavior of the metric when called.
 
         Args:
-            y_prediction: The prediction of the model.
+            y_pred: The prediction of the model.
             y_true: Target to evaluate the model.
         """
         pass
-
-    @abstractmethod
-    def __init__(self):
-        self.__name__ = self.__class__.__name__
 
     @abstractmethod
     def get_metric(self):

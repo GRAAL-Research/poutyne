@@ -146,6 +146,7 @@ class EpochIterator:
 
             epoch_total_time = timeit.default_timer() - epoch_begin_time
             metrics_dict = dict(zip(self.batch_metrics_names, train_step_iterator.metrics))
+            metrics_dict.update(dict(zip(self.epoch_metrics_names, train_step_iterator.epoch_metrics)))
 
             epoch_log = {
                 'epoch': epoch,
