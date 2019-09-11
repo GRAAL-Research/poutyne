@@ -823,9 +823,7 @@ class ModelTest(TestCase):
         loss, metrics = self.model.evaluate(x, y, batch_size=ModelTest.batch_size)
         self.assertEqual(type(loss), float)
         self.assertEqual(type(metrics), np.ndarray)
-        self.assertEqual(metrics.tolist(), [some_metric_1_value,
-                                            some_metric_2_value,
-                                            some_constant_epoch_metric_value])
+        self.assertEqual(metrics.tolist(), [some_metric_1_value, some_metric_2_value, some_constant_epoch_metric_value])
 
     def test_evaluate_multi_input(self):
         x = (torch.rand(ModelTest.evaluate_dataset_len, 1), torch.rand(ModelTest.evaluate_dataset_len, 1))
@@ -833,9 +831,7 @@ class ModelTest(TestCase):
         loss, metrics = self.multi_input_model.evaluate(x, y, batch_size=ModelTest.batch_size)
         self.assertEqual(type(loss), float)
         self.assertEqual(type(metrics), np.ndarray)
-        self.assertEqual(metrics.tolist(), [some_metric_1_value,
-                                            some_metric_2_value,
-                                            some_constant_epoch_metric_value])
+        self.assertEqual(metrics.tolist(), [some_metric_1_value, some_metric_2_value, some_constant_epoch_metric_value])
 
     def test_evaluate_with_pred(self):
         x = torch.rand(ModelTest.evaluate_dataset_len, 1)
@@ -889,9 +885,7 @@ class ModelTest(TestCase):
         loss, metrics, pred_y = self.model.evaluate(x, y, batch_size=ModelTest.batch_size, return_pred=True)
         self.assertEqual(type(loss), float)
         self.assertEqual(type(metrics), np.ndarray)
-        self.assertEqual(metrics.tolist(), [some_metric_1_value,
-                                            some_metric_2_value,
-                                            some_constant_epoch_metric_value])
+        self.assertEqual(metrics.tolist(), [some_metric_1_value, some_metric_2_value, some_constant_epoch_metric_value])
         self.assertEqual(pred_y.shape, (ModelTest.evaluate_dataset_len, 1))
 
     def test_evaluate_with_np_array_multi_input(self):
@@ -902,9 +896,7 @@ class ModelTest(TestCase):
         loss, metrics, pred_y = self.multi_input_model.evaluate(x, y, batch_size=ModelTest.batch_size, return_pred=True)
         self.assertEqual(type(loss), float)
         self.assertEqual(type(metrics), np.ndarray)
-        self.assertEqual(metrics.tolist(), [some_metric_1_value,
-                                            some_metric_2_value,
-                                            some_constant_epoch_metric_value])
+        self.assertEqual(metrics.tolist(), [some_metric_1_value, some_metric_2_value, some_constant_epoch_metric_value])
         self.assertEqual(pred_y.shape, (ModelTest.evaluate_dataset_len, 1))
 
     def test_evaluate_data_loader(self):
@@ -915,9 +907,7 @@ class ModelTest(TestCase):
         loss, metrics, pred_y = self.model.evaluate_generator(generator, return_pred=True)
         self.assertEqual(type(loss), float)
         self.assertEqual(type(metrics), np.ndarray)
-        self.assertEqual(metrics.tolist(), [some_metric_1_value,
-                                            some_metric_2_value,
-                                            some_constant_epoch_metric_value])
+        self.assertEqual(metrics.tolist(), [some_metric_1_value, some_metric_2_value, some_constant_epoch_metric_value])
         self._test_predictions_for_evaluate_and_predict_generator(pred_y)
 
     def test_evaluate_data_loader_multi_input(self):
@@ -929,9 +919,7 @@ class ModelTest(TestCase):
         loss, metrics, pred_y = self.multi_input_model.evaluate_generator(generator, return_pred=True)
         self.assertEqual(type(loss), float)
         self.assertEqual(type(metrics), np.ndarray)
-        self.assertEqual(metrics.tolist(), [some_metric_1_value,
-                                            some_metric_2_value,
-                                            some_constant_epoch_metric_value])
+        self.assertEqual(metrics.tolist(), [some_metric_1_value, some_metric_2_value, some_constant_epoch_metric_value])
         self._test_predictions_for_evaluate_and_predict_generator(pred_y)
 
     def test_evaluate_data_loader_multi_output(self):
@@ -943,9 +931,7 @@ class ModelTest(TestCase):
         loss, metrics, pred_y = self.multi_output_model.evaluate_generator(generator, return_pred=True)
         self.assertEqual(type(loss), float)
         self.assertEqual(type(metrics), np.ndarray)
-        self.assertEqual(metrics.tolist(), [some_metric_1_value,
-                                            some_metric_2_value,
-                                            some_constant_epoch_metric_value])
+        self.assertEqual(metrics.tolist(), [some_metric_1_value, some_metric_2_value, some_constant_epoch_metric_value])
         self._test_predictions_for_evaluate_and_predict_generator(pred_y, multi_output=True)
 
     def test_evaluate_generator(self):
@@ -954,9 +940,7 @@ class ModelTest(TestCase):
         loss, metrics, pred_y = self.model.evaluate_generator(generator, steps=num_steps, return_pred=True)
         self.assertEqual(type(loss), float)
         self.assertEqual(type(metrics), np.ndarray)
-        self.assertEqual(metrics.tolist(), [some_metric_1_value,
-                                            some_metric_2_value,
-                                            some_constant_epoch_metric_value])
+        self.assertEqual(metrics.tolist(), [some_metric_1_value, some_metric_2_value, some_constant_epoch_metric_value])
         for pred in pred_y:
             self.assertEqual(type(pred), np.ndarray)
             self.assertEqual(pred.shape, (ModelTest.batch_size, 1))
@@ -971,9 +955,7 @@ class ModelTest(TestCase):
                                                                       return_ground_truth=True)
         self.assertEqual(type(loss), float)
         self.assertEqual(type(metrics), np.ndarray)
-        self.assertEqual(metrics.tolist(), [some_metric_1_value,
-                                            some_metric_2_value,
-                                            some_constant_epoch_metric_value])
+        self.assertEqual(metrics.tolist(), [some_metric_1_value, some_metric_2_value, some_constant_epoch_metric_value])
         for pred, true in zip(pred_y, true_y):
             self.assertEqual(type(pred), np.ndarray)
             self.assertEqual(pred.shape, (ModelTest.batch_size, 1))
@@ -988,9 +970,7 @@ class ModelTest(TestCase):
         loss, metrics, pred_y = self.multi_input_model.evaluate_generator(generator, steps=num_steps, return_pred=True)
         self.assertEqual(type(loss), float)
         self.assertEqual(type(metrics), np.ndarray)
-        self.assertEqual(metrics.tolist(), [some_metric_1_value,
-                                            some_metric_2_value,
-                                            some_constant_epoch_metric_value])
+        self.assertEqual(metrics.tolist(), [some_metric_1_value, some_metric_2_value, some_constant_epoch_metric_value])
         self._test_size_and_type_for_generator(pred_y, (ModelTest.batch_size, 1))
 
         # for pred in pred_y:
@@ -1004,9 +984,7 @@ class ModelTest(TestCase):
         loss, metrics, pred_y = self.multi_output_model.evaluate_generator(generator, steps=num_steps, return_pred=True)
         self.assertEqual(type(loss), float)
         self.assertEqual(type(metrics), np.ndarray)
-        self.assertEqual(metrics.tolist(), [some_metric_1_value,
-                                            some_metric_2_value,
-                                            some_constant_epoch_metric_value])
+        self.assertEqual(metrics.tolist(), [some_metric_1_value, some_metric_2_value, some_constant_epoch_metric_value])
         self._test_size_and_type_for_generator(pred_y, (ModelTest.batch_size, 1))
         for pred in _concat(pred_y):
             self.assertEqual(pred.shape, (num_steps * ModelTest.batch_size, 1))
@@ -1017,9 +995,7 @@ class ModelTest(TestCase):
         loss, metrics, pred_y = self.multi_output_model.evaluate_generator(generator, steps=num_steps, return_pred=True)
         self.assertEqual(type(loss), float)
         self.assertEqual(type(metrics), np.ndarray)
-        self.assertEqual(metrics.tolist(), [some_metric_1_value,
-                                            some_metric_2_value,
-                                            some_constant_epoch_metric_value])
+        self.assertEqual(metrics.tolist(), [some_metric_1_value, some_metric_2_value, some_constant_epoch_metric_value])
         self._test_size_and_type_for_generator(pred_y, (ModelTest.batch_size, 1))
         for pred in _concat(pred_y):
             self.assertEqual(pred.shape, (num_steps * ModelTest.batch_size, 1))

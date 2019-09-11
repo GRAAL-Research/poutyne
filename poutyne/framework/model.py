@@ -1,3 +1,4 @@
+# pylint: disable=too-many-lines
 import contextlib
 import warnings
 from collections import defaultdict
