@@ -65,6 +65,7 @@ class Experiment:
 
         loss_function = self._get_loss_function(loss_function, module, type)
         batch_metrics = self._get_batch_metrics(batch_metrics, module, type)
+        epoch_metrics = self._get_epoch_metrics(epoch_metrics, module)
         self._set_monitor(monitor_metric, monitor_mode, type)
 
         self.model = Model(module, optimizer, loss_function, batch_metrics=batch_metrics, epoch_metrics=epoch_metrics)
@@ -105,6 +106,12 @@ class Experiment:
             if type is not None and type.startswith('classif'):
                 return ['accuracy']
         return batch_metrics
+
+    def _get_epoch_metrics(self, epoch_metrics, module):
+        if epoch_metrics is None or len(epoch_metrics) == 0:
+            if hasattr(module, 'epoch_metrics'):
+                return module.epoch_metrics
+        return epoch_metrics
 
     def _set_monitor(self, monitor_metric, monitor_mode, type):
         if monitor_mode is not None and monitor_mode not in ['min', 'max']:
