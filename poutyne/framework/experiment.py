@@ -49,7 +49,8 @@ class Experiment:
                  logging=True,
                  optimizer='sgd',
                  loss_function=None,
-                 metrics=None,
+                 batch_metrics=None,
+                 epoch_metrics=None,
                  monitor_metric=None,
                  monitor_mode=None,
                  type=None):
@@ -59,13 +60,14 @@ class Experiment:
         if type is not None and not type.startswith('classif') and not type.startswith('reg'):
             raise ValueError("Invalid type '%s'" % type)
 
-        metrics = [] if metrics is None else metrics
+        batch_metrics = [] if batch_metrics is None else batch_metrics
+        epoch_metrics = [] if epoch_metrics is None else epoch_metrics
 
         loss_function = self._get_loss_function(loss_function, module, type)
-        metrics = self._get_metrics(metrics, module, type)
+        batch_metrics = self._get_batch_metrics(batch_metrics, module, type)
         self._set_monitor(monitor_metric, monitor_mode, type)
 
-        self.model = Model(module, optimizer, loss_function, metrics=metrics)
+        self.model = Model(module, optimizer, loss_function, batch_metrics=batch_metrics, epoch_metrics=epoch_metrics)
         if device is not None:
             self.model.to(device)
 
@@ -96,13 +98,13 @@ class Experiment:
                     return 'mse'
         return loss_function
 
-    def _get_metrics(self, metrics, module, type):
-        if metrics is None or len(metrics) == 0:
-            if hasattr(module, 'metrics'):
-                return module.metrics
+    def _get_batch_metrics(self, batch_metrics, module, type):
+        if batch_metrics is None or len(batch_metrics) == 0:
+            if hasattr(module, 'batch_metrics'):
+                return module.batch_metrics
             if type is not None and type.startswith('classif'):
                 return ['accuracy']
-        return metrics
+        return batch_metrics
 
     def _set_monitor(self, monitor_metric, monitor_mode, type):
         if monitor_mode is not None and monitor_mode not in ['min', 'max']:
@@ -346,7 +348,7 @@ class Experiment:
             test_metrics = np.array([test_metrics])
 
         test_metrics_names = ['test_loss'] + \
-                             ['test_' + metric_name for metric_name in self.model.batch_metrics_names]
+                             ['test_' + metric_name for metric_name in self.model.metrics_names]
         test_metrics_values = np.concatenate(([test_loss], test_metrics))
 
         test_metrics_dict = {col: val for col, val in zip(test_metrics_names, test_metrics_values)}
