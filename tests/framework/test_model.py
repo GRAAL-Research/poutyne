@@ -1,3 +1,4 @@
+# pylint: disable=too-many-lines,too-many-locals,unused-argument
 import os
 
 import unittest
@@ -17,18 +18,15 @@ from poutyne.framework.metrics import EpochMetric
 from poutyne.utils import TensorDataset
 from poutyne.utils import _concat
 
-# pylint: disable=too-many-lines
 some_metric_1_value = 1.
 some_metric_2_value = 2.
 
 
 def some_batch_metric_1(y, y_pred):
-    # pylint: disable=unused-argument
     return torch.FloatTensor([some_metric_1_value])
 
 
 def some_batch_metric_2(y, y_pred):
-    # pylint: disable=unused-argument
     return torch.FloatTensor([some_metric_2_value])
 
 
@@ -39,7 +37,6 @@ class SomeEpochMetric(EpochMetric):
         self.increment = 0.0
 
     def __call__(self, y, y_pred):
-        # pylint: disable=unused-argument
         self.increment += 1
 
     def get_metric(self):
@@ -424,7 +421,6 @@ class ModelTest(TestCase):
         self._test_fitting(params, logs)
 
     def test_fitting_with_data_loader(self):
-        # pylint: disable=too-many-locals
         train_real_steps_per_epoch = 30
         train_batch_size = ModelTest.batch_size
         train_final_batch_missing_samples = 7
@@ -455,7 +451,6 @@ class ModelTest(TestCase):
         self._test_fitting(params, logs)
 
     def test_fitting_with_tensor(self):
-        # pylint: disable=too-many-locals
         train_real_steps_per_epoch = 30
         train_batch_size = ModelTest.batch_size
         train_final_batch_missing_samples = 7
@@ -485,7 +480,6 @@ class ModelTest(TestCase):
         self._test_fitting(params, logs)
 
     def test_fitting_with_tensor_multi_input(self):
-        # pylint: disable=too-many-locals
         train_real_steps_per_epoch = 30
         train_batch_size = ModelTest.batch_size
         train_final_batch_missing_samples = 7
@@ -515,7 +509,6 @@ class ModelTest(TestCase):
         self._test_fitting(params, logs, multi_input=True)
 
     def test_fitting_with_tensor_multi_output(self):
-        # pylint: disable=too-many-locals
         train_real_steps_per_epoch = 30
         train_batch_size = ModelTest.batch_size
         train_final_batch_missing_samples = 7
@@ -545,7 +538,6 @@ class ModelTest(TestCase):
         self._test_fitting(params, logs, multi_input=False, multi_output=True)
 
     def test_fitting_with_tensor_multi_output_dict(self):
-        # pylint: disable=too-many-locals
         train_real_steps_per_epoch = 30
         train_batch_size = ModelTest.batch_size
         train_final_batch_missing_samples = 7
@@ -575,7 +567,6 @@ class ModelTest(TestCase):
         self._test_fitting(params, logs, dict_out=True)
 
     def test_fitting_with_tensor_multi_io(self):
-        # pylint: disable=too-many-locals
         train_real_steps_per_epoch = 30
         train_batch_size = ModelTest.batch_size
         train_final_batch_missing_samples = 7
@@ -605,7 +596,6 @@ class ModelTest(TestCase):
         self._test_fitting(params, logs, multi_input=True, multi_output=True)
 
     def test_fitting_with_np_array(self):
-        # pylint: disable=too-many-locals
         train_real_steps_per_epoch = 30
         train_batch_size = ModelTest.batch_size
         train_final_batch_missing_samples = 7
@@ -671,7 +661,6 @@ class ModelTest(TestCase):
                       multi_input=False,
                       multi_output=False,
                       dict_out=False):
-        # pylint: disable=too-many-locals
         # pylint: disable=too-many-arguments
         if steps is None:
             steps = params['steps']
@@ -837,27 +826,21 @@ class ModelTest(TestCase):
         x = torch.rand(ModelTest.evaluate_dataset_len, 1)
         y = torch.rand(ModelTest.evaluate_dataset_len, 1)
         # We also test the unpacking.
-        # pylint: disable=unused-variable
-        loss, metrics, pred_y = self.model.evaluate(x, y, batch_size=ModelTest.batch_size, return_pred=True)
+        _, _, pred_y = self.model.evaluate(x, y, batch_size=ModelTest.batch_size, return_pred=True)
         self.assertEqual(pred_y.shape, (ModelTest.evaluate_dataset_len, 1))
 
     def test_evaluate_with_pred_multi_input(self):
         x = (torch.rand(ModelTest.evaluate_dataset_len, 1), torch.rand(ModelTest.evaluate_dataset_len, 1))
         y = torch.rand(ModelTest.evaluate_dataset_len, 1)
         # We also test the unpacking.
-        # pylint: disable=unused-variable
-        loss, metrics, pred_y = self.multi_input_model.evaluate(x, y, batch_size=ModelTest.batch_size, return_pred=True)
+        _, _, pred_y = self.multi_input_model.evaluate(x, y, batch_size=ModelTest.batch_size, return_pred=True)
         self.assertEqual(pred_y.shape, (ModelTest.evaluate_dataset_len, 1))
 
     def test_evaluate_with_pred_multi_output(self):
         y = (torch.rand(ModelTest.evaluate_dataset_len, 1), torch.rand(ModelTest.evaluate_dataset_len, 1))
         x = torch.rand(ModelTest.evaluate_dataset_len, 1)
         # We also test the unpacking.
-        # pylint: disable=unused-variable
-        loss, metrics, pred_y = self.multi_output_model.evaluate(x,
-                                                                 y,
-                                                                 batch_size=ModelTest.batch_size,
-                                                                 return_pred=True)
+        _, _, pred_y = self.multi_output_model.evaluate(x, y, batch_size=ModelTest.batch_size, return_pred=True)
         for pred in pred_y:
             self.assertEqual(pred.shape, (ModelTest.evaluate_dataset_len, 1))
 
@@ -865,17 +848,15 @@ class ModelTest(TestCase):
         y = (torch.rand(ModelTest.evaluate_dataset_len, 1), torch.rand(ModelTest.evaluate_dataset_len, 1))
         x = torch.rand(ModelTest.evaluate_dataset_len, 1)
         # We also test the unpacking.
-        # pylint: disable=unused-variable
-        loss, metrics, pred_y = self.dict_output_model.evaluate(x, y, batch_size=ModelTest.batch_size, return_pred=True)
-        for key, pred in pred_y.items():
+        _, _, pred_y = self.dict_output_model.evaluate(x, y, batch_size=ModelTest.batch_size, return_pred=True)
+        for pred in pred_y.values():
             self.assertEqual(pred.shape, (ModelTest.evaluate_dataset_len, 1))
 
     def test_evaluate_with_pred_multi_io(self):
         x = (torch.rand(ModelTest.evaluate_dataset_len, 1), torch.rand(ModelTest.evaluate_dataset_len, 1))
         y = (torch.rand(ModelTest.evaluate_dataset_len, 1), torch.rand(ModelTest.evaluate_dataset_len, 1))
         # We also test the unpacking.
-        # pylint: disable=unused-variable
-        loss, metrics, pred_y = self.multi_io_model.evaluate(x, y, batch_size=ModelTest.batch_size, return_pred=True)
+        _, _, pred_y = self.multi_io_model.evaluate(x, y, batch_size=ModelTest.batch_size, return_pred=True)
         for pred in pred_y:
             self.assertEqual(pred.shape, (ModelTest.evaluate_dataset_len, 1))
 
@@ -1192,11 +1173,12 @@ class ModelTest(TestCase):
         cur_batch_size = ModelTest.batch_size
 
         def down_the_rabbit_hole(obj, cur_batch_size):
-            # pylint: disable=expression-not-assigned
             if isinstance(obj, (list, tuple)):
-                [down_the_rabbit_hole(o, cur_batch_size) for o in obj]
+                for o in obj:
+                    down_the_rabbit_hole(o, cur_batch_size)
             elif isinstance(obj, dict):
-                [down_the_rabbit_hole(val, cur_batch_size) for val in obj.values()]
+                for val in obj.values():
+                    down_the_rabbit_hole(val, cur_batch_size)
             else:
                 self.assertEqual(type(obj), np.ndarray)
                 self.assertEqual(obj.shape, (cur_batch_size, 1))
@@ -1215,11 +1197,12 @@ class ModelTest(TestCase):
             self.assertEqual(_concat(pred_y).shape, (ModelTest.evaluate_dataset_len, 1))
 
     def _test_size_and_type_for_generator(self, pred_y, expected_size):
-        # pylint: disable=expression-not-assigned
         if isinstance(pred_y, (list, tuple)):
-            [self._test_size_and_type_for_generator(o, expected_size) for o in pred_y]
+            for o in pred_y:
+                self._test_size_and_type_for_generator(o, expected_size)
         elif isinstance(pred_y, dict):
-            [self._test_size_and_type_for_generator(val, expected_size) for val in pred_y.values()]
+            for val in pred_y.values():
+                self._test_size_and_type_for_generator(val, expected_size)
         else:
             self.assertEqual(type(pred_y), np.ndarray)
             self.assertEqual(pred_y.shape, expected_size)

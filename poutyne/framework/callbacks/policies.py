@@ -9,7 +9,6 @@ instances by passing them to the :class:`~poutyne.framework.callbacks.policies.O
 :class:`~poutyne.framework.callbacks.policies.OptimizerPolicy` is a :class:`~poutyne.framework.callbacks.Callback`
 that uses the phases, steps through them, and sets the parameters of the optimizer.
 """
-# pylint: disable=inconsistent-return-statements
 ###############################################################################
 import contextlib
 from collections import OrderedDict
@@ -120,11 +119,7 @@ class Phase:
         Returns:
             The matplotlib axis.
         """
-        try:
-            import matplotlib.pyplot as plt
-        except ImportError:
-            print("You must install matplotlib to use the plot functionality.")
-            return
+        import matplotlib.pyplot as plt
 
         if ax is None:
             _fig, ax = plt.subplots()
@@ -280,11 +275,7 @@ class OptimizerPolicy(Callback):
         Returns:
             The matplotlib axis.
         """
-        try:
-            import matplotlib.pyplot as plt
-        except ImportError:
-            print("You must install matplotlib to use the plot functionality.")
-            return
+        import matplotlib.pyplot as plt
 
         if ax is None:
             _fig, ax = plt.subplots()
@@ -293,3 +284,4 @@ class OptimizerPolicy(Callback):
         ax.plot(values)
         ax.set_ylabel(param_name)
         ax.set_xlabel("steps")
+        return ax

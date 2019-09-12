@@ -20,7 +20,6 @@ from ..utils import _concat
 
 
 class Model:
-    # pylint: disable=line-too-long
     """
     The Model class encapsulates a PyTorch module/network, a PyTorch optimizer, a loss function and
     metric functions. It allows the user to train a neural network without hand-coding the
@@ -33,7 +32,8 @@ class Model:
             can also be a string with the same name as a PyTorch loss function (either the functional or
             object name). The loss function must have the signature ``loss_function(input, target)``
             where ``input`` is the prediction of the network and ``target`` is the ground truth.
-        metrics (list): ***metrics is deprecated as of version 0.5.1. Use batch_metrics instead.*** List of functions with the same signature as the loss function. Each metric
+        metrics (list): ***metrics is deprecated as of version 0.5.1. Use batch_metrics instead.***
+            List of functions with the same signature as the loss function. Each metric
             can be any PyTorch loss function. It can also be a string with the same name as a PyTorch
             loss function (either the functional or object name). 'accuracy' (or just 'acc') is also a
             valid metric. Each metric function is called on each batch of the optimization and on the
@@ -45,14 +45,15 @@ class Model:
             valid metric. Each metric function is called on each batch of the optimization and on the
             validation batches at the end of the epoch.
             (Default value = None)
-        epoch_metrics (list): List of functions with the same signature as :class:`~poutyne.framework.metrics.epoch_metrics.EpochMetric`
-            (Default value = None)
+        epoch_metrics (list): List of functions with the same signature as
+            :class:`~poutyne.framework.metrics.epoch_metrics.EpochMetric` (Default value = None)
 
     Attributes:
         model (torch.nn.Module): The associated PyTorch module.
         optimizer (torch.optim.Optimizer): The associated PyTorch optimizer.
         loss_function: The associated loss function.
-        metrics (list): ***metrics is deprecated as of version 0.5.1. Use batch_metrics instead.*** The associated metric functions.
+        metrics (list): ***metrics is deprecated as of version 0.5.1. Use batch_metrics instead.***
+            The associated metric functions.
         batch_metrics: The associated metric functions for every batch.
         epoch_metrics: The associated metric functions for every epoch.
 
@@ -276,7 +277,7 @@ class Model:
                       initial_epoch=1,
                       verbose=True,
                       callbacks=None):
-        # pylint: disable=too-many-locals, line-too-long
+        # pylint: disable=line-too-long
         """
         Trains the model on a dataset using a generator.
 
@@ -320,8 +321,8 @@ class Model:
                 (Default value = 1)
             verbose (bool): Whether to display the progress of the training.
                 (Default value = True)
-            callbacks (List[~poutyne.framework.callbacks.Callback]): List of callbacks that will be called during training.
-                (Default value = None)
+            callbacks (List[~poutyne.framework.callbacks.Callback]): List of callbacks that will be called during
+                training. (Default value = None)
 
         Returns:
             List of dict containing the history of each epoch.

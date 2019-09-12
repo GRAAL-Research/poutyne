@@ -9,7 +9,6 @@ except ImportError:
 
 
 class EpochMetric(ABC):
-    # pylint: disable=line-too-long
     """
     The abstract class representing a epoch metric which can be accumulated at each batch and calculated at the end
     of the epoch.
