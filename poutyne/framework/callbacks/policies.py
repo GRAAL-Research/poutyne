@@ -119,6 +119,7 @@ class Phase:
         Returns:
             The matplotlib axis.
         """
+        # pylint: disable=import-error
         import matplotlib.pyplot as plt
 
         if ax is None:
@@ -275,6 +276,7 @@ class OptimizerPolicy(Callback):
         Returns:
             The matplotlib axis.
         """
+        # pylint: disable=import-error
         import matplotlib.pyplot as plt
 
         if ax is None:
