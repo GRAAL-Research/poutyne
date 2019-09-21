@@ -36,7 +36,7 @@ class SomeEpochMetric(EpochMetric):
         self.__name__ = self.__class__.__name__
         self.increment = 0.0
 
-    def __call__(self, y, y_pred):
+    def forward(self, y, y_pred):
         self.increment += 1
 
     def get_metric(self):
@@ -49,7 +49,7 @@ some_constant_epoch_metric_value = 3
 
 
 class SomeConstantEpochMetric(EpochMetric):
-    def __call__(self, y, y_pred):
+    def forward(self, y, y_pred):
         pass
 
     def get_metric(self):
@@ -176,7 +176,6 @@ class DictOutputModel(nn.Module):
         self.output2 = nn.Linear(1, 1)
 
     def forward(self, x):
-        # pylint: disable=arguments-differ
         out1 = self.output1(self.input(x))
         out2 = self.output2(self.input(x))
         return {'out1': out1, 'out2': out2}
@@ -1309,7 +1308,6 @@ class ModelTest(TestCase):
                 self.l2 = nn.Linear(1, 1)
 
             def forward(self, x1, x2):
-                # pylint: disable=arguments-differ
                 # x1, x2 = x
                 return self.l1(x1), self.l2(x2)
 

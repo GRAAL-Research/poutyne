@@ -1,12 +1,7 @@
-from unittest import TestCase, skipIf
+from unittest import TestCase
 
 import numpy
 import torch
-
-try:
-    import allennlp.training.metrics.fbeta_measure as fbeta_measure
-except ImportError:
-    fbeta_measure = None
 
 from poutyne.framework.metrics import F1, FBeta
 
@@ -16,7 +11,6 @@ class F1MetricTest(TestCase):
                                      [0.1, 0.5, 0.1, 0.2, 0.0], [0.1, 0.2, 0.1, 0.7, 0.0], [0.1, 0.6, 0.1, 0.2, 0.0]])
     fake_targets = torch.Tensor([0, 4, 1, 0, 3, 0])
 
-    @skipIf(fbeta_measure is None, "Allen nlp is not installed")
     def test_F1Metric_micro_average_metric(self):
         metric = F1()
         metric(F1MetricTest.fake_predictions, F1MetricTest.fake_targets)
@@ -35,7 +29,6 @@ class F1MetricTest(TestCase):
 
         numpy.testing.assert_almost_equal(fscores, micro_fscore, decimal=2)
 
-    @skipIf(fbeta_measure is None, "Allen nlp is not installed")
     def test_F1Metric_macro_average_metric(self):
         metric = F1(average='macro')
         metric(F1MetricTest.fake_predictions, F1MetricTest.fake_targets)
@@ -50,7 +43,6 @@ class F1MetricTest(TestCase):
 
         numpy.testing.assert_almost_equal(fscores, macro_fscore, decimal=2)
 
-    @skipIf(fbeta_measure is None, "Allen nlp is not installed")
     def test_FBetaMetric_macro_average_metric(self):
         beta = 0.5
         metric = FBeta(beta=beta, average='macro')
