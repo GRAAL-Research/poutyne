@@ -59,13 +59,13 @@ test_x = np.random.randn(num_test_samples, num_features).astype('float32')
 test_y = np.random.randint(num_classes, size=num_test_samples).astype('int64')
 ```
 
-Create yourself a [PyTorch](https://pytorch.org/docs/master/nn.html) network;
+Create yourself a [PyTorch](https://pytorch.org/docs/master/nn.html) network:
 
 ```python
 pytorch_module = torch.nn.Linear(num_features, num_classes)
 ```
 
-You can now use Poutyne's model to train your network easily;
+You can now use Poutyne's model to train your network easily:
 
 ```python
 model = Model(pytorch_module, 'sgd', 'cross_entropy', batch_metrics=['accuracy'])
@@ -77,23 +77,15 @@ model.fit(
   )
 ```
 
-This is really similar to the ``model.compile`` function as in [Keras](https://keras.io);
+This is really similar to the [model.compile](https://keras.io/models/model/#compile) and [model.fit](https://keras.io/models/model/#fit) functions as in [Keras](https://keras.io).
 
-```python
-# Keras way to compile and train
-model.compile(loss='categorical_crossentropy',
-              optimizer='sgd',
-              metrics=['accuracy'])
-model.fit(train_x, train_y, epochs=5, batch_size=32)
-```
-
-You can evaluate the performances of your network using the ``evaluate`` method of Poutyne's model;
+You can evaluate the performances of your network using the ``evaluate`` method of Poutyne's model:
 
 ```python
 loss_and_metrics = model.evaluate(test_x, test_y)
 ```
 
-Or only predict on new data;
+Or only predict on new data:
 
 ```python
 predictions = model.predict(test_x)
