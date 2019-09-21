@@ -129,6 +129,12 @@ We welcome user input, whether it is regarding bugs found in the library or feat
 
 ------------------
 
+## License
+
+Poutyne is GPLv3 licensed, as found in the [LICENSE file](https://github.com/GRAAL-Research/poutyne/blob/master/LICENSE).
+
+------------------
+
 ## Why this name, Poutyne?
 
 Poutyne (or poutine in Québécois) is now the well-known dish from Quebec composed of French fries, squeaky cheese curds and brown gravy. However, in Quebec, it also has the meaning of something that is an ["ordinary or common subject or activity"](https://fr.wiktionary.org/wiki/poutine). Thus, Poutyne will get rid of the ordinary boilerplate code that plain [PyTorch](https://pytorch.org) training usually entails.

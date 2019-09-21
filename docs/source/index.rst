@@ -115,6 +115,7 @@ Or only predict on new data;
 
 As you can see, Poutyne is inspired a lot by the friendliness of `Keras <https://keras.io/>`_. See the Poutyne documentation at `Poutyne.org <https://poutyne.org/>`_ for more.
 
+
 Installation
 ============
 
@@ -139,6 +140,12 @@ Contributing to Poutyne
 We welcome user input, whether it is regarding bugs found in the library or feature propositions ! Make sure to have a look at our `contributing guidelines <https://github.com/GRAAL-Research/poutyne/blob/master/CONTRIBUTING.md>`_ for more details on this matter.
 
 
+License
+=======
+
+Poutyne is GPLv3 licensed, as found in the `LICENSE file <https://github.com/GRAAL-Research/poutyne/blob/master/LICENSE>`_.
+
+
 Why this name, Poutyne?
 =======================
 
@@ -148,6 +155,7 @@ Poutyne (or poutine in Québécois) is now the well-known dish from Quebec compo
   :alt: Poutine
 
   Yuri Long from Arlington, VA, USA [`CC BY 2.0 <https://creativecommons.org/licenses/by/2.0>`_]
+
 
 API Reference
 =============
@@ -161,6 +169,7 @@ API Reference
    metrics
    callbacks
    layers
+
 
 Indices and tables
 ==================
