@@ -51,8 +51,8 @@ class FBeta(EpochMetric):
     Args:
         metric (str): One of {'fscore', 'precision', 'recall'}.
             Wheter to return the F-score, the precision or the recall. (Default value = 'fscore')
-        average (str): One of {'micro', 'macro', None}.
-            If ``None``, the scores of the specified label in ``label`` is returned.
+        average (Union[str, int]): One of {'micro' (default), 'macro', label_number}
+            If the argument is of type integer, the score for this class (the label number) is calculated.
             Otherwise, this determines the type of averaging performed on the data:
 
             ``'micro'``:
@@ -63,30 +63,28 @@ class FBeta(EpochMetric):
                 This does not take label imbalance into account.
 
             (Default value = 'micro')
-        label (int):
-            The label to return if ``average is None``. (Default value = None)
 
         beta (float):
             The strength of recall versus precision in the F-score. (Default value = 1.0)
     """
 
-    def __init__(self, metric: str = 'fscore', average: str = 'micro', label: int = None, beta: float = 1.0) -> None:
+    def __init__(self, metric: str = 'fscore', average: str = 'micro', beta: float = 1.0) -> None:
         super().__init__()
         metric_options = ('fscore', 'precision', 'recall')
         if metric not in metric_options:
             raise ValueError("`metric` has to be one of {}.".format(metric_options))
 
-        average_options = (None, 'micro', 'macro')
-        if average not in average_options:
-            raise ValueError("`average` has to be one of {}.".format(average_options))
+        average_options = ('micro', 'macro')
+        if average not in average_options and not isinstance(average, int):
+            raise ValueError("`average` has to be one of {} or an integer.".format(average_options))
 
         if beta <= 0:
             raise ValueError("`beta` should be >0 in the F-beta score.")
 
         self._metric = metric
-        self._average = average
+        self._average = average if average in average_options else None
+        self._label = average if isinstance(average, int) else None
         self._beta = beta
-        self._label = label
 
         if self._average is not None:
             self.__name__ = self._metric + '_' + self._average
