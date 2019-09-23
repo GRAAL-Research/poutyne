@@ -18,5 +18,5 @@ Epoch Metric Interface
 Epoch Metrics
 -------------
 
+.. autoclass:: FBeta
 .. autoclass:: F1
-

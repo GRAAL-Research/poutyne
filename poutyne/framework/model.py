@@ -1007,7 +1007,7 @@ class Model:
         if isinstance(self.loss_function, torch.nn.Module):
             self.loss_function.to(self.device)
 
-        for metric in self.batch_metrics:
+        for metric in self.batch_metrics + self.epoch_metrics:
             if isinstance(metric, torch.nn.Module):
                 metric.to(self.device)
 
