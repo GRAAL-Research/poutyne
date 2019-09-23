@@ -238,8 +238,8 @@ class F1(FBeta):
     Alias class for FBeta where ``metric == 'fscore'`` and ``beta == 1``.
     """
 
-    def __init__(self, average='micro', label: int = None):
-        super().__init__(metric='fscore', average=average, label=label, beta=1)
+    def __init__(self, average='micro'):
+        super().__init__(metric='fscore', average=average, beta=1)
 
 
 def _prf_divide(numerator, denominator):
