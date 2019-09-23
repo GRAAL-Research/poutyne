@@ -97,7 +97,6 @@ As you can see, Poutyne is inspired a lot by the friendliness of [Keras](https:/
 
 ------------------
 
-
 ## Installation
 
 Before installing Poutyne, you must have the latest version of [PyTorch](https://pytorch.org/) in your environment.
@@ -113,6 +112,19 @@ pip install poutyne
 ```sh
 pip install -U git+https://github.com/GRAAL-Research/poutyne.git@dev
 ```
+
+
+------------------
+
+## Examples
+
+Look at notebook files with full working [examples](https://github.com/GRAAL-Research/poutyne/blob/master/examples/):
+
+* [introduction_pytorch_poutyne.ipynb](https://github.com/GRAAL-Research/poutyne/blob/master/examples/introduction_pytorch_poutyne.ipynb) ([tutorial version](https://github.com/GRAAL-Research/poutyne/blob/master/tutorials/introduction_pytorch_poutyne_tutorial.ipynb)) - comparison of Poutyne with bare PyTorch and example of a Poutyne callback.
+* [transfer_learning.ipynb](https://github.com/GRAAL-Research/poutyne/blob/master/examples/transfer_learning.ipynb) - transfer learning on ResNet-18 on the [CUB-200](http://www.vision.caltech.edu/visipedia/CUB-200-2011.html) dataset.
+* [policy_cifar_example.ipynb](https://github.com/GRAAL-Research/poutyne/blob/master/examples/policy_cifar_example.ipynb) - policies API, FastAI-like learning rate policies
+* [policy_interface.ipynb](https://github.com/GRAAL-Research/poutyne/blob/master/examples/policy_interface.ipynb) - example of policies
+
 
 ------------------
 

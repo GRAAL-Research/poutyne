@@ -127,6 +127,17 @@ Before installing Poutyne, you must have the latest version of `PyTorch <https:/
     pip install -U git+https://github.com/GRAAL-Research/poutyne.git@dev
 
 
+Examples
+========
+
+Look at notebook files with full working `examples <https://github.com/GRAAL-Research/poutyne/blob/master/examples/>`_:
+
+- `introduction_pytorch_poutyne.ipynb <https://github.com/GRAAL-Research/poutyne/blob/master/examples/introduction_pytorch_poutyne.ipynb>`_  (`tutorial version <https://github.com/GRAAL-Research/poutyne/blob/master/tutorials/introduction_pytorch_poutyne_tutorial.ipynb>`_) - comparison of Poutyne with bare PyTorch and example of a Poutyne callback.
+- `transfer_learning.ipynb <https://github.com/GRAAL-Research/poutyne/blob/master/examples/transfer_learning.ipynb>`_ - transfer learning on ResNet-18 on the `CUB-200 <http://www.vision.caltech.edu/visipedia/CUB-200-2011.html>`_ dataset.
+- `policy_cifar_example.ipynb <https://github.com/GRAAL-Research/poutyne/blob/master/examples/policy_cifar_example.ipynb>`_ - policies API, FastAI-like learning rate policies
+- `policy_interface.ipynb <https://github.com/GRAAL-Research/poutyne/blob/master/examples/policy_interface.ipynb>`_ - example of policies
+
+
 Contributing to Poutyne
 =======================
 
