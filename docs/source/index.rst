@@ -119,11 +119,11 @@ Before installing Poutyne, you must have the latest version of `PyTorch <https:/
 
     pip install poutyne
 
-- **Install the latest version of Poutyne:**
+- **Install the latest development version of Poutyne:**
 
   .. code-block:: sh
 
-    pip install -U git+https://github.com/GRAAL-Research/poutyne.git
+    pip install -U git+https://github.com/GRAAL-Research/poutyne.git@dev
 
 
 Contributing to Poutyne
