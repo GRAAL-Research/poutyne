@@ -17,11 +17,11 @@ Poutyne is compatible with  the __latest version of PyTorch__ and  __Python >= 3
 
 ### Cite
 ```
-@misc{frederikParadisPoutyne,
-  author = {Paradis, Fr{\'e}d{\'e}rik and Garneau, Nicolas},
-  title  = {{Poutyne}: Keras-like framework for {PyTorch}},
-  year   = {2018--},
-  url    = {\url{https://poutyne.org}}
+@misc{poutyne,
+    author = {Paradis, Fr{\'e}d{\'e}rik},
+    title  = {{Poutyne}: A Keras-like framework for {PyTorch}},
+    year   = {2018--},
+    url    = {\url{https://poutyne.org}}
 }
 ```
 
@@ -68,13 +68,14 @@ pytorch_module = torch.nn.Linear(num_features, num_classes)
 You can now use Poutyne's model to train your network easily:
 
 ```python
-model = Model(pytorch_module, 'sgd', 'cross_entropy', batch_metrics=['accuracy'])
+model = Model(pytorch_module, 'sgd', 'cross_entropy',
+              batch_metrics=['accuracy'], epoch_metrics=['f1'])
 model.fit(
     train_x, train_y,
     validation_data=(valid_x, valid_y),
     epochs=5,
     batch_size=32
-  )
+)
 ```
 
 This is really similar to the [model.compile](https://keras.io/models/model/#compile) and [model.fit](https://keras.io/models/model/#fit) functions as in [Keras](https://keras.io).

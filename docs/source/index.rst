@@ -6,9 +6,9 @@
 :github_url: https://github.com/GRAAL-Research/poutyne
 
 .. meta::
-   :description: Poutyne is a Keras-like framework for PyTorch and handles much of the boilerplating code needed to train neural networks.
-   :keywords: poutyne, poutine, deep learning, pytorch, neural network, keras, machine learning, data science, python
-   :author: Frédérik Paradis
+  :description: Poutyne is a Keras-like framework for PyTorch and handles much of the boilerplating code needed to train neural networks.
+  :keywords: poutyne, poutine, deep learning, pytorch, neural network, keras, machine learning, data science, python
+  :author: Frédérik Paradis
 
 Here is Poutyne
 ===============
@@ -28,12 +28,12 @@ Cite
 -----
 .. code-block:: bib
 
-   @misc{frederikParadisPoutyne,
-     author = {Paradis, Fr{\'e}d{\'e}rik and Garneau, Nicolas},
-     title  = {{Poutyne}: Keras-like framework for {PyTorch}},
-     year   = {2018--},
-     url    = {\url{https://poutyne.org}}
-   }
+  @misc{poutyne,
+      author = {Paradis, Fr{\'e}d{\'e}rik},
+      title  = {{Poutyne}: A Keras-like framework for {PyTorch}},
+      year   = {2018--},
+      url    = {\url{https://poutyne.org}}
+  }
 
 
 Getting started: few seconds to Poutyne
@@ -79,13 +79,14 @@ You can now use Poutyne's model to train your network easily:
 
 .. code-block:: python
 
-  model = Model(pytorch_module, 'sgd', 'cross_entropy', batch_metrics=['accuracy'])
+  model = Model(pytorch_module, 'sgd', 'cross_entropy',
+                batch_metrics=['accuracy'], epoch_metrics=['f1'])
   model.fit(
       train_x, train_y,
       validation_data=(valid_x, valid_y),
       epochs=5,
       batch_size=32
-    )
+  )
 
 
 This is really similar to the `model.compile <https://keras.io/models/model/#compile>`_ and `model.fit <https://keras.io/models/model/#fit>`_ functions as in `Keras <https://keras.io/>`_.
@@ -153,14 +154,14 @@ API Reference
 =============
 
 .. toctree::
-   :maxdepth: 1
-   :caption: Package Reference
+  :maxdepth: 1
+  :caption: Package Reference
 
-   utils
-   framework
-   metrics
-   callbacks
-   layers
+  utils
+  framework
+  metrics
+  callbacks
+  layers
 
 
 Indices and tables
