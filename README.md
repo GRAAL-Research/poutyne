@@ -19,9 +19,9 @@ Poutyne is compatible with  the __latest version of PyTorch__ and  __Python >= 3
 ```
 @misc{poutyne,
     author = {Paradis, Fr{\'e}d{\'e}rik},
-    title  = {{Poutyne}: A Keras-like framework for {PyTorch}},
-    year   = {2018--},
-    url    = {\url{https://poutyne.org}}
+    title  = {{Poutyne: A Keras-like framework for PyTorch}},
+    year   = {2018},
+    note   = {\url{https://poutyne.org}}
 }
 ```
 
