@@ -448,7 +448,7 @@ class Experiment:
         """
         self.model.load_weights(self.model_checkpoint_filename)
 
-    def test(self, test_loader, *, steps=None, load_best_checkpoint=True, load_last_checkpoint=False, seed=42):
+    def test(self, test_loader, *, steps=None, checkpoint='best', seed=42):
         """
         Computes and returns the loss and the metrics of the attribute model on a given test examples
         loader.
@@ -458,6 +458,11 @@ class Experiment:
                 details on the types of generators supported.
             steps (int, optional): Number of iterations done on ``generator``.
                 (Defaults the number of steps needed to see the entire dataset)
+            checkpoint (Union[str, int]): Which model checkpoint weights to load for the test evaluation.
+                If 'best', will load the best weights according to ``monitor_metric`` and ``monitor_mode``.
+                If 'last', will load the last model checkpoint. If int, will load the checkpoint of the
+                specified epoch.
+                (Default value = 'best')
             load_best_checkpoint (bool, optional): Whether or not to load the best checkpoint's weights.
                 If set to true, the ``load_last_checkpoint`` argument is ignored.
                 (Default value = True)
@@ -472,10 +477,14 @@ class Experiment:
         set_seeds(seed)
 
         best_epoch_stats = None
-        if load_best_checkpoint:
+        if checkpoint == 'best':
             best_epoch_stats = self.load_best_checkpoint(verbose=True)
-        elif load_last_checkpoint:
+        elif checkpoint == 'last':
             self.load_last_checkpoint()
+        elif isinstance(checkpoint, int):
+            self.load_checkpoint(checkpoint)
+        else:
+            raise ValueError("Argument checkpoint must be either 'best', 'last' or int. Found : {}".format(checkpoint))
 
         test_loss, test_metrics = self.model.evaluate_generator(test_loader, steps=steps)
         if not isinstance(test_metrics, np.ndarray):
