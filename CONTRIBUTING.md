@@ -13,7 +13,7 @@ We use github to host code, to track issues and feature requests, as well as acc
 ## We Use [Github Flow](https://guides.github.com/introduction/flow/index.html), So All Code Changes Happen Through Pull Requests
 Pull requests are the best way to propose changes to the codebase. We actively welcome your pull requests:
 
-1. Fork the repo and create your branch from `master`.
+1. Fork the repo and create your branch from `dev`.
 2. If you've added code that should be tested, you **must** ensure it is properly tested.
 3. If you've changed APIs, update the documentation.
 4. Ensure the Travis test suite passes.
@@ -62,17 +62,19 @@ All of the code is formatted using [yapf](https://github.com/google/yapf) with t
 
 ```
 yapf poutyne --recursive --in-place
+yapf tests --recursive --in-place
 ```
 
 We also have our own `pylint` [config file](https://github.com/GRAAL-Research/poutyne/blob/master/.pylintrc). Try not to introduce code incoherences detected by the linting. You can run the linting procedure with
 
 ```
 pylint poutyne
+pylint tests
 ```
 
 ## Tests
 
-If your pull request introduces a new feature, please deliver it with tests that ensure correct behavior. All of the current tests are located under the `tests` folder, if you want to see some examples. 
+If your pull request introduces a new feature, please deliver it with tests that ensure correct behavior. All of the current tests are located under the `tests` folder, if you want to see some examples.
 
 For any pull request submitted, **ALL** of the tests must succeed. You can run the tests with
 
@@ -94,7 +96,7 @@ cd docs
 You can then see the local html files in your favorite browser. Here is an example using Firefox:
 
 ```
-firefox _build/html/index.html 
+firefox _build/html/index.html
 ```
 
 ## License

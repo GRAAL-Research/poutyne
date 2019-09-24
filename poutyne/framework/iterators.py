@@ -1,5 +1,6 @@
-import timeit
 import itertools
+import timeit
+
 import numpy as np
 
 from .callbacks import Callback
@@ -27,15 +28,16 @@ def _get_step_iterator(steps, generator):
 
 
 class StepIterator:
-    def __init__(self, generator, steps_per_epoch, callback, metrics_names):
+    def __init__(self, generator, steps_per_epoch, callback, batch_metrics_names):
         self.generator = generator
         self.steps_per_epoch = steps_per_epoch
         self.callback = callback
-        self.metrics_names = metrics_names
+        self.batch_metrics_names = batch_metrics_names
 
         self.losses_sum = 0.
-        self.metrics_sum = np.zeros(len(self.metrics_names))
+        self.metrics_sum = np.zeros(len(self.batch_metrics_names))
         self.sizes_sum = 0.
+        self.epoch_metrics = None
 
     @property
     def loss(self):
@@ -60,7 +62,9 @@ class StepIterator:
             batch_end_time = timeit.default_timer()
             batch_total_time = batch_end_time - time_since_last_batch
             time_since_last_batch = batch_end_time
-            metrics_dict = dict(zip(self.metrics_names, step_data.metrics))
+
+            metrics_dict = dict(zip(self.batch_metrics_names, step_data.metrics))
+
             batch_logs = {
                 'batch': step,
                 'size': step_data.size,
@@ -81,7 +85,8 @@ class EpochIterator:
                  validation_steps,
                  initial_epoch=1,
                  callback,
-                 metrics_names):
+                 batch_metrics_names,
+                 epoch_metrics_names):
         self.train_generator = train_generator
         self.valid_generator = valid_generator
         self.epochs = epochs
@@ -89,7 +94,8 @@ class EpochIterator:
 
         self.initial_epoch = initial_epoch
         self.callback = callback
-        self.metrics_names = metrics_names
+        self.batch_metrics_names = batch_metrics_names
+        self.epoch_metrics_names = epoch_metrics_names
         self.epoch_logs = []
         self.stop_training = False
 
@@ -116,12 +122,12 @@ class EpochIterator:
             epoch_begin_time = timeit.default_timer()
 
             train_step_iterator = StepIterator(self.train_generator, self.steps_per_epoch, self.callback,
-                                               self.metrics_names)
+                                               self.batch_metrics_names)
 
             valid_step_iterator = None
             if self.valid_generator is not None:
                 valid_step_iterator = StepIterator(self.valid_generator, self.validation_steps, Callback(),
-                                                   self.metrics_names)
+                                                   self.batch_metrics_names)
 
             yield train_step_iterator, valid_step_iterator
 
@@ -129,12 +135,19 @@ class EpochIterator:
             if valid_step_iterator is not None:
                 val_metrics_dict = {
                     'val_' + metric_name: metric
-                    for metric_name, metric in zip(self.metrics_names, valid_step_iterator.metrics)
+                    for metric_name, metric in zip(self.batch_metrics_names, valid_step_iterator.metrics)
                 }
+                val_metrics_dict.update({
+                    'val_' + metric_name: metric
+                    for metric_name, metric in zip(self.epoch_metrics_names, valid_step_iterator.epoch_metrics)
+                })
+
                 val_dict = {'val_loss': valid_step_iterator.loss, **val_metrics_dict}
 
             epoch_total_time = timeit.default_timer() - epoch_begin_time
-            metrics_dict = dict(zip(self.metrics_names, train_step_iterator.metrics))
+            metrics_dict = dict(zip(self.batch_metrics_names, train_step_iterator.metrics))
+            metrics_dict.update(dict(zip(self.epoch_metrics_names, train_step_iterator.epoch_metrics)))
+
             epoch_log = {
                 'epoch': epoch,
                 'loss': train_step_iterator.loss,

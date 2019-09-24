@@ -5,8 +5,6 @@
 
 ## Here is Poutyne.
 
-> As you can see, PyToune has changed its name for Poutyne. From now on, please use the new package name `poutyne`. The `pytoune` package has been kept for this release but will be removed in the next release.
-
 Poutyne is a Keras-like framework for [PyTorch](https://pytorch.org/) and handles much of the boilerplating code needed to train neural networks.
 
 Use Poutyne to:
@@ -19,11 +17,11 @@ Poutyne is compatible with  the __latest version of PyTorch__ and  __Python >= 3
 
 ### Cite
 ```
-@misc{frederikParadisPoutyne,
-  author = {Paradis, Fr{\'e}d{\'e}rik and Garneau, Nicolas},
-  title  = {{Poutyne}: Keras-like framework for {PyTorch}},
-  year   = {2018--},
-  url    = {\url{https://poutyne.org}}
+@misc{poutyne,
+    author = {Paradis, Fr{\'e}d{\'e}rik},
+    title  = {{Poutyne: A Keras-like framework for PyTorch}},
+    year   = {2018},
+    note   = {\url{https://poutyne.org}}
 }
 ```
 
@@ -61,41 +59,34 @@ test_x = np.random.randn(num_test_samples, num_features).astype('float32')
 test_y = np.random.randint(num_classes, size=num_test_samples).astype('int64')
 ```
 
-Create yourself a [PyTorch](https://pytorch.org/docs/master/nn.html) network;
+Create yourself a [PyTorch](https://pytorch.org/docs/master/nn.html) network:
 
 ```python
 pytorch_module = torch.nn.Linear(num_features, num_classes)
 ```
 
-You can now use Poutyne's model to train your network easily;
+You can now use Poutyne's model to train your network easily:
 
 ```python
-model = Model(pytorch_module, 'sgd', 'cross_entropy', metrics=['accuracy'])
+model = Model(pytorch_module, 'sgd', 'cross_entropy',
+              batch_metrics=['accuracy'], epoch_metrics=['f1'])
 model.fit(
     train_x, train_y,
     validation_data=(valid_x, valid_y),
     epochs=5,
     batch_size=32
-  )
+)
 ```
 
-This is really similar to the ``model.compile`` function as in [Keras](https://keras.io);
+This is really similar to the [model.compile](https://keras.io/models/model/#compile) and [model.fit](https://keras.io/models/model/#fit) functions as in [Keras](https://keras.io).
 
-```python
-# Keras way to compile and train
-model.compile(loss='categorical_crossentropy',
-              optimizer='sgd',
-              metrics=['accuracy'])
-model.fit(train_x, train_y, epochs=5, batch_size=32)
-```
-
-You can evaluate the performances of your network using the ``evaluate`` method of Poutyne's model;
+You can evaluate the performances of your network using the ``evaluate`` method of Poutyne's model:
 
 ```python
 loss_and_metrics = model.evaluate(test_x, test_y)
 ```
 
-Or only predict on new data;
+Or only predict on new data:
 
 ```python
 predictions = model.predict(test_x)
@@ -105,7 +96,6 @@ As you can see, Poutyne is inspired a lot by the friendliness of [Keras](https:/
 
 
 ------------------
-
 
 ## Installation
 
@@ -117,17 +107,36 @@ Before installing Poutyne, you must have the latest version of [PyTorch](https:/
 pip install poutyne
 ```
 
-- **Install the latest version of Poutyne:**
+- **Install the latest development version of Poutyne:**
 
 ```sh
-pip install -U git+https://github.com/GRAAL-Research/poutyne.git
+pip install -U git+https://github.com/GRAAL-Research/poutyne.git@dev
 ```
+
+
+------------------
+
+## Examples
+
+Look at notebook files with full working [examples](https://github.com/GRAAL-Research/poutyne/blob/master/examples/):
+
+* [introduction_pytorch_poutyne.ipynb](https://github.com/GRAAL-Research/poutyne/blob/master/examples/introduction_pytorch_poutyne.ipynb) ([tutorial version](https://github.com/GRAAL-Research/poutyne/blob/master/tutorials/introduction_pytorch_poutyne_tutorial.ipynb)) - comparison of Poutyne with bare PyTorch and example of a Poutyne callback.
+* [transfer_learning.ipynb](https://github.com/GRAAL-Research/poutyne/blob/master/examples/transfer_learning.ipynb) - transfer learning on ResNet-18 on the [CUB-200](http://www.vision.caltech.edu/visipedia/CUB-200-2011.html) dataset.
+* [policy_cifar_example.ipynb](https://github.com/GRAAL-Research/poutyne/blob/master/examples/policy_cifar_example.ipynb) - policies API, FastAI-like learning rate policies
+* [policy_interface.ipynb](https://github.com/GRAAL-Research/poutyne/blob/master/examples/policy_interface.ipynb) - example of policies
+
 
 ------------------
 
 ## Contributing to Poutyne
 
 We welcome user input, whether it is regarding bugs found in the library or feature propositions ! Make sure to have a look at our [contributing guidelines](https://github.com/GRAAL-Research/poutyne/blob/master/CONTRIBUTING.md) for more details on this matter.
+
+------------------
+
+## License
+
+Poutyne is GPLv3 licensed, as found in the [LICENSE file](https://github.com/GRAAL-Research/poutyne/blob/master/LICENSE).
 
 ------------------
 

@@ -1,14 +1,16 @@
 # pylint: disable=redefined-builtin
 import os
-import warnings
 import random
+import warnings
 
 import numpy as np
+
 try:
     import pandas as pd
 except ImportError:
     pd = None
 import torch
+
 try:
     from torch.utils.tensorboard import SummaryWriter
 except ImportError:
@@ -16,12 +18,12 @@ except ImportError:
 
 from poutyne.framework import Model
 from poutyne.framework.callbacks import ModelCheckpoint, \
-                                        OptimizerCheckpoint, \
-                                        LRSchedulerCheckpoint, \
-                                        PeriodicSaveLambda, \
-                                        CSVLogger, \
-                                        TensorBoardLogger, \
-                                        BestModelRestore
+    OptimizerCheckpoint, \
+    LRSchedulerCheckpoint, \
+    PeriodicSaveLambda, \
+    CSVLogger, \
+    TensorBoardLogger, \
+    BestModelRestore
 
 
 class Experiment:
@@ -47,7 +49,8 @@ class Experiment:
                  logging=True,
                  optimizer='sgd',
                  loss_function=None,
-                 metrics=None,
+                 batch_metrics=None,
+                 epoch_metrics=None,
                  monitor_metric=None,
                  monitor_mode=None,
                  exp_type=None):
@@ -57,13 +60,15 @@ class Experiment:
         if exp_type is not None and not exp_type.startswith('classif') and not exp_type.startswith('reg'):
             raise ValueError("Invalid exp_type '%s'" % exp_type)
 
-        metrics = [] if metrics is None else metrics
+        batch_metrics = [] if batch_metrics is None else batch_metrics
+        epoch_metrics = [] if epoch_metrics is None else epoch_metrics
 
         loss_function = self._get_loss_function(loss_function, module, exp_type)
-        metrics = self._get_metrics(metrics, module, exp_type)
+        batch_metrics = self._get_batch_metrics(batch_metrics, module, exp_type)
+        epoch_metrics = self._get_epoch_metrics(epoch_metrics, module)
         self._set_monitor(monitor_metric, monitor_mode, exp_type)
 
-        self.model = Model(module, optimizer, loss_function, metrics=metrics)
+        self.model = Model(module, optimizer, loss_function, batch_metrics=batch_metrics, epoch_metrics=epoch_metrics)
         if device is not None:
             self.model.to(device)
 
@@ -94,13 +99,19 @@ class Experiment:
                     return 'mse'
         return loss_function
 
-    def _get_metrics(self, metrics, module, exp_type):
-        if metrics is None or len(metrics) == 0:
-            if hasattr(module, 'metrics'):
-                return module.metrics
+    def _get_batch_metrics(self, batch_metrics, module, exp_type):
+        if batch_metrics is None or len(batch_metrics) == 0:
+            if hasattr(module, 'batch_metrics'):
+                return module.batch_metrics
             if exp_type is not None and exp_type.startswith('classif'):
                 return ['accuracy']
-        return metrics
+        return batch_metrics
+
+    def _get_epoch_metrics(self, epoch_metrics, module):
+        if epoch_metrics is None or len(epoch_metrics) == 0:
+            if hasattr(module, 'epoch_metrics'):
+                return module.epoch_metrics
+        return epoch_metrics
 
     def _set_monitor(self, monitor_metric, monitor_mode, exp_type):
         if monitor_mode is not None and monitor_mode not in ['min', 'max']:
@@ -118,7 +129,7 @@ class Experiment:
 
     def get_best_epoch_stats(self):
         if pd is None:
-            warnings.warn("pandas needs to be installed to use this function.")
+            raise ImportError("pandas needs to be installed to use this function.")
 
         history = pd.read_csv(self.log_filename, sep='\t')
         if self.monitor_mode == 'min':

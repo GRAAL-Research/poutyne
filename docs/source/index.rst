@@ -6,14 +6,12 @@
 :github_url: https://github.com/GRAAL-Research/poutyne
 
 .. meta::
-   :description: Poutyne is a Keras-like framework for PyTorch and handles much of the boilerplating code needed to train neural networks.
-   :keywords: poutyne, poutine, deep learning, pytorch, neural network, keras, machine learning, data science, python
-   :author: Frédérik Paradis
+  :description: Poutyne is a Keras-like framework for PyTorch and handles much of the boilerplating code needed to train neural networks.
+  :keywords: poutyne, poutine, deep learning, pytorch, neural network, keras, machine learning, data science, python
+  :author: Frédérik Paradis
 
 Here is Poutyne
 ===============
-
-.. warning:: As you can see, PyToune has changed its name for Poutyne. From now on, please use the new package name `poutyne`. The `pytoune` package has been kept for this release but will be removed in the next release.
 
 Poutyne is a Keras-like framework for `PyTorch <https://pytorch.org/>`_ and handles much of the boilerplating code needed to train neural networks.
 
@@ -30,12 +28,12 @@ Cite
 -----
 .. code-block:: bib
 
-   @misc{frederikParadisPoutyne,
-     author = {Paradis, Fr{\'e}d{\'e}rik and Garneau, Nicolas},
-     title  = {{Poutyne}: Keras-like framework for {PyTorch}},
-     year   = {2018--},
-     url    = {\url{https://poutyne.org}}
-   }
+  @misc{poutyne,
+      author = {Paradis, Fr{\'e}d{\'e}rik},
+      title  = {{Poutyne: A Keras-like framework for PyTorch}},
+      year   = {2018},
+      note   = {\url{https://poutyne.org}}
+  }
 
 
 Getting started: few seconds to Poutyne
@@ -70,45 +68,38 @@ Here is a simple example:
   test_y = np.random.randint(num_classes, size=num_test_samples).astype('int64')
 
 
-Create yourself a `PyTorch <https://pytorch.org/docs/master/nn.html>`_ network;
+Create yourself a `PyTorch <https://pytorch.org/docs/master/nn.html>`_ network:
 
 .. code-block:: python
 
-  pytorch_module = torch.nn.Linear(num_features, 1)
+  pytorch_module = torch.nn.Linear(num_features, num_classes)
 
 
-You can now use Poutyne's model to train your network easily;
+You can now use Poutyne's model to train your network easily:
 
 .. code-block:: python
 
-  model = Model(pytorch_module, 'sgd', 'cross_entropy', metrics=['accuracy'])
+  model = Model(pytorch_module, 'sgd', 'cross_entropy',
+                batch_metrics=['accuracy'], epoch_metrics=['f1'])
   model.fit(
       train_x, train_y,
       validation_data=(valid_x, valid_y),
       epochs=5,
       batch_size=32
-    )
+  )
 
 
-This is really similar to the ``model.compile`` function as in `Keras <https://keras.io/>`_;
-
-.. code-block:: python
-
-  # Keras way to compile and train
-  model.compile(loss='categorical_crossentropy',
-                optimizer='sgd',
-                metrics=['accuracy'])
-  model.fit(train_x, train_y, epochs=5, batch_size=32)
+This is really similar to the `model.compile <https://keras.io/models/model/#compile>`_ and `model.fit <https://keras.io/models/model/#fit>`_ functions as in `Keras <https://keras.io/>`_.
 
 
-You can evaluate the performances of your network using the ``evaluate`` method of Poutyne's model;
+You can evaluate the performances of your network using the ``evaluate`` method of Poutyne's model:
 
 .. code-block:: python
 
   loss_and_metrics = model.evaluate(test_x, test_y)
 
 
-Or only predict on new data;
+Or only predict on new data:
 
 .. code-block:: python
 
@@ -116,6 +107,7 @@ Or only predict on new data;
 
 
 As you can see, Poutyne is inspired a lot by the friendliness of `Keras <https://keras.io/>`_. See the Poutyne documentation at `Poutyne.org <https://poutyne.org/>`_ for more.
+
 
 Installation
 ============
@@ -128,17 +120,34 @@ Before installing Poutyne, you must have the latest version of `PyTorch <https:/
 
     pip install poutyne
 
-- **Install the latest version of Poutyne:**
+- **Install the latest development version of Poutyne:**
 
   .. code-block:: sh
 
-    pip install -U git+https://github.com/GRAAL-Research/poutyne.git
+    pip install -U git+https://github.com/GRAAL-Research/poutyne.git@dev
+
+
+Examples
+========
+
+Look at notebook files with full working `examples <https://github.com/GRAAL-Research/poutyne/blob/master/examples/>`_:
+
+- `introduction_pytorch_poutyne.ipynb <https://github.com/GRAAL-Research/poutyne/blob/master/examples/introduction_pytorch_poutyne.ipynb>`_  (`tutorial version <https://github.com/GRAAL-Research/poutyne/blob/master/tutorials/introduction_pytorch_poutyne_tutorial.ipynb>`_) - comparison of Poutyne with bare PyTorch and example of a Poutyne callback.
+- `transfer_learning.ipynb <https://github.com/GRAAL-Research/poutyne/blob/master/examples/transfer_learning.ipynb>`_ - transfer learning on ResNet-18 on the `CUB-200 <http://www.vision.caltech.edu/visipedia/CUB-200-2011.html>`_ dataset.
+- `policy_cifar_example.ipynb <https://github.com/GRAAL-Research/poutyne/blob/master/examples/policy_cifar_example.ipynb>`_ - policies API, FastAI-like learning rate policies
+- `policy_interface.ipynb <https://github.com/GRAAL-Research/poutyne/blob/master/examples/policy_interface.ipynb>`_ - example of policies
 
 
 Contributing to Poutyne
 =======================
 
 We welcome user input, whether it is regarding bugs found in the library or feature propositions ! Make sure to have a look at our `contributing guidelines <https://github.com/GRAAL-Research/poutyne/blob/master/CONTRIBUTING.md>`_ for more details on this matter.
+
+
+License
+=======
+
+Poutyne is GPLv3 licensed, as found in the `LICENSE file <https://github.com/GRAAL-Research/poutyne/blob/master/LICENSE>`_.
 
 
 Why this name, Poutyne?
@@ -151,17 +160,20 @@ Poutyne (or poutine in Québécois) is now the well-known dish from Quebec compo
 
   Yuri Long from Arlington, VA, USA [`CC BY 2.0 <https://creativecommons.org/licenses/by/2.0>`_]
 
+
 API Reference
 =============
 
 .. toctree::
-   :maxdepth: 1
-   :caption: Package Reference
+  :maxdepth: 1
+  :caption: Package Reference
 
-   utils
-   framework
-   callbacks
-   layers
+  utils
+  framework
+  metrics
+  callbacks
+  layers
+
 
 Indices and tables
 ==================

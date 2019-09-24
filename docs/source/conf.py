@@ -14,14 +14,17 @@
 #
 import os
 import sys
+import datetime
 sys.path.insert(0, os.path.abspath('../..'))
 
 from poutyne import __version__ as version
 
+year = str(datetime.datetime.now().year)
+
 # -- Project information -----------------------------------------------------
 
 project = 'Poutyne'
-copyright = '2018, Frédérik Paradis'
+copyright = year + ', Frédérik Paradis'
 author = 'Frédérik Paradis'
 
 # The short X.Y version
