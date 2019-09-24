@@ -17,6 +17,7 @@ except ImportError:
     SummaryWriter = None
 
 from poutyne.framework import Model
+from poutyne.utils import set_seeds
 from poutyne.framework.callbacks import ModelCheckpoint, \
     OptimizerCheckpoint, \
     LRSchedulerCheckpoint, \
@@ -350,11 +351,7 @@ class Experiment:
         Returns:
             List of dict containing the history of each epoch.
         """
-        if seed is not None:
-            # Make training deterministic.
-            random.seed(seed)
-            np.random.seed(seed)
-            torch.manual_seed(seed)
+        set_seeds(seed)
 
         callbacks = [] if callbacks is None else callbacks
         lr_schedulers = [] if lr_schedulers is None else lr_schedulers
@@ -472,11 +469,7 @@ class Experiment:
         Returns:
             dict sorting of all the test metrics values by their names.
         """
-        if seed is not None:
-            # Make training deterministic.
-            random.seed(seed)
-            np.random.seed(seed)
-            torch.manual_seed(seed)
+        set_seeds(seed)
 
         best_epoch_stats = None
         if load_best_checkpoint:

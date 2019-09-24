@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import random
 import numpy as np
 import torch
 from torch.utils.data import Dataset
@@ -147,3 +148,17 @@ class TensorDataset(Dataset):
 
     def __len__(self):
         return self._len
+
+
+def set_seeds(seed):
+    """
+    Set Python, Numpy and Pytorch's random seeds in order to make
+    the random number generation procedure deterministic and reproducible.
+
+    Args:
+        seed (int): The random number generation seed to use.
+    """
+    if seed is not None:
+        random.seed(seed)
+        np.random.seed(seed)
+        torch.manual_seed(seed)
