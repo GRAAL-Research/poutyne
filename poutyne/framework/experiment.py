@@ -51,7 +51,7 @@ class Experiment:
             loss function (either the functional or object name). The loss function must have the signature
             ``loss_function(input, target)`` where ``input`` is the prediction of the network and ``target``
             is the ground truth. If ``None``, will default to, in priority order, either the model's own
-            loss function or the default loss function associated with the ``exp_type``.
+            loss function or the default loss function associated with the ``task``.
             (Default value = None)
         batch_metrics (list): List of functions with the same signature as the loss function. Each metric
             can be any PyTorch loss function. It can also be a string with the same name as a PyTorch
@@ -64,13 +64,13 @@ class Experiment:
             (Default value = None)
         monitor_metric (str): Which metric to consider for best model performance calculation. Should be in
             the format '{val, train}_{metric_name}' (i.e. 'val_loss'). If None, will follow the value suggested
-            by ``exp_type`` or default to 'val_loss'.
+            by ``task`` or default to 'val_loss'.
             (Default value = None)
         monitor_mode (str): Which mode, either 'min' or 'max', should be used when considering the ``monitor_metric``
-            value. If None, will follow the value suggested by ``exp_type`` or default 'min'.
+            value. If None, will follow the value suggested by ``task`` or default 'min'.
             (Default value = None)
-        exp_type (str): Any str beginning with either 'classif' or 'reg'. Specifying an ``exp_type`` can assign default
-            values to the ``loss_function``, ``batch_metrics``, ``monitor_mode`` and ``monitor_mode``. For ``exp_type``
+        task (str): Any str beginning with either 'classif' or 'reg'. Specifying an ``task`` can assign default
+            values to the ``loss_function``, ``batch_metrics``, ``monitor_mode`` and ``monitor_mode``. For ``task``
             that begins with 'reg', the only default value is the loss function that is the mean squared error. When
             beginning with 'classif', the default loss function is the cross-entropy loss, the default batch metrics
             will be the accuracy and the default monitoring will be set on 'val_acc' with a 'max' mode.
@@ -103,20 +103,20 @@ class Experiment:
                  epoch_metrics=None,
                  monitor_metric=None,
                  monitor_mode=None,
-                 exp_type=None):
+                 task=None):
         self.directory = directory
         self.logging = logging
 
-        if exp_type is not None and not exp_type.startswith('classif') and not exp_type.startswith('reg'):
-            raise ValueError("Invalid exp_type '%s'" % exp_type)
+        if task is not None and not task.startswith('classif') and not task.startswith('reg'):
+            raise ValueError("Invalid task '%s'" % task)
 
         batch_metrics = [] if batch_metrics is None else batch_metrics
         epoch_metrics = [] if epoch_metrics is None else epoch_metrics
 
-        loss_function = self._get_loss_function(loss_function, module, exp_type)
-        batch_metrics = self._get_batch_metrics(batch_metrics, module, exp_type)
+        loss_function = self._get_loss_function(loss_function, module, task)
+        batch_metrics = self._get_batch_metrics(batch_metrics, module, task)
         epoch_metrics = self._get_epoch_metrics(epoch_metrics, module)
-        self._set_monitor(monitor_metric, monitor_mode, exp_type)
+        self._set_monitor(monitor_metric, monitor_mode, task)
 
         self.model = Model(module, optimizer, loss_function, batch_metrics=batch_metrics, epoch_metrics=epoch_metrics)
         if device is not None:
@@ -138,22 +138,22 @@ class Experiment:
         self.lr_scheduler_tmp_filename = join_dir(Experiment.LR_SCHEDULER_TMP_FILENAME)
         self.test_log_filename = join_dir(Experiment.TEST_LOG_FILENAME)
 
-    def _get_loss_function(self, loss_function, module, exp_type):
+    def _get_loss_function(self, loss_function, module, task):
         if loss_function is None:
             if hasattr(module, 'loss_function'):
                 return module.loss_function
-            if exp_type is not None:
-                if exp_type.startswith('classif'):
+            if task is not None:
+                if task.startswith('classif'):
                     return 'cross_entropy'
-                if exp_type.startswith('reg'):
+                if task.startswith('reg'):
                     return 'mse'
         return loss_function
 
-    def _get_batch_metrics(self, batch_metrics, module, exp_type):
+    def _get_batch_metrics(self, batch_metrics, module, task):
         if batch_metrics is None or len(batch_metrics) == 0:
             if hasattr(module, 'batch_metrics'):
                 return module.batch_metrics
-            if exp_type is not None and exp_type.startswith('classif'):
+            if task is not None and task.startswith('classif'):
                 return ['accuracy']
         return batch_metrics
 
@@ -163,7 +163,7 @@ class Experiment:
                 return module.epoch_metrics
         return epoch_metrics
 
-    def _set_monitor(self, monitor_metric, monitor_mode, exp_type):
+    def _set_monitor(self, monitor_metric, monitor_mode, task):
         if monitor_mode is not None and monitor_mode not in ['min', 'max']:
             raise ValueError("Invalid mode '%s'" % monitor_mode)
 
@@ -173,7 +173,7 @@ class Experiment:
             self.monitor_metric = monitor_metric
             if monitor_mode is not None:
                 self.monitor_mode = monitor_mode
-        elif exp_type is not None and exp_type.startswith('classif'):
+        elif task is not None and task.startswith('classif'):
             self.monitor_metric = 'val_acc'
             self.monitor_mode = 'max'
 
