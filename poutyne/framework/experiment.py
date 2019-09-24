@@ -27,6 +27,56 @@ from poutyne.framework.callbacks import ModelCheckpoint, \
 
 
 class Experiment:
+    """
+    The Experiment class provides a straightforward experimentation tool for efficient finetuning of
+    the whole neural network training procedure with PyTorch. The ``Experiment`` object takes
+    care of the training and testing processes while also managing to keep traces of all pertinent
+    information via the automatic logging option.
+
+    Args:
+        directory (str): Path to the experiment's working directory. Will be used for saving
+        model (torch.nn.Module): A PyTorch module.
+        device (torch.torch.device): The device to which the model is sent. If None, the model will be
+            kept on its current device.
+            (Default value = None)
+        logging (bool): Whether or not to log the experiment's progress. If true, various logging
+            callbacks will be inserted to output training and testing stats as well as to automatically
+            save model checkpoints, for example.
+            (Default value = True)
+        optimizer (Union[torch.optim.Optimizer, str]): If Pytorch Optimizer, must already be initialized.
+            If str, should be the optimizer's name in Pytorch (i.e. 'Adam' for torch.optim.Adam).
+            (Default value = 'sgd')
+        loss_function(Union[Callable, str]) It can be any PyTorch
+            loss layer or custom loss function. It can also be a string with the same name as a PyTorch
+            loss function (either the functional or object name). The loss function must have the signature
+            ``loss_function(input, target)`` where ``input`` is the prediction of the network and ``target``
+            is the ground truth. If ``None``, will default to, in priority order, either the model's own
+            loss function or the default loss function associated with the ``exp_type``.
+            (Default value = None)
+        batch_metrics (list): List of functions with the same signature as the loss function. Each metric
+            can be any PyTorch loss function. It can also be a string with the same name as a PyTorch
+            loss function (either the functional or object name). 'accuracy' (or just 'acc') is also a
+            valid metric. Each metric function is called on each batch of the optimization and on the
+            validation batches at the end of the epoch.
+            (Default value = None)
+        epoch_metrics (list): List of functions with the same signature as
+            :class:`~poutyne.framework.metrics.epoch_metrics.EpochMetric`
+            (Default value = None)
+        monitor_metric (str): Which metric to consider for best model performance calculation. Should be in
+            the format '{val, train}_{metric_name}' (i.e. 'val_loss'). If None, will follow the value suggested
+            by ``exp_type`` or default to 'val_loss'.
+            (Default value = None)
+        monitor_mode (str): Which mode, either 'min' or 'max', should be used when considering the ``monitor_metric``
+            value. If None, will follow the value suggested by ``exp_type`` or default 'min'.
+            (Default value = None)
+        exp_type (str): Any str beginning with either 'classif' or 'reg'. Specifying an ``exp_type`` can assign default
+            values to the ``loss_function``, ``batch_metrics``, ``monitor_mode`` and ``monitor_mode``. For ``exp_type``
+            that begins with 'reg', the only default value is the loss function that is the mean squared error. When
+            beginning with 'classif', the default loss function is the cross-entropy loss, the default batch metrics
+            will be the accuracy and the default monitoring will be set on 'val_acc' with a 'max' mode.
+            (Default value = None)
+
+    """
     BEST_CHECKPOINT_FILENAME = 'checkpoint_epoch_{epoch}.ckpt'
     BEST_CHECKPOINT_TMP_FILENAME = 'checkpoint_epoch.tmp.ckpt'
     MODEL_CHECKPOINT_FILENAME = 'checkpoint.ckpt'
@@ -128,6 +178,14 @@ class Experiment:
             self.monitor_mode = 'max'
 
     def get_best_epoch_stats(self):
+        """
+        Returns all computed statistics corresponding to the best epoch according to the
+        ``monitor_metric`` and ``monitor_mode`` attributes.
+
+        Returns:
+            dict where each key is a column name in the logging output file
+            and values are the ones found at the best epoch.
+        """
         if pd is None:
             raise ImportError("pandas needs to be installed to use this function.")
 
@@ -253,6 +311,45 @@ class Experiment:
               batches_per_step=1,
               seed=42):
         # pylint: disable=too-many-locals
+        """
+        Trains the attribute model on a dataset using a loader.
+
+        Args:
+            train_loader: Generator-like object for the training set. See :func:`~Model.fit_generator()`
+                for details on the types of generators supported.
+            valid_loader (optional): Generator-like object for the validation set. See
+                :func:`~Model.fit_generator()` for details on the types of generators supported.
+                (Default value = None)
+            callbacks (List[~poutyne.framework.callbacks.Callback]): List of callbacks that will be called during
+                training.
+                (Default value = None)
+            lr_schedulers (List[~poutyne.framework.callbacks.lr_scheduler.LRScheduler]): List of learning rate schedulers.
+                (Default value = None)
+            save_every_epoch (bool, optional): Whether or not to save the attribute model's weights after
+                every epoch.
+                (Default value = False)
+            disable_tensorboard (bool, optional): Wheter or not to disable the automatic tensorboard logging
+                callbacks.
+                (Default value = False)
+            epochs (int): Number of times the entire training dataset is seen.
+                (Default value = 1000)
+            steps_per_epoch (int, optional): Number of batch used during one epoch. Obviously, using this
+                argument may cause one epoch not to see the entire training dataset or see it multiple times.
+                (Defaults the number of steps needed to see the entire
+                training dataset)
+            validation_steps (int, optional): Same as for ``steps_per_epoch`` but for the validation dataset.
+                (Defaults to ``steps_per_epoch`` if provided or the number of steps needed to see the entire
+                validation dataset)
+            batches_per_step (int): Number of batches on which to compute the running loss before
+                backpropagating it through the network. Note that the total loss used for backpropagation is
+                the mean of the `batches_per_step` batch losses.
+                (Default value = 1)
+            seed (int, optional): Seed used to make the sampling deterministic.
+                (Default value = 42)
+
+        Returns:
+            List of dict containing the history of each epoch.
+        """
         if seed is not None:
             # Make training deterministic.
             random.seed(seed)
@@ -318,6 +415,14 @@ class Experiment:
                 tensorboard_writer.close()
 
     def load_best_checkpoint(self, *, verbose=False):
+        """
+        Loads the attribute model's weights with the weights of the best checkpoint epoch
+        with respect to the ``monitor_metric`` and ``monitor_mode`` attributes.
+
+        Args:
+            verbose (bool, optional): Whether or not to print the best epoch number and stats.
+                (Default value = False)
+        """
         best_epoch_stats = self.get_best_epoch_stats()
         best_epoch = best_epoch_stats['epoch'].item()
 
@@ -331,13 +436,42 @@ class Experiment:
         return best_epoch_stats
 
     def load_checkpoint(self, epoch):
+        """
+        Loads the attribute model's weights with the weights at a given checkpoint epoch.
+
+        Args:
+            epoch (int): The checkpoint epoch to load.
+        """
         ckpt_filename = self.best_checkpoint_filename.format(epoch=epoch)
         self.model.load_weights(ckpt_filename)
 
     def load_last_checkpoint(self):
+        """
+        Loads the attribute model's weights with the weights of the last checkpoint.
+        """
         self.model.load_weights(self.model_checkpoint_filename)
 
     def test(self, test_loader, *, steps=None, load_best_checkpoint=True, load_last_checkpoint=False, seed=42):
+        """
+        Computes and returns the loss and the metrics of the attribute model on a given test examples
+        loader.
+
+        Args:
+            test_loader: Generator-like object for the test set. See :func:`~Model.fit_generator()` for
+                details on the types of generators supported.
+            steps (int, optional): Number of iterations done on ``generator``.
+                (Defaults the number of steps needed to see the entire dataset)
+            load_best_checkpoint (bool, optional): Whether or not to load the best checkpoint's weights.
+                If set to true, the ``load_last_checkpoint`` argument is ignored.
+                (Default value = True)
+            load_last_checkpoint (bool, optional): Whether or not to load the last checkpoint's weights.
+                (Default value = False)
+            seed (int, optional): Seed used to make the sampling deterministic.
+                (Default value = 42)
+
+        Returns:
+            dict sorting of all the test metrics values by their names.
+        """
         if seed is not None:
             # Make training deterministic.
             random.seed(seed)
