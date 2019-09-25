@@ -34,7 +34,7 @@ class Experiment:
     keep traces of all pertinent information via the automatic logging option.
 
     Args:
-        directory (str): Path to the experiment's working directory. Will be used for saving
+        directory (str): Path to the experiment's working directory. Will be used for the automatic logging.
         model (torch.nn.Module): A PyTorch module.
         device (torch.torch.device): The device to which the model is sent. If None, the model will be
             kept on its current device.
