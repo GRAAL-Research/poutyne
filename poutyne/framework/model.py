@@ -35,7 +35,7 @@ class Model:
             loss function (either the functional or object name). The loss function must have the signature
             ``loss_function(input, target)`` where ``input`` is the prediction of the network and ``target``
             is the ground truth. If ``None``, will default to, in priority order, either the model's own
-            loss function or the default loss function associated with the ``exp_type``.
+            loss function or the default loss function associated with the ``task``.
             (Default value = None)
         metrics (list): ***metrics is deprecated as of version 0.5.1. Use batch_metrics instead.***
             List of functions with the same signature as the loss function. Each metric
