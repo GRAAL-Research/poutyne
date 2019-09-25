@@ -77,6 +77,89 @@ class Experiment:
             will be the accuracy and the default monitoring will be set on 'val_acc' with a 'max' mode.
             (Default value = None)
 
+    Example:
+        Using a PyTorch DataLoader, on classification task with SGD optimizer::
+
+            import torch
+            from torch.utils.data import DataLoader, TensorDataset
+            from poutyne.framework import Experiment
+
+            num_features = 20
+            num_classes = 5
+
+            # Our training dataset with 800 samples.
+            num_train_samples = 800
+            train_x = torch.rand(num_train_samples, num_features)
+            train_y = torch.randint(num_classes, (num_train_samples, ), dtype=torch.long)
+            train_dataset = TensorDataset(train_x, train_y)
+            train_generator = DataLoader(train_dataset, batch_size=32)
+
+            # Our validation dataset with 200 samples.
+            num_valid_samples = 200
+            valid_x = torch.rand(num_valid_samples, num_features)
+            valid_y = torch.randint(num_classes, (num_valid_samples, ), dtype=torch.long)
+            valid_dataset = TensorDataset(valid_x, valid_y)
+            valid_generator = DataLoader(valid_dataset, batch_size=32)
+
+            # Our network
+            pytorch_module = torch.nn.Linear(num_features, num_train_samples)
+
+            # Intialization of our experimentation and network training
+            exp = Experiment('./simple_example',
+                             pytorch_module,
+                             optimizer='sgd',
+                             task='classif')
+            exp.train(train_generator, valid_generator, epochs=5)
+
+    The above code will yield an output similar to the below lines. Note the automatic checkpoint saving
+    in the experiment directory when the monitored metric improved.
+
+    .. code-block:: none
+
+            Epoch 1/5 0.09s Step 25/25: loss: 6.351375, acc: 1.375000, val_loss: 6.236106, val_acc: 5.000000
+            Epoch 1: val_acc improved from -inf to 5.00000, saving file to ./simple_example/checkpoint_epoch_1.ckpt
+            Epoch 2/5 0.10s Step 25/25: loss: 6.054254, acc: 14.000000, val_loss: 5.944495, val_acc: 19.500000
+            Epoch 2: val_acc improved from 5.00000 to 19.50000, saving file to ./simple_example/checkpoint_epoch_2.ckpt
+            Epoch 3/5 0.09s Step 25/25: loss: 5.759377, acc: 22.875000, val_loss: 5.655412, val_acc: 21.000000
+            Epoch 3: val_acc improved from 19.50000 to 21.00000, saving file to ./simple_example/checkpoint_epoch_3.ckpt
+            ...
+
+    Training can now easily be resumed from the best checkpoint::
+
+            exp.train(train_generator, valid_generator, epochs=10)
+
+    .. code-block:: none
+
+            Restoring model from ./simple_example/checkpoint_epoch_3.ckpt
+            Loading weights from ./simple_example/checkpoint.ckpt and starting at epoch 6.
+            Loading optimizer state from ./simple_example/checkpoint.optim and starting at epoch 6.
+            Epoch 6/10 0.16s Step 25/25: loss: 4.897135, acc: 22.875000, val_loss: 4.813141, val_acc: 20.500000
+            Epoch 7/10 0.10s Step 25/25: loss: 4.621514, acc: 22.625000, val_loss: 4.545359, val_acc: 20.500000
+            Epoch 8/10 0.24s Step 25/25: loss: 4.354721, acc: 23.625000, val_loss: 4.287117, val_acc: 20.500000
+            ...
+
+    Testing is also very intuitive::
+
+            exp.test(test_generator)
+
+    .. code-block:: none
+
+            Restoring model from ./simple_example/checkpoint_epoch_9.ckpt
+            Found best checkpoint at epoch: 9
+            lr: 0.01, loss: 4.09892, acc: 23.625, val_loss: 4.04057, val_acc: 21.5
+            On best model: test_loss: 4.06664, test_acc: 17.5
+
+
+    Finally, all the pertinent metrics specified to the Experiment at each epoch are stored in a specific logging
+    file, found here at './simple_example/log.tsv'.
+
+    .. code-block:: none
+
+            epoch	time	            lr	    loss	            acc	    val_loss	        val_acc
+            1	    0.0721172170015052	0.01	6.351375141143799	1.375	6.23610631942749	5.0
+            2	    0.0298177790245972	0.01	6.054253826141357	14.000	5.94449516296386	19.5
+            3	    0.0637106419890187	0.01	5.759376544952392	22.875	5.65541223526001	21.0
+
     """
     BEST_CHECKPOINT_FILENAME = 'checkpoint_epoch_{epoch}.ckpt'
     BEST_CHECKPOINT_TMP_FILENAME = 'checkpoint_epoch.tmp.ckpt'
