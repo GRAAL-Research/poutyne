@@ -63,7 +63,7 @@ class Experiment:
             :class:`~poutyne.framework.metrics.epoch_metrics.EpochMetric`
             (Default value = None)
         monitor_metric (str): Which metric to consider for best model performance calculation. Should be in
-            the format '{val, train}_{metric_name}' (i.e. 'val_loss'). If None, will follow the value suggested
+            the format '{metric_name}' or 'val_{metric_name}' (i.e. 'val_loss'). If None, will follow the value suggested
             by ``task`` or default to 'val_loss'.
             (Default value = None)
         monitor_mode (str): Which mode, either 'min' or 'max', should be used when considering the ``monitor_metric``
