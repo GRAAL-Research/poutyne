@@ -313,7 +313,9 @@ class Experiment:
               seed=42):
         # pylint: disable=too-many-locals
         """
-        Trains the attribute model on a dataset using a loader.
+        Trains or finetunes the attribute model on a dataset using a loader. If a previous training already occured
+        and lasted a total of `n_previous` epochs, then the model's weights will be set to the best previous checkpoint
+        and the training will be resumed for epochs range (`n_previous`, `epochs`].
 
         Args:
             train_loader: Generator-like object for the training set. See :func:`~Model.fit_generator()`
