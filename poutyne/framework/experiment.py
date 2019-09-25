@@ -525,6 +525,10 @@ class Experiment:
             epoch (int): The checkpoint epoch to load.
         """
         ckpt_filename = self.best_checkpoint_filename.format(epoch=epoch)
+
+        if not os.path.isfile(ckpt_filename):
+            raise ValueError("No checkpoint found for epoch {}".format(epoch))
+
         self.model.load_weights(ckpt_filename)
 
     def load_last_checkpoint(self):
