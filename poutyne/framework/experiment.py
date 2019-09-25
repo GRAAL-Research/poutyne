@@ -411,7 +411,7 @@ class Experiment:
             lr_schedulers (List[~poutyne.framework.callbacks.lr_scheduler.LRScheduler]): List of learning rate
                 schedulers.
                 (Default value = None)
-            save_every_epoch (bool, optional): Whether or not to save the attribute model's weights after
+            save_every_epoch (bool, optional): Whether or not to save the experiment model's weights after
                 every epoch.
                 (Default value = False)
             disable_tensorboard (bool, optional): Wheter or not to disable the automatic tensorboard logging
