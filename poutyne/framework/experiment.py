@@ -381,8 +381,8 @@ class Experiment:
         return callbacks
 
     def train(self,
-              train_loader,
-              valid_loader=None,
+              train_generator,
+              valid_generator=None,
               *,
               callbacks=None,
               lr_schedulers=None,
@@ -395,14 +395,14 @@ class Experiment:
               seed=42):
         # pylint: disable=too-many-locals
         """
-        Trains or finetunes the attribute model on a dataset using a loader. If a previous training already occured
+        Trains or finetunes the attribute model on a dataset using a generator. If a previous training already occured
         and lasted a total of `n_previous` epochs, then the model's weights will be set to the best previous checkpoint
         and the training will be resumed for epochs range (`n_previous`, `epochs`].
 
         Args:
-            train_loader: Generator-like object for the training set. See :func:`~Model.fit_generator()`
+            train_generator: Generator-like object for the training set. See :func:`~Model.fit_generator()`
                 for details on the types of generators supported.
-            valid_loader (optional): Generator-like object for the validation set. See
+            valid_generator (optional): Generator-like object for the validation set. See
                 :func:`~Model.fit_generator()` for details on the types of generators supported.
                 (Default value = None)
             callbacks (List[~poutyne.framework.callbacks.Callback]): List of callbacks that will be called during
@@ -484,8 +484,8 @@ class Experiment:
         callbacks += self._init_lr_scheduler_callbacks(lr_schedulers)
 
         try:
-            return self.model.fit_generator(train_loader,
-                                            valid_loader,
+            return self.model.fit_generator(train_generator,
+                                            valid_generator,
                                             epochs=epochs,
                                             steps_per_epoch=steps_per_epoch,
                                             validation_steps=validation_steps,
@@ -533,13 +533,13 @@ class Experiment:
         """
         self.model.load_weights(self.model_checkpoint_filename)
 
-    def test(self, test_loader, *, steps=None, checkpoint='best', seed=42):
+    def test(self, test_generator, *, steps=None, checkpoint='best', seed=42):
         """
         Computes and returns the loss and the metrics of the attribute model on a given test examples
-        loader.
+        generator.
 
         Args:
-            test_loader: Generator-like object for the test set. See :func:`~Model.fit_generator()` for
+            test_generator: Generator-like object for the test set. See :func:`~Model.fit_generator()` for
                 details on the types of generators supported.
             steps (int, optional): Number of iterations done on ``generator``.
                 (Defaults the number of steps needed to see the entire dataset)
@@ -571,7 +571,7 @@ class Experiment:
         else:
             raise ValueError("Argument checkpoint must be either 'best', 'last' or int. Found : {}".format(checkpoint))
 
-        test_loss, test_metrics = self.model.evaluate_generator(test_loader, steps=steps)
+        test_loss, test_metrics = self.model.evaluate_generator(test_generator, steps=steps)
         if not isinstance(test_metrics, np.ndarray):
             test_metrics = np.array([test_metrics])
 
