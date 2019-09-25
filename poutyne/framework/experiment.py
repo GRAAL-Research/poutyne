@@ -29,10 +29,10 @@ from poutyne.framework.callbacks import ModelCheckpoint, \
 
 class Experiment:
     """
-    The Experiment class provides a straightforward experimentation tool for efficient finetuning of
-    the whole neural network training procedure with PyTorch. The ``Experiment`` object takes
-    care of the training and testing processes while also managing to keep traces of all pertinent
-    information via the automatic logging option.
+    The Experiment class provides a straightforward experimentation tool for efficient and entirely
+    customizable finetuning of the whole neural network training procedure with PyTorch. The
+    ``Experiment`` object takes care of the training and testing processes while also managing to
+    keep traces of all pertinent information via the automatic logging option.
 
     Args:
         directory (str): Path to the experiment's working directory. Will be used for saving
