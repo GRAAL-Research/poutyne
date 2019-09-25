@@ -1,6 +1,5 @@
 # pylint: disable=redefined-builtin
 import os
-import random
 import warnings
 
 import numpy as np
@@ -409,7 +408,8 @@ class Experiment:
             callbacks (List[~poutyne.framework.callbacks.Callback]): List of callbacks that will be called during
                 training.
                 (Default value = None)
-            lr_schedulers (List[~poutyne.framework.callbacks.lr_scheduler.LRScheduler]): List of learning rate schedulers.
+            lr_schedulers (List[~poutyne.framework.callbacks.lr_scheduler.LRScheduler]): List of learning rate
+                schedulers.
                 (Default value = None)
             save_every_epoch (bool, optional): Whether or not to save the attribute model's weights after
                 every epoch.
