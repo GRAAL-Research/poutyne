@@ -548,11 +548,6 @@ class Experiment:
                 If 'last', will load the last model checkpoint. If int, will load the checkpoint of the
                 specified epoch.
                 (Default value = 'best')
-            load_best_checkpoint (bool, optional): Whether or not to load the best checkpoint's weights.
-                If set to true, the ``load_last_checkpoint`` argument is ignored.
-                (Default value = True)
-            load_last_checkpoint (bool, optional): Whether or not to load the last checkpoint's weights.
-                (Default value = False)
             seed (int, optional): Seed used to make the sampling deterministic.
                 (Default value = 42)
 
