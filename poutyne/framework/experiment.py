@@ -69,7 +69,7 @@ class Experiment:
         monitor_mode (str): Which mode, either 'min' or 'max', should be used when considering the ``monitor_metric``
             value. If None, will follow the value suggested by ``task`` or default 'min'.
             (Default value = None)
-        task (str): Any str beginning with either 'classif' or 'reg'. Specifying an ``task`` can assign default
+        task (str): Any str beginning with either 'classif' or 'reg'. Specifying a ``task`` can assign default
             values to the ``loss_function``, ``batch_metrics``, ``monitor_mode`` and ``monitor_mode``. For ``task``
             that begins with 'reg', the only default value is the loss function that is the mean squared error. When
             beginning with 'classif', the default loss function is the cross-entropy loss, the default batch metrics
