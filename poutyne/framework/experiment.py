@@ -574,7 +574,6 @@ class Experiment:
         """
         set_seeds(seed)
 
-        best_epoch_stats = None
         best_epoch_stats = self.load_checkpoint(checkpoint)
 
         test_loss, test_metrics = self.model.evaluate_generator(test_generator, steps=steps)
