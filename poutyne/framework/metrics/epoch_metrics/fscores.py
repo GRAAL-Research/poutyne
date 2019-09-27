@@ -128,7 +128,7 @@ class FBeta(EpochMetric):
             y_true, mask = y_true
 
         # Calculate true_positive_sum, true_negative_sum, pred_sum, true_sum
-        num_classes = y_pred.size(-1)
+        num_classes = y_pred.size(1)
         if (y_true >= num_classes).any():
             raise ValueError("A gold label passed to FBetaMeasure contains "
                              "an id >= {}, the number of classes.".format(num_classes))
@@ -146,7 +146,7 @@ class FBeta(EpochMetric):
         mask = mask.to(dtype=torch.bool)
         y_true = y_true.float()
 
-        argmax_y_pred = y_pred.max(dim=-1)[1].float()
+        argmax_y_pred = y_pred.max(dim=1)[1].float()
         true_positives = (y_true == argmax_y_pred) * mask
         true_positives_bins = y_true[true_positives]
 
