@@ -4,3 +4,5 @@ mnist
 *.tsv
 *.ckpt
 data
+conv_net_experiment
+cub200_resnet18_experiment
