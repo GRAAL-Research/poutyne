@@ -34,8 +34,7 @@ class _PyTorchLRSchedulerWrapper(Callback):
         self.scheduler.step(epoch)
 
     def on_train_begin(self, logs):
-        optimizer = self.model.optimizer
-        self.scheduler = self.torch_lr_scheduler(optimizer, *self.args, **self.kwargs)
+        self.scheduler = self.torch_lr_scheduler(self.model.optimizer, *self.args, **self.kwargs)
 
     def load_state(self, f):
         if self.scheduler is not None:
