@@ -169,7 +169,8 @@ API Reference
   :caption: Package Reference
 
   utils
-  framework
+  model
+  experiment
   metrics
   callbacks
   layers

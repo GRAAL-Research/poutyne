@@ -27,11 +27,14 @@ class Model:
 
     Args:
         model (torch.nn.Module): A PyTorch module.
-        optimizer (torch.optim.Optimizer): Initialized PyTorch optimizer.
-        loss_function: Loss function. It can be any PyTorch loss layer or custom loss function. It
+        optimizer (Union[torch.optim.Optimizer, str]): If torch.optim.Optimier, an initialized PyTorch.
+            If str, should be the optimizer's name in Pytorch (i.e. 'Adam' for torch.optim.Adam).
+            (Default value = 'sgd')
+        loss_function(Union[Callable, str]) It can be any PyTorch loss layer or custom loss function. It
             can also be a string with the same name as a PyTorch loss function (either the functional or
-            object name). The loss function must have the signature ``loss_function(input, target)``
-            where ``input`` is the prediction of the network and ``target`` is the ground truth.
+            object name). The loss function must have the signature ``loss_function(input, target)`` where
+            ``input`` is the prediction of the network and ``target`` is the ground truth.
+            (Default value = None)
         metrics (list): ***metrics is deprecated as of version 0.5.1. Use batch_metrics instead.***
             List of functions with the same signature as the loss function. Each metric
             can be any PyTorch loss function. It can also be a string with the same name as a PyTorch
@@ -46,7 +49,8 @@ class Model:
             validation batches at the end of the epoch.
             (Default value = None)
         epoch_metrics (list): List of functions with the same signature as
-            :class:`~poutyne.framework.metrics.epoch_metrics.EpochMetric` (Default value = None)
+            :class:`~poutyne.framework.metrics.epoch_metrics.EpochMetric`
+            (Default value = None)
 
     Attributes:
         model (torch.nn.Module): The associated PyTorch module.
@@ -54,8 +58,8 @@ class Model:
         loss_function: The associated loss function.
         metrics (list): ***metrics is deprecated as of version 0.5.1. Use batch_metrics instead.***
             The associated metric functions.
-        batch_metrics: The associated metric functions for every batch.
-        epoch_metrics: The associated metric functions for every epoch.
+        batch_metrics (list): The associated metric functions for every batch.
+        epoch_metrics (list): The associated metric functions for every epoch.
 
     Example:
         Using Numpy arrays (or tensors) dataset::

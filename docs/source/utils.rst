@@ -16,3 +16,4 @@ list and dict.
 .. autofunction:: torch_to_numpy
 .. autofunction:: numpy_to_torch
 .. autofunction:: torch_apply
+.. autofunction:: set_seeds
