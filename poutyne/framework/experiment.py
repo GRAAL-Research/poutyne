@@ -496,15 +496,37 @@ class Experiment:
             if tensorboard_writer is not None:
                 tensorboard_writer.close()
 
-    def load_best_checkpoint(self, *, verbose=False):
+    def load_checkpoint(self, checkpoint, *, verbose=False):
         """
-        Loads the attribute model's weights with the weights of the best checkpoint epoch
-        with respect to the ``monitor_metric`` and ``monitor_mode`` attributes.
+        Loads the attribute model's weights with the weights at a given checkpoint epoch.
 
         Args:
-            verbose (bool, optional): Whether or not to print the best epoch number and stats.
+            checkpoint (Union[int, str]): If int, will load the checkpoint of the given epoch number.
+                If 'best', will load the best weights according to ``monitor_metric`` and ``monitor_mode``.
+                If 'last', will load the last model checkpoint. If int, will load the checkpoint of the
+                specified epoch.
+            verbose (bool, optional): Whether or not to print the best epoch number and stats when
+                checkpoint is 'best'.
                 (Default value = False)
         """
+        if isinstance(checkpoint, int):
+            self._load_epoch_checkpoint(checkpoint)
+        elif checkpoint == 'best':
+            self._load_best_checkpoint(verbose=verbose)
+        elif checkpoint == 'last':
+            self._load_last_checkpoint()
+        else:
+            raise ValueError("checkpoint argument must be either 'best', 'last' or int. Found : {}".format(checkpoint))
+
+    def _load_epoch_checkpoint(self, epoch):
+        ckpt_filename = self.best_checkpoint_filename.format(epoch=epoch)
+
+        if not os.path.isfile(ckpt_filename):
+            raise ValueError("No checkpoint found for epoch {}".format(epoch))
+
+        self.model.load_weights(ckpt_filename)
+
+    def _load_best_checkpoint(self, *, verbose=False):
         best_epoch_stats = self.get_best_epoch_stats()
         best_epoch = best_epoch_stats['epoch'].item()
 
@@ -514,27 +536,10 @@ class Experiment:
             print("Found best checkpoint at epoch: {}".format(best_epoch))
             print(metrics_str)
 
-        self.load_checkpoint(best_epoch)
+        self._load_epoch_checkpoint(best_epoch)
         return best_epoch_stats
 
-    def load_checkpoint(self, epoch):
-        """
-        Loads the attribute model's weights with the weights at a given checkpoint epoch.
-
-        Args:
-            epoch (int): The checkpoint epoch to load.
-        """
-        ckpt_filename = self.best_checkpoint_filename.format(epoch=epoch)
-
-        if not os.path.isfile(ckpt_filename):
-            raise ValueError("No checkpoint found for epoch {}".format(epoch))
-
-        self.model.load_weights(ckpt_filename)
-
-    def load_last_checkpoint(self):
-        """
-        Loads the attribute model's weights with the weights of the last checkpoint.
-        """
+    def _load_last_checkpoint(self):
         self.model.load_weights(self.model_checkpoint_filename)
 
     def test(self, test_generator, *, steps=None, checkpoint='best', seed=42):
@@ -559,16 +564,7 @@ class Experiment:
             dict sorting of all the test metrics values by their names.
         """
         set_seeds(seed)
-
-        best_epoch_stats = None
-        if checkpoint == 'best':
-            best_epoch_stats = self.load_best_checkpoint(verbose=True)
-        elif checkpoint == 'last':
-            self.load_last_checkpoint()
-        elif isinstance(checkpoint, int):
-            self.load_checkpoint(checkpoint)
-        else:
-            raise ValueError("Argument checkpoint must be either 'best', 'last' or int. Found : {}".format(checkpoint))
+        self.load_checkpoint(checkpoint)
 
         test_loss, test_metrics = self.model.evaluate_generator(test_generator, steps=steps)
         if not isinstance(test_metrics, np.ndarray):
