@@ -82,7 +82,7 @@ for name, module_cls in torch.optim.lr_scheduler.__dict__.items():
         setattr(sys.modules[__name__], name, _new_cls)
 
 
-class ReduceLROnPlateau(LRScheduler):
+class ReduceLROnPlateau(_PyTorchLRSchedulerWrapper):
     """
     Args:
         monitor (str): The quantity to monitor. (Default value = 'val_loss')
@@ -91,18 +91,8 @@ class ReduceLROnPlateau(LRScheduler):
     """
 
     def __init__(self, *args, monitor='val_loss', **kwargs):
-        super().__init__()
+        super().__init__(torch_lr_scheduler=torch.optim.lr_scheduler.ReduceLROnPlateau)
         self.monitor = monitor
-
-    def on_train_begin(self, logs):
-        optimizer = self.model.optimizer
-        self.scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, *self.args, **self.kwargs)
-
-        # Load state if the scheduler was not initialized when the user asked
-        # to load its state
-        if self.loaded_state is not None:
-            self.scheduler.load_state_dict(self.loaded_state)
-            self.loaded_state = None
 
     def on_epoch_end(self, epoch, logs):
         self.scheduler.step(logs[self.monitor], epoch)
