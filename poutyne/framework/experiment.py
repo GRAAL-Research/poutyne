@@ -41,7 +41,8 @@ class Experiment:
             (Default value = None)
         logging (bool): Whether or not to log the experiment's progress. If true, various logging
             callbacks will be inserted to output training and testing stats as well as to automatically
-            save model checkpoints, for example.
+            save model checkpoints, for example. See :func:`~Experiment.train()` and :func:`~Experiment.test()`
+            for more details.
             (Default value = True)
         optimizer (Union[torch.optim.Optimizer, str]): If Pytorch Optimizer, must already be initialized.
             If str, should be the optimizer's name in Pytorch (i.e. 'Adam' for torch.optim.Adam).
@@ -400,6 +401,10 @@ class Experiment:
         and lasted a total of `n_previous` epochs, then the model's weights will be set to the best previous checkpoint
         and the training will be resumed for epochs range (`n_previous`, `epochs`].
 
+        If the Experiment has logging enabled (i.e. self.logging is True) the epoch number, time, loss and metrics on
+        the train and validation sets will all be logged in an entry on an output .tsv file. For a detailed list of all
+        automatically logged metrics, see :func:`here <callbacks.Callback.on_epoch_end()>`.
+
         Args:
             train_generator: Generator-like object for the training set. See :func:`~Model.fit_generator()`
                 for details on the types of generators supported.
@@ -555,6 +560,10 @@ class Experiment:
         """
         Computes and returns the loss and the metrics of the attribute model on a given test examples
         generator.
+
+        If the Experiment has logging enabled (i.e. self.logging is True) the epoch number, time, loss and metrics on
+        the validation and test sets will all be logged in an entry on a separate output .tsv file. For a detailed list of all
+        automatically logged metrics, see :func:`here <callbacks.Callback.on_epoch_end()>`.
 
         Args:
             test_generator: Generator-like object for the test set. See :func:`~Model.fit_generator()` for
