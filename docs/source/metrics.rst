@@ -2,7 +2,7 @@
     :class: hidden-section
 
 Metrics
-===========================
+=======
 
 .. automodule:: poutyne
 .. currentmodule:: poutyne.framework.metrics
