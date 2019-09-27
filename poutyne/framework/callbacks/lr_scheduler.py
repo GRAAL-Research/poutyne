@@ -24,9 +24,6 @@ class LRScheduler(Callback):
         self.scheduler = None
         self.loaded_state = None
 
-    def on_train_begin(self, logs):
-        pass
-
     def on_epoch_end(self, epoch, logs):
         self.scheduler.step(epoch)
 
