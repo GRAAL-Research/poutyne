@@ -12,14 +12,14 @@ from torch.optim.lr_scheduler import _LRScheduler
 from .callbacks import Callback
 
 
-class LRScheduler(Callback):
+class _PyTorchLRSchedulerWrapper(Callback):
     """
     Default class for the LR scheduling callback. Proposes default comportment for the scheduler
     loading and saving as well as for the epoch end handling.
     """
 
-    def __init__(self, *args, **kwargs):
-        super().__init__()
+    def __init__(self, torch_lr_scheduler, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         if len(args) > 0 and isinstance(args[0], Optimizer):
             raise ValueError("In the LR scheduler callbacks, the optimizer is "
                              "automatically passed to the PyTorch's LR scheduler. "
@@ -28,9 +28,14 @@ class LRScheduler(Callback):
         self.kwargs = kwargs
         self.scheduler = None
         self.state_to_load = None
+        self.torch_lr_scheduler = torch_lr_scheduler
 
     def on_epoch_end(self, epoch, logs):
         self.scheduler.step(epoch)
+
+    def on_train_begin(self, logs):
+        optimizer = self.model.optimizer
+        self.scheduler = self.torch_lr_scheduler(optimizer, *self.args, **self.kwargs)
 
     def load_state(self, f):
         if self.scheduler is not None:
@@ -40,16 +45,6 @@ class LRScheduler(Callback):
 
     def save_state(self, f):
         torch.save(self.scheduler.state_dict(), f)
-
-
-class _PyTorchLRSchedulerWrapper(LRScheduler):
-    def __init__(self, torch_lr_scheduler, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.torch_lr_scheduler = torch_lr_scheduler
-
-    def on_train_begin(self, logs):
-        optimizer = self.model.optimizer
-        self.scheduler = self.torch_lr_scheduler(optimizer, *self.args, **self.kwargs)
 
     def _load_state_to_load(self):
         if self.state_to_load is not None:

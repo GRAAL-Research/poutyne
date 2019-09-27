@@ -414,7 +414,7 @@ class Experiment:
             callbacks (List[~poutyne.framework.callbacks.Callback]): List of callbacks that will be called during
                 training.
                 (Default value = None)
-            lr_schedulers (List[~poutyne.framework.callbacks.lr_scheduler.LRScheduler]): List of learning rate
+            lr_schedulers (List[~poutyne.framework.callbacks.lr_scheduler._PyTorchLRSchedulerWrapper]): List of learning rate
                 schedulers.
                 (Default value = None)
             save_every_epoch (bool, optional): Whether or not to save the experiment model's weights after
