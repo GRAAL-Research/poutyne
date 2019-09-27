@@ -562,8 +562,8 @@ class Experiment:
         generator.
 
         If the Experiment has logging enabled (i.e. self.logging is True) the epoch number, time, loss and metrics on
-        the validation and test sets will all be logged in an entry on a separate output .tsv file. For a detailed list of all
-        automatically logged metrics, see :func:`here <callbacks.Callback.on_epoch_end()>`.
+        the validation and test sets will all be logged in an entry on a separate output .tsv file. For a detailed list
+        of all automatically logged metrics, see :func:`here <callbacks.Callback.on_epoch_end()>`.
 
         Args:
             test_generator: Generator-like object for the test set. See :func:`~Model.fit_generator()` for
