@@ -507,7 +507,7 @@ class Experiment:
         Loads the attribute model's weights with the weights at a given checkpoint epoch.
 
         Args:
-            checkpoint (Union[int, str]): If int, will load the checkpoint of the given epoch number.
+            checkpoint (Union[int, str]): Which checkpoint to load the model's weights form.
                 If 'best', will load the best weights according to ``monitor_metric`` and ``monitor_mode``.
                 If 'last', will load the last model checkpoint. If int, will load the checkpoint of the
                 specified epoch.
