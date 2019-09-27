@@ -2,7 +2,7 @@
     :class: hidden-section
 
 Model
-==================================================
+=====
 
 .. automodule:: poutyne
 .. currentmodule:: poutyne.framework
