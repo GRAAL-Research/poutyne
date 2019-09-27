@@ -19,7 +19,7 @@ class _PyTorchLRSchedulerWrapper(Callback):
     """
 
     def __init__(self, torch_lr_scheduler, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        super().__init__()
         if len(args) > 0 and isinstance(args[0], Optimizer):
             raise ValueError("In the LR scheduler callbacks, the optimizer is "
                              "automatically passed to the PyTorch's LR scheduler. "
