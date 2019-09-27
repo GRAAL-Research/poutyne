@@ -524,7 +524,7 @@ class Experiment:
         if isinstance(checkpoint, int):
             self._load_epoch_checkpoint(checkpoint)
         elif checkpoint == 'best':
-            self._load_best_checkpoint(verbose=verbose)
+            best_epoch_stats = self._load_best_checkpoint(verbose=verbose)
         elif checkpoint == 'last':
             self._load_last_checkpoint()
         else:
