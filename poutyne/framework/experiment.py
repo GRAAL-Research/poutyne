@@ -401,7 +401,7 @@ class Experiment:
         and lasted a total of `n_previous` epochs, then the model's weights will be set to the best previous checkpoint
         and the training will be resumed for epochs range (`n_previous`, `epochs`].
 
-        If the Experiment has logging enabled (i.e. self.logging is True) the epoch number, time, loss and metrics on
+        If the Experiment has logging enabled (i.e. self.logging is True), the epoch number, time, loss and metrics on
         the train and validation sets will all be logged in an entry on an output .tsv file. For a detailed list of all
         automatically logged metrics, see :func:`here <callbacks.Callback.on_epoch_end()>`.
 
