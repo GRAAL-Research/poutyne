@@ -27,7 +27,7 @@ class LRScheduler(Callback):
         self.args = args
         self.kwargs = kwargs
         self.scheduler = None
-        self.loaded_state = None
+        self.saved_state = None
 
     def on_epoch_end(self, epoch, logs):
         self.scheduler.step(epoch)
@@ -36,7 +36,7 @@ class LRScheduler(Callback):
         if self.scheduler is not None:
             self.scheduler.load_state_dict(torch.load(f, map_location='cpu'))
         else:
-            self.loaded_state = torch.load(f, map_location='cpu')
+            self.saved_state = torch.load(f, map_location='cpu')
 
     def save_state(self, f):
         torch.save(self.scheduler.state_dict(), f)
@@ -51,11 +51,10 @@ class _PyTorchLRSchedulerWrapper(LRScheduler):
         optimizer = self.model.optimizer
         self.scheduler = self.torch_lr_scheduler(optimizer, *self.args, **self.kwargs)
 
-        # Load state if the scheduler was not initialized when the user asked
-        # to load its state
-        if self.loaded_state is not None:
-            self.scheduler.load_state_dict(self.loaded_state)
-            self.loaded_state = None
+    def _load_saved_state(self):
+        if self.saved_state is not None:
+            self.scheduler.load_state_dict(self.saved_state)
+            self.saved_state = None
 
 
 def new_init(torch_lr_scheduler):
