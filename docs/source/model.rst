@@ -1,7 +1,7 @@
 .. role:: hidden
     :class: hidden-section
 
-poutyne.framework.Model
+Model
 ==================================================
 
 .. automodule:: poutyne
