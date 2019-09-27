@@ -13,9 +13,13 @@ from .callbacks import Callback
 
 
 class _PyTorchLRSchedulerWrapper(Callback):
+    """
+    Default class for the LR scheduling callback. Proposes default comportment for the scheduler
+    loading and saving as well as for the epoch end handling.
+    """
+
     def __init__(self, torch_lr_scheduler, *args, **kwargs):
         super().__init__()
-        self.torch_lr_scheduler = torch_lr_scheduler
         if len(args) > 0 and isinstance(args[0], Optimizer):
             raise ValueError("In the LR scheduler callbacks, the optimizer is "
                              "automatically passed to the PyTorch's LR scheduler. "
@@ -23,29 +27,28 @@ class _PyTorchLRSchedulerWrapper(Callback):
         self.args = args
         self.kwargs = kwargs
         self.scheduler = None
-        self.loaded_state = None
-
-    def on_train_begin(self, logs):
-        optimizer = self.model.optimizer
-        self.scheduler = self.torch_lr_scheduler(optimizer, *self.args, **self.kwargs)
-
-        # Load state if the scheduler was not initialized when the user asked
-        # to load its state
-        if self.loaded_state is not None:
-            self.scheduler.load_state_dict(self.loaded_state)
-            self.loaded_state = None
+        self.state_to_load = None
+        self.torch_lr_scheduler = torch_lr_scheduler
 
     def on_epoch_end(self, epoch, logs):
         self.scheduler.step(epoch)
+
+    def on_train_begin(self, logs):
+        self.scheduler = self.torch_lr_scheduler(self.model.optimizer, *self.args, **self.kwargs)
 
     def load_state(self, f):
         if self.scheduler is not None:
             self.scheduler.load_state_dict(torch.load(f, map_location='cpu'))
         else:
-            self.loaded_state = torch.load(f, map_location='cpu')
+            self.state_to_load = torch.load(f, map_location='cpu')
 
     def save_state(self, f):
         torch.save(self.scheduler.state_dict(), f)
+
+    def _load_state_to_load(self):
+        if self.state_to_load is not None:
+            self.scheduler.load_state_dict(self.state_to_load)
+            self.state_to_load = None
 
 
 def new_init(torch_lr_scheduler):
@@ -72,7 +75,7 @@ for name, module_cls in torch.optim.lr_scheduler.__dict__.items():
         setattr(sys.modules[__name__], name, _new_cls)
 
 
-class ReduceLROnPlateau(Callback):
+class ReduceLROnPlateau(_PyTorchLRSchedulerWrapper):
     """
     Args:
         monitor (str): The quantity to monitor. (Default value = 'val_loss')
@@ -81,35 +84,8 @@ class ReduceLROnPlateau(Callback):
     """
 
     def __init__(self, *args, monitor='val_loss', **kwargs):
-        super().__init__()
+        super().__init__(torch_lr_scheduler=torch.optim.lr_scheduler.ReduceLROnPlateau, *args, **kwargs)
         self.monitor = monitor
-        self.args = args
-        if len(args) > 0 and isinstance(args[0], Optimizer):
-            raise ValueError("In the LR scheduler callbacks, the optimizer is "
-                             "automatically passed to the PyTorch's LR scheduler. "
-                             "You must remove it from the arguments.")
-        self.kwargs = kwargs
-        self.scheduler = None
-        self.loaded_state = None
-
-    def on_train_begin(self, logs):
-        optimizer = self.model.optimizer
-        self.scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, *self.args, **self.kwargs)
-
-        # Load state if the scheduler was not initialized when the user asked
-        # to load its state
-        if self.loaded_state is not None:
-            self.scheduler.load_state_dict(self.loaded_state)
-            self.loaded_state = None
 
     def on_epoch_end(self, epoch, logs):
         self.scheduler.step(logs[self.monitor], epoch)
-
-    def load_state(self, f):
-        if self.scheduler is not None:
-            self.scheduler.load_state_dict(torch.load(f, map_location='cpu'))
-        else:
-            self.loaded_state = torch.load(f, map_location='cpu')
-
-    def save_state(self, f):
-        torch.save(self.scheduler.state_dict(), f)
