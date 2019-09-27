@@ -509,7 +509,13 @@ class Experiment:
             verbose (bool, optional): Whether or not to print the best epoch number and stats when
                 checkpoint is 'best'.
                 (Default value = False)
+
+        Returns:
+            If checkpoint is 'best', will return the best epoch stats, as per :func:`~get_best_epoch_stats()`,
+            else None.
         """
+        best_epoch_stats = None
+
         if isinstance(checkpoint, int):
             self._load_epoch_checkpoint(checkpoint)
         elif checkpoint == 'best':
@@ -518,6 +524,8 @@ class Experiment:
             self._load_last_checkpoint()
         else:
             raise ValueError("checkpoint argument must be either 'best', 'last' or int. Found : {}".format(checkpoint))
+
+        return best_epoch_stats
 
     def _load_epoch_checkpoint(self, epoch):
         ckpt_filename = self.best_checkpoint_filename.format(epoch=epoch)
@@ -565,7 +573,9 @@ class Experiment:
             dict sorting of all the test metrics values by their names.
         """
         set_seeds(seed)
-        self.load_checkpoint(checkpoint)
+
+        best_epoch_stats = None
+        best_epoch_stats = self.load_checkpoint(checkpoint)
 
         test_loss, test_metrics = self.model.evaluate_generator(test_generator, steps=steps)
         if not isinstance(test_metrics, np.ndarray):
