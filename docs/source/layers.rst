@@ -2,7 +2,7 @@
     :class: hidden-section
 
 Layers
-==============
+======
 
 .. automodule:: poutyne
 .. currentmodule:: poutyne.layers
