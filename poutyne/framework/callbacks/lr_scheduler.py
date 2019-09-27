@@ -44,7 +44,7 @@ class LRScheduler(Callback):
 
 class _PyTorchLRSchedulerWrapper(LRScheduler):
     def __init__(self, torch_lr_scheduler, *args, **kwargs):
-        super().__init__()
+        super().__init__(*args, **kwargs)
         self.torch_lr_scheduler = torch_lr_scheduler
 
     def on_train_begin(self, logs):
@@ -90,7 +90,7 @@ class ReduceLROnPlateau(_PyTorchLRSchedulerWrapper):
     """
 
     def __init__(self, *args, monitor='val_loss', **kwargs):
-        super().__init__(torch_lr_scheduler=torch.optim.lr_scheduler.ReduceLROnPlateau)
+        super().__init__(torch_lr_scheduler=torch.optim.lr_scheduler.ReduceLROnPlateau, *args, **kwargs)
         self.monitor = monitor
 
     def on_epoch_end(self, epoch, logs):
