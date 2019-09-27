@@ -2,7 +2,7 @@
     :class: hidden-section
 
 Callbacks
-===========================
+=========
 
 .. automodule:: poutyne
 .. currentmodule:: poutyne.framework.callbacks
