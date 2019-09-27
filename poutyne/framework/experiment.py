@@ -401,9 +401,14 @@ class Experiment:
         and lasted a total of `n_previous` epochs, then the model's weights will be set to the last checkpoint and the
         training will be resumed for epochs range (`n_previous`, `epochs`].
 
-        If the Experiment has logging enabled (i.e. self.logging is True), the epoch number, time, loss and metrics on
-        the train and validation sets will all be logged in an entry on an output .tsv file. For a detailed list of all
-        automatically logged metrics, see :func:`here <callbacks.Callback.on_epoch_end()>`.
+        If the Experiment has logging enabled (i.e. self.logging is True), numerous callbacks will be automatically
+        included. Notably, two :class:`~callbacks.ModelCheckpoint` objects will take care of saving the last and every
+        new best (according to monitor mode) model weights in appropriate checkpoint files.
+        :class:`~callbacks.OptimizerCheckpoint` and :class:`~callbacks.LRSchedulerCheckpoint` will also respectively
+        handle the saving of the optimizer and LR scheduler's respective states for future retrieval. Moreover, a
+        :class:`~callbacks.CSVLogger` will save all available epoch statistics in an output .tsv file. Lastly, a
+        :class:`~callbacks.TensorBoardLogger` handles automatic TensorBoard logging of various neural network
+        statistics.
 
         Args:
             train_generator: Generator-like object for the training set. See :func:`~Model.fit_generator()`
@@ -561,9 +566,8 @@ class Experiment:
         Computes and returns the loss and the metrics of the attribute model on a given test examples
         generator.
 
-        If the Experiment has logging enabled (i.e. self.logging is True) the epoch number, time, loss and metrics on
-        the validation and test sets will all be logged in an entry on a separate output .tsv file. For a detailed list
-        of all automatically logged metrics, see :func:`here <callbacks.Callback.on_epoch_end()>`.
+        If the Experiment has logging enabled (i.e. self.logging is True), a :class:`~callbacks.CSVLogger` will save all
+        available test and valid statistics in a specific test output .tsv file.
 
         Args:
             test_generator: Generator-like object for the test set. See :func:`~Model.fit_generator()` for
