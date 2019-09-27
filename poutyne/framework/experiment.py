@@ -200,7 +200,7 @@ class Experiment:
 
         loss_function = self._get_loss_function(loss_function, module, task)
         batch_metrics = self._get_batch_metrics(batch_metrics, module, task)
-        epoch_metrics = self._get_epoch_metrics(epoch_metrics, module)
+        epoch_metrics = self._get_epoch_metrics(epoch_metrics, module, task)
         self._set_monitor(monitor_metric, monitor_mode, task)
 
         self.model = Model(module, optimizer, loss_function, batch_metrics=batch_metrics, epoch_metrics=epoch_metrics)
@@ -242,10 +242,12 @@ class Experiment:
                 return ['accuracy']
         return batch_metrics
 
-    def _get_epoch_metrics(self, epoch_metrics, module):
+    def _get_epoch_metrics(self, epoch_metrics, module, task):
         if epoch_metrics is None or len(epoch_metrics) == 0:
             if hasattr(module, 'epoch_metrics'):
                 return module.epoch_metrics
+            if task is not None and task.startswith('classif'):
+                return ['f1']
         return epoch_metrics
 
     def _set_monitor(self, monitor_metric, monitor_mode, task):
