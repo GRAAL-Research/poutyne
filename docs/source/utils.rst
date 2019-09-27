@@ -1,14 +1,11 @@
 .. role:: hidden
     :class: hidden-section
 
-poutyne
-=======
+Utils
+=====
 
 .. automodule:: poutyne
 .. currentmodule:: poutyne
-
-Utils
------
 
 These utils functions only support the following basic Python types: tuple,
 list and dict.

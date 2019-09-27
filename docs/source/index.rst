@@ -168,12 +168,12 @@ API Reference
   :maxdepth: 1
   :caption: Package Reference
 
-  utils
   model
   experiment
   metrics
   callbacks
   layers
+  utils
 
 
 Indices and tables

@@ -1,8 +1,8 @@
 .. role:: hidden
     :class: hidden-section
 
-poutyne.framework.metrics
-===========================
+Metrics
+=======
 
 .. automodule:: poutyne
 .. currentmodule:: poutyne.framework.metrics

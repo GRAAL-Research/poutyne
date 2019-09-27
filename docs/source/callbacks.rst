@@ -1,8 +1,8 @@
 .. role:: hidden
     :class: hidden-section
 
-poutyne.framework.callbacks
-===========================
+Callbacks
+=========
 
 .. automodule:: poutyne
 .. currentmodule:: poutyne.framework.callbacks
