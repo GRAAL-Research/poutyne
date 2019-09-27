@@ -566,8 +566,8 @@ class Experiment:
         Computes and returns the loss and the metrics of the attribute model on a given test examples
         generator.
 
-        If the Experiment has logging enabled (i.e. self.logging is True), a :class:`~callbacks.CSVLogger` will save all
-        available test and valid statistics in a specific test output .tsv file.
+        If the Experiment has logging enabled (i.e. self.logging is True), test and validation statistics
+        are saved in a specific test output .tsv file.
 
         Args:
             test_generator: Generator-like object for the test set. See :func:`~Model.fit_generator()` for
