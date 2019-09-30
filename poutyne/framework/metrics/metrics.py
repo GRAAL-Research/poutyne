@@ -9,7 +9,7 @@ def acc(y_pred, y_true, ignore_index=-100):
     return acc_pred * 100
 
 
-def bin_acc(y_pred, y_true, threshold=0.5):
+def bin_acc(y_pred, y_true, threshold=0.):
     y_pred = (y_pred > threshold).float()
     acc_pred = (y_pred == y_true).float().mean()
     return acc_pred * 100
