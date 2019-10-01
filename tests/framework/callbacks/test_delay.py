@@ -23,10 +23,10 @@ class DelayCallbackTest(TestCase):
 
     def setUp(self):
         torch.manual_seed(42)
-        self.pytorch_module = nn.Linear(1, 1)
+        self.pytorch_network = nn.Linear(1, 1)
         self.loss_function = nn.MSELoss()
-        self.optimizer = torch.optim.SGD(self.pytorch_module.parameters(), lr=1e-3)
-        self.model = Model(self.pytorch_module, self.optimizer, self.loss_function)
+        self.optimizer = torch.optim.SGD(self.pytorch_network.parameters(), lr=1e-3)
+        self.model = Model(self.pytorch_network, self.optimizer, self.loss_function)
         self.mock_callback = MagicMock()
         self.delay_callback = DelayCallback(self.mock_callback)
         self.train_dict = {'loss': ANY, 'time': ANY}

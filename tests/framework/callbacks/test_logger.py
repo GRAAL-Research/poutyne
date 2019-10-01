@@ -49,10 +49,10 @@ class CSVLoggerTest(TestCase):
 
     def setUp(self):
         torch.manual_seed(42)
-        self.pytorch_module = nn.Linear(1, 1)
+        self.pytorch_network = nn.Linear(1, 1)
         self.loss_function = nn.MSELoss()
-        self.optimizer = torch.optim.SGD(self.pytorch_module.parameters(), lr=CSVLoggerTest.lr)
-        self.model = Model(self.pytorch_module, self.optimizer, self.loss_function)
+        self.optimizer = torch.optim.SGD(self.pytorch_network.parameters(), lr=CSVLoggerTest.lr)
+        self.model = Model(self.pytorch_network, self.optimizer, self.loss_function)
         self.temp_dir_obj = TemporaryDirectory()
         self.csv_filename = os.path.join(self.temp_dir_obj.name, 'my_log.csv')
 
@@ -115,10 +115,10 @@ class BaseTensorBoardLoggerTest:
 
     def setUp(self):
         torch.manual_seed(42)
-        self.pytorch_module = nn.Linear(1, 1)
+        self.pytorch_network = nn.Linear(1, 1)
         self.loss_function = nn.MSELoss()
-        self.optimizer = torch.optim.SGD(self.pytorch_module.parameters(), lr=BaseTensorBoardLoggerTest.lr)
-        self.model = Model(self.pytorch_module, self.optimizer, self.loss_function)
+        self.optimizer = torch.optim.SGD(self.pytorch_network.parameters(), lr=BaseTensorBoardLoggerTest.lr)
+        self.model = Model(self.pytorch_network, self.optimizer, self.loss_function)
         self.temp_dir_obj = TemporaryDirectory()
         # pylint: disable=not-callable
         self.writer = self.SummaryWriter(self.temp_dir_obj.name)

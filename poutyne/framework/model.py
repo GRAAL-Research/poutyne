@@ -251,7 +251,7 @@ class Model:
         Example:
             .. code-block:: python
 
-                model = Model(pytorch_module, optimizer, loss_function)
+                model = Model(pytorch_network, optimizer, loss_function)
                 history = model.fit(train_x, train_y,
                                     validation_data=(valid_x, valid_y)
                                     epochs=num_epochs,
@@ -352,7 +352,7 @@ class Model:
         Example:
             .. code-block:: python
 
-                model = Model(pytorch_module, optimizer, loss_function)
+                model = Model(pytorch_network, optimizer, loss_function)
                 history = model.fit_generator(train_generator,
                                               valid_generator,
                                               epochs=num_epochs,
@@ -675,7 +675,7 @@ class Model:
 
             .. code-block:: python
 
-                model = Model(pytorch_module, optimizer, loss_function,
+                model = Model(pytorch_network, optimizer, loss_function,
                               batch_metrics=None)
                 loss = model.evaluate_generator(test_generator)
 
@@ -683,7 +683,7 @@ class Model:
 
             .. code-block:: python
 
-                model = Model(pytorch_module, optimizer, loss_function,
+                model = Model(pytorch_network, optimizer, loss_function,
                               batch_metrics=[my_metric_fn])
                 loss, my_metric = model.evaluate_generator(test_generator)
 
@@ -691,7 +691,7 @@ class Model:
 
             .. code-block:: python
 
-                model = Model(pytorch_module, optimizer, loss_function,
+                model = Model(pytorch_network, optimizer, loss_function,
                               batch_metrics=[my_metric1_fn, my_metric2_fn])
                 loss, (my_metric1, my_metric2) = model.evaluate_generator(test_generator)
 
@@ -699,7 +699,7 @@ class Model:
 
             .. code-block:: python
 
-                model = Model(pytorch_module, optimizer, loss_function,
+                model = Model(pytorch_network, optimizer, loss_function,
                               batch_metrics=[my_metric_fn], epoch_metrics=[MyEpochMetricClass()])
                 loss, (my_batch_metric, my__epoch_metric) = model.evaluate_generator(test_generator)
 
@@ -707,7 +707,7 @@ class Model:
 
             .. code-block:: python
 
-                model = Model(pytorch_module, optimizer, loss_function,
+                model = Model(pytorch_network, optimizer, loss_function,
                               batch_metrics=[my_metric1_fn, my_metric2_fn])
                 loss, (my_metric1, my_metric2), pred_y = model.evaluate_generator(
                     test_generator, return_pred=True
@@ -717,7 +717,7 @@ class Model:
 
             .. code-block:: python
 
-                model = Model(pytorch_module, optimizer, loss_function,
+                model = Model(pytorch_network, optimizer, loss_function,
                               batch_metrics=[my_metric1_fn, my_metric2_fn])
                 loss, (my_metric1, my_metric2), pred_y, true_y = model.evaluate_generator(
                     test_generator, return_pred=True, return_ground_truth=True
