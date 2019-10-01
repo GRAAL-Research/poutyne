@@ -291,7 +291,7 @@ class Model:
                       callbacks=None):
         # pylint: disable=line-too-long
         """
-        Trains the model on a dataset using a generator.
+        Trains the network on a dataset using a generator.
 
         Args:
             train_generator: Generator-like object for the training dataset. The generator must
@@ -490,7 +490,7 @@ class Model:
 
     def train_on_batch(self, x, y, return_pred=False):
         """
-        Trains the model for the batch ``(x, y)`` and computes the loss and the metrics, and
+        Trains the network for the batch ``(x, y)`` and computes the loss and the metrics, and
         optionaly returns the predictions.
 
         Args:
