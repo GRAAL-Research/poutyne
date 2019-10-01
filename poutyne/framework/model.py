@@ -51,6 +51,7 @@ class Model:
         epoch_metrics (list): List of functions with the same signature as
             :class:`~poutyne.framework.metrics.epoch_metrics.EpochMetric`
             (Default value = None)
+        model (torch.nn.Module): ***model is deprecated as of version 0.6. Use network instead.*** A PyTorch module.
 
     Attributes:
         network (torch.nn.Module): The associated PyTorch network.
