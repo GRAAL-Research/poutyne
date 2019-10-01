@@ -21,7 +21,7 @@ from ..utils import _concat
 
 class Model:
     """
-    The Model class encapsulates a PyTorch net/network, a PyTorch optimizer, a loss function and
+    The Model class encapsulates a PyTorch network, a PyTorch optimizer, a loss function and
     metric functions. It allows the user to train a neural network without hand-coding the
     epoch/step logic.
 
