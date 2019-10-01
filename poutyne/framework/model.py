@@ -139,14 +139,7 @@ class Model:
 
     """
 
-    def __init__(self,
-                 network,
-                 optimizer,
-                 loss_function,
-                 *,
-                 metrics=None,
-                 batch_metrics=None,
-                 epoch_metrics=None):
+    def __init__(self, network, optimizer, loss_function, *, metrics=None, batch_metrics=None, epoch_metrics=None):
         metrics = [] if metrics is None else metrics
         batch_metrics = [] if batch_metrics is None else batch_metrics
         epoch_metrics = [] if epoch_metrics is None else epoch_metrics
