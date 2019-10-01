@@ -25,6 +25,9 @@ class Model:
     metric functions. It allows the user to train a neural network without hand-coding the
     epoch/step logic.
 
+    .. warning::
+        model argument and attribute is deprecated as of version 0.6. Use network instead.
+
     Args:
         network (torch.nn.Module): A PyTorch network.
         optimizer (Union[torch.optim.Optimizer, str]): If torch.optim.Optimier, an initialized PyTorch.
@@ -51,7 +54,6 @@ class Model:
         epoch_metrics (list): List of functions with the same signature as
             :class:`~poutyne.framework.metrics.epoch_metrics.EpochMetric`
             (Default value = None)
-        model (torch.nn.Module): ***model is deprecated as of version 0.6. Use network instead.*** A PyTorch module.
 
     Attributes:
         network (torch.nn.Module): The associated PyTorch network.
@@ -144,15 +146,10 @@ class Model:
                  *,
                  metrics=None,
                  batch_metrics=None,
-                 epoch_metrics=None,
-                 model=None):
+                 epoch_metrics=None):
         metrics = [] if metrics is None else metrics
         batch_metrics = [] if batch_metrics is None else batch_metrics
         epoch_metrics = [] if epoch_metrics is None else epoch_metrics
-
-        if network and model is not None:
-            raise ModelConfigurationError("network and model arguments cannot be used together."
-                                          "Use network instead since model has been deprecated as of version 0.6.")
 
         self.network = network
         self.optimizer = get_optimizer(optimizer, self.network)
