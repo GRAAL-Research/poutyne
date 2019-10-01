@@ -35,7 +35,7 @@ class Experiment:
 
     Args:
         directory (str): Path to the experiment's working directory. Will be used for the automatic logging.
-        model (torch.nn.Module): A PyTorch module.
+        network (torch.nn.Module): A PyTorch network.
         device (torch.torch.device): The device to which the model is sent. If None, the model will be
             kept on its current device.
             (Default value = None)
@@ -102,11 +102,11 @@ class Experiment:
             valid_generator = DataLoader(valid_dataset, batch_size=32)
 
             # Our network
-            pytorch_module = torch.nn.Linear(num_features, num_train_samples)
+            pytorch_network = torch.nn.Linear(num_features, num_train_samples)
 
             # Intialization of our experimentation and network training
             exp = Experiment('./simple_example',
-                             pytorch_module,
+                             pytorch_network,
                              optimizer='sgd',
                              task='classif')
             exp.train(train_generator, valid_generator, epochs=5)
@@ -178,7 +178,7 @@ class Experiment:
 
     def __init__(self,
                  directory,
-                 module,
+                 network,
                  *,
                  device=None,
                  logging=True,
@@ -198,12 +198,12 @@ class Experiment:
         batch_metrics = [] if batch_metrics is None else batch_metrics
         epoch_metrics = [] if epoch_metrics is None else epoch_metrics
 
-        loss_function = self._get_loss_function(loss_function, module, task)
-        batch_metrics = self._get_batch_metrics(batch_metrics, module, task)
-        epoch_metrics = self._get_epoch_metrics(epoch_metrics, module, task)
+        loss_function = self._get_loss_function(loss_function, network, task)
+        batch_metrics = self._get_batch_metrics(batch_metrics, network, task)
+        epoch_metrics = self._get_epoch_metrics(epoch_metrics, network, task)
         self._set_monitor(monitor_metric, monitor_mode, task)
 
-        self.model = Model(module, optimizer, loss_function, batch_metrics=batch_metrics, epoch_metrics=epoch_metrics)
+        self.model = Model(network, optimizer, loss_function, batch_metrics=batch_metrics, epoch_metrics=epoch_metrics)
         if device is not None:
             self.model.to(device)
 
@@ -223,10 +223,10 @@ class Experiment:
         self.lr_scheduler_tmp_filename = join_dir(Experiment.LR_SCHEDULER_TMP_FILENAME)
         self.test_log_filename = join_dir(Experiment.TEST_LOG_FILENAME)
 
-    def _get_loss_function(self, loss_function, module, task):
+    def _get_loss_function(self, loss_function, network, task):
         if loss_function is None:
-            if hasattr(module, 'loss_function'):
-                return module.loss_function
+            if hasattr(network, 'loss_function'):
+                return network.loss_function
             if task is not None:
                 if task.startswith('classif'):
                     return 'cross_entropy'
@@ -234,18 +234,18 @@ class Experiment:
                     return 'mse'
         return loss_function
 
-    def _get_batch_metrics(self, batch_metrics, module, task):
+    def _get_batch_metrics(self, batch_metrics, network, task):
         if batch_metrics is None or len(batch_metrics) == 0:
-            if hasattr(module, 'batch_metrics'):
-                return module.batch_metrics
+            if hasattr(network, 'batch_metrics'):
+                return network.batch_metrics
             if task is not None and task.startswith('classif'):
                 return ['accuracy']
         return batch_metrics
 
-    def _get_epoch_metrics(self, epoch_metrics, module, task):
+    def _get_epoch_metrics(self, epoch_metrics, network, task):
         if epoch_metrics is None or len(epoch_metrics) == 0:
-            if hasattr(module, 'epoch_metrics'):
-                return module.epoch_metrics
+            if hasattr(network, 'epoch_metrics'):
+                return network.epoch_metrics
             if task is not None and task.startswith('classif'):
                 return ['f1']
         return epoch_metrics
