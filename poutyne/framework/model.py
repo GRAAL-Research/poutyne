@@ -21,12 +21,15 @@ from ..utils import _concat
 
 class Model:
     """
-    The Model class encapsulates a PyTorch module/network, a PyTorch optimizer, a loss function and
+    The Model class encapsulates a PyTorch network, a PyTorch optimizer, a loss function and
     metric functions. It allows the user to train a neural network without hand-coding the
     epoch/step logic.
 
+    .. warning::
+        model argument and attribute is deprecated as of version 0.6. Use network instead.
+
     Args:
-        model (torch.nn.Module): A PyTorch module.
+        network (torch.nn.Module): A PyTorch network.
         optimizer (Union[torch.optim.Optimizer, str]): If torch.optim.Optimier, an initialized PyTorch.
             If str, should be the optimizer's name in Pytorch (i.e. 'Adam' for torch.optim.Adam).
             (Default value = 'sgd')
@@ -53,7 +56,7 @@ class Model:
             (Default value = None)
 
     Attributes:
-        model (torch.nn.Module): The associated PyTorch module.
+        network (torch.nn.Module): The associated PyTorch network.
         optimizer (torch.optim.Optimizer): The associated PyTorch optimizer.
         loss_function: The associated loss function.
         metrics (list): ***metrics is deprecated as of version 0.5.1. Use batch_metrics instead.***
@@ -81,10 +84,10 @@ class Model:
             valid_x = np.random.randn(num_valid_samples, num_features).astype('float32')
             valid_y = np.random.randint(num_classes, size=num_valid_samples).astype('int64')
 
-            pytorch_module = torch.nn.Linear(num_features, num_classes) # Our network
+            pytorch_network = torch.nn.Linear(num_features, num_classes) # Our network
 
             # We create and optimize our model
-            model = Model(pytorch_module, 'sgd', 'cross_entropy', batch_metrics=['accuracy'])
+            model = Model(pytorch_network, 'sgd', 'cross_entropy', batch_metrics=['accuracy'])
             model.fit(train_x, train_y,
                       validation_data=(valid_x, valid_y),
                       epochs=5,
@@ -120,9 +123,9 @@ class Model:
            valid_dataset = TensorDataset(valid_x, valid_y)
            valid_generator = DataLoader(valid_dataset, batch_size=32)
 
-           pytorch_module = torch.nn.Linear(num_features, num_train_samples)
+           pytorch_network = torch.nn.Linear(num_features, num_train_samples)
 
-           model = Model(pytorch_module, 'sgd', 'cross_entropy', batch_metrics=['accuracy'])
+           model = Model(pytorch_network, 'sgd', 'cross_entropy', batch_metrics=['accuracy'])
            model.fit_generator(train_generator,
                                valid_generator,
                                epochs=5)
@@ -136,18 +139,18 @@ class Model:
 
     """
 
-    def __init__(self, model, optimizer, loss_function, *, metrics=None, batch_metrics=None, epoch_metrics=None):
+    def __init__(self, network, optimizer, loss_function, *, metrics=None, batch_metrics=None, epoch_metrics=None):
         metrics = [] if metrics is None else metrics
         batch_metrics = [] if batch_metrics is None else batch_metrics
         epoch_metrics = [] if epoch_metrics is None else epoch_metrics
 
-        self.model = model
-        self.optimizer = get_optimizer(optimizer, self.model)
+        self.network = network
+        self.optimizer = get_optimizer(optimizer, self.network)
         self.loss_function = get_loss_or_metric(loss_function)
 
         if metrics and batch_metrics:
             raise ModelConfigurationError(
-                "metrics and batch_metrics arguments cannot be used together. "
+                "metrics and batch_metrics arguments cannot be used together."
                 "Use batch_metrics instead since metrics has been deprecated as of version 0.5.1.")
         if metrics:
             warnings.warn('metrics argument has been deprecated as of version 0.5.1. Use batch_metrics instead.',
@@ -164,13 +167,18 @@ class Model:
 
         self.device = None
 
+    @property
+    def model(self):
+        warnings.warn('model attribute has been deprecated as of version 0.6. Use network instead.', Warning)
+        return self.network
+
     @contextlib.contextmanager
     def _set_training_mode(self, training):
-        old_training = self.model.training
-        self.model.train(training)
+        old_training = self.network.training
+        self.network.train(training)
         with torch.set_grad_enabled(training):
             yield
-        self.model.train(old_training)
+        self.network.train(old_training)
 
     def fit(self,
             x,
@@ -187,7 +195,7 @@ class Model:
             callbacks=None):
         # pylint: disable=line-too-long
         """
-        Trains the model on a dataset. This method creates generators and calls
+        Trains the network on a dataset. This method creates generators and calls
         the :func:`~Model.fit_generator()` method.
 
         Args:
@@ -233,7 +241,7 @@ class Model:
         Example:
             .. code-block:: python
 
-                model = Model(pytorch_module, optimizer, loss_function)
+                model = Model(pytorch_network, optimizer, loss_function)
                 history = model.fit(train_x, train_y,
                                     validation_data=(valid_x, valid_y)
                                     epochs=num_epochs,
@@ -283,7 +291,7 @@ class Model:
                       callbacks=None):
         # pylint: disable=line-too-long
         """
-        Trains the model on a dataset using a generator.
+        Trains the network on a dataset using a generator.
 
         Args:
             train_generator: Generator-like object for the training dataset. The generator must
@@ -334,7 +342,7 @@ class Model:
         Example:
             .. code-block:: python
 
-                model = Model(pytorch_module, optimizer, loss_function)
+                model = Model(pytorch_network, optimizer, loss_function)
                 history = model.fit_generator(train_generator,
                                               valid_generator,
                                               epochs=num_epochs,
@@ -470,7 +478,7 @@ class Model:
         return loss, metrics, pred_y
 
     def _adjust_step_size(self, examples_in_step):
-        for param in self.model.parameters():
+        for param in self.network.parameters():
             if param.grad is not None:
                 param.grad /= examples_in_step
 
@@ -482,7 +490,7 @@ class Model:
 
     def train_on_batch(self, x, y, return_pred=False):
         """
-        Trains the model for the batch ``(x, y)`` and computes the loss and the metrics, and
+        Trains the network for the batch ``(x, y)`` and computes the loss and the metrics, and
         optionaly returns the predictions.
 
         Args:
@@ -563,7 +571,7 @@ class Model:
             for _, x in _get_step_iterator(steps, generator):
                 x = self._process_input(x)
                 x = x if isinstance(x, (tuple, list)) else (x, )
-                pred_y.append(torch_to_numpy(self.model(*x)))
+                pred_y.append(torch_to_numpy(self.network(*x)))
         return pred_y
 
     def predict_on_batch(self, x):
@@ -579,7 +587,7 @@ class Model:
         with self._set_training_mode(False):
             x = self._process_input(x)
             x = x if isinstance(x, (tuple, list)) else (x, )
-            return torch_to_numpy(self.model(*x))
+            return torch_to_numpy(self.network(*x))
 
     def evaluate(self, x, y, batch_size=32, return_pred=False):
         """
@@ -657,7 +665,7 @@ class Model:
 
             .. code-block:: python
 
-                model = Model(pytorch_module, optimizer, loss_function,
+                model = Model(pytorch_network, optimizer, loss_function,
                               batch_metrics=None)
                 loss = model.evaluate_generator(test_generator)
 
@@ -665,7 +673,7 @@ class Model:
 
             .. code-block:: python
 
-                model = Model(pytorch_module, optimizer, loss_function,
+                model = Model(pytorch_network, optimizer, loss_function,
                               batch_metrics=[my_metric_fn])
                 loss, my_metric = model.evaluate_generator(test_generator)
 
@@ -673,7 +681,7 @@ class Model:
 
             .. code-block:: python
 
-                model = Model(pytorch_module, optimizer, loss_function,
+                model = Model(pytorch_network, optimizer, loss_function,
                               batch_metrics=[my_metric1_fn, my_metric2_fn])
                 loss, (my_metric1, my_metric2) = model.evaluate_generator(test_generator)
 
@@ -681,7 +689,7 @@ class Model:
 
             .. code-block:: python
 
-                model = Model(pytorch_module, optimizer, loss_function,
+                model = Model(pytorch_network, optimizer, loss_function,
                               batch_metrics=[my_metric_fn], epoch_metrics=[MyEpochMetricClass()])
                 loss, (my_batch_metric, my__epoch_metric) = model.evaluate_generator(test_generator)
 
@@ -689,7 +697,7 @@ class Model:
 
             .. code-block:: python
 
-                model = Model(pytorch_module, optimizer, loss_function,
+                model = Model(pytorch_network, optimizer, loss_function,
                               batch_metrics=[my_metric1_fn, my_metric2_fn])
                 loss, (my_metric1, my_metric2), pred_y = model.evaluate_generator(
                     test_generator, return_pred=True
@@ -699,7 +707,7 @@ class Model:
 
             .. code-block:: python
 
-                model = Model(pytorch_module, optimizer, loss_function,
+                model = Model(pytorch_network, optimizer, loss_function,
                               batch_metrics=[my_metric1_fn, my_metric2_fn])
                 loss, (my_metric1, my_metric2), pred_y, true_y = model.evaluate_generator(
                     test_generator, return_pred=True, return_ground_truth=True
@@ -764,7 +772,7 @@ class Model:
     def _compute_loss_and_metrics(self, x, y, return_loss_tensor=False, return_pred=False):
         x, y = self._process_input(x, y)
         x = x if isinstance(x, (list, tuple)) else (x, )
-        pred_y = self.model(*x)
+        pred_y = self.network(*x)
         loss = self.loss_function(pred_y, y)
         if not return_loss_tensor:
             loss = float(loss)
@@ -825,7 +833,7 @@ class Model:
             f: File-like object (has to implement fileno that returns a file descriptor) or string
                 containing a file name.
         """
-        torch.save(self.model.state_dict(), f)
+        torch.save(self.network.state_dict(), f)
 
     def load_optimizer_state(self, f):
         """
@@ -861,7 +869,7 @@ class Model:
                             v.data = v.data.to(p.device)
 
     def _get_named_optimizer_attrs(self):
-        param_to_name = {param: name for name, param in self.model.named_parameters()}
+        param_to_name = {param: name for name, param in self.network.named_parameters()}
 
         param_name_groups = []
         for group in self.optimizer.param_groups:
@@ -872,7 +880,7 @@ class Model:
         return param_name_groups, named_state
 
     def _set_named_optimizer_attrs(self, param_name_groups, named_state):
-        name_to_param = dict(self.model.named_parameters())
+        name_to_param = dict(self.network.named_parameters())
 
         for param_name_group, optim_group in zip(param_name_groups, self.optimizer.param_groups):
             optim_group['params'] = [
@@ -896,7 +904,7 @@ class Model:
         references to the parameters. To get copies of the weights, see the :func:`get_weight_copies()`
         method.
         """
-        return self.model.state_dict()
+        return self.network.state_dict()
 
     def get_weight_copies(self):
         """
@@ -914,7 +922,7 @@ class Model:
         Args:
             weights (dict): Weights returned by either :func:`get_weights()` or :func:`get_weight_copies()`.
         """
-        self.model.load_state_dict(weights)
+        self.network.load_state_dict(weights)
 
     def cuda(self, *args, **kwargs):
         """
@@ -938,10 +946,10 @@ class Model:
             `self`.
         """
         with self._update_optim_device():
-            self.model.cuda(*args, **kwargs)
+            self.network.cuda(*args, **kwargs)
 
         # Assuming the PyTorch module has at least one parameter.
-        self.device = next(self.model.parameters()).device
+        self.device = next(self.network.parameters()).device
 
         self._transfer_loss_and_metrics_modules_to_right_device()
 
@@ -969,10 +977,10 @@ class Model:
             `self`.
         """
         with self._update_optim_device():
-            self.model.cpu(*args, **kwargs)
+            self.network.cpu(*args, **kwargs)
 
         # Assuming the PyTorch module has at least one parameter.
-        self.device = next(self.model.parameters()).device
+        self.device = next(self.network.parameters()).device
 
         self._transfer_loss_and_metrics_modules_to_right_device()
 
@@ -1003,7 +1011,7 @@ class Model:
         """
         self.device = device
         with self._update_optim_device():
-            self.model.to(self.device)
+            self.network.to(self.device)
         self._transfer_loss_and_metrics_modules_to_right_device()
         return self
 

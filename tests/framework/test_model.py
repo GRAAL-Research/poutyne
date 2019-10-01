@@ -193,9 +193,9 @@ class ModelTest(TestCase):
 
     def setUp(self):
         torch.manual_seed(42)
-        self.pytorch_module = nn.Linear(1, 1)
+        self.pytorch_network = nn.Linear(1, 1)
         self.loss_function = nn.MSELoss()
-        self.optimizer = torch.optim.SGD(self.pytorch_module.parameters(), lr=1e-3)
+        self.optimizer = torch.optim.SGD(self.pytorch_network.parameters(), lr=1e-3)
         self.batch_metrics = [some_batch_metric_1, some_batch_metric_2]
         self.batch_metrics_names = ['some_batch_metric_1', 'some_batch_metric_2']
         self.batch_metrics_values = [some_metric_1_value, some_metric_2_value]
@@ -203,7 +203,7 @@ class ModelTest(TestCase):
         self.epoch_metrics_names = ['SomeConstantEpochMetric']
         self.epoch_metrics_values = [some_constant_epoch_metric_value]
 
-        self.model = Model(self.pytorch_module,
+        self.model = Model(self.pytorch_network,
                            self.optimizer,
                            self.loss_function,
                            batch_metrics=self.batch_metrics,
@@ -237,7 +237,7 @@ class ModelTest(TestCase):
             epoch_metrics=self.epoch_metrics)
 
         self.mocked_optimizer = some_mocked_optimizer()
-        self.mocked_optim_model = Model(self.pytorch_module,
+        self.mocked_optim_model = Model(self.pytorch_network,
                                         self.mocked_optimizer,
                                         self.loss_function,
                                         batch_metrics=self.batch_metrics,
@@ -981,7 +981,7 @@ class ModelTest(TestCase):
             self.assertEqual(pred.shape, (num_steps * ModelTest.batch_size, 1))
 
     def test_evaluate_with_only_one_metric(self):
-        model = Model(self.pytorch_module, self.optimizer, self.loss_function, batch_metrics=self.batch_metrics[:1])
+        model = Model(self.pytorch_network, self.optimizer, self.loss_function, batch_metrics=self.batch_metrics[:1])
         x = torch.rand(ModelTest.evaluate_dataset_len, 1)
         y = torch.rand(ModelTest.evaluate_dataset_len, 1)
         loss, first_metric = model.evaluate(x, y, batch_size=ModelTest.batch_size)
@@ -991,7 +991,7 @@ class ModelTest(TestCase):
 
     def test_metrics_integration(self):
         num_steps = 10
-        model = Model(self.pytorch_module, self.optimizer, self.loss_function, batch_metrics=[F.mse_loss])
+        model = Model(self.pytorch_network, self.optimizer, self.loss_function, batch_metrics=[F.mse_loss])
         train_generator = some_data_tensor_generator(ModelTest.batch_size)
         valid_generator = some_data_tensor_generator(ModelTest.batch_size)
         model.fit_generator(train_generator,
@@ -1006,7 +1006,7 @@ class ModelTest(TestCase):
         self.assertEqual(type(mse), float)
 
     def test_epoch_metrics_integration(self):
-        model = Model(self.pytorch_module, self.optimizer, self.loss_function, epoch_metrics=[SomeEpochMetric()])
+        model = Model(self.pytorch_network, self.optimizer, self.loss_function, epoch_metrics=[SomeEpochMetric()])
         train_generator = some_data_tensor_generator(ModelTest.batch_size)
         valid_generator = some_data_tensor_generator(ModelTest.batch_size)
         logs = model.fit_generator(train_generator,
@@ -1021,7 +1021,7 @@ class ModelTest(TestCase):
         self.assertEqual(actual_value, expected_value)
 
     def test_evaluate_with_no_metric(self):
-        model = Model(self.pytorch_module, self.optimizer, self.loss_function)
+        model = Model(self.pytorch_network, self.optimizer, self.loss_function)
         x = torch.rand(ModelTest.evaluate_dataset_len, 1)
         y = torch.rand(ModelTest.evaluate_dataset_len, 1)
         loss = model.evaluate(x, y, batch_size=ModelTest.batch_size)
@@ -1286,7 +1286,7 @@ class ModelTest(TestCase):
                                      callbacks=[self.mock_callback])
 
     def _test_device(self, device):
-        for p in self.pytorch_module.parameters():
+        for p in self.pytorch_network.parameters():
             self.assertEqual(p.device, device)
 
     @unittest.skip("Not sure if this test is still relevant with multi IO")
@@ -1314,9 +1314,9 @@ class ModelTest(TestCase):
         def loss_function(y_pred, y_true):
             return F.mse_loss(y_pred[0], y_true[0]) + F.mse_loss(y_pred[1], y_true[1])
 
-        pytorch_module = TupleModule()
-        optimizer = torch.optim.SGD(pytorch_module.parameters(), lr=1e-3)
-        model = Model(pytorch_module, optimizer, loss_function)
+        pytorch_network = TupleModule()
+        optimizer = torch.optim.SGD(pytorch_network.parameters(), lr=1e-3)
+        model = Model(pytorch_network, optimizer, loss_function)
 
         train_generator = tuple_generator(ModelTest.batch_size)
         valid_generator = tuple_generator(ModelTest.batch_size)
