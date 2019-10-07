@@ -123,11 +123,16 @@ class TensorBoardLogger(Logger):
         super().__init__(batch_granularity=False)
         self.writer = writer
 
+    def on_batch_end(self, batch, logs):
+        self._on_batch_end_write(batch, logs)
+
     def _on_batch_end_write(self, batch, logs):
         """
         We don't handle tensorboard writing on batch granularity
         """
-        pass
+        for layer_name, layer_gradient in self.model.model.named_parameters():
+            if layer_gradient.requires_grad and ("bias" not in layer_name):
+                self.writer.add_histogram(layer_name, layer_gradient.grad.abs().mean(), batch)
 
     def _on_epoch_end_write(self, epoch, logs):
         grouped_items = dict()
@@ -144,7 +149,7 @@ class TensorBoardLogger(Logger):
         for k, v in grouped_items.items():
             self.writer.add_scalars(k, v, epoch)
         lr = self._get_current_learning_rates()
-        if isinstance(lr, (list, )):
+        if isinstance(lr, (list,)):
             self.writer.add_scalars('lr', {str(i): v for i, v in enumerate(lr)}, epoch)
         else:
             self.writer.add_scalars('lr', {'lr': lr}, epoch)
