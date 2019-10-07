@@ -457,7 +457,6 @@ class Experiment:
         # Copy callback list.
         callbacks = list(callbacks)
 
-        tensorboard_writer = None
         initial_epoch = 1
         if self.logging:
             if not os.path.exists(self.directory):
