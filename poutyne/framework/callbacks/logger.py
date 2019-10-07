@@ -124,9 +124,6 @@ class TensorBoardLogger(Logger):
         super().__init__(batch_granularity=False)
         self.writer = writer
 
-    def on_batch_end(self, batch_number, logs):
-        self._on_batch_end_write(batch_number, logs)
-
     def _on_batch_end_write(self, batch_number, logs):
         """
         We don't handle tensorboard writing on batch granularity
