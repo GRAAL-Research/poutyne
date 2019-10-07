@@ -59,29 +59,29 @@ class CallbackList:
         for callback in self.callbacks:
             callback.set_model(model)
 
-    def on_epoch_begin(self, epoch, logs=None):
+    def on_epoch_begin(self, epoch_number, logs=None):
         logs = logs or {}
         for callback in self.callbacks:
-            callback.on_epoch_begin(epoch, logs)
+            callback.on_epoch_begin(epoch_number, logs)
 
-    def on_epoch_end(self, epoch, logs=None):
+    def on_epoch_end(self, epoch_number, logs=None):
         logs = logs or {}
         for callback in self.callbacks:
-            callback.on_epoch_end(epoch, logs)
+            callback.on_epoch_end(epoch_number, logs)
 
-    def on_batch_begin(self, batch, logs=None):
+    def on_batch_begin(self, batch_number, logs=None):
         logs = logs or {}
         for callback in self.callbacks:
-            callback.on_batch_begin(batch, logs)
+            callback.on_batch_begin(batch_number, logs)
 
-    def on_batch_end(self, batch, logs=None):
+    def on_batch_end(self, batch_number, logs=None):
         logs = logs or {}
         for callback in self.callbacks:
-            callback.on_batch_end(batch, logs)
+            callback.on_batch_end(batch_number, logs)
 
-    def on_backward_end(self, batch):
+    def on_backward_end(self, batch_number):
         for callback in self.callbacks:
-            callback.on_backward_end(batch)
+            callback.on_backward_end(batch_number)
 
     def on_train_begin(self, logs=None):
         logs = logs or {}
@@ -114,22 +114,22 @@ class Callback:
     def set_model(self, model):
         self.model = model
 
-    def on_epoch_begin(self, epoch, logs):
+    def on_epoch_begin(self, epoch_number, logs):
         """
         Is called before the begining of each epoch.
 
         Args:
-            epoch (int): The epoch number.
+            epoch_number (int): The epoch number.
             logs (dict): Usually an empty dict.
         """
         pass
 
-    def on_epoch_end(self, epoch, logs):
+    def on_epoch_end(self, epoch_number, logs):
         """
         Is called before the end of each epoch.
 
         Args:
-            epoch (int): The epoch number.
+            epoch_number (int): The epoch number.
             logs (dict): Contains the following keys:
 
                  * 'epoch': The epoch number.
@@ -146,22 +146,22 @@ class Callback:
         """
         pass
 
-    def on_batch_begin(self, batch, logs):
+    def on_batch_begin(self, batch_number, logs):
         """
         Is called before the begining of each batch.
 
         Args:
-            batch (int): The batch number.
+            batch_number (int): The batch number.
             logs (dict): Usually an empty dict.
         """
         pass
 
-    def on_batch_end(self, batch, logs):
+    def on_batch_end(self, batch_number, logs):
         """
         Is called before the end of each batch.
 
         Args:
-            batch (int): The batch number.
+            batch_number (int): The batch number.
             logs (dict): Contains the following keys:
 
                  * 'batch': The batch number.
@@ -175,12 +175,12 @@ class Callback:
         """
         pass
 
-    def on_backward_end(self, batch):
+    def on_backward_end(self, batch_number):
         """
         Is called after the backpropagation but before the optimization step.
 
         Args:
-            batch (int): The batch number.
+            batch_number (int): The batch number.
         """
         pass
 

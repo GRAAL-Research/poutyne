@@ -33,31 +33,31 @@ class DelayCallback(Callback):
     def set_model(self, model):
         self.callbacks.set_model(model)
 
-    def on_epoch_begin(self, epoch, logs):
-        self.current_epoch = epoch
+    def on_epoch_begin(self, epoch_number, logs):
+        self.current_epoch = epoch_number
         if self.has_delay_passed():
             self.has_on_epoch_begin_been_called = True
-            self.callbacks.on_epoch_begin(epoch, logs)
+            self.callbacks.on_epoch_begin(epoch_number, logs)
 
-    def on_epoch_end(self, epoch, logs):
+    def on_epoch_end(self, epoch_number, logs):
         if self.has_delay_passed():
-            self.callbacks.on_epoch_end(epoch, logs)
+            self.callbacks.on_epoch_end(epoch_number, logs)
 
-    def on_batch_begin(self, batch, logs):
+    def on_batch_begin(self, batch_number, logs):
         self.batch_counter += 1
         if self.has_delay_passed():
             if not self.has_on_epoch_begin_been_called:
                 self.has_on_epoch_begin_been_called = True
                 self.callbacks.on_epoch_begin(self.current_epoch, logs)
-            self.callbacks.on_batch_begin(batch, logs)
+            self.callbacks.on_batch_begin(batch_number, logs)
 
-    def on_batch_end(self, batch, logs):
+    def on_batch_end(self, batch_number, logs):
         if self.has_delay_passed():
-            self.callbacks.on_batch_end(batch, logs)
+            self.callbacks.on_batch_end(batch_number, logs)
 
-    def on_backward_end(self, batch):
+    def on_backward_end(self, batch_number):
         if self.has_delay_passed():
-            self.callbacks.on_backward_end(batch)
+            self.callbacks.on_backward_end(batch_number)
 
     def on_train_begin(self, logs):
         self.current_epoch = 0
