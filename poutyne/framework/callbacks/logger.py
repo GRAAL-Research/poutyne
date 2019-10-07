@@ -13,9 +13,9 @@ class Logger(Callback):
         metrics = ['loss'] + self.model.metrics_names
 
         if self.batch_granularity:
-            self.fieldnames = ['epoch_number', 'batch', 'size', 'time', 'lr']
+            self.fieldnames = ['epoch', 'batch', 'size', 'time', 'lr']
         else:
-            self.fieldnames = ['epoch_number', 'time', 'lr']
+            self.fieldnames = ['epoch', 'time', 'lr']
         self.fieldnames += metrics
         self.fieldnames += ['val_' + metric for metric in metrics]
         self._on_train_begin_write(logs)
