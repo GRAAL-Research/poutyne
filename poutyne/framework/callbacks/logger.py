@@ -33,7 +33,7 @@ class Logger(Callback):
 
     def on_epoch_begin(self, epoch_number, logs):
         self.epoch_number = epoch_number
-        self._on_epoch_begin_write(epoch_number, logs)
+        self._on_epoch_begin_write(self.epoch_number, logs)
 
     def _on_epoch_begin_write(self, epoch_number, logs):
         pass
