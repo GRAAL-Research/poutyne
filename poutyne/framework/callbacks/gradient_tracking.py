@@ -57,7 +57,7 @@ class GradientTracker(Callback):
         batch_layer_min = tensor(batch_layer_min)
         batch_layer_max = tensor(batch_layer_max)
 
-        self.running_min = torch.cat((batch_layer_min.unsqueeze(1), self.running_min.unsqueeze(1)), dim=-1).max(
+        self.running_min = torch.cat((batch_layer_min.unsqueeze(1), self.running_min.unsqueeze(1)), dim=-1).min(
             dim=1).values
         self.running_max = torch.cat((batch_layer_max.unsqueeze(1), self.running_max.unsqueeze(1)), dim=-1).max(
             dim=1).values
