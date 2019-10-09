@@ -40,9 +40,12 @@ class GradientTracker(Callback):
         batch_layer_max = []
         for layer_name, layer_params in self.model.model.named_parameters():
             if layer_params.requires_grad and ("bias" not in layer_name):
-                batch_layer_means.append(layer_params.grad.abs().mean())
-                batch_layer_min.append(layer_params.grad.abs().min())
-                batch_layer_max.append(layer_params.grad.abs().max())
+                layer_gradient = layer_params.grad
+                abs_value_layer_gradient = layer_gradient.abs()
+
+                batch_layer_means.append(abs_value_layer_gradient.mean())
+                batch_layer_min.append(layer_gradient.min())
+                batch_layer_max.append(layer_gradient.max())
 
         batch_layer_means = tensor(batch_layer_means)
         self.previous_mean = self.running_mean
