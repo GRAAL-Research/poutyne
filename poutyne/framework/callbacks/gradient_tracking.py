@@ -13,7 +13,7 @@ class GradientTracker(Callback):
 
         self.running_mean = None
         self.running_variance = None
-        self.running_m2 = None  # use to calculate the variance
+        self.running_m2 = None  # used to calculate the variance
         self.running_min = None
         self.running_max = None
 
