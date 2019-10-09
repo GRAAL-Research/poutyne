@@ -8,7 +8,7 @@ class GradientTracker(Callback):
     def __init__(self, writer):
         super().__init__()
         self.writer = writer
-        self.layers_name = []
+        self.layer_names = []
         self.number_layers = 0
 
         self.running_mean = None
@@ -20,9 +20,9 @@ class GradientTracker(Callback):
     def on_train_begin(self, logs):
         for layer_name, layer_gradient in self.model.model.named_parameters():
             if layer_gradient.requires_grad and ("bias" not in layer_name):
-                self.layers_name.append(layer_name)
+                self.layer_names.append(layer_name)
 
-        self.number_layers = len(self.layers_name)
+        self.number_layers = len(self.layer_names)
 
     def on_epoch_begin(self, epoch, logs):
         self.running_mean = torch.zeros([self.number_layers])
@@ -66,7 +66,7 @@ class GradientTracker(Callback):
         self._on_epoch_end_write(epoch)
 
     def _on_epoch_end_write(self, epoch):
-        for index, layer_name in enumerate(self.layers_name):
+        for index, layer_name in enumerate(self.layer_names):
             graph_name = "_".join([layer_name, "gradient_distribution"])
             self.writer.add_scalars(graph_name, {"mean": self.running_mean[index]}, epoch)
             self.writer.add_scalars(graph_name,
