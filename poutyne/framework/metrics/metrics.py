@@ -1,4 +1,5 @@
 import torch.nn.functional as F
+from torch import tensor
 
 
 def acc(y_pred, y_true, ignore_index=-100):
@@ -63,6 +64,37 @@ def soft_margin(y_pred, y_true):
     return F.soft_margin_loss(y_pred, y_true)
 
 
+def masked_acc(y_pred: tensor, y: tuple):
+    """
+    The masked accuracy for sequence. The mask is use to *remove* the padded value and not calculate the accuracy over these value.
+
+    Args:
+        y_pred (~torch.Tensor): The prediction from a model.
+        y (Union[~torch.Tensor, ~torch.Tensor]): The target and a mask used to remove the padded element in the calculation.
+
+    Returns:
+        A float accuracy value.
+    """
+    y_pred = y_pred.view(y_pred.shape[0] * y_pred.shape[1], -1)
+
+    if not isinstance(y, tuple):
+        raise TypeError("The y_pred argument must be a tuple of prediction and the masked of the padding elements..")
+
+    y_true, mask = y
+    y_true = y_true.view(y_true.shape[0] * y_true.shape[1])
+    y_true = y_true.float()
+    mask = mask.view(mask.shape[0] * mask.shape[1])
+
+    argmax_y_pred = y_pred.max(dim=1)[1].float()
+    true_positives = (y_true == argmax_y_pred) * mask
+
+    true_positive_sum = y_true[true_positives].shape[0]
+    pred_sum = argmax_y_pred[mask].long().shape[0]
+
+    precision = true_positive_sum / pred_sum * 100
+    return precision
+
+
 all_losses_metrics_dict = dict(acc=acc,
                                accuracy=acc,
                                binacc=bin_acc,
@@ -83,7 +115,9 @@ all_losses_metrics_dict = dict(acc=acc,
                                binarycrossentropywithlogits=bce_with_logits,
                                bcewithlogits=bce_with_logits,
                                smoothl1=smooth_l1,
-                               softmargin=soft_margin)
+                               softmargin=soft_margin,
+                               maskedacc=masked_acc,
+                               sequenceacc=masked_acc)
 
 
 def get_loss_or_metric(loss_metric):
