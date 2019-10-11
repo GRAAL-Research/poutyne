@@ -17,6 +17,8 @@ limitations under the License.
 """
 
 import torch
+from torch import tensor
+
 from .base import EpochMetric
 
 
@@ -68,7 +70,8 @@ class FBeta(EpochMetric):
             The strength of recall versus precision in the F-score. (Default value = 1.0)
     """
 
-    def __init__(self, metric: str = 'fscore', average: str = 'micro', beta: float = 1.0) -> None:
+    def __init__(self, metric: str = 'fscore', average: str = 'micro', beta: float = 1.0,
+                 padding_value: float = 0) -> None:
         super().__init__()
         metric_options = ('fscore', 'precision', 'recall')
         if metric not in metric_options:
@@ -85,6 +88,7 @@ class FBeta(EpochMetric):
         self._average = average if average in average_options else None
         self._label = average if isinstance(average, int) else None
         self._beta = beta
+        self.padding_value = padding_value
 
         if self._average is not None:
             self.__name__ = self._metric + '_' + self._average
@@ -106,6 +110,9 @@ class FBeta(EpochMetric):
         # including true positives and false negatives
         # Shape: (num_classes, )
         self.register_buffer('_true_sum', None)
+
+    def _respect_classes_dimension(self, y_true: tensor, num_classes: float):
+        return (y_true >= num_classes).any()
 
     def forward(self, y_pred, y_true):
         """
@@ -129,7 +136,7 @@ class FBeta(EpochMetric):
 
         # Calculate true_positive_sum, true_negative_sum, pred_sum, true_sum
         num_classes = y_pred.size(1)
-        if (y_true >= num_classes).any():
+        if self._respect_classes_dimension(y_true, num_classes):
             raise ValueError("A gold label passed to FBetaMeasure contains "
                              "an id >= {}, the number of classes.".format(num_classes))
 
@@ -223,7 +230,7 @@ class FBeta(EpochMetric):
             return fscore.item()
         if self._metric == 'precision':
             return precision.item()
-        #if self._metric == 'recall':
+        # if self._metric == 'recall':
         return recall.item()
 
     def reset(self) -> None:
@@ -240,6 +247,38 @@ class F1(FBeta):
 
     def __init__(self, average='micro'):
         super().__init__(metric='fscore', average=average, beta=1)
+
+
+class F1Sequence(FBeta):
+    """
+    Alias class for FBeta where ``metric == 'fscore'`` and ``beta == 1`` in the specific case of sequence.
+
+    Args:
+        padding_value (float): The padding idx value of the padded sequence.
+    """
+
+    def __init__(self, average: str = 'micro', padding_value: float = 0):
+        super().__init__(metric='fscore', average=average, beta=1)
+        self.padding_value = padding_value
+
+    def _respect_classes_dimension(self, y_true: tensor, num_classes: float):
+        return ((y_true >= num_classes) & (y_true != self.padding_value)).any()
+
+    def forward(self, y_pred: tensor, y_true: tuple):
+        # pylint: disable=line-too-long
+        """
+        Wrapper around the forward super class method to flatten before hand the tensor to be able to calculate the score.
+        """
+        # Flatten the y_pred
+        y_pred = y_pred.view(y_pred.shape[0] * y_pred.shape[1], -1)
+
+        y_true, mask = y_true
+
+        # Flatten the y_true and the mask
+        y_true = y_true.view(y_true.shape[0] * y_true.shape[1])
+        mask = mask.view(mask.shape[0] * mask.shape[1])
+
+        return super().forward(y_pred, (y_true, mask))
 
 
 def _prf_divide(numerator, denominator):

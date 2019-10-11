@@ -22,7 +22,7 @@ from unittest import TestCase
 import numpy
 import torch
 
-from poutyne.framework.metrics import FBeta
+from poutyne.framework.metrics import FBeta, F1Sequence
 
 
 class FBetaTest(TestCase):
@@ -145,6 +145,19 @@ class FBetaTest(TestCase):
         numpy.testing.assert_almost_equal(fbeta._true_sum.tolist(), [0.0, 1.0, 0.0, 0.0])
         numpy.testing.assert_almost_equal(fbeta._true_positive_sum.tolist(), [0.0, 1.0, 0.0, 0.0])
         numpy.testing.assert_almost_equal(fbeta._total_sum.tolist(), [1.0, 1.0, 1.0, 1.0])
+
+    def test_f1sequence_multiclass_micro_average_metric(self):
+        mask = torch.Tensor([[1, 0]])
+        predictions = torch.Tensor([[[0.2862, 0.3479, 0.1627, 0.2033], [0.2862, 0.3479, 0.1627, 0.2033]]])
+        targets = torch.Tensor([[1, 45]])
+
+        f1_sequence = F1Sequence(average='macro', padding_value=45)
+        f1_sequence(predictions, (targets, mask))
+
+        numpy.testing.assert_almost_equal(f1_sequence._pred_sum.tolist(), [0.0, 1.0, 0.0, 0.0])
+        numpy.testing.assert_almost_equal(f1_sequence._true_sum.tolist(), [0.0, 1.0, 0.0, 0.0])
+        numpy.testing.assert_almost_equal(f1_sequence._true_positive_sum.tolist(), [0.0, 1.0, 0.0, 0.0])
+        numpy.testing.assert_almost_equal(f1_sequence._total_sum.tolist(), [1.0, 1.0, 1.0, 1.0])
 
     def _compute(self, *args, **kwargs):
         fbeta = FBeta(*args, **kwargs)
