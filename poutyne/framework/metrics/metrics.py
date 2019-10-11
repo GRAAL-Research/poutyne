@@ -64,7 +64,7 @@ def soft_margin(y_pred, y_true):
     return F.soft_margin_loss(y_pred, y_true)
 
 
-def masked_acc(y_pred: tensor, y: tuple):
+def sequence_acc(y_pred: tensor, y: tuple):
     # pylint: disable=line-too-long
     """
     The masked accuracy for sequence. The mask is use to *remove* the padded value and not calculate the accuracy over these value.
@@ -117,8 +117,8 @@ all_losses_metrics_dict = dict(acc=acc,
                                bcewithlogits=bce_with_logits,
                                smoothl1=smooth_l1,
                                softmargin=soft_margin,
-                               maskedacc=masked_acc,
-                               sequenceacc=masked_acc)
+                               sequenceacc=sequence_acc,
+                               seqacc=sequence_acc)
 
 
 def get_loss_or_metric(loss_metric):
