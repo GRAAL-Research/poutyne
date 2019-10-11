@@ -140,7 +140,7 @@ class FBetaTest(TestCase):
 
         fbeta = FBeta()
         fbeta(predictions, (targets, mask))
-
+        # check value
         numpy.testing.assert_almost_equal(fbeta._pred_sum.tolist(), [0.0, 1.0, 0.0, 0.0])
         numpy.testing.assert_almost_equal(fbeta._true_sum.tolist(), [0.0, 1.0, 0.0, 0.0])
         numpy.testing.assert_almost_equal(fbeta._true_positive_sum.tolist(), [0.0, 1.0, 0.0, 0.0])
@@ -153,7 +153,7 @@ class FBetaTest(TestCase):
 
         f1_sequence = F1Sequence(average='macro', padding_value=45)
         f1_sequence(predictions, (targets, mask))
-
+        # check value
         numpy.testing.assert_almost_equal(f1_sequence._pred_sum.tolist(), [0.0, 1.0, 0.0, 0.0])
         numpy.testing.assert_almost_equal(f1_sequence._true_sum.tolist(), [0.0, 1.0, 0.0, 0.0])
         numpy.testing.assert_almost_equal(f1_sequence._true_positive_sum.tolist(), [0.0, 1.0, 0.0, 0.0])
