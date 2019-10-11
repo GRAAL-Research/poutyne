@@ -65,6 +65,7 @@ def soft_margin(y_pred, y_true):
 
 
 def masked_acc(y_pred: tensor, y: tuple):
+    # pylint: disable=line-too-long
     """
     The masked accuracy for sequence. The mask is use to *remove* the padded value and not calculate the accuracy over these value.
 
