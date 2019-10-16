@@ -19,7 +19,7 @@ class GradientTracker(Callback):
 
     def on_train_begin(self, logs):
         for layer_name, layer_gradient in self.model.model.named_parameters():
-            if layer_gradient.requires_grad and ("bias" not in layer_name):
+            if layer_gradient.requires_grad:
                 self.layer_names.append(layer_name)
 
         self.number_layers = len(self.layer_names)
@@ -39,7 +39,7 @@ class GradientTracker(Callback):
         batch_layer_min = []
         batch_layer_max = []
         for layer_name, layer_params in self.model.model.named_parameters():
-            if layer_params.requires_grad and ("bias" not in layer_name):
+            if layer_params.requires_grad:
                 layer_gradient = layer_params.grad
                 abs_value_layer_gradient = layer_gradient.abs()
 
