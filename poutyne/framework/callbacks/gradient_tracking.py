@@ -66,9 +66,6 @@ class GradientTracker(Callback):
             dim=1).values
 
     def on_epoch_end(self, epoch, logs):
-        self._on_epoch_end_write(epoch)
-
-    def _on_epoch_end_write(self, epoch):
         for index, layer_name in enumerate(self.layer_names):
             graph_name = "gradient_distributions/" + layer_name
             self.writer.add_scalars(graph_name, {"mean": self.running_mean[index]}, epoch)
