@@ -70,7 +70,7 @@ class GradientTracker(Callback):
 
     def _on_epoch_end_write(self, epoch):
         for index, layer_name in enumerate(self.layer_names):
-            graph_name = "_".join([layer_name, "gradient_distribution"])
+            graph_name = "gradient_distributions/" + layer_name
             self.writer.add_scalars(graph_name, {"mean": self.running_mean[index]}, epoch)
             self.writer.add_scalars(graph_name,
                                     {"std_dev_up": self.running_mean[index] + torch.sqrt(self.running_variance[index])},
@@ -79,6 +79,6 @@ class GradientTracker(Callback):
                                     {"std_dev_down": self.running_mean[index] - torch.sqrt(
                                         self.running_variance[index])},
                                     epoch)
-            graph_name = "_".join([layer_name, "other_gradient_stats"])
+            graph_name = "other_gradient_stats/" + layer_name
             self.writer.add_scalars(graph_name, {"min": self.running_min[index]}, epoch)
             self.writer.add_scalars(graph_name, {"max": self.running_max[index]}, epoch)
