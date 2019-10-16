@@ -150,5 +150,5 @@ class TensorBoardLogger(Logger):
         else:
             self.writer.add_scalars('lr', {'lr': lr}, epoch_number)
 
-    def on_train_end(self, logs=None):
+    def _on_train_end_write(self, logs=None):
         self.writer.close()
