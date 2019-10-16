@@ -1,5 +1,5 @@
 import torch
-from torch import tensor
+from torch.tensor import Tensor
 
 from poutyne.framework import Callback
 
@@ -47,7 +47,7 @@ class GradientTracker(Callback):
                 batch_layer_min.append(layer_gradient.min())
                 batch_layer_max.append(layer_gradient.max())
 
-        batch_layer_means = tensor(batch_layer_means)
+        batch_layer_means = Tensor(batch_layer_means)
         self.previous_mean = self.running_mean
 
         self.running_mean = self.previous_mean + (batch_layer_means - self.previous_mean) / batch
@@ -57,8 +57,8 @@ class GradientTracker(Callback):
 
         self.running_variance = self.running_m2 / (batch - 1) if batch > 1 else self.running_variance
 
-        batch_layer_min = tensor(batch_layer_min)
-        batch_layer_max = tensor(batch_layer_max)
+        batch_layer_min = Tensor(batch_layer_min)
+        batch_layer_max = Tensor(batch_layer_max)
 
         self.running_min = torch.cat((batch_layer_min.unsqueeze(1), self.running_min.unsqueeze(1)), dim=-1).min(
             dim=1).values
