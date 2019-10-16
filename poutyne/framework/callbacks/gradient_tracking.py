@@ -79,3 +79,6 @@ class GradientTracker(Callback):
             graph_name = "other_gradient_stats/" + layer_name
             self.writer.add_scalars(graph_name, {"min": self.running_min[index]}, epoch)
             self.writer.add_scalars(graph_name, {"max": self.running_max[index]}, epoch)
+
+    def on_train_end(self, logs):
+        self.writer.close()
