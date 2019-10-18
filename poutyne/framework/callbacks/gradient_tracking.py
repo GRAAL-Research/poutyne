@@ -54,18 +54,18 @@ class GradientTracker(Callback):
 
         self.running_mean = self.previous_mean + (batch_layer_means - self.previous_mean) / batch
 
-        self.running_m2 = self.running_m2 + (batch_layer_means - self.previous_mean) * (
-                batch_layer_means - self.running_mean)
+        self.running_m2 = self.running_m2 + (batch_layer_means - self.previous_mean) * (batch_layer_means -
+                                                                                        self.running_mean)
 
         self.running_variance = self.running_m2 / (batch - 1) if batch > 1 else self.running_variance
 
         batch_layer_min = Tensor(batch_layer_min)
         batch_layer_max = Tensor(batch_layer_max)
 
-        self.running_min = torch.cat((batch_layer_min.unsqueeze(1), self.running_min.unsqueeze(1)), dim=-1).min(
-            dim=1).values
-        self.running_max = torch.cat((batch_layer_max.unsqueeze(1), self.running_max.unsqueeze(1)), dim=-1).max(
-            dim=1).values
+        self.running_min = torch.cat((batch_layer_min.unsqueeze(1), self.running_min.unsqueeze(1)),
+                                     dim=-1).min(dim=1).values
+        self.running_max = torch.cat((batch_layer_max.unsqueeze(1), self.running_max.unsqueeze(1)),
+                                     dim=-1).max(dim=1).values
 
     def on_epoch_end(self, epoch, logs):
         for index, layer_name in enumerate(self.layer_names):
@@ -74,10 +74,9 @@ class GradientTracker(Callback):
             self.writer.add_scalars(graph_name,
                                     {"std_dev_up": self.running_mean[index] + torch.sqrt(self.running_variance[index])},
                                     epoch)
-            self.writer.add_scalars(graph_name,
-                                    {"std_dev_down": self.running_mean[index] - torch.sqrt(
-                                        self.running_variance[index])},
-                                    epoch)
+            self.writer.add_scalars(
+                graph_name, {"std_dev_down": self.running_mean[index] - torch.sqrt(self.running_variance[index])},
+                epoch)
             graph_name = "other_gradient_stats/" + layer_name
             self.writer.add_scalars(graph_name, {"min": self.running_min[index]}, epoch)
             self.writer.add_scalars(graph_name, {"max": self.running_max[index]}, epoch)
