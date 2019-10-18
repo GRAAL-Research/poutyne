@@ -95,7 +95,7 @@ class EarlyStopping(Callback):
         self.stopped_epoch = 0
         self.best = np.Inf if self.mode == 'min' else -np.Inf
 
-    def on_epoch_end(self, epoch, logs):
+    def on_epoch_end(self, epoch_number, logs):
         current = logs[self.monitor]
         if self.monitor_op(current - self.min_delta, self.best):
             self.best = current
@@ -103,7 +103,7 @@ class EarlyStopping(Callback):
         else:
             self.wait += 1
             if self.wait >= self.patience:
-                self.stopped_epoch = epoch
+                self.stopped_epoch = epoch_number
                 self.model.stop_training = True
 
     def on_train_end(self, logs):

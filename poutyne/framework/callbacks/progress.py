@@ -14,43 +14,43 @@ class ProgressionCallback(Callback):
     def on_train_end(self, logs):
         pass
 
-    def on_epoch_begin(self, epoch, logs):
+    def on_epoch_begin(self, epoch_number, logs):
         self.step_times_sum = 0.
-        self.epoch = epoch
-        sys.stdout.write("\rEpoch %d/%d" % (self.epoch, self.epochs))
+        self.epoch_number = epoch_number
+        sys.stdout.write("\rEpoch %d/%d" % (self.epoch_number, self.epochs))
         sys.stdout.flush()
 
-    def on_epoch_end(self, epoch, logs):
+    def on_epoch_end(self, epoch_number, logs):
         epoch_total_time = logs['time']
 
         metrics_str = self._get_metrics_string(logs)
         if self.steps is not None:
             print("\rEpoch %d/%d %.2fs Step %d/%d: %s" %
-                  (self.epoch, self.epochs, epoch_total_time, self.steps, self.steps, metrics_str))
+                  (self.epoch_number, self.epochs, epoch_total_time, self.steps, self.steps, metrics_str))
         else:
             print("\rEpoch %d/%d %.2fs: Step %d/%d: %s" %
-                  (self.epoch, self.epochs, epoch_total_time, self.last_step, self.last_step, metrics_str))
+                  (self.epoch_number, self.epochs, epoch_total_time, self.last_step, self.last_step, metrics_str))
 
-    def on_batch_begin(self, batch, logs):
+    def on_batch_begin(self, batch_number, logs):
         pass
 
-    def on_batch_end(self, batch, logs):
+    def on_batch_end(self, batch_number, logs):
         self.step_times_sum += logs['time']
 
         metrics_str = self._get_metrics_string(logs)
 
-        times_mean = self.step_times_sum / batch
+        times_mean = self.step_times_sum / batch_number
         if self.steps is not None:
-            remaining_time = times_mean * (self.steps - batch)
+            remaining_time = times_mean * (self.steps - batch_number)
 
             sys.stdout.write("\rEpoch %d/%d ETA %.0fs Step %d/%d: %s" %
-                             (self.epoch, self.epochs, remaining_time, batch, self.steps, metrics_str))
+                             (self.epoch_number, self.epochs, remaining_time, batch_number, self.steps, metrics_str))
             sys.stdout.flush()
         else:
             sys.stdout.write("\rEpoch %d/%d %.2fs/step Step %d: %s" %
-                             (self.epoch, self.epochs, times_mean, batch, metrics_str))
+                             (self.epoch_number, self.epochs, times_mean, batch_number, metrics_str))
             sys.stdout.flush()
-            self.last_step = batch
+            self.last_step = batch_number
 
     def _get_metrics_string(self, logs):
         train_metrics_str_gen = ('{}: {:f}'.format(k, logs[k]) for k in self.metrics if logs.get(k) is not None)

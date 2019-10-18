@@ -19,7 +19,7 @@ class ClipNorm(Callback):
         self.max_norm = max_norm
         self.norm_type = norm_type
 
-    def on_backward_end(self, batch):
+    def on_backward_end(self, batch_number):
         clip_grad_norm_(self.parameters, self.max_norm, norm_type=self.norm_type)
 
 
@@ -38,5 +38,5 @@ class ClipValue(Callback):
         self.parameters = list(parameters)
         self.clip_value = clip_value
 
-    def on_backward_end(self, batch):
+    def on_backward_end(self, batch_number):
         clip_grad_value_(self.parameters, self.clip_value)
