@@ -1,4 +1,5 @@
 import csv
+
 from .callbacks import Callback
 
 
@@ -6,7 +7,7 @@ class Logger(Callback):
     def __init__(self, *, batch_granularity=False):
         super().__init__()
         self.batch_granularity = batch_granularity
-        self.epoch = 0
+        self.epoch_number = 0
 
     def on_train_begin(self, logs):
         metrics = ['loss'] + self.model.metrics_names
@@ -22,26 +23,26 @@ class Logger(Callback):
     def _on_train_begin_write(self, logs):
         pass
 
-    def on_batch_end(self, batch, logs):
+    def on_batch_end(self, batch_number, logs):
         if self.batch_granularity:
             logs = self._get_logs_without_unknown_keys(logs)
-            self._on_batch_end_write(batch, logs)
+            self._on_batch_end_write(batch_number, logs)
 
-    def _on_batch_end_write(self, batch, logs):
+    def _on_batch_end_write(self, batch_number, logs):
         pass
 
-    def on_epoch_begin(self, epoch, logs):
-        self.epoch = epoch
-        self._on_epoch_begin_write(epoch, logs)
+    def on_epoch_begin(self, epoch_number, logs):
+        self.epoch_number = epoch_number
+        self._on_epoch_begin_write(self.epoch_number, logs)
 
-    def _on_epoch_begin_write(self, epoch, logs):
+    def _on_epoch_begin_write(self, epoch_number, logs):
         pass
 
-    def on_epoch_end(self, epoch, logs):
+    def on_epoch_end(self, epoch_number, logs):
         logs = self._get_logs_without_unknown_keys(logs)
-        self._on_epoch_end_write(epoch, logs)
+        self._on_epoch_end_write(epoch_number, logs)
 
-    def _on_epoch_end_write(self, epoch, logs):
+    def _on_epoch_end_write(self, epoch_number, logs):
         pass
 
     def on_train_end(self, logs=None):
@@ -60,7 +61,7 @@ class Logger(Callback):
 
 class CSVLogger(Logger):
     """
-    Callback that outputs the result of each epoch or batch into a CSV file.
+    Callback that outputs the result of each epoch_number or batch into a CSV file.
 
     Args:
         filename (str): The filename of the CSV.
@@ -86,11 +87,11 @@ class CSVLogger(Logger):
             self.writer.writeheader()
             self.csvfile.flush()
 
-    def _on_batch_end_write(self, batch, logs):
+    def _on_batch_end_write(self, batch_number, logs):
         self.writer.writerow(logs)
         self.csvfile.flush()
 
-    def _on_epoch_end_write(self, epoch, logs):
+    def _on_epoch_end_write(self, epoch_number, logs):
         self.writer.writerow(dict(logs, lr=self._get_current_learning_rates()))
         self.csvfile.flush()
 
@@ -100,7 +101,7 @@ class CSVLogger(Logger):
 
 class TensorBoardLogger(Logger):
     """
-    Callback that outputs the result of each epoch or batch into a Tensorboard experiment folder.
+    Callback that outputs the result of each epoch_number or batch into a Tensorboard experiment folder.
 
     Args:
         writer (~torch.utils.tensorboard.writer.SummaryWriter): The tensorboard writer.
@@ -123,13 +124,13 @@ class TensorBoardLogger(Logger):
         super().__init__(batch_granularity=False)
         self.writer = writer
 
-    def _on_batch_end_write(self, batch, logs):
+    def _on_batch_end_write(self, batch_number, logs):
         """
         We don't handle tensorboard writing on batch granularity
         """
         pass
 
-    def _on_epoch_end_write(self, epoch, logs):
+    def _on_epoch_end_write(self, epoch_number, logs):
         grouped_items = dict()
         for k, v in logs.items():
             if 'val_' in k:
@@ -142,9 +143,12 @@ class TensorBoardLogger(Logger):
                     grouped_items[k] = dict()
                 grouped_items[k][k] = v
         for k, v in grouped_items.items():
-            self.writer.add_scalars(k, v, epoch)
+            self.writer.add_scalars(k, v, epoch_number)
         lr = self._get_current_learning_rates()
         if isinstance(lr, (list, )):
-            self.writer.add_scalars('lr', {str(i): v for i, v in enumerate(lr)}, epoch)
+            self.writer.add_scalars('lr', {str(i): v for i, v in enumerate(lr)}, epoch_number)
         else:
-            self.writer.add_scalars('lr', {'lr': lr}, epoch)
+            self.writer.add_scalars('lr', {'lr': lr}, epoch_number)
+
+    def _on_train_end_write(self, logs=None):
+        self.writer.close()
