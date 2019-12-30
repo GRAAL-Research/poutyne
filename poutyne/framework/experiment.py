@@ -66,15 +66,17 @@ class Experiment:
         monitor_metric (str): Which metric to consider for best model performance calculation. Should be in
             the format '{metric_name}' or 'val_{metric_name}' (i.e. 'val_loss'). If None, will follow the value
             suggested by ``task`` or default to 'val_loss'.
-            (Default value = None)
+
+            .. warning:: If you do not plan to use a validation set, you must set the monitor metric to another
+                value so that the best epoch can be found.
         monitor_mode (str): Which mode, either 'min' or 'max', should be used when considering the ``monitor_metric``
-            value. If None, will follow the value suggested by ``task`` or default 'min'.
-            (Default value = None)
+            value. If None, will follow the value suggested by ``task`` or default to 'min'.
         task (str): Any str beginning with either 'classif' or 'reg'. Specifying a ``task`` can assign default
             values to the ``loss_function``, ``batch_metrics``, ``monitor_mode`` and ``monitor_mode``. For ``task``
             that begins with 'reg', the only default value is the loss function that is the mean squared error. When
             beginning with 'classif', the default loss function is the cross-entropy loss, the default batch metrics
-            will be the accuracy and the default monitoring will be set on 'val_acc' with a 'max' mode.
+            will be the accuracy, the default epoch metrics will be the F1 score and the default monitoring will be
+            set on 'val_acc' with a 'max' mode.
             (Default value = None)
 
     Example:
