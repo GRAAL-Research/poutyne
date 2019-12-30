@@ -67,8 +67,8 @@ class Experiment:
             the format '{metric_name}' or 'val_{metric_name}' (i.e. 'val_loss'). If None, will follow the value
             suggested by ``task`` or default to 'val_loss'.
 
-            .. warning:: If you do not plan to use a validation set, you must set the monitor metric to another
-                value so that the best epoch can be found.
+            .. warning:: If you do not plan on using a validation set, you must set the monitor metric to another
+                value.
         monitor_mode (str): Which mode, either 'min' or 'max', should be used when considering the ``monitor_metric``
             value. If None, will follow the value suggested by ``task`` or default to 'min'.
         task (str): Any str beginning with either 'classif' or 'reg'. Specifying a ``task`` can assign default
