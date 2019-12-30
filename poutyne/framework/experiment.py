@@ -591,9 +591,13 @@ class Experiment:
 
         best_epoch_stats = self.load_checkpoint(checkpoint)
 
-        test_loss, test_metrics = self.model.evaluate_generator(test_generator, steps=steps)
-        if not isinstance(test_metrics, np.ndarray):
-            test_metrics = np.array([test_metrics])
+        if len(self.model.metrics_names) > 0:
+            test_loss, test_metrics = self.model.evaluate_generator(test_generator, steps=steps)
+            if not isinstance(test_metrics, np.ndarray):
+                test_metrics = np.array([test_metrics])
+        else:
+            test_loss = self.model.evaluate_generator(test_generator, steps=steps)
+            test_metrics = np.array([])
 
         test_metrics_names = ['test_loss'] + \
                              ['test_' + metric_name for metric_name in self.model.metrics_names]
