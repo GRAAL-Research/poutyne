@@ -100,7 +100,7 @@ class Phase:
         names = list(self.configuration.keys())
         values = self.configuration.values()
         for values in zip(*self.configuration.values()):
-            yield {name: value for name, value in zip(names, values)}
+            yield dict(zip(names, values))
 
     def __repr__(self):
         return "\n".join([

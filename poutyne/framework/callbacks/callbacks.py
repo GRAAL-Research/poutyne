@@ -46,7 +46,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 class CallbackList:
     def __init__(self, callbacks=None):
         callbacks = callbacks or []
-        self.callbacks = [c for c in callbacks]
+        self.callbacks = list(callbacks)
 
     def append(self, callback):
         self.callbacks.append(callback)

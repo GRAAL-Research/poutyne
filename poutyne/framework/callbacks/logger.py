@@ -137,17 +137,14 @@ class AtomicCSVLogger(Logger):
 
     def _on_train_begin_write(self, logs):
         if not self.append:
-            atomic_lambda_save(self.filename, self._save_log, (None,),
-                               temporary_filename=self.temporary_filename)
+            atomic_lambda_save(self.filename, self._save_log, (None, ), temporary_filename=self.temporary_filename)
 
     def _on_batch_end_write(self, batch_number, logs):
-        atomic_lambda_save(self.filename, self._save_log, (logs,),
-                           temporary_filename=self.temporary_filename)
+        atomic_lambda_save(self.filename, self._save_log, (logs, ), temporary_filename=self.temporary_filename)
 
     def _on_epoch_end_write(self, epoch_number, logs):
         logs = dict(logs, lr=self._get_current_learning_rates())
-        atomic_lambda_save(self.filename, self._save_log, (logs,),
-                           temporary_filename=self.temporary_filename)
+        atomic_lambda_save(self.filename, self._save_log, (logs, ), temporary_filename=self.temporary_filename)
 
 
 class TensorBoardLogger(Logger):

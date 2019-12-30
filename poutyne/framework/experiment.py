@@ -470,10 +470,12 @@ class Experiment:
             # Restarting optimization if needed.
             initial_epoch = self._load_epoch_state(lr_schedulers)
 
-            callbacks += [AtomicCSVLogger(self.log_filename,
-                                          separator='\t',
-                                          append=initial_epoch != 1,
-                                          temporary_filename=self.log_tmp_filename)]
+            callbacks += [
+                AtomicCSVLogger(self.log_filename,
+                                separator='\t',
+                                append=initial_epoch != 1,
+                                temporary_filename=self.log_tmp_filename)
+            ]
 
             callbacks += self._init_model_restoring_callbacks(initial_epoch, save_every_epoch)
             callbacks += [
@@ -610,7 +612,7 @@ class Experiment:
                              ['test_' + metric_name for metric_name in self.model.metrics_names]
         test_metrics_values = np.concatenate(([test_loss], test_metrics))
 
-        test_metrics_dict = {col: val for col, val in zip(test_metrics_names, test_metrics_values)}
+        test_metrics_dict = dict(zip(test_metrics_names, test_metrics_values))
         test_metrics_str = ', '.join('%s: %g' % (col, val) for col, val in test_metrics_dict.items())
         print("On best model: %s" % test_metrics_str)
 

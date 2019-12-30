@@ -125,8 +125,7 @@ class PeriodicSaveCallback(Callback):
 
     def _save_file(self, filename, epoch_number, logs):
         atomic_lambda_save(filename,
-                           self.save_file,
-                           (epoch_number, logs),
+                           self.save_file, (epoch_number, logs),
                            temporary_filename=self.temporary_filename,
                            open_mode=self.open_mode,
                            atomic=self.atomic_write)

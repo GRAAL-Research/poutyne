@@ -21,7 +21,7 @@ def atomic_lambda_save(filename, save_lambda, args, *, temporary_filename=None, 
         except OSError as e:
             # This may happen if the temp filesystem is not the same as the final destination's.
             warnings.warn("Impossible to move the file to its final destination: "
-                            "os.replace(%s, %s) -> %s" % (tmp_filename, filename, e))
+                          "os.replace(%s, %s) -> %s" % (tmp_filename, filename, e))
             os.remove(tmp_filename)
 
             warnings.warn('Saving %s non-atomically instead.' % filename)
