@@ -350,14 +350,14 @@ class Experiment:
             # it does not save checkpoint it would not have saved if the
             # optimization was not stopped.
             best_epoch_stats = self.get_best_epoch_stats()
-            best_epoch = best_epoch_stats['epoch'].item()
+            best_epoch = best_epoch_stats['epoch'].iloc[0]
             best_filename = self.best_checkpoint_filename.format(epoch=best_epoch)
             if not save_every_epoch:
                 best_checkpoint.best_filename = best_filename
-                best_checkpoint.current_best = best_epoch_stats[self.monitor_metric].item()
+                best_checkpoint.current_best = best_epoch_stats[self.monitor_metric].iloc[0]
             else:
                 best_restore.best_weights = torch.load(best_filename, map_location='cpu')
-                best_restore.current_best = best_epoch_stats[self.monitor_metric].item()
+                best_restore.current_best = best_epoch_stats[self.monitor_metric].iloc[0]
 
         return callbacks
 
@@ -556,10 +556,10 @@ class Experiment:
 
     def _load_best_checkpoint(self, *, verbose=False):
         best_epoch_stats = self.get_best_epoch_stats()
-        best_epoch = best_epoch_stats['epoch'].item()
+        best_epoch = best_epoch_stats['epoch'].iloc[0]
 
         if verbose:
-            metrics_str = ', '.join('%s: %g' % (metric_name, best_epoch_stats[metric_name].item())
+            metrics_str = ', '.join('%s: %g' % (metric_name, best_epoch_stats[metric_name].iloc[0])
                                     for metric_name in best_epoch_stats.columns[2:])
             print("Found best checkpoint at epoch: {}".format(best_epoch))
             print(metrics_str)
