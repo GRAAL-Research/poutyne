@@ -21,7 +21,7 @@ from poutyne.framework.callbacks import ModelCheckpoint, \
     OptimizerCheckpoint, \
     LRSchedulerCheckpoint, \
     PeriodicSaveLambda, \
-    CSVLogger, \
+    AtomicCSVLogger, \
     TensorBoardLogger, \
     BestModelRestore
 
@@ -171,6 +171,7 @@ class Experiment:
     OPTIMIZER_CHECKPOINT_FILENAME = 'checkpoint.optim'
     OPTIMIZER_CHECKPOINT_TMP_FILENAME = 'checkpoint.tmp.optim'
     LOG_FILENAME = 'log.tsv'
+    LOG_TMP_FILENAME = 'log.tmp.tsv'
     TENSORBOARD_DIRECTORY = 'tensorboard'
     EPOCH_FILENAME = 'last.epoch'
     EPOCH_TMP_FILENAME = 'last.tmp.epoch'
@@ -218,6 +219,7 @@ class Experiment:
         self.optimizer_checkpoint_filename = join_dir(Experiment.OPTIMIZER_CHECKPOINT_FILENAME)
         self.optimizer_checkpoint_tmp_filename = join_dir(Experiment.OPTIMIZER_CHECKPOINT_TMP_FILENAME)
         self.log_filename = join_dir(Experiment.LOG_FILENAME)
+        self.log_tmp_filename = join_dir(Experiment.LOG_TMP_FILENAME)
         self.tensorboard_directory = join_dir(Experiment.TENSORBOARD_DIRECTORY)
         self.epoch_filename = join_dir(Experiment.EPOCH_FILENAME)
         self.epoch_tmp_filename = join_dir(Experiment.EPOCH_TMP_FILENAME)
@@ -410,7 +412,7 @@ class Experiment:
         new best (according to monitor mode) model weights in appropriate checkpoint files.
         :class:`~callbacks.OptimizerCheckpoint` and :class:`~callbacks.LRSchedulerCheckpoint` will also respectively
         handle the saving of the optimizer and LR scheduler's respective states for future retrieval. Moreover, a
-        :class:`~callbacks.CSVLogger` will save all available epoch statistics in an output .tsv file. Lastly, a
+        :class:`~callbacks.AtomicCSVLogger` will save all available epoch statistics in an output .tsv file. Lastly, a
         :class:`~callbacks.TensorBoardLogger` handles automatic TensorBoard logging of various neural network
         statistics.
 
@@ -468,7 +470,10 @@ class Experiment:
             # Restarting optimization if needed.
             initial_epoch = self._load_epoch_state(lr_schedulers)
 
-            callbacks += [CSVLogger(self.log_filename, separator='\t', append=initial_epoch != 1)]
+            callbacks += [AtomicCSVLogger(self.log_filename,
+                                          separator='\t',
+                                          append=initial_epoch != 1,
+                                          temporary_filename=self.log_tmp_filename)]
 
             callbacks += self._init_model_restoring_callbacks(initial_epoch, save_every_epoch)
             callbacks += [
