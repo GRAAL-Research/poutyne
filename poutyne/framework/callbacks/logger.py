@@ -1,6 +1,8 @@
+import os
 import csv
 
 from .callbacks import Callback
+from ._utils import atomic_lambda_save
 
 
 class Logger(Callback):
@@ -97,6 +99,55 @@ class CSVLogger(Logger):
 
     def _on_train_end_write(self, logs=None):
         self.csvfile.close()
+
+
+class AtomicCSVLogger(Logger):
+    """
+    Callback that outputs the result of each epoch_number or batch into a CSV file in an atomic matter.
+
+    Args:
+        filename (str): The filename of the CSV.
+        temporary_filename (str, optional): Temporary filename for the CSV file so that it can be written
+            atomically.
+        batch_granularity (bool): Whether to also output the result of each batch in addition to the epochs.
+            (Default value = False)
+        separator (str): The separator to use in the CSV.
+            (Default value = ',')
+        append (bool): Whether to append to an existing file.
+    """
+
+    def __init__(self, filename, *, batch_granularity=False, separator=',', append=False, temporary_filename=None):
+        super().__init__(batch_granularity=batch_granularity)
+        self.filename = filename
+        self.temporary_filename = temporary_filename
+        self.separator = separator
+        self.append = append
+
+    def _save_log(self, fd, logs):
+        olddata = None
+        if os.path.exists(self.filename):
+            with open(self.filename, 'r') as oldfile:
+                olddata = list(csv.DictReader(oldfile))
+        csvwriter = csv.DictWriter(fd, fieldnames=self.fieldnames, delimiter=self.separator)
+        csvwriter.writeheader()
+        if olddata is not None:
+            csvwriter.writerows(olddata)
+        if logs is not None:
+            csvwriter.writerow(logs)
+
+    def _on_train_begin_write(self, logs):
+        if not self.append:
+            atomic_lambda_save(self.filename, self._save_log, (None,),
+                               temporary_filename=self.temporary_filename)
+
+    def _on_batch_end_write(self, batch_number, logs):
+        atomic_lambda_save(self.filename, self._save_log, (logs,),
+                           temporary_filename=self.temporary_filename)
+
+    def _on_epoch_end_write(self, epoch_number, logs):
+        logs = dict(logs, lr=self._get_current_learning_rates())
+        atomic_lambda_save(self.filename, self._save_log, (logs,),
+                           temporary_filename=self.temporary_filename)
 
 
 class TensorBoardLogger(Logger):

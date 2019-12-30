@@ -41,6 +41,8 @@ Logging
 
 .. autoclass:: CSVLogger
 
+.. autoclass:: AtomicCSVLogger
+
 .. autoclass:: TensorBoardLogger
 
 Checkpointing

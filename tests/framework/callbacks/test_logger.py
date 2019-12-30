@@ -21,8 +21,9 @@ try:
 except ImportError:
     XSummaryWriter = None
 
-from poutyne.framework import Model
-from poutyne.framework.callbacks import CSVLogger, Callback, TensorBoardLogger
+from poutyne.framework import Model, Callback, TensorBoardLogger
+from poutyne.framework import CSVLogger as NonAtomicCSVLogger
+from poutyne.framework import AtomicCSVLogger
 
 
 def some_data_generator(batch_size):
@@ -43,7 +44,9 @@ class History(Callback):
         self.history = []
 
 
-class CSVLoggerTest(TestCase):
+class BaseCSVLoggerTest:
+    # pylint: disable=not-callable,no-member
+    CSVLogger = None
     batch_size = 20
     lr = 1e-3
 
@@ -51,7 +54,7 @@ class CSVLoggerTest(TestCase):
         torch.manual_seed(42)
         self.pytorch_network = nn.Linear(1, 1)
         self.loss_function = nn.MSELoss()
-        self.optimizer = torch.optim.SGD(self.pytorch_network.parameters(), lr=CSVLoggerTest.lr)
+        self.optimizer = torch.optim.SGD(self.pytorch_network.parameters(), lr=BaseCSVLoggerTest.lr)
         self.model = Model(self.pytorch_network, self.optimizer, self.loss_function)
         self.temp_dir_obj = TemporaryDirectory()
         self.csv_filename = os.path.join(self.temp_dir_obj.name, 'my_log.csv')
@@ -62,14 +65,14 @@ class CSVLoggerTest(TestCase):
     def test_logging(self):
         train_gen = some_data_generator(20)
         valid_gen = some_data_generator(20)
-        logger = CSVLogger(self.csv_filename)
+        logger = self.CSVLogger(self.csv_filename)
         history = self.model.fit_generator(train_gen, valid_gen, epochs=10, steps_per_epoch=5, callbacks=[logger])
         self._test_logging(history)
 
     def test_logging_with_batch_granularity(self):
         train_gen = some_data_generator(20)
         valid_gen = some_data_generator(20)
-        logger = CSVLogger(self.csv_filename, batch_granularity=True)
+        logger = self.CSVLogger(self.csv_filename, batch_granularity=True)
         history = History()
         self.model.fit_generator(train_gen, valid_gen, epochs=10, steps_per_epoch=5, callbacks=[logger, history])
         self._test_logging(history.history)
@@ -77,9 +80,9 @@ class CSVLoggerTest(TestCase):
     def test_logging_append(self):
         train_gen = some_data_generator(20)
         valid_gen = some_data_generator(20)
-        logger = CSVLogger(self.csv_filename)
+        logger = self.CSVLogger(self.csv_filename)
         history = self.model.fit_generator(train_gen, valid_gen, epochs=10, steps_per_epoch=5, callbacks=[logger])
-        logger = CSVLogger(self.csv_filename, append=True)
+        logger = self.CSVLogger(self.csv_filename, append=True)
         history2 = self.model.fit_generator(train_gen,
                                             valid_gen,
                                             epochs=20,
@@ -94,7 +97,7 @@ class CSVLoggerTest(TestCase):
             rows = []
             for row in reader:
                 if row['epoch'] != '':
-                    self.assertAlmostEqual(float(row['lr']), CSVLoggerTest.lr)
+                    self.assertAlmostEqual(float(row['lr']), BaseCSVLoggerTest.lr)
                 del row['lr']
                 rows.append(row)
         self.assertEqual(len(rows), len(history))
@@ -106,6 +109,14 @@ class CSVLoggerTest(TestCase):
                     self.assertAlmostEqual(float(row[k]), hist_entry[k])
                 else:
                     self.assertEqual(str(row[k]), str(hist_entry[k]))
+
+
+class NonAtomicCSVLoggerTest(BaseCSVLoggerTest, TestCase):
+    CSVLogger = NonAtomicCSVLogger
+
+
+class AtomicCSVLoggerTest(BaseCSVLoggerTest, TestCase):
+    CSVLogger = AtomicCSVLogger
 
 
 class BaseTensorBoardLoggerTest:

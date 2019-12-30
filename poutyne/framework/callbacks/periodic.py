@@ -41,11 +41,8 @@ NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FO
 OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
-import os
-import warnings
-import tempfile
-
 from .callbacks import Callback
+from ._utils import atomic_lambda_save
 
 
 class PeriodicSaveCallback(Callback):
@@ -127,34 +124,12 @@ class PeriodicSaveCallback(Callback):
         raise NotImplementedError
 
     def _save_file(self, filename, epoch_number, logs):
-        if self.atomic_write:
-            fd = None
-            if self.temporary_filename is not None:
-                fd = open(self.temporary_filename, self.open_mode)
-                tmp_filename = self.temporary_filename
-            else:
-                fd = tempfile.NamedTemporaryFile(delete=False)
-                tmp_filename = fd.name
-
-            with fd:
-                self.save_file(fd, epoch_number, logs)
-
-            try:
-                os.replace(tmp_filename, filename)
-            except OSError as e:
-                # This may happen if the temp filesystem is not the same as the final destination's.
-                warnings.warn("Impossible to move the file to its final destination: "
-                              "os.replace(%s, %s) -> %s\nYou may want to specify the "
-                              "'temporary_filename' argument to %s." %
-                              (tmp_filename, filename, e, self.__class__.__name__))
-                os.remove(tmp_filename)
-
-                warnings.warn('Saving %s non-atomically instead.' % filename)
-                with open(filename, self.open_mode) as fd:
-                    self.save_file(fd, epoch_number, logs)
-        else:
-            with open(filename, self.open_mode) as fd:
-                self.save_file(fd, epoch_number, logs)
+        atomic_lambda_save(filename,
+                           self.save_file,
+                           (epoch_number, logs),
+                           temporary_filename=self.temporary_filename,
+                           open_mode=self.open_mode,
+                           atomic=self.atomic_write)
 
     def on_epoch_end(self, epoch_number, logs):
         filename = self.filename.format_map(logs)
