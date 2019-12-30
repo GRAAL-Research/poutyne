@@ -127,7 +127,7 @@ class AtomicCSVLogger(Logger):
         olddata = None
         if os.path.exists(self.filename):
             with open(self.filename, 'r') as oldfile:
-                olddata = list(csv.DictReader(oldfile))
+                olddata = list(csv.DictReader(oldfile, delimiter=self.separator))
         csvwriter = csv.DictWriter(fd, fieldnames=self.fieldnames, delimiter=self.separator)
         csvwriter.writeheader()
         if olddata is not None:
