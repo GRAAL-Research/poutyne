@@ -366,9 +366,11 @@ class Experiment:
         callbacks = []
         if not disable_tensorboard:
             if SummaryWriter is None:
-                warnings.warn("tensorboard does not seem to be installed. "
-                              "To remove this warning, set the 'disable_tensorboard' "
-                              "flag to True or install tensorboard.")
+                warnings.warn(
+                    "tensorboard does not seem to be installed. "
+                    "To remove this warning, set the 'disable_tensorboard' "
+                    "flag to True or install tensorboard.",
+                    stacklevel=3)
             else:
                 tensorboard_writer = SummaryWriter(self.tensorboard_directory)
                 callbacks += [TensorBoardLogger(tensorboard_writer)]

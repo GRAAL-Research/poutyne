@@ -154,7 +154,8 @@ class Model:
                 "Use batch_metrics instead since metrics has been deprecated as of version 0.5.1.")
         if metrics:
             warnings.warn('metrics argument has been deprecated as of version 0.5.1. Use batch_metrics instead.',
-                          Warning)
+                          Warning,
+                          stacklevel=2)
             batch_metrics = metrics
 
         self.batch_metrics = list(map(get_loss_or_metric, batch_metrics))
@@ -169,7 +170,9 @@ class Model:
 
     @property
     def model(self):
-        warnings.warn('model attribute has been deprecated as of version 0.6. Use network instead.', Warning)
+        warnings.warn('model attribute has been deprecated as of version 0.6. Use network instead.',
+                      Warning,
+                      stacklevel=2)
         return self.network
 
     @contextlib.contextmanager
