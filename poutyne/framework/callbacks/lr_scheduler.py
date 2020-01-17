@@ -31,7 +31,7 @@ class _PyTorchLRSchedulerWrapper(Callback):
         self.torch_lr_scheduler = torch_lr_scheduler
 
     def on_epoch_end(self, epoch_number, logs):
-        self.scheduler.step(epoch_number)
+        self.scheduler.step()
 
     def on_train_begin(self, logs):
         self.scheduler = self.torch_lr_scheduler(self.model.optimizer, *self.args, **self.kwargs)
