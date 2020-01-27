@@ -360,6 +360,9 @@ class Model:
                 ...
 
         """
+        if self.optimizer is None:
+            raise ValueError("Impossible to fit when optimizer is None.")
+
         self._transfer_optimizer_state_to_right_device()
 
         callbacks = [] if callbacks is None else callbacks
@@ -514,6 +517,9 @@ class Model:
             ``pred_y`` is the predictions with tensors converted into Numpy
             arrays.
         """
+        if self.optimizer is None:
+            raise ValueError("Impossible to fit when optimizer is None.")
+
         with self._set_training_mode(True):
             self._transfer_optimizer_state_to_right_device()
             loss, metrics, pred_y = self._fit_batch(x, y, return_pred=return_pred)
@@ -860,6 +866,9 @@ class Model:
         torch.save(self.optimizer.state_dict(), f)
 
     def _transfer_optimizer_state_to_right_device(self):
+        if self.optimizer is None:
+            return
+
         # Since the optimizer state is loaded on CPU, it will crash when the optimizer will receive
         # gradient for parameters not on CPU. Thus, for each parameter, we transfer its state in the
         # optimizer on the same device as the parameter itself just before starting the
@@ -895,6 +904,10 @@ class Model:
 
     @contextlib.contextmanager
     def _update_optim_device(self):
+        if self.optimizer is None:
+            yield
+            return
+
         param_name_groups, named_state = self._get_named_optimizer_attrs()
         try:
             yield
