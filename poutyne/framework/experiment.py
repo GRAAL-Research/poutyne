@@ -287,6 +287,33 @@ class Experiment:
             best_epoch_index = history[self.monitor_metric].idxmax()
         return history.iloc[best_epoch_index:best_epoch_index + 1]
 
+    def get_saved_epochs(self):
+        """
+        Returns a pandas DataFrame which each row corresponds to an epoch having
+        a saved checkpoint.
+
+        Returns:
+            pandas DataFrame which each row corresponds to an epoch having a saved
+            checkpoint.
+        """
+        if pd is None:
+            raise ImportError("pandas needs to be installed to use this function.")
+
+        history = pd.read_csv(self.log_filename, sep='\t')
+        metrics = history[self.monitor_metric].tolist()
+        if self.monitor_mode == 'min':
+            monitor_op = lambda x, y: x < y
+            current_best = float('Inf')
+        elif self.monitor_mode == 'max':
+            monitor_op = lambda x, y: x > y
+            current_best = -float('Inf')
+        saved_epoch_indices = []
+        for i, metric in enumerate(metrics):
+            if monitor_op(metric, current_best):
+                current_best = metric
+                saved_epoch_indices.append(i)
+        return history.iloc[saved_epoch_indices]
+
     def _warn_missing_file(self, filename):
         warnings.warn("Missing checkpoint: %s." % filename)
 
