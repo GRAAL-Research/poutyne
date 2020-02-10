@@ -88,4 +88,4 @@ class ReduceLROnPlateau(_PyTorchLRSchedulerWrapper):
         self.monitor = monitor
 
     def on_epoch_end(self, epoch_number, logs):
-        self.scheduler.step(logs[self.monitor], epoch_number)
+        self.scheduler.step(logs[self.monitor])
