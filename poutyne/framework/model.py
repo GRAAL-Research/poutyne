@@ -13,7 +13,7 @@ from poutyne.framework.metrics.epoch_metrics import get_epoch_metric
 from poutyne.utils import TensorDataset
 from .callbacks import CallbackList, ProgressionCallback, Callback
 from .iterators import EpochIterator, StepIterator, _get_step_iterator
-from .metrics import get_loss_or_metric
+from .metrics import get_loss_or_metric, get_callables_and_names
 from .optimizers import get_optimizer
 from .warning_manager import warning_settings
 from ..utils import _concat
@@ -159,10 +159,10 @@ class Model:
             batch_metrics = metrics
 
         self.batch_metrics = list(map(get_loss_or_metric, batch_metrics))
-        self.batch_metrics_names = [metric.__name__ for metric in self.batch_metrics]
+        self.batch_metrics, self.batch_metrics_names = get_callables_and_names(self.batch_metrics)
 
         self.epoch_metrics = list(map(get_epoch_metric, epoch_metrics))
-        self.epoch_metrics_names = [metric.__name__ for metric in self.epoch_metrics]
+        self.epoch_metrics, self.epoch_metrics_names = get_callables_and_names(self.epoch_metrics)
 
         self.metrics_names = self.batch_metrics_names + self.epoch_metrics_names
 
