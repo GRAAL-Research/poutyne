@@ -662,12 +662,7 @@ class ModelTest(TestCase):
         params = {'epochs': ModelTest.epochs, 'steps': None}
         self._test_fitting(params, logs, steps=train_real_steps_per_epoch)
 
-    def _test_fitting(self,
-                      params,
-                      logs,
-                      has_valid=True,
-                      steps=None,
-                      model=None):
+    def _test_fitting(self, params, logs, has_valid=True, steps=None, model=None):
         # pylint: disable=too-many-arguments
         if steps is None:
             steps = params['steps']
