@@ -277,7 +277,7 @@ class ModelTest(TestCase):
                                                     validation_steps=ModelTest.steps_per_epoch,
                                                     callbacks=[self.mock_callback])
         params = {'epochs': ModelTest.epochs, 'steps': ModelTest.steps_per_epoch}
-        self._test_fitting(params, logs, multi_input=True)
+        self._test_fitting(params, logs, model=self.multi_input_model)
 
     def test_fitting_tensor_generator_multi_output(self):
         train_generator = some_data_tensor_generator_multi_output(ModelTest.batch_size)
@@ -289,7 +289,7 @@ class ModelTest(TestCase):
                                                      validation_steps=ModelTest.steps_per_epoch,
                                                      callbacks=[self.mock_callback])
         params = {'epochs': ModelTest.epochs, 'steps': ModelTest.steps_per_epoch}
-        self._test_fitting(params, logs, multi_input=False, multi_output=True)
+        self._test_fitting(params, logs, model=self.multi_output_model)
 
     def test_fitting_tensor_generator_multi_io(self):
         train_generator = some_data_tensor_generator_multi_io(ModelTest.batch_size)
@@ -301,7 +301,7 @@ class ModelTest(TestCase):
                                                  validation_steps=ModelTest.steps_per_epoch,
                                                  callbacks=[self.mock_callback])
         params = {'epochs': ModelTest.epochs, 'steps': ModelTest.steps_per_epoch}
-        self._test_fitting(params, logs, multi_input=True, multi_output=True)
+        self._test_fitting(params, logs, model=self.multi_io_model)
 
     def test_fitting_without_valid_generator(self):
         train_generator = some_data_tensor_generator(ModelTest.batch_size)
@@ -515,7 +515,7 @@ class ModelTest(TestCase):
                                           validation_steps=None,
                                           callbacks=[self.mock_callback])
         params = {'epochs': ModelTest.epochs, 'steps': train_real_steps_per_epoch}
-        self._test_fitting(params, logs, multi_input=True)
+        self._test_fitting(params, logs, model=self.multi_input_model)
 
     def test_fitting_with_tensor_multi_output(self):
         train_real_steps_per_epoch = 30
@@ -544,7 +544,7 @@ class ModelTest(TestCase):
                                            validation_steps=None,
                                            callbacks=[self.mock_callback])
         params = {'epochs': ModelTest.epochs, 'steps': train_real_steps_per_epoch}
-        self._test_fitting(params, logs, multi_input=False, multi_output=True)
+        self._test_fitting(params, logs, model=self.multi_output_model)
 
     def test_fitting_with_tensor_multi_output_dict(self):
         train_real_steps_per_epoch = 30
@@ -573,7 +573,7 @@ class ModelTest(TestCase):
                                           validation_steps=None,
                                           callbacks=[self.mock_callback])
         params = {'epochs': ModelTest.epochs, 'steps': train_real_steps_per_epoch}
-        self._test_fitting(params, logs, dict_out=True)
+        self._test_fitting(params, logs, model=self.dict_output_model)
 
     def test_fitting_with_tensor_multi_io(self):
         train_real_steps_per_epoch = 30
@@ -602,7 +602,7 @@ class ModelTest(TestCase):
                                        validation_steps=None,
                                        callbacks=[self.mock_callback])
         params = {'epochs': ModelTest.epochs, 'steps': train_real_steps_per_epoch}
-        self._test_fitting(params, logs, multi_input=True, multi_output=True)
+        self._test_fitting(params, logs, model=self.multi_io_model)
 
     def test_fitting_with_np_array(self):
         train_real_steps_per_epoch = 30
@@ -667,9 +667,7 @@ class ModelTest(TestCase):
                       logs,
                       has_valid=True,
                       steps=None,
-                      multi_input=False,
-                      multi_output=False,
-                      dict_out=False):
+                      model=None):
         # pylint: disable=too-many-arguments
         if steps is None:
             steps = params['steps']
@@ -699,17 +697,8 @@ class ModelTest(TestCase):
         call_list.append(call.on_train_end({}))
 
         method_calls = self.mock_callback.method_calls
-        if not dict_out:
-            if multi_input and not multi_output:
-                self.assertIn(call.set_model(self.multi_input_model), method_calls[:2])
-            elif multi_input and multi_output:
-                self.assertIn(call.set_model(self.multi_io_model), method_calls[:2])
-            elif not multi_input and multi_output:
-                self.assertIn(call.set_model(self.multi_output_model), method_calls[:2])
-            else:
-                self.assertIn(call.set_model(self.model), method_calls[:2])
-        else:
-            self.assertIn(call.set_model(self.dict_output_model), method_calls[:2])
+        model = self.model if model is None else model
+        self.assertIn(call.set_model(model), method_calls[:2])
         self.assertIn(call.set_params(params), method_calls[:2])
 
         self.assertEqual(len(method_calls), len(call_list) + 2)
