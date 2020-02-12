@@ -50,5 +50,6 @@ def get_callables_and_names(metrics):
         metrics = list(map(get_metric_name, metrics))
         names, metrics = tuple(zip(*metrics))
         names = rename_doubles(names)
-        return metrics, names
+        # Make sure that batch_metrics and epoch_metrics are both lists.
+        return list(metrics), list(names)
     return [], []
