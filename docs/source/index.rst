@@ -148,7 +148,7 @@ We welcome user input, whether it is regarding bugs found in the library or feat
 License
 =======
 
-Poutyne is GPLv3 licensed, as found in the `LICENSE file <https://github.com/GRAAL-Research/poutyne/blob/master/LICENSE>`_.
+Poutyne is LGPLv3 licensed, as found in the `LICENSE file <https://github.com/GRAAL-Research/poutyne/blob/master/LICENSE>`_.
 
 
 Why this name, Poutyne?

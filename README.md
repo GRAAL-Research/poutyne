@@ -1,6 +1,6 @@
 ![Poutyne Logo](https://github.com/GRAAL-Research/poutyne/blob/master/docs/source/_static/logos/poutyne-dark.png)
 
-[![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](http://www.gnu.org/licenses/gpl-3.0)
+[![License: LGPL v3](https://img.shields.io/badge/License-LGPL%20v3-blue.svg)](http://www.gnu.org/licenses/lgpl-3.0)
 [![Build Status](https://travis-ci.org/GRAAL-Research/poutyne.svg?branch=master)](https://travis-ci.org/GRAAL-Research/poutyne)
 
 ## Here is Poutyne.
@@ -136,7 +136,7 @@ We welcome user input, whether it is regarding bugs found in the library or feat
 
 ## License
 
-Poutyne is GPLv3 licensed, as found in the [LICENSE file](https://github.com/GRAAL-Research/poutyne/blob/master/LICENSE).
+Poutyne is LGPLv3 licensed, as found in the [LICENSE file](https://github.com/GRAAL-Research/poutyne/blob/master/LICENSE).
 
 ------------------
 
