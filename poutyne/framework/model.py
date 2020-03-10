@@ -8,7 +8,6 @@ import torch
 from torch.utils.data import DataLoader
 
 from poutyne import torch_to_numpy, numpy_to_torch, torch_to
-from poutyne.framework.exceptions import ModelConfigurationError
 from poutyne.framework.metrics.epoch_metrics import get_epoch_metric
 from poutyne.utils import TensorDataset
 from .callbacks import CallbackList, ProgressionCallback, Callback

@@ -306,8 +306,11 @@ class CallbackList:
             try:
                 callback.on_train_batch_begin(batch_number, logs)
             except AttributeError:
-                warnings.warn('on_batch_begin method for callback has been deprecated as of version 0.7. '
-                              'Use on_batch_train_begin instead.', Warning, stacklevel=2)
+                warnings.warn(
+                    'on_batch_begin method for callback has been deprecated as of version 0.7. '
+                    'Use on_batch_train_begin instead.',
+                    Warning,
+                    stacklevel=2)
                 callback.on_batch_begin(batch_number, logs)
 
     def on_train_batch_end(self, batch_number: int, logs: Dict = None):
@@ -316,8 +319,11 @@ class CallbackList:
             try:
                 callback.on_train_batch_end(batch_number, logs)
             except AttributeError:
-                warnings.warn('on_batch_begin method for callback has been deprecated as of version 0.7. '
-                              'Use on_batch_train_begin instead.', Warning, stacklevel=2)
+                warnings.warn(
+                    'on_batch_begin method for callback has been deprecated as of version 0.7. '
+                    'Use on_batch_train_begin instead.',
+                    Warning,
+                    stacklevel=2)
                 callback.on_batch_end(batch_number, logs)
 
     def on_test_batch_begin(self, batch_number: int, logs: Dict = None):
