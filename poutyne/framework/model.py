@@ -59,8 +59,6 @@ class Model:
         network (torch.nn.Module): The associated PyTorch network.
         optimizer (torch.optim.Optimizer): The associated PyTorch optimizer.
         loss_function: The associated loss function.
-        metrics (list): ***metrics is deprecated as of version 0.5.1. Use batch_metrics instead.***
-            The associated metric functions.
         batch_metrics (list): The associated metric functions for every batch.
         epoch_metrics (list): The associated metric functions for every epoch.
 
@@ -139,24 +137,13 @@ class Model:
 
     """
 
-    def __init__(self, network, optimizer, loss_function, *, metrics=None, batch_metrics=None, epoch_metrics=None):
-        metrics = [] if metrics is None else metrics
+    def __init__(self, network, optimizer, loss_function, *, batch_metrics=None, epoch_metrics=None):
         batch_metrics = [] if batch_metrics is None else batch_metrics
         epoch_metrics = [] if epoch_metrics is None else epoch_metrics
 
         self.network = network
         self.optimizer = get_optimizer(optimizer, self.network)
         self.loss_function = get_loss_or_metric(loss_function)
-
-        if metrics and batch_metrics:
-            raise ModelConfigurationError(
-                "metrics and batch_metrics arguments cannot be used together."
-                "Use batch_metrics instead since metrics has been deprecated as of version 0.5.1.")
-        if metrics:
-            warnings.warn('metrics argument has been deprecated as of version 0.5.1. Use batch_metrics instead.',
-                          Warning,
-                          stacklevel=2)
-            batch_metrics = metrics
 
         self.batch_metrics = list(map(get_loss_or_metric, batch_metrics))
         self.batch_metrics, self.batch_metrics_names = get_callables_and_names(self.batch_metrics)

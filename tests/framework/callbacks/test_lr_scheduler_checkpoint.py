@@ -76,7 +76,7 @@ class OptimizerCheckpointTest(TestCase):
 
         checkpointer.set_params({'epochs': OptimizerCheckpointTest.epochs, 'steps': 1})
         checkpointer.set_model(self.model)
-        checkpointer.on_train_begin({})
+        checkpointer.on_train_batch_begin({})
         for epoch in range(1, OptimizerCheckpointTest.epochs + 1):
             checkpointer.on_epoch_begin(epoch, {})
             checkpointer.on_batch_begin(1, {})
@@ -86,7 +86,7 @@ class OptimizerCheckpointTest(TestCase):
             filename = self.checkpoint_filename.format(epoch=epoch)
             self.assertTrue(os.path.isfile(filename))
             scheduler_states[epoch] = torch_to_numpy(lr_scheduler.scheduler.state_dict(), copy=True)
-        checkpointer.on_train_end({})
+        checkpointer.on_train_batch_end({})
 
         self._test_checkpoint(scheduler_states, lr_scheduler)
 

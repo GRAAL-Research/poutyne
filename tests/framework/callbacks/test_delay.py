@@ -46,7 +46,7 @@ class DelayCallbackTest(TestCase):
         params = {'epochs': DelayCallbackTest.epochs, 'steps': DelayCallbackTest.steps_per_epoch}
 
         call_list = []
-        call_list.append(call.on_train_begin({}))
+        call_list.append(call.on_train_batch_begin({}))
         for epoch in range(epoch_delay + 1, DelayCallbackTest.epochs + 1):
             call_list.append(call.on_epoch_begin(epoch, {}))
             for step in range(1, params['steps'] + 1):
@@ -59,7 +59,7 @@ class DelayCallbackTest(TestCase):
                         **self.train_dict
                     }))
             call_list.append(call.on_epoch_end(epoch, {'epoch': epoch, **self.log_dict}))
-        call_list.append(call.on_train_end({}))
+        call_list.append(call.on_train_batch_end({}))
 
         method_calls = self.mock_callback.method_calls
         self.assertIn(call.set_model(self.model), method_calls[:2])
@@ -91,7 +91,7 @@ class DelayCallbackTest(TestCase):
         params = {'epochs': DelayCallbackTest.epochs, 'steps': DelayCallbackTest.steps_per_epoch}
 
         call_list = []
-        call_list.append(call.on_train_begin({}))
+        call_list.append(call.on_train_batch_begin({}))
         for epoch in range(epoch_delay + 1, DelayCallbackTest.epochs + 1):
             call_list.append(call.on_epoch_begin(epoch, {}))
             start_step = batch_in_epoch_delay + 1 if epoch == epoch_delay + 1 else 1
@@ -105,7 +105,7 @@ class DelayCallbackTest(TestCase):
                         **self.train_dict
                     }))
             call_list.append(call.on_epoch_end(epoch, {'epoch': epoch, **self.log_dict}))
-        call_list.append(call.on_train_end({}))
+        call_list.append(call.on_train_batch_end({}))
 
         method_calls = self.mock_callback.method_calls
         self.assertIn(call.set_model(self.model), method_calls[:2])
