@@ -35,6 +35,7 @@ class linspace:
         >>> list(linspace(0, 1, 3))
         [0.0, 0.5, 1.0]
     """
+
     def __init__(self, start: float, end: float, steps: int):
         self.start = start
         self.end = end
@@ -60,6 +61,7 @@ class cosinespace:
         >>> list(cosinespace(0, 1, 3))
         [0.0, 0.5, 1.0]
     """
+
     def __init__(self, start, end, steps):
         self.start = start
         self.end = end
@@ -83,6 +85,7 @@ class Phase:
         lr (List[float], optional): a configuration space for the learning rate.
         momentum (List[float], optional): a configuration space for the momentum.
     """
+
     def __init__(self, *, lr=None, momentum=None):
         if lr is None and momentum is None:
             raise ValueError("You must specify lr and/or momentum.")
@@ -117,7 +120,6 @@ class Phase:
             The matplotlib axis.
         """
         # pylint: disable=import-error
-        # pylint: disable=c0415
         import matplotlib.pyplot as plt
 
         if ax is None:
@@ -223,6 +225,7 @@ class OptimizerPolicy(Callback):
             A list of :class:`~poutyne.framework.callbacks.policies.Phase` instances.
         initial_step (int): The step to start the policy in. Used for restarting.
     """
+
     def __init__(self, phases: List, *, initial_step: int = 0):
         super().__init__()
         self.phases = phases
@@ -273,7 +276,6 @@ class OptimizerPolicy(Callback):
             The matplotlib axis.
         """
         # pylint: disable=import-error
-        # pylint: disable=c0415
         import matplotlib.pyplot as plt
 
         if ax is None:

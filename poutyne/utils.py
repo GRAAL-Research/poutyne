@@ -124,6 +124,7 @@ class TensorDataset(Dataset):
     Arguments:
         *tensors (Tensor): tensors that have the same size of the first dimension.
     """
+
     def __init__(self, *tensors):
         self.tensors = tensors
 

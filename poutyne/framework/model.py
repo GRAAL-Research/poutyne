@@ -125,6 +125,7 @@ class Model:
             ...
 
     """
+
     def __init__(self, network, optimizer, loss_function, *, batch_metrics=None, epoch_metrics=None):
         batch_metrics = [] if batch_metrics is None else batch_metrics
         epoch_metrics = [] if epoch_metrics is None else epoch_metrics

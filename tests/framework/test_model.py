@@ -143,6 +143,7 @@ class SomeDataGeneratorWithLen:
 
 class MultiIOModel(nn.Module):
     """Model to test multiple inputs/outputs"""
+
     def __init__(self, num_input=2, num_output=2):
         super(MultiIOModel, self).__init__()
         inputs = []
@@ -171,6 +172,7 @@ class MultiIOModel(nn.Module):
 
 class DictOutputModel(nn.Module):
     """Model to test multiple dictionnary output"""
+
     def __init__(self):
         super(DictOutputModel, self).__init__()
         self.input = nn.Linear(1, 1)
@@ -1283,7 +1285,6 @@ class ModelTest(TestCase):
 
     @unittest.skip("Not sure if this test is still relevant with multi IO")
     def test_disable_batch_size_warning(self):
-        # pylint: disable=c0415
         import warnings
 
         def tuple_generator(batch_size):

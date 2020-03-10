@@ -14,6 +14,7 @@ class DelayCallback(Callback):
             :func:`~poutyne.framework.callbacks.Callback.on_epoch_begin()` method is called on
             the callback(s) before the :func:`~poutyne.framework.callbacks.Callback.on_batch_begin()` method.
     """
+
     def __init__(self, callbacks, *, epoch_delay=None, batch_delay=None):
         super().__init__()
         if isinstance(callbacks, CallbackList):

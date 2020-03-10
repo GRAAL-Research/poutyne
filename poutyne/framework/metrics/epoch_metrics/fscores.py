@@ -67,6 +67,7 @@ class FBeta(EpochMetric):
         beta (float):
             The strength of recall versus precision in the F-score. (Default value = 1.0)
     """
+
     def __init__(self, metric: str = 'fscore', average: str = 'micro', beta: float = 1.0) -> None:
         super().__init__()
         metric_options = ('fscore', 'precision', 'recall')
@@ -236,6 +237,7 @@ class F1(FBeta):
     """
     Alias class for FBeta where ``metric == 'fscore'`` and ``beta == 1``.
     """
+
     def __init__(self, average='micro'):
         super().__init__(metric='fscore', average=average, beta=1)
 

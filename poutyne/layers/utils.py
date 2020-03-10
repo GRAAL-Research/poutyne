@@ -16,6 +16,7 @@ class Lambda(nn.Module):
             my_flatten = Lambda(lambda x: x.flatten(1))
 
     """
+
     def __init__(self, func):
         super(Lambda, self).__init__()
         self.func = func

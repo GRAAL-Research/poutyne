@@ -8,6 +8,7 @@ class EpochMetric(ABC, nn.Module):
     The abstract class representing a epoch metric which can be accumulated at each batch and calculated at the end
     of the epoch.
     """
+
     @abstractmethod
     def forward(self, y_pred, y_true):
         """

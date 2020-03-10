@@ -17,6 +17,7 @@ class BestModelRestore(Callback):
             the best model.
             (Default value = False)
     """
+
     def __init__(self, *, monitor='val_loss', mode='min', verbose=False):
         super().__init__()
         self.monitor = monitor
