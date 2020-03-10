@@ -17,7 +17,6 @@ class ModelCheckpoint(PeriodicSaveCallback):
     See:
         :class:`~poutyne.framework.callbacks.PeriodicSaveCallback`
     """
-
     def __init__(self, *args, restore_best=False, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -52,7 +51,6 @@ class OptimizerCheckpoint(PeriodicSaveCallback):
     See:
         :class:`~poutyne.framework.callbacks.PeriodicSaveCallback`
     """
-
     def save_file(self, fd, epoch_number, logs):
         self.model.save_optimizer_state(fd)
 
@@ -76,7 +74,6 @@ class LRSchedulerCheckpoint(PeriodicSaveCallback):
     See:
         :class:`~poutyne.framework.callbacks.PeriodicSaveCallback`
     """
-
     def __init__(self, lr_scheduler, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.lr_scheduler = lr_scheduler

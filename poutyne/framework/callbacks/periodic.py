@@ -86,7 +86,6 @@ class PeriodicSaveCallback(Callback):
         open_mode (str): ``mode`` option passed to :func:`open()`.
             (Default value = 'wb')
     """
-
     def __init__(self,
                  filename,
                  *,
@@ -161,7 +160,6 @@ class PeriodicSaveLambda(PeriodicSaveCallback):
     See:
         :class:`~poutyne.framework.callbacks.PeriodicSaveCallback`
     """
-
     def __init__(self, func, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.func = func

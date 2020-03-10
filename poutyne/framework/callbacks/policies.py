@@ -12,9 +12,11 @@ that uses the phases, steps through them, and sets the parameters of the optimiz
 ###############################################################################
 import contextlib
 from collections import OrderedDict
-from math import cos, pi
 from itertools import islice, chain
+from math import cos, pi
 from typing import Dict, List, Tuple
+
+import matplotlib.pyplot as plt
 
 from .callbacks import Callback
 
@@ -120,7 +122,6 @@ class Phase:
             The matplotlib axis.
         """
         # pylint: disable=import-error
-        import matplotlib.pyplot as plt
 
         if ax is None:
             _fig, ax = plt.subplots()
@@ -210,7 +211,7 @@ def sgdr_phases(
         `SGDR: Stochastic Gradient Descent with Warm Restarts
         <https://arxiv.org/abs/1608.03983>`_
     """
-    steps = [base_cycle_length * (cycle_mult**i) for i in range(cycles)]
+    steps = [base_cycle_length * (cycle_mult ** i) for i in range(cycles)]
     return [Phase(lr=cosinespace(lr[0], lr[1], step)) for step in steps]
 
 
@@ -277,7 +278,6 @@ class OptimizerPolicy(Callback):
             The matplotlib axis.
         """
         # pylint: disable=import-error
-        import matplotlib.pyplot as plt
 
         if ax is None:
             _fig, ax = plt.subplots()

@@ -74,7 +74,6 @@ class CSVLogger(Logger):
         append (bool): Whether to append to an existing file.
 
     """
-
     def __init__(self, filename, *, batch_granularity=False, separator=',', append=False):
         super().__init__(batch_granularity=batch_granularity)
         self.filename = filename
@@ -115,7 +114,6 @@ class AtomicCSVLogger(Logger):
             (Default value = ',')
         append (bool): Whether to append to an existing file.
     """
-
     def __init__(self, filename, *, batch_granularity=False, separator=',', append=False, temporary_filename=None):
         super().__init__(batch_granularity=batch_granularity)
         self.filename = filename
@@ -167,7 +165,6 @@ class TensorBoardLogger(Logger):
             model = Model(...)
             model.fit_generator(..., callbacks=[tb_logger])
     """
-
     def __init__(self, writer):
         super().__init__(batch_granularity=False)
         self.writer = writer

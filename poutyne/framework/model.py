@@ -8,7 +8,6 @@ import torch
 from torch.utils.data import DataLoader
 
 from poutyne import torch_to_numpy, numpy_to_torch, torch_to
-from poutyne.framework.exceptions import ModelConfigurationError
 from poutyne.framework.metrics.epoch_metrics import get_epoch_metric
 from poutyne.utils import TensorDataset
 from .callbacks import CallbackList, ProgressionCallback, Callback
@@ -126,7 +125,6 @@ class Model:
             ...
 
     """
-
     def __init__(self, network, optimizer, loss_function, *, batch_metrics=None, epoch_metrics=None):
         batch_metrics = [] if batch_metrics is None else batch_metrics
         epoch_metrics = [] if epoch_metrics is None else epoch_metrics

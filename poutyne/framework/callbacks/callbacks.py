@@ -104,7 +104,6 @@ class Callback:
             :func:`Model.fit() <poutyne.framework.Model.fit>` function. It may contain other keys.
         model (Model): A reference to the :class:`~poutyne.framework.Model` object which is using the callback.
     """
-
     def __init__(self):
         self.model = None
 

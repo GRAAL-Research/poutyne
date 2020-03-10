@@ -17,7 +17,6 @@ class _PyTorchLRSchedulerWrapper(Callback):
     Default class for the LR scheduling callback. Proposes default comportment for the scheduler
     loading and saving as well as for the epoch end handling.
     """
-
     def __init__(self, torch_lr_scheduler, *args, **kwargs):
         super().__init__()
         if len(args) > 0 and isinstance(args[0], Optimizer):
@@ -82,7 +81,6 @@ class ReduceLROnPlateau(_PyTorchLRSchedulerWrapper):
     See:
         :class:`~torch.optim.lr_scheduler.ReduceLROnPlateau`
     """
-
     def __init__(self, *args, monitor='val_loss', **kwargs):
         super().__init__(torch_lr_scheduler=torch.optim.lr_scheduler.ReduceLROnPlateau, *args, **kwargs)
         self.monitor = monitor

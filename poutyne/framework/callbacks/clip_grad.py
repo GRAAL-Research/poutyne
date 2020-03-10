@@ -12,7 +12,6 @@ class ClipNorm(Callback):
         :func:`torch.nn.utils.clip_grad_norm_()`
 
     """
-
     def __init__(self, parameters, max_norm, *, norm_type=2):
         super().__init__()
         self.parameters = list(parameters)
@@ -32,7 +31,6 @@ class ClipValue(Callback):
         :func:`torch.nn.utils.clip_grad_value_()`
 
     """
-
     def __init__(self, parameters, clip_value):
         super().__init__()
         self.parameters = list(parameters)
