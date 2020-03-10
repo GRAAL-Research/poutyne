@@ -391,9 +391,6 @@ variable-naming-style=snake_case
 # naming-style
 #variable-rgx=
 
-indent-string='\t'
-indent-after-paren=1
-
 
 [MISCELLANEOUS]
 
