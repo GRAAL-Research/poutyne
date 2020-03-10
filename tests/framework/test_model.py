@@ -1283,6 +1283,7 @@ class ModelTest(TestCase):
 
     @unittest.skip("Not sure if this test is still relevant with multi IO")
     def test_disable_batch_size_warning(self):
+        # pylint: disable=c0415
         import warnings
 
         def tuple_generator(batch_size):

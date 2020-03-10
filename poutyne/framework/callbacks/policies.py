@@ -117,6 +117,7 @@ class Phase:
             The matplotlib axis.
         """
         # pylint: disable=import-error
+        # pylint: disable=c0415
         import matplotlib.pyplot as plt
 
         if ax is None:
@@ -130,7 +131,7 @@ class Phase:
 
 ###############################################################################
 # complex policies build from simple phases
-#pylint
+# pylint
 def one_cycle_phases(steps: int,
                      lr: Tuple[float, float] = (0.1, 1),
                      momentum: Tuple[float, float] = (0.95, 0.85),
@@ -272,6 +273,7 @@ class OptimizerPolicy(Callback):
             The matplotlib axis.
         """
         # pylint: disable=import-error
+        # pylint: disable=c0415
         import matplotlib.pyplot as plt
 
         if ax is None:
