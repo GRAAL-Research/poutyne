@@ -16,8 +16,6 @@ from itertools import islice, chain
 from math import cos, pi
 from typing import Dict, List, Tuple
 
-import matplotlib.pyplot as plt
-
 from .callbacks import Callback
 
 
@@ -37,7 +35,6 @@ class linspace:
         >>> list(linspace(0, 1, 3))
         [0.0, 0.5, 1.0]
     """
-
     def __init__(self, start: float, end: float, steps: int):
         self.start = start
         self.end = end
@@ -63,7 +60,6 @@ class cosinespace:
         >>> list(cosinespace(0, 1, 3))
         [0.0, 0.5, 1.0]
     """
-
     def __init__(self, start, end, steps):
         self.start = start
         self.end = end
@@ -87,7 +83,6 @@ class Phase:
         lr (List[float], optional): a configuration space for the learning rate.
         momentum (List[float], optional): a configuration space for the momentum.
     """
-
     def __init__(self, *, lr=None, momentum=None):
         if lr is None and momentum is None:
             raise ValueError("You must specify lr and/or momentum.")
@@ -122,6 +117,7 @@ class Phase:
             The matplotlib axis.
         """
         # pylint: disable=import-error
+        import matplotlib.pyplot as plt
 
         if ax is None:
             _fig, ax = plt.subplots()
@@ -134,13 +130,12 @@ class Phase:
 
 ###############################################################################
 # complex policies build from simple phases
-def one_cycle_phases(
-        steps: int,
-        lr: Tuple[float, float] = (0.1, 1),
-        momentum: Tuple[float, float] = (0.95, 0.85),
-        finetune_lr: float = .01,
-        finetune_fraction: float = 0.1,
-) -> List[Phase]:
+#pylint
+def one_cycle_phases(steps: int,
+                     lr: Tuple[float, float] = (0.1, 1),
+                     momentum: Tuple[float, float] = (0.95, 0.85),
+                     finetune_lr: float = .01,
+                     finetune_fraction: float = 0.1) -> List[Phase]:
     """
     The "one-cycle" policy as described in the paper `Super-Convergence: Very Fast Training of
     Neural Networks Using Large Learning Rates <https://arxiv.org/abs/1708.07120>`_.
@@ -211,7 +206,7 @@ def sgdr_phases(
         `SGDR: Stochastic Gradient Descent with Warm Restarts
         <https://arxiv.org/abs/1608.03983>`_
     """
-    steps = [base_cycle_length * (cycle_mult ** i) for i in range(cycles)]
+    steps = [base_cycle_length * (cycle_mult**i) for i in range(cycles)]
     return [Phase(lr=cosinespace(lr[0], lr[1], step)) for step in steps]
 
 
@@ -227,7 +222,6 @@ class OptimizerPolicy(Callback):
             A list of :class:`~poutyne.framework.callbacks.policies.Phase` instances.
         initial_step (int): The step to start the policy in. Used for restarting.
     """
-
     def __init__(self, phases: List, *, initial_step: int = 0):
         super().__init__()
         self.phases = phases
@@ -278,6 +272,7 @@ class OptimizerPolicy(Callback):
             The matplotlib axis.
         """
         # pylint: disable=import-error
+        import matplotlib.pyplot as plt
 
         if ax is None:
             _fig, ax = plt.subplots()
