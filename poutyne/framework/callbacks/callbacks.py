@@ -116,7 +116,7 @@ class Callback:
 
     def on_epoch_begin(self, epoch_number, logs):
         """
-        Is called before the begining of each epoch.
+        Is called before the beginning of each epoch.
 
         Args:
             epoch_number (int): The epoch number.
@@ -148,7 +148,7 @@ class Callback:
 
     def on_batch_begin(self, batch_number, logs):
         """
-        Is called before the begining of each batch.
+        Is called before the beginning of each batch.
 
         Args:
             batch_number (int): The batch number.
@@ -186,7 +186,7 @@ class Callback:
 
     def on_train_begin(self, logs):
         """
-        Is called before the begining of the training.
+        Is called before the beginning of the training.
 
         Args:
             logs (dict): Usually an empty dict.
