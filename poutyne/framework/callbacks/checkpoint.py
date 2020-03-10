@@ -103,22 +103,22 @@ class LRSchedulerCheckpoint(PeriodicSaveCallback):
         self.lr_scheduler.on_epoch_end(epoch_number, logs)
         super().on_epoch_end(epoch_number, logs)
 
-    def on_batch_begin(self, batch_number, logs):
-        self.lr_scheduler.on_batch_begin(batch_number, logs)
-        super().on_batch_begin(batch_number, logs)
+    def on_train_batch_begin(self, batch_number, logs):
+        self.lr_scheduler.on_train_batch_begin(batch_number, logs)
+        super().on_train_batch_begin(batch_number, logs)
 
-    def on_batch_end(self, batch_number, logs):
-        self.lr_scheduler.on_batch_end(batch_number, logs)
-        super().on_batch_end(batch_number, logs)
+    def on_train_batch_end(self, batch_number, logs):
+        self.lr_scheduler.on_train_batch_end(batch_number, logs)
+        super().on_train_batch_end(batch_number, logs)
 
     def on_backward_end(self, batch_number):
         self.lr_scheduler.on_backward_end(batch_number)
         super().on_backward_end(batch_number)
 
     def on_train_begin(self, logs):
-        self.lr_scheduler.on_train_batch_begin(logs)
+        self.lr_scheduler.on_train_begin(logs)
         super().on_train_begin(logs)
 
     def on_train_end(self, logs):
-        self.lr_scheduler.on_train_batch_end(logs)
+        self.lr_scheduler.on_train_end(logs)
         super().on_train_end(logs)

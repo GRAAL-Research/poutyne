@@ -41,9 +41,8 @@ NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FO
 OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
+import warnings
 from typing import Dict
-
-from ..model import Model
 
 
 class Callback:
@@ -61,7 +60,7 @@ class Callback:
     def set_params(self, params: Dict):
         self.params = params
 
-    def set_model(self, model: Model):
+    def set_model(self, model):
         self.model = model
 
     def on_batch_begin(self, batch_number: int, logs: Dict):
@@ -73,7 +72,7 @@ class Callback:
             logs (dict): Usually an empty dict.
 
         .. warning::
-        `on_batch_begin` method is deprecated as of version 0.6. Use `on_train_batch_begin` instead.
+        `on_batch_begin` method is deprecated as of version 0.7. Use `on_train_batch_begin` instead.
 
         """
         pass
@@ -96,7 +95,7 @@ class Callback:
             logs = {'batch': 6, 'time': 0.10012837, 'loss': 4.34462, 'accuracy': 0.766}
 
         .. warning::
-        `on_batch_end` method is deprecated as of version 0.6. Use `on_train_batch_end` instead.
+        `on_batch_end` method is deprecated as of version 0.7. Use `on_train_batch_end` instead.
 
         """
         pass
@@ -133,56 +132,62 @@ class Callback:
         """
         pass
 
-    def on_train_batch_begin(self, logs: Dict):
+    def on_train_batch_begin(self, batch_number: int, logs: Dict):
         """
         Is called before the beginning of the training batch.
 
         Args:
+            batch_number (int): The batch number.
             logs (dict): Usually an empty dict.
         """
         pass
 
-    def on_train_batch_end(self, logs: Dict):
+    def on_train_batch_end(self, batch_number: int, logs: Dict):
         """
         Is called before the end of the training batch.
 
         Args:
+            batch_number (int): The batch number.
             logs (dict): Usually an empty dict.
         """
         pass
 
-    def on_test_batch_begin(self, logs: Dict):
+    def on_test_batch_begin(self, batch_number: int, logs: Dict):
         """
         Is called before the beginning of the testing batch.
 
         Args:
+            batch_number (int): The batch number.
             logs (dict): Usually an empty dict.
         """
         pass
 
-    def on_test_batch_end(self, logs: Dict):
+    def on_test_batch_end(self, batch_number: int, logs: Dict):
         """
         Is called before the end of the testing batch.
 
         Args:
+            batch_number (int): The batch number.
             logs (dict): Usually an empty dict.
         """
         pass
 
-    def on_predict_batch_begin(self, logs: Dict):
+    def on_predict_batch_begin(self, batch_number: int, logs: Dict):
         """
         Is called before the beginning of the predicting batch.
 
         Args:
+            batch_number (int): The batch number.
             logs (dict): Usually an empty dict.
         """
         pass
 
-    def on_predict_batch_end(self, logs: Dict):
+    def on_predict_batch_end(self, batch_number: int, logs: Dict):
         """
         Is called before the end of the predicting batch.
 
         Args:
+            batch_number (int): The batch number.
             logs (dict): Usually an empty dict.
         """
         pass
@@ -263,16 +268,24 @@ class CallbackList:
         for callback in self.callbacks:
             callback.set_params(params)
 
-    def set_model(self, model: Model):
+    def set_model(self, model):
         for callback in self.callbacks:
             callback.set_model(model)
 
     def on_batch_begin(self, batch_number: int, logs: Dict = None):
+        """
+        .. warning::
+        `on_batch_begin` method is deprecated as of version 0.7. Use `on_train_batch_begin` instead.
+        """
         logs = logs or {}
         for callback in self.callbacks:
             callback.on_batch_begin(batch_number, logs)
 
     def on_batch_end(self, batch_number: int, logs: Dict = None):
+        """
+        .. warning::
+        `on_batch_end` method is deprecated as of version 0.7. Use `on_train_batch_begin` instead.
+        """
         logs = logs or {}
         for callback in self.callbacks:
             callback.on_batch_end(batch_number, logs)
@@ -287,35 +300,45 @@ class CallbackList:
         for callback in self.callbacks:
             callback.on_epoch_end(epoch_number, logs)
 
-    def on_train_batch_begin(self, logs: Dict = None):
+    def on_train_batch_begin(self, batch_number: int, logs: Dict = None):
         logs = logs or {}
         for callback in self.callbacks:
-            callback.on_train_batch_begin(logs)
+            try:
+                callback.on_train_batch_begin(batch_number, logs)
+            except AttributeError:
+                warnings.warn('on_batch_begin method for callback has been deprecated as of version 0.7. '
+                              'Use on_batch_train_begin instead.', Warning, stacklevel=2)
+                callback.on_batch_begin(batch_number, logs)
 
-    def on_train_batch_end(self, logs: Dict = None):
+    def on_train_batch_end(self, batch_number: int, logs: Dict = None):
         logs = logs or {}
         for callback in self.callbacks:
-            callback.on_train_batch_end(logs)
+            try:
+                callback.on_train_batch_end(batch_number, logs)
+            except AttributeError:
+                warnings.warn('on_batch_begin method for callback has been deprecated as of version 0.7. '
+                              'Use on_batch_train_begin instead.', Warning, stacklevel=2)
+                callback.on_batch_end(batch_number, logs)
 
-    def on_test_batch_begin(self, logs: Dict = None):
+    def on_test_batch_begin(self, batch_number: int, logs: Dict = None):
         logs = logs or {}
         for callback in self.callbacks:
-            callback.on_test_batch_begin(logs)
+            callback.on_test_batch_begin(batch_number, logs)
 
-    def on_test_batch_end(self, logs: Dict = None):
+    def on_test_batch_end(self, batch_number: int, logs: Dict = None):
         logs = logs or {}
         for callback in self.callbacks:
-            callback.on_test_batch_end(logs)
+            callback.on_test_batch_end(batch_number, logs)
 
-    def on_predict_batch_begin(self, logs: Dict = None):
+    def on_predict_batch_begin(self, batch_number: int, logs: Dict = None):
         logs = logs or {}
         for callback in self.callbacks:
-            callback.on_predict_batch_begin(logs)
+            callback.on_predict_batch_begin(batch_number, logs)
 
-    def on_predict_batch_end(self, logs: Dict = None):
+    def on_predict_batch_end(self, batch_number: int, logs: Dict = None):
         logs = logs or {}
         for callback in self.callbacks:
-            callback.on_predict_batch_end(logs)
+            callback.on_predict_batch_end(batch_number, logs)
 
     def on_train_begin(self, logs: Dict = None):
         logs = logs or {}

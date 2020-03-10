@@ -152,7 +152,7 @@ class ModelCheckpointTest(TestCase):
 
         checkpointer.set_params({'epochs': len(val_losses), 'steps': 1})
         checkpointer.set_model(self.model)
-        checkpointer.on_train_batch_begin({})
+        checkpointer.on_train_begin({})
         for epoch, (val_loss, has_checkpoint) in enumerate(zip(val_losses, has_checkpoints), 1):
             checkpointer.on_epoch_begin(epoch, {})
             checkpointer.on_batch_begin(1, {})
@@ -161,7 +161,7 @@ class ModelCheckpointTest(TestCase):
             checkpointer.on_epoch_end(epoch, {'epoch': epoch, 'loss': loss, 'val_loss': val_loss})
             filename = self.checkpoint_filename.format(epoch=epoch)
             self.assertEqual(has_checkpoint, os.path.isfile(filename))
-        checkpointer.on_train_batch_end({})
+        checkpointer.on_train_end({})
 
     def _update_model(self, generator):
         self.pytorch_network.zero_grad()

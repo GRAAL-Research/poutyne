@@ -233,7 +233,7 @@ class OptimizerPolicy(Callback):
         self.current_step = initial_step
         self.phases_iter = iter(self)
 
-    def on_batch_begin(self, batch_number, logs):
+    def on_train_batch_begin(self, batch_number, logs):
         # Don't do anything when we run out of phases.
         with contextlib.suppress(StopIteration):
             spec = next(self.phases_iter)

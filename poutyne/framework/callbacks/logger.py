@@ -25,12 +25,12 @@ class Logger(Callback):
     def _on_train_begin_write(self, logs):
         pass
 
-    def on_batch_end(self, batch_number, logs):
+    def on_train_batch_end(self, batch_number, logs):
         if self.batch_granularity:
             logs = self._get_logs_without_unknown_keys(logs)
-            self._on_batch_end_write(batch_number, logs)
+            self._on_train_batch_end_write(batch_number, logs)
 
-    def _on_batch_end_write(self, batch_number, logs):
+    def _on_train_batch_end_write(self, batch_number, logs):
         pass
 
     def on_epoch_begin(self, epoch_number, logs):
@@ -89,7 +89,7 @@ class CSVLogger(Logger):
             self.writer.writeheader()
             self.csvfile.flush()
 
-    def _on_batch_end_write(self, batch_number, logs):
+    def _on_train_batch_end_write(self, batch_number, logs):
         self.writer.writerow(logs)
         self.csvfile.flush()
 
@@ -139,7 +139,7 @@ class AtomicCSVLogger(Logger):
         if not self.append:
             atomic_lambda_save(self.filename, self._save_log, (None, ), temporary_filename=self.temporary_filename)
 
-    def _on_batch_end_write(self, batch_number, logs):
+    def _on_train_batch_end_write(self, batch_number, logs):
         atomic_lambda_save(self.filename, self._save_log, (logs, ), temporary_filename=self.temporary_filename)
 
     def _on_epoch_end_write(self, epoch_number, logs):
@@ -172,7 +172,7 @@ class TensorBoardLogger(Logger):
         super().__init__(batch_granularity=False)
         self.writer = writer
 
-    def _on_batch_end_write(self, batch_number, logs):
+    def _on_train_batch_end_write(self, batch_number, logs):
         """
         We don't handle tensorboard writing on batch granularity
         """

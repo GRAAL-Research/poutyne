@@ -12,7 +12,7 @@ class DelayCallback(Callback):
         batch_delay (int, optional): Number of batches to delay. The number of batches can span many
             epochs. When the batch delay expires (i.e. there are more than `batch_delay` done), the
             :func:`~poutyne.framework.callbacks.Callback.on_epoch_begin()` method is called on
-            the callback(s) before the :func:`~poutyne.framework.callbacks.Callback.on_batch_begin()` method.
+            the callback(s) before the :func:`~poutyne.framework.callbacks.Callback.on_train_batch_begin()` method.
     """
 
     def __init__(self, callbacks, *, epoch_delay=None, batch_delay=None):
@@ -43,17 +43,17 @@ class DelayCallback(Callback):
         if self.has_delay_passed():
             self.callbacks.on_epoch_end(epoch_number, logs)
 
-    def on_batch_begin(self, batch_number, logs):
+    def on_train_batch_begin(self, batch_number, logs):
         self.batch_counter += 1
         if self.has_delay_passed():
             if not self.has_on_epoch_begin_been_called:
                 self.has_on_epoch_begin_been_called = True
                 self.callbacks.on_epoch_begin(self.current_epoch, logs)
-            self.callbacks.on_batch_begin(batch_number, logs)
+            self.callbacks.on_train_batch_begin(batch_number, logs)
 
-    def on_batch_end(self, batch_number, logs):
+    def on_train_batch_end(self, batch_number, logs):
         if self.has_delay_passed():
-            self.callbacks.on_batch_end(batch_number, logs)
+            self.callbacks.on_train_batch_end(batch_number, logs)
 
     def on_backward_end(self, batch_number):
         if self.has_delay_passed():
@@ -63,10 +63,10 @@ class DelayCallback(Callback):
         self.current_epoch = 0
         self.batch_counter = 0
         self.has_on_epoch_begin_been_called = False
-        self.callbacks.on_train_batch_begin(logs)
+        self.callbacks.on_train_begin(logs)
 
     def on_train_end(self, logs):
-        self.callbacks.on_train_batch_end(logs)
+        self.callbacks.on_train_end(logs)
 
     def has_delay_passed(self):
         return self.current_epoch > self.epoch_delay and \

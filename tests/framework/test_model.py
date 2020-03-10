@@ -681,15 +681,15 @@ class ModelTest(TestCase):
             self.assertEqual(log, dict(log_dict, epoch=epoch))
 
         call_list = []
-        call_list.append(call.on_train_batch_begin({}))
+        call_list.append(call.on_train_begin({}))
         for epoch in range(1, params['epochs'] + 1):
             call_list.append(call.on_epoch_begin(epoch, {}))
             for step in range(1, steps + 1):
-                call_list.append(call.on_batch_begin(step, {}))
+                call_list.append(call.on_train_batch_begin(step, {}))
                 call_list.append(call.on_backward_end(step))
-                call_list.append(call.on_batch_end(step, {'batch': step, 'size': ANY, **train_batch_dict}))
+                call_list.append(call.on_train_batch_end(step, {'batch': step, 'size': ANY, **train_batch_dict}))
             call_list.append(call.on_epoch_end(epoch, {'epoch': epoch, **log_dict}))
-        call_list.append(call.on_train_batch_end({}))
+        call_list.append(call.on_train_end({}))
 
         method_calls = self.mock_callback.method_calls
         model = self.model if model is None else model

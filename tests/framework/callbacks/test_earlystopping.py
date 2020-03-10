@@ -59,18 +59,18 @@ class EarlyStoppingTest(TestCase):
 
         earlystopper.set_params({'epochs': len(val_losses), 'steps': 1})
         earlystopper.set_model(self.model)
-        earlystopper.on_train_batch_begin({})
+        earlystopper.on_train_begin({})
         for epoch, val_loss in enumerate(val_losses, 1):
             earlystopper.on_epoch_begin(epoch, {})
-            earlystopper.on_batch_begin(1, {})
+            earlystopper.on_train_batch_begin(1, {})
             loss = self._update_model(generator)
-            earlystopper.on_batch_end(1, {'batch': 1, 'size': EarlyStoppingTest.batch_size, 'loss': loss})
+            earlystopper.on_train_batch_end(1, {'batch': 1, 'size': EarlyStoppingTest.batch_size, 'loss': loss})
             earlystopper.on_epoch_end(epoch, {'epoch': epoch, 'loss': loss, 'val_loss': val_loss})
             self.assertEqual(self.model.stop_training, epoch == early_stop_epoch)
             if epoch == early_stop_epoch:
                 break
 
-        earlystopper.on_train_batch_end({})
+        earlystopper.on_train_end({})
 
     def _update_model(self, generator):
         self.pytorch_network.zero_grad()

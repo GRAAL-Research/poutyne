@@ -50,7 +50,7 @@ class StepIterator:
     def __iter__(self):
         time_since_last_batch = timeit.default_timer()
         for step, data in _get_step_iterator(self.steps_per_epoch, self.generator):
-            self.callback.on_batch_begin(step, {})
+            self.callback.on_train_batch_begin(step, {})
 
             step_data = Step(step)
             yield step_data, data
@@ -72,7 +72,7 @@ class StepIterator:
                 'loss': step_data.loss,
                 **metrics_dict
             }
-            self.callback.on_batch_end(step, batch_logs)
+            self.callback.on_train_batch_end(step, batch_logs)
 
 
 class EpochIterator:
@@ -116,7 +116,7 @@ class EpochIterator:
             self.steps_per_epoch = len(train_generator)
 
     def __iter__(self):
-        self.callback.on_train_batch_begin({})
+        self.callback.on_train_begin({})
         for epoch in range(self.initial_epoch, self.epochs + 1):
             self.callback.on_epoch_begin(epoch, {})
             epoch_begin_time = timeit.default_timer()
@@ -162,4 +162,4 @@ class EpochIterator:
             if self.stop_training:
                 break
 
-        self.callback.on_train_batch_end({})
+        self.callback.on_train_end({})

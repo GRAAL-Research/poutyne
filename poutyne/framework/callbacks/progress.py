@@ -1,6 +1,5 @@
-import sys
-
 import itertools
+import sys
 
 from .callbacks import Callback
 
@@ -10,9 +9,6 @@ class ProgressionCallback(Callback):
         self.metrics = ['loss'] + self.model.metrics_names
         self.epochs = self.params['epochs']
         self.steps = self.params['steps']
-
-    def on_train_end(self, logs):
-        pass
 
     def on_epoch_begin(self, epoch_number, logs):
         self.step_times_sum = 0.
@@ -31,10 +27,7 @@ class ProgressionCallback(Callback):
             print("\rEpoch %d/%d %.2fs: Step %d/%d: %s" %
                   (self.epoch_number, self.epochs, epoch_total_time, self.last_step, self.last_step, metrics_str))
 
-    def on_batch_begin(self, batch_number, logs):
-        pass
-
-    def on_batch_end(self, batch_number, logs):
+    def on_train_batch_end(self, batch_number, logs):
         self.step_times_sum += logs['time']
 
         metrics_str = self._get_metrics_string(logs)
