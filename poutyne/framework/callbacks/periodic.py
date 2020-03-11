@@ -41,8 +41,10 @@ NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FO
 OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
-from .callbacks import Callback
+from typing import BinaryIO, TextIO, Dict
+
 from ._utils import atomic_lambda_save
+from .callbacks import Callback
 
 
 class PeriodicSaveCallback(Callback):
@@ -120,17 +122,17 @@ class PeriodicSaveCallback(Callback):
 
         self.period = period
 
-    def save_file(self, fd, epoch_number, logs):
+    def save_file(self, fd: TextIO or BinaryIO, epoch_number: int, logs: Dict):
         raise NotImplementedError
 
-    def _save_file(self, filename, epoch_number, logs):
+    def _save_file(self, filename: TextIO or BinaryIO, epoch_number: int, logs: Dict):
         atomic_lambda_save(filename,
                            self.save_file, (epoch_number, logs),
                            temporary_filename=self.temporary_filename,
                            open_mode=self.open_mode,
                            atomic=self.atomic_write)
 
-    def on_epoch_end(self, epoch_number, logs):
+    def on_epoch_end(self, epoch_number: int, logs: Dict):
         filename = self.filename.format_map(logs)
 
         if self.save_best_only:

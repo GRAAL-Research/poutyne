@@ -1,4 +1,5 @@
 import warnings
+from typing import Dict
 
 from .callbacks import Callback
 
@@ -18,7 +19,7 @@ class BestModelRestore(Callback):
             (Default value = False)
     """
 
-    def __init__(self, *, monitor='val_loss', mode='min', verbose=False):
+    def __init__(self, *, monitor: str = 'val_loss', mode: str = 'min', verbose: bool = False):
         super().__init__()
         self.monitor = monitor
 
@@ -33,7 +34,7 @@ class BestModelRestore(Callback):
         self.best_weights = None
         self.verbose = verbose
 
-    def on_epoch_end(self, epoch_number, logs):
+    def on_epoch_end(self, epoch_number: int, logs: Dict):
         if self.monitor_op(logs[self.monitor], self.current_best):
             old_best = self.current_best
             self.current_best = logs[self.monitor]
@@ -43,7 +44,7 @@ class BestModelRestore(Callback):
                       (epoch_number, self.monitor, old_best, self.current_best))
             self.best_weights = self.model.get_weight_copies()
 
-    def on_train_end(self, logs):
+    def on_train_end(self, logs: Dict):
         if self.best_weights is not None:
             if self.verbose:
                 print('Restoring best model')

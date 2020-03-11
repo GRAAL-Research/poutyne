@@ -3,8 +3,10 @@ Poutyne's callbacks for learning rate schedulers are just wrappers around `PyTor
 schedulers <http://pytorch.org/docs/master/optim.html#how-to-adjust-learning-rate>`_ and thus have
 the same arguments except for the optimizer that has to be omitted.
 """
-import sys
 import inspect
+import sys
+from typing import Dict, BinaryIO, TextIO
+
 import torch.optim.lr_scheduler
 from torch.optim import Optimizer
 from torch.optim.lr_scheduler import _LRScheduler
@@ -30,19 +32,19 @@ class _PyTorchLRSchedulerWrapper(Callback):
         self.state_to_load = None
         self.torch_lr_scheduler = torch_lr_scheduler
 
-    def on_epoch_end(self, epoch_number, logs):
+    def on_epoch_end(self, epoch_number: int, logs: Dict):
         self.scheduler.step()
 
-    def on_train_begin(self, logs):
+    def on_train_begin(self, logs: Dict):
         self.scheduler = self.torch_lr_scheduler(self.model.optimizer, *self.args, **self.kwargs)
 
-    def load_state(self, f):
+    def load_state(self, f: TextIO or BinaryIO):
         if self.scheduler is not None:
             self.scheduler.load_state_dict(torch.load(f, map_location='cpu'))
         else:
             self.state_to_load = torch.load(f, map_location='cpu')
 
-    def save_state(self, f):
+    def save_state(self, f: TextIO or BinaryIO):
         torch.save(self.scheduler.state_dict(), f)
 
     def _load_state_to_load(self):
@@ -68,9 +70,9 @@ for name, module_cls in torch.optim.lr_scheduler.__dict__.items():
                 new_init(module_cls),
                 '__doc__':
                 """
-                See:
-                    :class:`~torch.optim.lr_scheduler.{name}`
-                """.format(name=name)
+                    See:
+                        :class:`~torch.optim.lr_scheduler.{name}`
+                    """.format(name=name)
             })
         setattr(sys.modules[__name__], name, _new_cls)
 
@@ -83,9 +85,9 @@ class ReduceLROnPlateau(_PyTorchLRSchedulerWrapper):
         :class:`~torch.optim.lr_scheduler.ReduceLROnPlateau`
     """
 
-    def __init__(self, *args, monitor='val_loss', **kwargs):
+    def __init__(self, *args, monitor: str = 'val_loss', **kwargs):
         super().__init__(torch_lr_scheduler=torch.optim.lr_scheduler.ReduceLROnPlateau, *args, **kwargs)
         self.monitor = monitor
 
-    def on_epoch_end(self, epoch_number, logs):
+    def on_epoch_end(self, epoch_number: int, logs: Dict):
         self.scheduler.step(logs[self.monitor])
