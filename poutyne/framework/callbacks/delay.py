@@ -17,7 +17,10 @@ class DelayCallback(Callback):
             the callback(s) before the :func:`~poutyne.framework.callbacks.Callback.on_train_batch_begin()` method.
     """
 
-    def __init__(self, callbacks: Callback, *, epoch_delay: Union[int, None] = None,
+    def __init__(self,
+                 callbacks: Callback,
+                 *,
+                 epoch_delay: Union[int, None] = None,
                  batch_delay: Union[int, None] = None):
         super().__init__()
         if isinstance(callbacks, CallbackList):
