@@ -1,6 +1,6 @@
 import csv
 import os
-from typing import Dict, TextIO, BinaryIO, Union
+from typing import Dict, BinaryIO, Union
 
 from ._utils import atomic_lambda_save
 from .callbacks import Callback
@@ -130,7 +130,7 @@ class AtomicCSVLogger(Logger):
         self.separator = separator
         self.append = append
 
-    def _save_log(self, fd: TextIO or BinaryIO, logs: Dict):
+    def _save_log(self, fd: BinaryIO, logs: Dict):
         olddata = None
         if os.path.exists(self.filename):
             with open(self.filename, 'r') as oldfile:
