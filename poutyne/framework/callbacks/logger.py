@@ -205,5 +205,5 @@ class TensorBoardLogger(Logger):
         else:
             self.writer.add_scalars('lr', {'lr': lr}, epoch_number)
 
-    def _on_train_end_write(self, logs: Dict or None = None):
+    def _on_train_end_write(self, logs: Dict):
         self.writer.close()
