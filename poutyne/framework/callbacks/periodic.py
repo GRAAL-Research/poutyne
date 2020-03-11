@@ -125,7 +125,7 @@ class PeriodicSaveCallback(Callback):
     def save_file(self, fd: Union[TextIO, BinaryIO], epoch_number: int, logs: Dict):
         raise NotImplementedError
 
-    def _save_file(self, filename: Union[TextIO, BinaryIO], epoch_number: int, logs: Dict):
+    def _save_file(self, filename: str, epoch_number: int, logs: Dict):
         atomic_lambda_save(filename,
                            self.save_file, (epoch_number, logs),
                            temporary_filename=self.temporary_filename,
