@@ -107,6 +107,7 @@ class Callback:
 
     def __init__(self):
         self.model = None
+        self.params = None
 
     def set_params(self, params):
         self.params = params
