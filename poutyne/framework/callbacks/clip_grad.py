@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, Union
 
 from torch.nn.utils import clip_grad_norm_, clip_grad_value_
 
@@ -15,7 +15,7 @@ class ClipNorm(Callback):
 
     """
 
-    def __init__(self, parameters: Dict, max_norm: float or int, *, norm_type=2):
+    def __init__(self, parameters: Dict, max_norm: Union[float, int], *, norm_type: Union[float, int] = 2):
         super().__init__()
         self.parameters = list(parameters)
         self.max_norm = max_norm
@@ -35,7 +35,7 @@ class ClipValue(Callback):
 
     """
 
-    def __init__(self, parameters: Dict, clip_value: float or int):
+    def __init__(self, parameters: Dict, clip_value: Union[float, int]):
         super().__init__()
         self.parameters = list(parameters)
         self.clip_value = clip_value

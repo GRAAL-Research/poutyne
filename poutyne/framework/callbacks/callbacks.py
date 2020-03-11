@@ -257,7 +257,7 @@ class Callback:
 
 
 class CallbackList:
-    def __init__(self, callbacks: Callback = None):
+    def __init__(self, callbacks: Callback):
         callbacks = callbacks or []
         self.callbacks = list(callbacks)
 
@@ -272,7 +272,7 @@ class CallbackList:
         for callback in self.callbacks:
             callback.set_model(model)
 
-    def on_batch_begin(self, batch_number: int, logs: Dict = None):
+    def on_batch_begin(self, batch_number: int, logs: Dict):
         """
         .. warning::
         `on_batch_begin` method is deprecated as of version 0.7. Use `on_train_batch_begin` instead.
@@ -281,7 +281,7 @@ class CallbackList:
         for callback in self.callbacks:
             callback.on_batch_begin(batch_number, logs)
 
-    def on_batch_end(self, batch_number: int, logs: Dict = None):
+    def on_batch_end(self, batch_number: int, logs: Dict):
         """
         .. warning::
         `on_batch_end` method is deprecated as of version 0.7. Use `on_train_batch_begin` instead.
@@ -290,17 +290,17 @@ class CallbackList:
         for callback in self.callbacks:
             callback.on_batch_end(batch_number, logs)
 
-    def on_epoch_begin(self, epoch_number: int, logs: Dict = None):
+    def on_epoch_begin(self, epoch_number: int, logs: Dict):
         logs = logs or {}
         for callback in self.callbacks:
             callback.on_epoch_begin(epoch_number, logs)
 
-    def on_epoch_end(self, epoch_number: int, logs: Dict = None):
+    def on_epoch_end(self, epoch_number: int, logs: Dict):
         logs = logs or {}
         for callback in self.callbacks:
             callback.on_epoch_end(epoch_number, logs)
 
-    def on_train_batch_begin(self, batch_number: int, logs: Dict = None):
+    def on_train_batch_begin(self, batch_number: int, logs: Dict):
         logs = logs or {}
         for callback in self.callbacks:
             try:
@@ -313,7 +313,7 @@ class CallbackList:
                     stacklevel=2)
                 callback.on_batch_begin(batch_number, logs)
 
-    def on_train_batch_end(self, batch_number: int, logs: Dict = None):
+    def on_train_batch_end(self, batch_number: int, logs: Dict):
         logs = logs or {}
         for callback in self.callbacks:
             try:
@@ -326,52 +326,52 @@ class CallbackList:
                     stacklevel=2)
                 callback.on_batch_end(batch_number, logs)
 
-    def on_test_batch_begin(self, batch_number: int, logs: Dict = None):
+    def on_test_batch_begin(self, batch_number: int, logs: Dict):
         logs = logs or {}
         for callback in self.callbacks:
             callback.on_test_batch_begin(batch_number, logs)
 
-    def on_test_batch_end(self, batch_number: int, logs: Dict = None):
+    def on_test_batch_end(self, batch_number: int, logs: Dict):
         logs = logs or {}
         for callback in self.callbacks:
             callback.on_test_batch_end(batch_number, logs)
 
-    def on_predict_batch_begin(self, batch_number: int, logs: Dict = None):
+    def on_predict_batch_begin(self, batch_number: int, logs: Dict):
         logs = logs or {}
         for callback in self.callbacks:
             callback.on_predict_batch_begin(batch_number, logs)
 
-    def on_predict_batch_end(self, batch_number: int, logs: Dict = None):
+    def on_predict_batch_end(self, batch_number: int, logs: Dict):
         logs = logs or {}
         for callback in self.callbacks:
             callback.on_predict_batch_end(batch_number, logs)
 
-    def on_train_begin(self, logs: Dict = None):
+    def on_train_begin(self, logs: Dict):
         logs = logs or {}
         for callback in self.callbacks:
             callback.on_train_begin(logs)
 
-    def on_train_end(self, logs: Dict = None):
+    def on_train_end(self, logs: Dict):
         logs = logs or {}
         for callback in self.callbacks:
             callback.on_train_end(logs)
 
-    def on_test_begin(self, logs: Dict = None):
+    def on_test_begin(self, logs: Dict):
         logs = logs or {}
         for callback in self.callbacks:
             callback.on_test_begin(logs)
 
-    def on_test_end(self, logs: Dict = None):
+    def on_test_end(self, logs: Dict):
         logs = logs or {}
         for callback in self.callbacks:
             callback.on_test_end(logs)
 
-    def on_predict_begin(self, logs: Dict = None):
+    def on_predict_begin(self, logs: Dict):
         logs = logs or {}
         for callback in self.callbacks:
             callback.on_predict_begin(logs)
 
-    def on_predict_end(self, logs: Dict = None):
+    def on_predict_end(self, logs: Dict):
         logs = logs or {}
         for callback in self.callbacks:
             callback.on_predict_end(logs)

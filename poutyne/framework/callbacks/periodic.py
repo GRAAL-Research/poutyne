@@ -41,7 +41,7 @@ NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FO
 OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
-from typing import BinaryIO, TextIO, Dict
+from typing import BinaryIO, TextIO, Dict, Union
 
 from ._utils import atomic_lambda_save
 from .callbacks import Callback
@@ -90,16 +90,16 @@ class PeriodicSaveCallback(Callback):
     """
 
     def __init__(self,
-                 filename,
+                 filename: str,
                  *,
-                 monitor='val_loss',
-                 mode='min',
-                 save_best_only=False,
-                 period=1,
-                 verbose=False,
-                 temporary_filename=None,
-                 atomic_write=True,
-                 open_mode='wb'):
+                 monitor: str = 'val_loss',
+                 mode: str = 'min',
+                 save_best_only: bool = False,
+                 period: int = 1,
+                 verbose: bool = False,
+                 temporary_filename: Union[str, None] = None,
+                 atomic_write: bool = True,
+                 open_mode: str = 'wb'):
         super().__init__()
         self.filename = filename
         self.monitor = monitor
@@ -122,10 +122,10 @@ class PeriodicSaveCallback(Callback):
 
         self.period = period
 
-    def save_file(self, fd: TextIO or BinaryIO, epoch_number: int, logs: Dict):
+    def save_file(self, fd: Union[TextIO, BinaryIO], epoch_number: int, logs: Dict):
         raise NotImplementedError
 
-    def _save_file(self, filename: TextIO or BinaryIO, epoch_number: int, logs: Dict):
+    def _save_file(self, filename: Union[TextIO, BinaryIO], epoch_number: int, logs: Dict):
         atomic_lambda_save(filename,
                            self.save_file, (epoch_number, logs),
                            temporary_filename=self.temporary_filename,
@@ -168,5 +168,5 @@ class PeriodicSaveLambda(PeriodicSaveCallback):
         super().__init__(*args, **kwargs)
         self.func = func
 
-    def save_file(self, fd, epoch_number, logs):
+    def save_file(self, fd:, epoch_number: int, logs: Dict):
         self.func(fd, epoch_number, logs)

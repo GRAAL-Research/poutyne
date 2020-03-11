@@ -1,5 +1,5 @@
 import warnings
-from typing import Dict, BinaryIO, TextIO
+from typing import Dict, BinaryIO, TextIO, Union
 
 from .lr_scheduler import _PyTorchLRSchedulerWrapper, ReduceLROnPlateau
 from .periodic import PeriodicSaveCallback
@@ -85,7 +85,7 @@ class LRSchedulerCheckpoint(PeriodicSaveCallback):
         if not isinstance(self.lr_scheduler, (_PyTorchLRSchedulerWrapper, ReduceLROnPlateau)):
             raise ValueError("Unknown scheduler callback '%s'." % lr_scheduler)
 
-    def save_file(self, fd: TextIO or BinaryIO, epoch_number: int, logs: Dict):
+    def save_file(self, fd: Union[TextIO, BinaryIO], epoch_number: int, logs: Dict):
         self.lr_scheduler.save_state(fd)
 
     def set_params(self, params: Dict):

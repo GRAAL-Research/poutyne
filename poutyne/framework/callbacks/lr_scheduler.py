@@ -5,7 +5,7 @@ the same arguments except for the optimizer that has to be omitted.
 """
 import inspect
 import sys
-from typing import Dict, BinaryIO, TextIO
+from typing import Dict, BinaryIO, TextIO, Union
 
 import torch.optim.lr_scheduler
 from torch.optim import Optimizer
@@ -38,13 +38,13 @@ class _PyTorchLRSchedulerWrapper(Callback):
     def on_train_begin(self, logs: Dict):
         self.scheduler = self.torch_lr_scheduler(self.model.optimizer, *self.args, **self.kwargs)
 
-    def load_state(self, f: TextIO or BinaryIO):
+    def load_state(self, f: Union[TextIO, BinaryIO]):
         if self.scheduler is not None:
             self.scheduler.load_state_dict(torch.load(f, map_location='cpu'))
         else:
             self.state_to_load = torch.load(f, map_location='cpu')
 
-    def save_state(self, f: TextIO or BinaryIO):
+    def save_state(self, f: Union[TextIO, BinaryIO]):
         torch.save(self.scheduler.state_dict(), f)
 
     def _load_state_to_load(self):
@@ -65,14 +65,14 @@ for name, module_cls in torch.optim.lr_scheduler.__dict__.items():
             issubclass(module_cls, _LRScheduler) and \
             module_cls != _LRScheduler:
         _new_cls = type(
-            name, (_PyTorchLRSchedulerWrapper, ), {
+            name, (_PyTorchLRSchedulerWrapper,), {
                 '__init__':
-                new_init(module_cls),
+                    new_init(module_cls),
                 '__doc__':
-                """
-                    See:
-                        :class:`~torch.optim.lr_scheduler.{name}`
-                    """.format(name=name)
+                    """
+                        See:
+                            :class:`~torch.optim.lr_scheduler.{name}`
+                        """.format(name=name)
             })
         setattr(sys.modules[__name__], name, _new_cls)
 

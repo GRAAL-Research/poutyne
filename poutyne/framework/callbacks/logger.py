@@ -48,7 +48,7 @@ class Logger(Callback):
     def _on_epoch_end_write(self, epoch_number: int, logs: Dict):
         pass
 
-    def on_train_end(self, logs: Dict or None = None):
+    def on_train_end(self, logs: Dict):
         self._on_train_end_write(logs)
 
     def _on_train_end_write(self, logs: Dict):
@@ -98,7 +98,7 @@ class CSVLogger(Logger):
         self.writer.writerow(dict(logs, lr=self._get_current_learning_rates()))
         self.csvfile.flush()
 
-    def _on_train_end_write(self, logs: Dict or None = None):
+    def _on_train_end_write(self, logs: Dict):
         self.csvfile.close()
 
 
@@ -117,7 +117,8 @@ class AtomicCSVLogger(Logger):
         append (bool): Whether to append to an existing file.
     """
 
-    def __init__(self, filename, *, batch_granularity=False, separator=',', append=False, temporary_filename=None):
+    def __init__(self, filename, *, batch_granularity: bool = False, separator: str = ',', append: bool = False,
+                 temporary_filename: Union[str, None] = None):
         super().__init__(batch_granularity=batch_granularity)
         self.filename = filename
         self.temporary_filename = temporary_filename
@@ -138,14 +139,14 @@ class AtomicCSVLogger(Logger):
 
     def _on_train_begin_write(self, logs: Dict):
         if not self.append:
-            atomic_lambda_save(self.filename, self._save_log, (None, ), temporary_filename=self.temporary_filename)
+            atomic_lambda_save(self.filename, self._save_log, (None,), temporary_filename=self.temporary_filename)
 
     def _on_train_batch_end_write(self, batch_number: int, logs: Dict):
-        atomic_lambda_save(self.filename, self._save_log, (logs, ), temporary_filename=self.temporary_filename)
+        atomic_lambda_save(self.filename, self._save_log, (logs,), temporary_filename=self.temporary_filename)
 
     def _on_epoch_end_write(self, epoch_number: int, logs: Dict):
         logs = dict(logs, lr=self._get_current_learning_rates())
-        atomic_lambda_save(self.filename, self._save_log, (logs, ), temporary_filename=self.temporary_filename)
+        atomic_lambda_save(self.filename, self._save_log, (logs,), temporary_filename=self.temporary_filename)
 
 
 class TensorBoardLogger(Logger):
@@ -194,7 +195,7 @@ class TensorBoardLogger(Logger):
         for k, v in grouped_items.items():
             self.writer.add_scalars(k, v, epoch_number)
         lr = self._get_current_learning_rates()
-        if isinstance(lr, (list, )):
+        if isinstance(lr, (list,)):
             self.writer.add_scalars('lr', {str(i): v for i, v in enumerate(lr)}, epoch_number)
         else:
             self.writer.add_scalars('lr', {'lr': lr}, epoch_number)
