@@ -2,6 +2,7 @@
 import contextlib
 import warnings
 from collections import defaultdict
+from typing import Iterable, Mapping
 
 import numpy as np
 import torch
@@ -12,7 +13,7 @@ from poutyne.framework.metrics.epoch_metrics import get_epoch_metric
 from poutyne.utils import TensorDataset
 from .callbacks import CallbackList, ProgressionCallback, Callback
 from .iterators import EpochIterator, StepIterator, _get_step_iterator
-from .metrics import get_loss_or_metric, get_callables_and_names
+from .metrics import get_loss_or_metric, get_callables_and_names, rename_doubles, flatten_metric_names
 from .optimizers import get_optimizer
 from .warning_manager import warning_settings
 from ..utils import _concat
@@ -134,15 +135,25 @@ class Model:
         self.optimizer = get_optimizer(optimizer, self.network)
         self.loss_function = get_loss_or_metric(loss_function)
 
-        self.batch_metrics = list(map(get_loss_or_metric, batch_metrics))
-        self.batch_metrics, self.batch_metrics_names = get_callables_and_names(self.batch_metrics)
-
-        self.epoch_metrics = list(map(get_epoch_metric, epoch_metrics))
-        self.epoch_metrics, self.epoch_metrics_names = get_callables_and_names(self.epoch_metrics)
-
-        self.metrics_names = self.batch_metrics_names + self.epoch_metrics_names
+        self._set_metrics_attributes(batch_metrics, epoch_metrics)
 
         self.device = None
+
+    def _set_metrics_attributes(self,batch_metrics, epoch_metrics):
+        batch_metrics = list(map(get_loss_or_metric, batch_metrics))
+        self.batch_metrics, batch_metrics_names = get_callables_and_names(batch_metrics)
+
+        epoch_metrics = list(map(get_epoch_metric, epoch_metrics))
+        self.epoch_metrics, epoch_metrics_names = get_callables_and_names(epoch_metrics)
+
+        batch_metrics_names, epoch_metrics_names = rename_doubles(batch_metrics_names, epoch_metrics_names)
+
+        self.unflatten_batch_metrics_names = batch_metrics_names
+        self.unflatten_epoch_metrics_names = epoch_metrics_names
+
+        self.batch_metrics_names = flatten_metric_names(batch_metrics_names)
+        self.epoch_metrics_names = flatten_metric_names(epoch_metrics_names)
+        self.metrics_names = self.batch_metrics_names + self.epoch_metrics_names
 
     @contextlib.contextmanager
     def _set_training_mode(self, training):
@@ -763,10 +774,25 @@ class Model:
         return loss, metrics, pred_y
 
     def _compute_metrics(self, pred_y, y):
-        return np.array([float(metric(pred_y, y)) for metric in self.batch_metrics])
+        metrics = [metric(pred_y, y) for metric in self.batch_metrics]
+        return self._compute_metric_array(metrics, self.unflatten_batch_metrics_names)
 
     def _get_epoch_metrics(self):
-        return np.array([float(epoch_metric.get_metric()) for epoch_metric in self.epoch_metrics])
+        metrics = [epoch_metric.get_metric() for epoch_metric in self.epoch_metrics]
+        return self._compute_metric_array(metrics, self.unflatten_epoch_metrics_names)
+
+    def _compute_metric_array(self, metrics_list, names_list):
+        def _get_metric(names, metrics):
+            names = [names] if isinstance(names, str) else names
+            if (torch.is_tensor(metrics) or isinstance(metrics, np.ndarray)) and len(metrics.shape) == 0:
+                return [float(metrics)]
+            if isinstance(metrics, Mapping):
+                return [float(metrics[name]) for name in names]
+            if isinstance(metrics, Iterable):
+                return [float(metric) for metric in metrics]
+            return [float(metrics)]
+        return np.array([metric for names, metrics in zip(names_list, metrics_list)
+                         for metric in _get_metric(names, metrics)])
 
     def _get_batch_size(self, x, y):
         if torch.is_tensor(x) or isinstance(x, np.ndarray):

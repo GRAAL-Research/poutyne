@@ -18,38 +18,56 @@ def camel_to_snake(name):
 
 def get_metric_name(metric):
     if isinstance(metric, tuple):
-        return metric
-
-    if hasattr(metric, '__name__'):
-        name = metric.__name__
+        names, metric = metric
+    elif hasattr(metric, '__name__'):
+        names = metric.__name__
     elif hasattr(metric, '__class__'):
-        name = camel_to_snake(metric.__class__.__name__)
+        names = camel_to_snake(metric.__class__.__name__)
     else:
-        name = 'unknown_metric'
+        names = 'unknown_metric'
 
-    name = name[:-5] if name.endswith('_loss') else name
-    return name, metric
+    trim_name = lambda name: name[:-5] if name.endswith('_loss') else name
+    if isinstance(names, str):
+        names = trim_name(names)
+    else:
+        names = [trim_name(name) for name in names]
+    return names, metric
 
 
-def rename_doubles(metric_names):
-    counts = Counter(metric_names)
+def flatten_metric_names(metric_names):
+    to_list = lambda names: names if isinstance(names, list) else [names]
+    return [name for names in metric_names
+            for name in to_list(names)]
+
+
+def rename_doubles(batch_metrics_names, epoch_metrics_names):
+    counts = Counter(flatten_metric_names(batch_metrics_names + epoch_metrics_names))
     numbering = Counter()
-    ret = []
-    for name in metric_names:
+    batch_metrics_names = rename_doubles_from_counts(batch_metrics_names, counts, numbering)
+    epoch_metrics_names = rename_doubles_from_counts(epoch_metrics_names, counts, numbering)
+    return batch_metrics_names, epoch_metrics_names
+
+
+def rename_doubles_from_counts(metric_names, counts, numbering):
+    """
+    This function takes a list in the format `['a', ['b', 'a'], 'c', 'a', 'c']`
+    and returns a list where each double is added a number so that there are no
+    more doubles in the list: `['a1', ['b', 'a2'], 'c1', 'a3', 'c2']`. It does so
+    using the provided counts and using the numbering Counter object.
+    """
+    def get_name(name):
         if counts[name] > 1:
             numbering[name] += 1
-            ret.append(name + str(numbering[name]))
-        else:
-            ret.append(name)
-
-    return ret
+            return name + str(numbering[name])
+        return name
+    return [[get_name(name) for name in names] if not isinstance(names, str) else get_name(names)
+            for names in metric_names]
 
 
 def get_callables_and_names(metrics):
     if len(metrics) != 0:
         metrics = list(map(get_metric_name, metrics))
         names, metrics = tuple(zip(*metrics))
-        names = rename_doubles(names)
         # Make sure that batch_metrics and epoch_metrics are both lists.
         return list(metrics), list(names)
     return [], []
