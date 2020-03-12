@@ -15,7 +15,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-
+from typing import Optional, Union
 import torch
 from .base import EpochMetric
 
@@ -49,8 +49,9 @@ class FBeta(EpochMetric):
     The support is the number of occurrences of each class in ``y_true``.
 
     Args:
-        metric (str): One of {'fscore', 'precision', 'recall'}.
-            Wheter to return the F-score, the precision or the recall. (Default value = 'fscore')
+        metric (Optional[str]): One of {'fscore', 'precision', 'recall'}.
+            Wheter to return the F-score, the precision or the recall. When not
+            provided, all three metrics are returned. (Default value = None)
         average (Union[str, int]): One of {'micro' (default), 'macro', label_number}
             If the argument is of type integer, the score for this class (the label number) is calculated.
             Otherwise, this determines the type of averaging performed on the data:
@@ -68,11 +69,11 @@ class FBeta(EpochMetric):
             The strength of recall versus precision in the F-score. (Default value = 1.0)
     """
 
-    def __init__(self, metric: str = 'fscore', average: str = 'micro', beta: float = 1.0) -> None:
+    def __init__(self, metric: Optional[Union[str, list]] = None, average: Union[str, int] = 'micro', beta: float = 1.0) -> None:
         super().__init__()
-        metric_options = ('fscore', 'precision', 'recall')
-        if metric not in metric_options:
-            raise ValueError("`metric` has to be one of {}.".format(metric_options))
+        self.metric_options = ('fscore', 'precision', 'recall')
+        if metric is not None and metric not in self.metric_options:
+            raise ValueError("`metric` has to be one of {}.".format(self.metric_options))
 
         average_options = ('micro', 'macro')
         if average not in average_options and not isinstance(average, int):
@@ -85,11 +86,7 @@ class FBeta(EpochMetric):
         self._average = average if average in average_options else None
         self._label = average if isinstance(average, int) else None
         self._beta = beta
-
-        if self._average is not None:
-            self.__name__ = self._metric + '_' + self._average
-        else:
-            self.__name__ = self._metric + '_' + str(self._label)
+        self._set_name()
 
         # statistics
         # the total number of true positive instances under each class
@@ -106,6 +103,18 @@ class FBeta(EpochMetric):
         # including true positives and false negatives
         # Shape: (num_classes, )
         self.register_buffer('_true_sum', None)
+
+    def _set_name(self):
+        if self._metric is None:
+            if self._average is not None:
+                self.__name__ = [m + '_' + self._average for m in self.metric_options]
+            else:
+                self.__name__ = [m + '_' + str(self._label) for m in self.metric_options]
+        else:
+            if self._average is not None:
+                self.__name__ = self._metric + '_' + self._average
+            else:
+                self.__name__ = self._metric + '_' + str(self._label)
 
     def forward(self, y_pred, y_true):
         """
@@ -177,16 +186,6 @@ class FBeta(EpochMetric):
         self._total_sum += mask.sum().to(torch.float)
 
     def get_metric(self):
-        """
-        Returns
-        -------
-        A tuple of the following metrics based on the accumulated count statistics:
-        precisions : List[float]
-        recalls : List[float]
-        f1-measures : List[float]
-
-        If ``self.average`` is not ``None``, you will get ``float`` instead of ``List[float]``.
-        """
         if self._true_positive_sum is None:
             raise RuntimeError("You never call this metric before.")
 
@@ -218,6 +217,9 @@ class FBeta(EpochMetric):
             precision = precision[self._label]
             recall = recall[self._label]
             fscore = fscore[self._label]
+
+        if self._metric is None:
+            return [fscore.item(), precision.item(), recall.item()]
 
         if self._metric == 'fscore':
             return fscore.item()
