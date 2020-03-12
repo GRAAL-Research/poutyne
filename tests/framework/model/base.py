@@ -52,9 +52,9 @@ class ModelFittingTestCase(TestCase):
         for epoch in range(1, params['epochs'] + 1):
             call_list.append(call.on_epoch_begin(epoch, {}))
             for step in range(1, steps + 1):
-                call_list.append(call.on_batch_begin(step, {}))
+                call_list.append(call.on_train_batch_begin(step, {}))
                 call_list.append(call.on_backward_end(step))
-                call_list.append(call.on_batch_end(step, {'batch': step, 'size': ANY, **train_batch_dict}))
+                call_list.append(call.on_train_batch_end(step, {'batch': step, 'size': ANY, **train_batch_dict}))
             call_list.append(call.on_epoch_end(epoch, {'epoch': epoch, **log_dict}))
         call_list.append(call.on_train_end({}))
 
