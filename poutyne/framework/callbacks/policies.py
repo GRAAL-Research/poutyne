@@ -12,8 +12,8 @@ that uses the phases, steps through them, and sets the parameters of the optimiz
 ###############################################################################
 import contextlib
 from collections import OrderedDict
-from math import cos, pi
 from itertools import islice, chain
+from math import cos, pi
 from typing import Dict, List, Tuple
 
 from .callbacks import Callback
@@ -133,13 +133,12 @@ class Phase:
 
 ###############################################################################
 # complex policies build from simple phases
-def one_cycle_phases(
-        steps: int,
-        lr: Tuple[float, float] = (0.1, 1),
-        momentum: Tuple[float, float] = (0.95, 0.85),
-        finetune_lr: float = .01,
-        finetune_fraction: float = 0.1,
-) -> List[Phase]:
+# pylint
+def one_cycle_phases(steps: int,
+                     lr: Tuple[float, float] = (0.1, 1),
+                     momentum: Tuple[float, float] = (0.95, 0.85),
+                     finetune_lr: float = .01,
+                     finetune_fraction: float = 0.1) -> List[Phase]:
     """
     The "one-cycle" policy as described in the paper `Super-Convergence: Very Fast Training of
     Neural Networks Using Large Learning Rates <https://arxiv.org/abs/1708.07120>`_.
