@@ -142,13 +142,6 @@ class ModelTest(ModelFittingTestCase):
                            batch_metrics=self.batch_metrics,
                            epoch_metrics=self.epoch_metrics)
 
-        self.mocked_optimizer = some_mocked_optimizer()
-        self.mocked_optim_model = Model(self.pytorch_network,
-                                        self.mocked_optimizer,
-                                        self.loss_function,
-                                        batch_metrics=self.batch_metrics,
-                                        epoch_metrics=self.epoch_metrics)
-
     def test_fitting_tensor_generator(self):
         train_generator = some_data_tensor_generator(ModelTest.batch_size)
         valid_generator = some_data_tensor_generator(ModelTest.batch_size)
@@ -174,14 +167,16 @@ class ModelTest(ModelFittingTestCase):
     def test_correct_optim_calls_1_batch_per_step(self):
         train_generator = some_data_tensor_generator(ModelTest.batch_size)
 
-        _ = self.mocked_optim_model.fit_generator(train_generator,
-                                                  None,
-                                                  epochs=1,
-                                                  steps_per_epoch=1,
-                                                  batches_per_step=1)
+        mocked_optimizer = some_mocked_optimizer()
+        mocked_optim_model = Model(self.pytorch_network,
+                                   mocked_optimizer,
+                                   self.loss_function,
+                                   batch_metrics=self.batch_metrics,
+                                   epoch_metrics=self.epoch_metrics)
+        mocked_optim_model.fit_generator(train_generator, None, epochs=1, steps_per_epoch=1, batches_per_step=1)
 
-        self.assertEqual(1, self.mocked_optimizer.step.call_count)
-        self.assertEqual(1, self.mocked_optimizer.zero_grad.call_count)
+        self.assertEqual(1, mocked_optimizer.step.call_count)
+        self.assertEqual(1, mocked_optimizer.zero_grad.call_count)
 
     def test_correct_optim_calls__valid_n_batches_per_step(self):
         n_batches = 5
@@ -190,10 +185,16 @@ class ModelTest(ModelFittingTestCase):
         x = torch.rand(n_batches, items_per_batch, 1)
         y = torch.rand(n_batches, items_per_batch, 1)
 
-        _ = self.mocked_optim_model.fit_generator(list(zip(x, y)), None, epochs=1, batches_per_step=n_batches)
+        mocked_optimizer = some_mocked_optimizer()
+        mocked_optim_model = Model(self.pytorch_network,
+                                   mocked_optimizer,
+                                   self.loss_function,
+                                   batch_metrics=self.batch_metrics,
+                                   epoch_metrics=self.epoch_metrics)
+        mocked_optim_model.fit_generator(list(zip(x, y)), None, epochs=1, batches_per_step=n_batches)
 
-        self.assertEqual(1, self.mocked_optimizer.step.call_count)
-        self.assertEqual(1, self.mocked_optimizer.zero_grad.call_count)
+        self.assertEqual(1, mocked_optimizer.step.call_count)
+        self.assertEqual(1, mocked_optimizer.zero_grad.call_count)
 
     def test_fitting_generator_n_batches_per_step(self):
         total_batch_size = 6
