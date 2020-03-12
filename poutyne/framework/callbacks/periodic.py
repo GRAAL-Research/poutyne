@@ -168,5 +168,5 @@ class PeriodicSaveLambda(PeriodicSaveCallback):
         super().__init__(*args, **kwargs)
         self.func = func
 
-    def save_file(self, fd, epoch_number: int, logs: Dict):
+    def save_file(self, fd: str, epoch_number: int, logs: Dict):
         self.func(fd, epoch_number, logs)
