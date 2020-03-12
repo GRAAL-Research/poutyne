@@ -25,12 +25,6 @@ def get_metric_name(metric):
         names = camel_to_snake(metric.__class__.__name__)
     else:
         names = 'unknown_metric'
-
-    trim_name = lambda name: name[:-5] if name.endswith('_loss') else name
-    if isinstance(names, str):
-        names = trim_name(names)
-    else:
-        names = [trim_name(name) for name in names]
     return names, metric
 
 
