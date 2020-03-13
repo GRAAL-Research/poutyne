@@ -152,7 +152,7 @@ class Model:
 
         self.device = None
 
-    def _set_metrics_attributes(self,batch_metrics, epoch_metrics):
+    def _set_metrics_attributes(self, batch_metrics, epoch_metrics):
         batch_metrics = list(map(get_loss_or_metric, batch_metrics))
         self.batch_metrics, batch_metrics_names = get_callables_and_names(batch_metrics)
 
@@ -804,8 +804,9 @@ class Model:
             if isinstance(metrics, Iterable):
                 return [float(metric) for metric in metrics]
             return [float(metrics)]
-        return np.array([metric for names, metrics in zip(names_list, metrics_list)
-                         for metric in _get_metric(names, metrics)])
+
+        return np.array(
+            [metric for names, metrics in zip(names_list, metrics_list) for metric in _get_metric(names, metrics)])
 
     def _get_batch_size(self, x, y):
         if torch.is_tensor(x) or isinstance(x, np.ndarray):

@@ -30,8 +30,7 @@ def get_metric_name(metric):
 
 def flatten_metric_names(metric_names):
     to_list = lambda names: names if isinstance(names, list) else [names]
-    return [name for names in metric_names
-            for name in to_list(names)]
+    return [name for names in metric_names for name in to_list(names)]
 
 
 def rename_doubles(batch_metrics_names, epoch_metrics_names):
@@ -49,11 +48,13 @@ def rename_doubles_from_counts(metric_names, counts, numbering):
     more doubles in the list: `['a1', ['b', 'a2'], 'c1', 'a3', 'c2']`. It does so
     using the provided counts and using the numbering Counter object.
     """
+
     def get_name(name):
         if counts[name] > 1:
             numbering[name] += 1
             return name + str(numbering[name])
         return name
+
     return [[get_name(name) for name in names] if not isinstance(names, str) else get_name(names)
             for names in metric_names]
 

@@ -20,3 +20,4 @@ Epoch Metrics
 
 .. autoclass:: FBeta
 .. autoclass:: F1
+.. autoclass:: SKLearnMetrics
