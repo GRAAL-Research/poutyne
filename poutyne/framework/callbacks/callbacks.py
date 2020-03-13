@@ -42,7 +42,7 @@ OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 import warnings
-from typing import Dict
+from typing import Dict, List
 
 
 class Callback:
@@ -257,7 +257,7 @@ class Callback:
 
 
 class CallbackList:
-    def __init__(self, callbacks: Callback):
+    def __init__(self, callbacks: List[Callback]):
         callbacks = callbacks or []
         self.callbacks = list(callbacks)
 

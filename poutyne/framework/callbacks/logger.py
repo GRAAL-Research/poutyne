@@ -1,6 +1,6 @@
 import csv
 import os
-from typing import Dict, BinaryIO, Union
+from typing import Dict, BinaryIO, Union, Optional
 
 from ._utils import atomic_lambda_save
 from .callbacks import Callback
@@ -123,7 +123,7 @@ class AtomicCSVLogger(Logger):
                  batch_granularity: bool = False,
                  separator: str = ',',
                  append: bool = False,
-                 temporary_filename: Union[str, None] = None):
+                 temporary_filename: Optional[Union[str]] = None):
         super().__init__(batch_granularity=batch_granularity)
         self.filename = filename
         self.temporary_filename = temporary_filename
@@ -144,14 +144,14 @@ class AtomicCSVLogger(Logger):
 
     def _on_train_begin_write(self, logs: Dict):
         if not self.append:
-            atomic_lambda_save(self.filename, self._save_log, (None, ), temporary_filename=self.temporary_filename)
+            atomic_lambda_save(self.filename, self._save_log, (None,), temporary_filename=self.temporary_filename)
 
     def _on_train_batch_end_write(self, batch_number: int, logs: Dict):
-        atomic_lambda_save(self.filename, self._save_log, (logs, ), temporary_filename=self.temporary_filename)
+        atomic_lambda_save(self.filename, self._save_log, (logs,), temporary_filename=self.temporary_filename)
 
     def _on_epoch_end_write(self, epoch_number: int, logs: Dict):
         logs = dict(logs, lr=self._get_current_learning_rates())
-        atomic_lambda_save(self.filename, self._save_log, (logs, ), temporary_filename=self.temporary_filename)
+        atomic_lambda_save(self.filename, self._save_log, (logs,), temporary_filename=self.temporary_filename)
 
 
 class TensorBoardLogger(Logger):
@@ -200,7 +200,7 @@ class TensorBoardLogger(Logger):
         for k, v in grouped_items.items():
             self.writer.add_scalars(k, v, epoch_number)
         lr = self._get_current_learning_rates()
-        if isinstance(lr, (list, )):
+        if isinstance(lr, (list,)):
             self.writer.add_scalars('lr', {str(i): v for i, v in enumerate(lr)}, epoch_number)
         else:
             self.writer.add_scalars('lr', {'lr': lr}, epoch_number)

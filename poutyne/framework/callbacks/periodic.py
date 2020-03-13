@@ -41,7 +41,7 @@ NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FO
 OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
-from typing import BinaryIO, TextIO, Dict, Union
+from typing import BinaryIO, TextIO, Dict, Union, Optional
 
 from ._utils import atomic_lambda_save
 from .callbacks import Callback
@@ -97,7 +97,7 @@ class PeriodicSaveCallback(Callback):
                  save_best_only: bool = False,
                  period: int = 1,
                  verbose: bool = False,
-                 temporary_filename: Union[str, None] = None,
+                 temporary_filename: Optional[Union[str]] = None,
                  atomic_write: bool = True,
                  open_mode: str = 'wb'):
         super().__init__()

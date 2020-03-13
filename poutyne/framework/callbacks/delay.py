@@ -1,4 +1,4 @@
-from typing import Dict, Union
+from typing import Dict, Union, Optional
 
 from .callbacks import Callback, CallbackList
 
@@ -20,8 +20,8 @@ class DelayCallback(Callback):
     def __init__(self,
                  callbacks: Callback,
                  *,
-                 epoch_delay: Union[int, None] = None,
-                 batch_delay: Union[int, None] = None):
+                 epoch_delay: Optional[Union[int]] = None,
+                 batch_delay: Optional[Union[int]] = None):
         super().__init__()
         if isinstance(callbacks, CallbackList):
             self.callbacks = callbacks

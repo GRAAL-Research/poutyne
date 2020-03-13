@@ -14,7 +14,7 @@ import contextlib
 from collections import OrderedDict
 from itertools import islice, chain
 from math import cos, pi
-from typing import Dict, List, Tuple, Union
+from typing import Dict, List, Tuple, Union, Optional
 
 from .callbacks import Callback
 
@@ -86,7 +86,7 @@ class Phase:
         momentum (List[float], optional): a configuration space for the momentum.
     """
 
-    def __init__(self, *, lr: Union[float, None] = None, momentum: Union[float, None] = None):
+    def __init__(self, *, lr: Optional[Union[float]] = None, momentum: Optional[Union[float]] = None):
         if lr is None and momentum is None:
             raise ValueError("You must specify lr and/or momentum.")
 
@@ -209,7 +209,7 @@ def sgdr_phases(
         `SGDR: Stochastic Gradient Descent with Warm Restarts
         <https://arxiv.org/abs/1608.03983>`_
     """
-    steps = [base_cycle_length * (cycle_mult**i) for i in range(cycles)]
+    steps = [base_cycle_length * (cycle_mult ** i) for i in range(cycles)]
     return [Phase(lr=cosinespace(lr[0], lr[1], step)) for step in steps]
 
 
