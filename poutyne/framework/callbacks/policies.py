@@ -14,7 +14,7 @@ import contextlib
 from collections import OrderedDict
 from itertools import islice, chain
 from math import cos, pi
-from typing import Dict, List, Tuple, Union, Optional
+from typing import Dict, List, Tuple, Optional
 
 from .callbacks import Callback
 
@@ -86,7 +86,7 @@ class Phase:
         momentum (List[float], optional): a configuration space for the momentum.
     """
 
-    def __init__(self, *, lr: Optional[Union[float]] = None, momentum: Optional[Union[float]] = None):
+    def __init__(self, *, lr: Optional[float] = None, momentum: Optional[float] = None):
         if lr is None and momentum is None:
             raise ValueError("You must specify lr and/or momentum.")
 

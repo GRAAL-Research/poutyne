@@ -41,7 +41,7 @@ NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FO
 OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
-from typing import BinaryIO, TextIO, Dict, Union, Optional
+from typing import BinaryIO, Dict, Optional, Callable
 
 from ._utils import atomic_lambda_save
 from .callbacks import Callback
@@ -97,7 +97,7 @@ class PeriodicSaveCallback(Callback):
                  save_best_only: bool = False,
                  period: int = 1,
                  verbose: bool = False,
-                 temporary_filename: Optional[Union[str]] = None,
+                 temporary_filename: Optional[str] = None,
                  atomic_write: bool = True,
                  open_mode: str = 'wb'):
         super().__init__()
@@ -122,7 +122,7 @@ class PeriodicSaveCallback(Callback):
 
         self.period = period
 
-    def save_file(self, fd: Union[TextIO, BinaryIO], epoch_number: int, logs: Dict):
+    def save_file(self, fd: BinaryIO, epoch_number: int, logs: Dict):
         raise NotImplementedError
 
     def _save_file(self, filename: str, epoch_number: int, logs: Dict):
@@ -164,7 +164,7 @@ class PeriodicSaveLambda(PeriodicSaveCallback):
         :class:`~poutyne.framework.callbacks.PeriodicSaveCallback`
     """
 
-    def __init__(self, func, *args, **kwargs):
+    def __init__(self, func: Callable, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.func = func
 

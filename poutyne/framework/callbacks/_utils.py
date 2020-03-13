@@ -1,10 +1,11 @@
 import os
 import tempfile
 import warnings
+from typing import Callable
 
 
-def atomic_lambda_save(filename: str, save_lambda, args, *, temporary_filename: str = None, open_mode: str = 'w',
-                       atomic: bool = True):
+def atomic_lambda_save(filename: str, save_lambda: Callable, args, *, temporary_filename: str = None,
+                       open_mode: str = 'w', atomic: bool = True):
     if atomic:
         fd = None
         if temporary_filename is not None:

@@ -1,5 +1,5 @@
 import warnings
-from typing import Dict, BinaryIO, TextIO, Union
+from typing import Dict, BinaryIO
 
 from .lr_scheduler import _PyTorchLRSchedulerWrapper, ReduceLROnPlateau
 from .periodic import PeriodicSaveCallback
@@ -26,7 +26,7 @@ class ModelCheckpoint(PeriodicSaveCallback):
         if self.restore_best and not self.save_best_only:
             raise ValueError("The 'restore_best' argument only works when 'save_best_only' is also true.")
 
-    def save_file(self, fd: Union[TextIO, BinaryIO], epoch_number: int, logs: Dict):
+    def save_file(self, fd: BinaryIO, epoch_number: int, logs: Dict):
         self.model.save_weights(fd)
 
     def on_train_end(self, logs: Dict):
@@ -54,7 +54,7 @@ class OptimizerCheckpoint(PeriodicSaveCallback):
         :class:`~poutyne.framework.callbacks.PeriodicSaveCallback`
     """
 
-    def save_file(self, fd: Union[TextIO, BinaryIO], epoch_number: int, logs: Dict):
+    def save_file(self, fd: BinaryIO, epoch_number: int, logs: Dict):
         self.model.save_optimizer_state(fd)
 
 
@@ -85,7 +85,7 @@ class LRSchedulerCheckpoint(PeriodicSaveCallback):
         if not isinstance(self.lr_scheduler, (_PyTorchLRSchedulerWrapper, ReduceLROnPlateau)):
             raise ValueError("Unknown scheduler callback '%s'." % lr_scheduler)
 
-    def save_file(self, fd: Union[TextIO, BinaryIO], epoch_number: int, logs: Dict):
+    def save_file(self, fd: BinaryIO, epoch_number: int, logs: Dict):
         self.lr_scheduler.save_state(fd)
 
     def set_params(self, params: Dict):
