@@ -1,4 +1,4 @@
-from typing import Optional, List
+from typing import Optional, Union, List, Callable
 from itertools import repeat
 import numpy as np
 from .base import EpochMetric
@@ -19,13 +19,14 @@ class SKLearnMetrics(EpochMetric):
             my_epoch_metric = SKLearnMetrics([roc_auc_score, average_precision_score])
 
     Args:
-        funcs (Union[callable, list]): A metric or a list of metrics with a
+        funcs (Union[Callable, List[Callable]]): A metric or a list of metrics with a
             scikit-learn-like interface.
-        kwargs (List[dict]): Optional list containing dictionaries corresponding to
+        kwargs (Optional[Union[dict, List[dict]]]): Optional list containing dictionaries corresponding to
             keyword arguments to pass to each corresponding function. (Default value = None)
     """
 
-    def __init__(self, funcs: list, kwargs: Optional[List[dict]] = None) -> None:
+    def __init__(self, funcs: Union[Callable, List[Callable]],
+                 kwargs: Optional[Union[dict, List[dict]]] = None) -> None:
         super().__init__()
         self.funcs = funcs if isinstance(funcs, (list, tuple)) else [funcs]
         self.kwargs = None
