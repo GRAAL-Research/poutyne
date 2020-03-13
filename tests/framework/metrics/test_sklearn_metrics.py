@@ -1,10 +1,14 @@
-from unittest import TestCase
+from unittest import TestCase, skipIf
 from itertools import repeat
 
 import numpy as np
 import torch
 from torch.utils.data import DataLoader
-from sklearn.metrics import roc_auc_score, average_precision_score, r2_score
+try:
+    from sklearn.metrics import roc_auc_score, average_precision_score, r2_score
+    is_sklearn_available = True
+except ImportError:
+    is_sklearn_available = False
 from poutyne.framework.metrics import SKLearnMetrics
 from poutyne import TensorDataset
 
@@ -21,6 +25,7 @@ def gini(y_true, y_pred, sample_weight=None):
     return 1 - ((random[1:] - random[:-1]) * (lorentz[1:] + lorentz[:-1])).sum()
 
 
+@skipIf(not is_sklearn_available, "Scikit-learn is not available")
 class SKLearnMetricsTest(TestCase):
     threshold = 0.7
     steps_per_epoch = 5
