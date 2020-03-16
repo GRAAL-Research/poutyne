@@ -809,13 +809,16 @@ class Model:
     def _compute_metric_array(self, metrics_list, names_list):
         def _get_metric(names, metrics):
             names = [names] if isinstance(names, str) else names
+            values = None
             if (torch.is_tensor(metrics) or isinstance(metrics, np.ndarray)) and len(metrics.shape) == 0:
-                return [float(metrics)]
-            if isinstance(metrics, Mapping):
-                return [float(metrics[name]) for name in names]
-            if isinstance(metrics, Iterable):
-                return [float(metric) for metric in metrics]
-            return [float(metrics)]
+                values = [float(metrics)]
+            elif isinstance(metrics, Mapping):
+                values = [float(metrics[name]) for name in names]
+            elif isinstance(metrics, Iterable):
+                values = [float(metric) for metric in metrics]
+            else:
+                values = [float(metrics)]
+            return values
 
         return np.array(
             [metric for names, metrics in zip(names_list, metrics_list) for metric in _get_metric(names, metrics)])
