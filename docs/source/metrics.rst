@@ -19,5 +19,7 @@ Epoch Metrics
 -------------
 
 .. autoclass:: FBeta
+    :members:
 .. autoclass:: F1
 .. autoclass:: SKLearnMetrics
+    :members:

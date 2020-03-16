@@ -15,7 +15,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-from typing import Optional, Union
+from typing import Optional, Union, List, Tuple
 import torch
 from .base import EpochMetric
 
@@ -64,13 +64,18 @@ class FBeta(EpochMetric):
                 This does not take label imbalance into account.
 
             (Default value = 'micro')
-
         beta (float):
             The strength of recall versus precision in the F-score. (Default value = 1.0)
+        names (Optional[Union[str, List[str]]]): The names associated to the metrics. It is a string when
+            a single metric is requested. It is a list of 3 strings if all metrics are requested.
+            (Default value = None)
     """
 
-    def __init__(self, metric: Optional[Union[str, list]] = None, average: Union[str, int] = 'micro',
-                 beta: float = 1.0) -> None:
+    def __init__(self,
+                 metric: Optional[str] = None,
+                 average: Union[str, int] = 'micro',
+                 beta: float = 1.0,
+                 names: Optional[Union[str, List[str]]] = None) -> None:
         super().__init__()
         self.metric_options = ('fscore', 'precision', 'recall')
         if metric is not None and metric not in self.metric_options:
@@ -87,7 +92,7 @@ class FBeta(EpochMetric):
         self._average = average if average in average_options else None
         self._label = average if isinstance(average, int) else None
         self._beta = beta
-        self._set_name()
+        self.__name__ = self._get_name(names)
 
         # statistics
         # the total number of true positive instances under each class
@@ -105,28 +110,39 @@ class FBeta(EpochMetric):
         # Shape: (num_classes, )
         self.register_buffer('_true_sum', None)
 
-    def _set_name(self):
+    def _get_name(self, names):
         if self._metric is None:
             if self._average is not None:
-                self.__name__ = [m + '_' + self._average for m in self.metric_options]
+                default_name = [m + '_' + self._average for m in self.metric_options]
             else:
-                self.__name__ = [m + '_' + str(self._label) for m in self.metric_options]
+                default_name = [m + '_' + str(self._label) for m in self.metric_options]
         else:
             if self._average is not None:
-                self.__name__ = self._metric + '_' + self._average
+                default_name = self._metric + '_' + self._average
             else:
-                self.__name__ = self._metric + '_' + str(self._label)
+                default_name = self._metric + '_' + str(self._label)
 
-    def forward(self, y_pred, y_true):
+        if names is not None:
+            if isinstance(names, (list, tuple)) and len(names) == 1:
+                names = names[0]
+            if isinstance(names, str) and isinstance(default_name, (list, tuple)):
+                raise ValueError("`names` should be a list.")
+            if isinstance(names, (list, tuple)) and isinstance(default_name, str):
+                raise ValueError("`names` should be a string.")
+            if isinstance(names, (list, tuple)) and isinstance(default_name, (list, tuple)) and \
+                    len(names) != len(default_name):
+                raise ValueError("`names` has to have a length of 3.")
+            return names
+
+        return default_name
+
+    def forward(self, y_pred : torch.Tensor, y_true : Union[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]) -> None:
         """
         Update the confusion matrix for calculating the F-score.
 
         Args:
-            y_pred : Predictions of the model.
-            y_true : A tensor of the gold labels. Can also be a tuple of gold_label and a mask.
-        Args:
             y_pred (torch.Tensor): A tensor of predictions of shape (batch_size, ..., num_classes).
-            y_true Union[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]:
+            y_true (Union[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]):
                 Ground truths. A tensor of the integer class label of shape (batch_size, ...). It must
                 be the same shape as the ``y_pred`` tensor without the ``num_classes`` dimension.
                 It can also be a tuple with two tensors of the same shape, the first being the
@@ -186,7 +202,11 @@ class FBeta(EpochMetric):
         self._true_sum += true_sum
         self._total_sum += mask.sum().to(torch.float)
 
-    def get_metric(self):
+    def get_metric(self) -> Union[float, List[float]]:
+        """
+        Returns either a float if a single metric is set in the ``__init__`` or a list
+        of floats [f-score, precision, recall] if all metrics are requested.
+        """
         if self._true_positive_sum is None:
             raise RuntimeError("You never call this metric before.")
 
