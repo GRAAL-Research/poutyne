@@ -46,14 +46,6 @@ class SKLearnMetricsTest(TestCase):
             3, (len(self.multiclass_errors_indices), ))
         self.sample_weight = torch.rand((SKLearnMetricsTest.num_examples, 1))
 
-        self.np_regression_pred = self.regression_pred.numpy()
-        self.np_regression_true = self.regression_true.numpy()
-        self.np_classification_pred = self.classification_pred.numpy()
-        self.np_classification_true = self.classification_true.numpy()
-        self.np_multiclass_classification_pred = self.multiclass_classification_pred.numpy()
-        self.np_multiclass_classification_true = self.multiclass_classification_true.numpy()
-        self.np_sample_weight = self.sample_weight.numpy()
-
     def _get_data_loader(self, *tensors):
         return DataLoader(TensorDataset(*tensors), batch_size=SKLearnMetricsTest.batch_size)
 
@@ -98,32 +90,42 @@ class SKLearnMetricsTest(TestCase):
         self._test_regression(two_skl_metrics, True)
         self._test_regression(two_skl_metrics, False)
 
-    def _test_classification(self, sklearn_metrics, with_sample_weight, kwargs=None, names=None):
-        return self._test_epoch_metric(self.classification_pred, self.classification_true, self.np_classification_pred,
-                                       self.np_classification_true, sklearn_metrics, kwargs, names,
-                                       with_sample_weight)
+    def _test_classification(self, sklearn_metrics, with_sample_weight, *, kwargs=None, names=None):
+        return self._test_epoch_metric(self.classification_pred,
+                                       self.classification_true,
+                                       sklearn_metrics,
+                                       with_sample_weight,
+                                       kwargs=kwargs,
+                                       names=names)
 
-    def _test_multiclass_classification(self, sklearn_metrics, with_sample_weight, kwargs=None, names=None):
-        return self._test_epoch_metric(self.multiclass_classification_pred, self.multiclass_classification_true,
-                                       self.np_multiclass_classification_pred, self.np_multiclass_classification_true,
-                                       sklearn_metrics, kwargs, names, with_sample_weight)
+    def _test_multiclass_classification(self, sklearn_metrics, with_sample_weight, *, kwargs=None, names=None):
+        return self._test_epoch_metric(self.multiclass_classification_pred,
+                                       self.multiclass_classification_true,
+                                       sklearn_metrics,
+                                       with_sample_weight,
+                                       kwargs=kwargs,
+                                       names=names)
 
-    def _test_regression(self, sklearn_metrics, with_sample_weight, kwargs=None, names=None):
-        return self._test_epoch_metric(self.regression_pred, self.regression_true, self.np_regression_pred,
-                                       self.np_regression_true, sklearn_metrics, kwargs, names,
-                                       with_sample_weight)
+    def _test_regression(self, sklearn_metrics, with_sample_weight, *, kwargs=None, names=None):
+        return self._test_epoch_metric(self.regression_pred,
+                                       self.regression_true,
+                                       sklearn_metrics,
+                                       with_sample_weight,
+                                       kwargs=kwargs,
+                                       names=names)
 
-    def _test_epoch_metric(self, pred, true, np_pred, np_true, sklearn_metrics, kwargs, names,
-                           with_sample_weight):
+    def _test_epoch_metric(self, pred, true, sklearn_metrics, with_sample_weight, *, kwargs=None, names=None):
         epoch_metric = SKLearnMetrics(sklearn_metrics, kwargs=kwargs, names=names)
 
-        # pylint: disable=too-many-arguments
         if with_sample_weight:
             loader = self._get_data_loader(pred, (true, self.sample_weight))
-            np_sample_weight = self.np_sample_weight
+            sample_weight = self.sample_weight.numpy()
         else:
             loader = self._get_data_loader(pred, true)
-            np_sample_weight = None
+            sample_weight = None
+
+        true = true.numpy()
+        pred = pred.numpy()
 
         if not isinstance(sklearn_metrics, list):
             sklearn_metrics = [sklearn_metrics]
@@ -137,7 +139,7 @@ class SKLearnMetricsTest(TestCase):
         names = [func.__name__ for func in sklearn_metrics] if names is None else names
 
         expected = {
-            name: f(np_true, np_pred, sample_weight=np_sample_weight, **kw)
+            name: f(true, pred, sample_weight=sample_weight, **kw)
             for name, f, kw in zip(names, sklearn_metrics, kwargs)
         }
 

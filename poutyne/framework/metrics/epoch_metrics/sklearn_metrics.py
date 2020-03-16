@@ -1,5 +1,4 @@
 from typing import Optional, Union, List, Callable, Dict
-from itertools import repeat
 import numpy as np
 from .base import EpochMetric
 
@@ -28,7 +27,8 @@ class SKLearnMetrics(EpochMetric):
             the names given to the metrics. (Default value = None)
     """
 
-    def __init__(self, funcs: Union[Callable, List[Callable]],
+    def __init__(self,
+                 funcs: Union[Callable, List[Callable]],
                  kwargs: Optional[Union[dict, List[dict]]] = None,
                  names: Optional[Union[str, List[str]]] = None) -> None:
         super().__init__()

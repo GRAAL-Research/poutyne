@@ -136,7 +136,7 @@ class FBeta(EpochMetric):
 
         return default_name
 
-    def forward(self, y_pred : torch.Tensor, y_true : Union[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]) -> None:
+    def forward(self, y_pred: torch.Tensor, y_true: Union[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]) -> None:
         """
         Update the confusion matrix for calculating the F-score.
 
