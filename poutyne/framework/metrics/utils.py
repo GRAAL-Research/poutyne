@@ -16,7 +16,7 @@ def camel_to_snake(name):
     return pattern2.sub(r'\1_\2', name).lower()
 
 
-def get_name_of_metric(metric):
+def get_names_of_metric(metric):
     if isinstance(metric, tuple):
         names, metric = metric
     elif hasattr(metric, '__name__'):
@@ -61,7 +61,7 @@ def rename_doubles_from_counts(metric_names, counts, numbering):
 
 def get_callables_and_names(metrics):
     if len(metrics) != 0:
-        metrics = list(map(get_name_of_metric, metrics))
+        metrics = list(map(get_names_of_metric, metrics))
         names, metrics = tuple(zip(*metrics))
         # Make sure that batch_metrics and epoch_metrics are both lists.
         return list(metrics), list(names)
