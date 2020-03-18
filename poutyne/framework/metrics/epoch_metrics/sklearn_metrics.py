@@ -33,23 +33,29 @@ class SKLearnMetrics(EpochMetric):
                  names: Optional[Union[str, List[str]]] = None) -> None:
         super().__init__()
 
-        funcs = funcs if isinstance(funcs, (list, tuple)) else [funcs]
-
-        if kwargs is not None:
-            kwargs = kwargs if isinstance(kwargs, (list, tuple)) else [kwargs]
-            if kwargs is not None and len(funcs) != len(kwargs):
-                raise ValueError("`kwargs` has to have the same length as `funcs` when provided")
-
-        if names is not None:
-            names = names if isinstance(names, (list, tuple)) else [names]
-            if len(funcs) != len(names):
-                raise ValueError("`names` has to have the same length as `funcs` when provided")
-
-        self.funcs = funcs
-        self.kwargs = [{}] * len(self.funcs) if kwargs is None else kwargs
-        self.__name__ = [func.__name__ for func in self.funcs] if names is None else names
+        self.funcs = funcs if isinstance(funcs, (list, tuple)) else [funcs]
+        self.kwargs = self._validate_kwargs(kwargs)
+        self.__name__ = self._validate_names(names)
 
         self.reset()
+
+    def _validate_kwargs(self, kwargs):
+        if kwargs is not None:
+            kwargs = kwargs if isinstance(kwargs, (list, tuple)) else [kwargs]
+            if kwargs is not None and len(self.funcs) != len(kwargs):
+                raise ValueError("`kwargs` has to have the same length as `funcs` when provided")
+        else:
+            kwargs = [{}] * len(self.funcs) if kwargs is None else kwargs
+        return kwargs
+
+    def _validate_names(self, names):
+        if names is not None:
+            names = names if isinstance(names, (list, tuple)) else [names]
+            if len(self.funcs) != len(names):
+                raise ValueError("`names` has to have the same length as `funcs` when provided")
+        else:
+            names = [func.__name__ for func in self.funcs]
+        return names
 
     def forward(self, y_pred, y_true):
         """
