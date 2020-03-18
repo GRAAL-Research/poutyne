@@ -5,7 +5,7 @@ from .base import EpochMetric
 
 class SKLearnMetrics(EpochMetric):
     """
-    Wrap metrics with scikit-learn-like interface
+    Wrap metrics with Scikit-learn-like interface
     (``metric(y_true, y_pred, sample_weight=sample_weight, **kwargs)``).
     The ``SKLearnMetrics`` object has to keep in memory the ground truths and
     predictions so that in can compute the metric at the end.
