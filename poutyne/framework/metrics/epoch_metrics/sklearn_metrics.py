@@ -70,7 +70,7 @@ class SKLearnMetrics(EpochMetric):
                 the metric functions passed to the class.
                 It can also be a tuple with two tensors, the first being the
                 ground truths and the second corresponding the ``sample_weight``
-                argument passed to the metric functions in scikit-learn.
+                argument passed to the metric functions in Scikit-Learn.
         """
         self.y_pred_list.append(y_pred.cpu().numpy())
         if isinstance(y_true, (tuple, list)):
