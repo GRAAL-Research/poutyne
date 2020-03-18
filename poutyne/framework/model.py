@@ -54,7 +54,7 @@ class Model:
         Numpy arrays, tensors, etc.) or via a mapping (e.g. a dict). However, in this case, the names of
         the different metric has to be passed in some way. There are two ways to do so. The easiest one
         is to pass the metric as a tuple ``(names, metric)`` where ``names`` is a tuple containing a name for
-        each metric returned. Another way is to overide the attribute ``__name__`` of the function or object
+        each metric returned. Another way is to override the attribute ``__name__`` of the function or object
         so that it returns a tuple containing a name for all metrics returned. Note that, when the metric
         returns a mapping, the names of the different metrics must be keys in the mapping.
 
