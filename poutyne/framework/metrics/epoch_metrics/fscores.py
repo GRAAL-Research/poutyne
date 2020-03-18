@@ -123,18 +123,16 @@ class FBeta(EpochMetric):
                 default_name = self._metric + '_' + str(self._label)
 
         if names is not None:
-            if isinstance(names, (list, tuple)) and len(names) == 1:
-                names = names[0]
-            if isinstance(names, str) and isinstance(default_name, (list, tuple)):
-                raise ValueError("`names` should be a list.")
-            if isinstance(names, (list, tuple)) and isinstance(default_name, str):
-                raise ValueError("`names` should be a string.")
-            if isinstance(names, (list, tuple)) and isinstance(default_name, (list, tuple)) and \
-                    len(names) != len(default_name):
-                raise ValueError("`names` has to have a length of 3.")
+            self._validate_supplied_names(names, default_name)
             return names
 
         return default_name
+
+    def _validate_supplied_names(self, names, default_name):
+        names_list = [names] if isinstance(names, str) else names
+        default_name = [default_name] if isinstance(default_name, str) else default_name
+        if len(names_list) != len(default_name):
+            raise ValueError("`names` should contain names for {} metrics.".format(len(default_name)))
 
     def forward(self, y_pred: torch.Tensor, y_true: Union[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]) -> None:
         """
