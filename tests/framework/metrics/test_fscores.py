@@ -200,3 +200,5 @@ class FBetaTest(TestCase):
         self.assertEqual('recall_0', fbeta.__name__)
         fbeta = FBeta(metric='fscore', average='macro', names='f')
         self.assertEqual('f', fbeta.__name__)
+        fbeta = FBeta(average='macro', names=['f', "p", "r"])
+        self.assertEqual(["f", "p", "r"], fbeta.__name__)
