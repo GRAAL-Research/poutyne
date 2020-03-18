@@ -50,7 +50,7 @@ class FBeta(EpochMetric):
 
     Args:
         metric (Optional[str]): One of {'fscore', 'precision', 'recall'}.
-            Wheter to return the F-score, the precision or the recall. When not
+            Whether to return the F-score, the precision or the recall. When not
             provided, all three metrics are returned. (Default value = None)
         average (Union[str, int]): One of {'micro' (default), 'macro', label_number}
             If the argument is of type integer, the score for this class (the label number) is calculated.
