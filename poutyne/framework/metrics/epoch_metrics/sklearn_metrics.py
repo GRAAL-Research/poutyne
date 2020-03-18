@@ -1,5 +1,6 @@
-from typing import Optional, Union, List, Callable, Dict
+from typing import Optional, Union, List, Callable, Dict, Tuple
 import numpy as np
+import torch
 from .base import EpochMetric
 
 
@@ -57,7 +58,7 @@ class SKLearnMetrics(EpochMetric):
             names = [func.__name__ for func in self.funcs]
         return names
 
-    def forward(self, y_pred, y_true):
+    def forward(self, y_pred: torch.Tensor, y_true: Union[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]) -> None:
         """
         Accumulate the predictions, ground truths and sample weights if any.
 
