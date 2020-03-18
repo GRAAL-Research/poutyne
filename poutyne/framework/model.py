@@ -791,14 +791,14 @@ class Model:
         if not return_loss_tensor:
             loss = float(loss)
         with torch.no_grad():
-            metrics = self._compute_metrics(pred_y, y)
+            metrics = self._compute_batch_metrics(pred_y, y)
             for epoch_metric in self.epoch_metrics:
                 epoch_metric(pred_y, y)
 
         pred_y = torch_to_numpy(pred_y) if return_pred else None
         return loss, metrics, pred_y
 
-    def _compute_metrics(self, pred_y, y):
+    def _compute_batch_metrics(self, pred_y, y):
         metrics = [metric(pred_y, y) for metric in self.batch_metrics]
         return self._compute_metric_array(metrics, self.unflatten_batch_metrics_names)
 
