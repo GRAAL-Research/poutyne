@@ -155,9 +155,9 @@ class ModelCheckpointTest(TestCase):
         checkpointer.on_train_begin({})
         for epoch, (val_loss, has_checkpoint) in enumerate(zip(val_losses, has_checkpoints), 1):
             checkpointer.on_epoch_begin(epoch, {})
-            checkpointer.on_batch_begin(1, {})
+            checkpointer.on_train_batch_begin(1, {})
             loss = self._update_model(generator)
-            checkpointer.on_batch_end(1, {'batch': 1, 'size': ModelCheckpointTest.batch_size, 'loss': loss})
+            checkpointer.on_train_batch_end(1, {'batch': 1, 'size': ModelCheckpointTest.batch_size, 'loss': loss})
             checkpointer.on_epoch_end(epoch, {'epoch': epoch, 'loss': loss, 'val_loss': val_loss})
             filename = self.checkpoint_filename.format(epoch=epoch)
             self.assertEqual(has_checkpoint, os.path.isfile(filename))
