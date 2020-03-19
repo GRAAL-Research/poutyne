@@ -2,18 +2,18 @@
 import contextlib
 import warnings
 from collections import defaultdict
+from typing import Iterable, Mapping
 
 import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
 from poutyne import torch_to_numpy, numpy_to_torch, torch_to
-from poutyne.framework.exceptions import ModelConfigurationError
 from poutyne.framework.metrics.epoch_metrics import get_epoch_metric
 from poutyne.utils import TensorDataset
 from .callbacks import CallbackList, ProgressionCallback, Callback
-from .iterators import EpochIterator, StepIterator, _get_step_iterator
-from .metrics import get_loss_or_metric, get_callables_and_names
+from .iterators import EpochIterator, _get_step_iterator, StepIterator
+from .metrics import get_loss_or_metric, get_callables_and_names, rename_doubles, flatten_metric_names
 from .optimizers import get_optimizer
 from .warning_manager import warning_settings
 from ..utils import _concat
@@ -25,9 +25,6 @@ class Model:
     metric functions. It allows the user to train a neural network without hand-coding the
     epoch/step logic.
 
-    .. warning::
-        model argument and attribute is deprecated as of version 0.6. Use network instead.
-
     Args:
         network (torch.nn.Module): A PyTorch network.
         optimizer (Union[torch.optim.Optimizer, str]): If torch.optim.Optimier, an initialized PyTorch.
@@ -37,13 +34,6 @@ class Model:
             can also be a string with the same name as a PyTorch loss function (either the functional or
             object name). The loss function must have the signature ``loss_function(input, target)`` where
             ``input`` is the prediction of the network and ``target`` is the ground truth.
-            (Default value = None)
-        metrics (list): ***metrics is deprecated as of version 0.5.1. Use batch_metrics instead.***
-            List of functions with the same signature as the loss function. Each metric
-            can be any PyTorch loss function. It can also be a string with the same name as a PyTorch
-            loss function (either the functional or object name). 'accuracy' (or just 'acc') is also a
-            valid metric. Each metric function is called on each batch of the optimization and on the
-            validation batches at the end of the epoch.
             (Default value = None)
         batch_metrics (list): List of functions with the same signature as the loss function. Each metric
             can be any PyTorch loss function. It can also be a string with the same name as a PyTorch
@@ -55,12 +45,35 @@ class Model:
             :class:`~poutyne.framework.metrics.epoch_metrics.EpochMetric`
             (Default value = None)
 
+    Note:
+        The name of each batch and epoch metric can be change by passing a tuple ``(name, metric)`` instead
+        of simply the metric function or object, where ``name`` is the alternative name of the metric.
+
+        Batch and epoch metrics can return multiple metrics (e.g. an epoch metric could return an F1-score
+        with the associated precision and recall). The metrics can returned via an iterable (tuple, list,
+        Numpy arrays, tensors, etc.) or via a mapping (e.g. a dict). However, in this case, the names of
+        the different metric has to be passed in some way. There are two ways to do so. The easiest one
+        is to pass the metric as a tuple ``(names, metric)`` where ``names`` is a tuple containing a name for
+        each metric returned. Another way is to override the attribute ``__name__`` of the function or object
+        so that it returns a tuple containing a name for all metrics returned. Note that, when the metric
+        returns a mapping, the names of the different metrics must be keys in the mapping.
+
+        Example:
+
+        .. code-block:: python
+
+            # Example with custom batch metrics
+            my_custom_metric = lambda input, target: 42.
+            my_custom_metric2 = lambda input, target: torch.tensor([42., 43.])
+            my_custom_metric3 = lambda input, target: {'a': 42., 'b': 43.}
+            batch_metrics = [('custom_name', my_custom_metric),
+                             (('metric_1', 'metric_2'), my_custom_metric2),
+                             (('a', 'b'), my_custom_metric3)]
+
     Attributes:
         network (torch.nn.Module): The associated PyTorch network.
         optimizer (torch.optim.Optimizer): The associated PyTorch optimizer.
         loss_function: The associated loss function.
-        metrics (list): ***metrics is deprecated as of version 0.5.1. Use batch_metrics instead.***
-            The associated metric functions.
         batch_metrics (list): The associated metric functions for every batch.
         epoch_metrics (list): The associated metric functions for every epoch.
 
@@ -139,8 +152,7 @@ class Model:
 
     """
 
-    def __init__(self, network, optimizer, loss_function, *, metrics=None, batch_metrics=None, epoch_metrics=None):
-        metrics = [] if metrics is None else metrics
+    def __init__(self, network, optimizer, loss_function, *, batch_metrics=None, epoch_metrics=None):
         batch_metrics = [] if batch_metrics is None else batch_metrics
         epoch_metrics = [] if epoch_metrics is None else epoch_metrics
 
@@ -148,32 +160,25 @@ class Model:
         self.optimizer = get_optimizer(optimizer, self.network)
         self.loss_function = get_loss_or_metric(loss_function)
 
-        if metrics and batch_metrics:
-            raise ModelConfigurationError(
-                "metrics and batch_metrics arguments cannot be used together."
-                "Use batch_metrics instead since metrics has been deprecated as of version 0.5.1.")
-        if metrics:
-            warnings.warn('metrics argument has been deprecated as of version 0.5.1. Use batch_metrics instead.',
-                          Warning,
-                          stacklevel=2)
-            batch_metrics = metrics
-
-        self.batch_metrics = list(map(get_loss_or_metric, batch_metrics))
-        self.batch_metrics, self.batch_metrics_names = get_callables_and_names(self.batch_metrics)
-
-        self.epoch_metrics = list(map(get_epoch_metric, epoch_metrics))
-        self.epoch_metrics, self.epoch_metrics_names = get_callables_and_names(self.epoch_metrics)
-
-        self.metrics_names = self.batch_metrics_names + self.epoch_metrics_names
+        self._set_metrics_attributes(batch_metrics, epoch_metrics)
 
         self.device = None
 
-    @property
-    def model(self):
-        warnings.warn('model attribute has been deprecated as of version 0.6. Use network instead.',
-                      Warning,
-                      stacklevel=2)
-        return self.network
+    def _set_metrics_attributes(self, batch_metrics, epoch_metrics):
+        batch_metrics = list(map(get_loss_or_metric, batch_metrics))
+        self.batch_metrics, batch_metrics_names = get_callables_and_names(batch_metrics)
+
+        epoch_metrics = list(map(get_epoch_metric, epoch_metrics))
+        self.epoch_metrics, epoch_metrics_names = get_callables_and_names(epoch_metrics)
+
+        batch_metrics_names, epoch_metrics_names = rename_doubles(batch_metrics_names, epoch_metrics_names)
+
+        self.unflatten_batch_metrics_names = batch_metrics_names
+        self.unflatten_epoch_metrics_names = epoch_metrics_names
+
+        self.batch_metrics_names = flatten_metric_names(batch_metrics_names)
+        self.epoch_metrics_names = flatten_metric_names(epoch_metrics_names)
+        self.metrics_names = self.batch_metrics_names + self.epoch_metrics_names
 
     @contextlib.contextmanager
     def _set_training_mode(self, training):
@@ -223,8 +228,7 @@ class Model:
                 (Defaults the number of steps needed to see the entire training dataset)
             validation_steps (int, optional): Same as for ``steps_per_epoch`` but for the validation
                 dataset.
-                (Defaults to ``steps_per_epoch`` if provided or the number of steps needed to
-                see the entire validation dataset)
+                (Defaults to the number of steps needed to see the entire validation dataset)
             batches_per_step (int): Number of batches on which to compute the running loss before
                 backpropagating it through the network. Note that the total loss used for backpropagation is
                 the mean of the `batches_per_step` batch losses.
@@ -322,11 +326,10 @@ class Model:
                 (Default value = 1000)
             steps_per_epoch (int, optional): Number of batch used during one epoch. Obviously, using this
                 argument may cause one epoch not to see the entire training dataset or see it multiple times.
-                (Defaults the number of steps needed to see the entire
-                training dataset)
+                See argument ``train_generator`` and ``valid_generator`` for more details of how
+                ``steps_per_epoch`` is used.
             validation_steps (int, optional): Same as for ``steps_per_epoch`` but for the validation dataset.
-                (Defaults to ``steps_per_epoch`` if provided or the number of steps needed to see the entire
-                validation dataset)
+                See argument ``valid_generator`` for more details of how ``validation_steps`` is used.
             batches_per_step (int): Number of batches on which to compute the running loss before
                 backpropagating it through the network. Note that the total loss used for backpropagation is
                 the mean of the `batches_per_step` batch losses.
@@ -497,7 +500,7 @@ class Model:
     def train_on_batch(self, x, y, return_pred=False):
         """
         Trains the network for the batch ``(x, y)`` and computes the loss and the metrics, and
-        optionaly returns the predictions.
+        optionally returns the predictions.
 
         Args:
             x: Input data as a batch.
@@ -598,7 +601,8 @@ class Model:
             x = x if isinstance(x, (tuple, list)) else (x, )
             return torch_to_numpy(self.network(*x))
 
-    def evaluate(self, x, y, batch_size=32, return_pred=False):
+    def evaluate(self, x, y, batch_size=32, return_pred=False, callbacks=None):
+        # pylint: disable=too-many-arguments
         """
         Computes the loss and the metrics of the network on batches of samples and optionally
         returns the predictions.
@@ -615,6 +619,8 @@ class Model:
                 (Default value = 32)
             return_pred (bool, optional): Whether to return the predictions.
                 (Default value = False)
+            callbacks (List[~poutyne.framework.callbacks.Callback]): List of callbacks that will be called during
+                testing. (Default value = None)
 
         Returns:
             Tuple ``(loss, metrics, pred_y)`` where specific elements are omitted if not
@@ -628,17 +634,22 @@ class Model:
             for examples with batch metrics and epoch metrics.
 
             If ``return_pred`` is True, ``pred_y`` is the list of the predictions
-            of each batch with tensors converted into Numpy arrays. It is otherwise ommited.
-
+            of each batch with tensors converted into Numpy arrays. It is otherwise omitted.
 
         """
+        callbacks = [] if callbacks is None else callbacks
+
+        # Copy callback list.
+        callbacks = list(callbacks)
+
         generator = self._dataloader_from_data((x, y), batch_size=batch_size)
-        ret = self.evaluate_generator(generator, steps=len(generator), return_pred=return_pred)
+        ret = self.evaluate_generator(generator, steps=len(generator), return_pred=return_pred, callbacks=callbacks)
         if return_pred:
             ret = (*ret[:-1], _concat(ret[-1]))
         return ret
 
-    def evaluate_generator(self, generator, *, steps=None, return_pred=False, return_ground_truth=False):
+    def evaluate_generator(self, generator, *, steps=None, return_pred=False, return_ground_truth=False,
+                           callbacks=None):
         """
         Computes the loss and the metrics of the network on batches of samples and optionaly returns
         the predictions.
@@ -652,6 +663,8 @@ class Model:
                 (Default value = False)
             return_ground_truth (bool, optional): Whether to return the ground truths.
                 (Default value = False)
+            callbacks (List[~poutyne.framework.callbacks.Callback]): List of callbacks that will be called during
+                testing. (Default value = None)
 
         Returns:
             Tuple ``(loss, metrics, pred_y, true_y)`` where specific elements are
@@ -722,15 +735,28 @@ class Model:
                     test_generator, return_pred=True, return_ground_truth=True
                 )
         """
+
+        callbacks = [] if callbacks is None else callbacks
+
+        callback_list = CallbackList(callbacks)
+        callback_list.set_model(self)
+
+        callback_list.on_test_begin({})
+
         if steps is None:
             steps = len(generator)
-        step_iterator = StepIterator(generator, steps, Callback(), self.batch_metrics_names)
+        step_iterator = StepIterator(generator, steps, self.batch_metrics_names, callback_list, mode="test")
         loss, batch_metrics, pred_y, true_y = self._validate(step_iterator,
                                                              return_pred=return_pred,
                                                              return_ground_truth=return_ground_truth)
         epoch_metrics = self._get_epoch_metrics()
         metrics = np.concatenate((batch_metrics, epoch_metrics))
-        return self._format_return(loss, metrics, pred_y, return_pred, true_y, return_ground_truth)
+
+        res = self._format_return(loss, metrics, pred_y, return_pred, true_y, return_ground_truth)
+
+        callback_list.on_test_end(res)
+
+        return res
 
     def evaluate_on_batch(self, x, y, *, return_pred=False):
         """
@@ -786,18 +812,37 @@ class Model:
         if not return_loss_tensor:
             loss = float(loss)
         with torch.no_grad():
-            metrics = self._compute_metrics(pred_y, y)
+            metrics = self._compute_batch_metrics(pred_y, y)
             for epoch_metric in self.epoch_metrics:
                 epoch_metric(pred_y, y)
 
         pred_y = torch_to_numpy(pred_y) if return_pred else None
         return loss, metrics, pred_y
 
-    def _compute_metrics(self, pred_y, y):
-        return np.array([float(metric(pred_y, y)) for metric in self.batch_metrics])
+    def _compute_batch_metrics(self, pred_y, y):
+        metrics = [metric(pred_y, y) for metric in self.batch_metrics]
+        return self._compute_metric_array(metrics, self.unflatten_batch_metrics_names)
 
     def _get_epoch_metrics(self):
-        return np.array([float(epoch_metric.get_metric()) for epoch_metric in self.epoch_metrics])
+        metrics = [epoch_metric.get_metric() for epoch_metric in self.epoch_metrics]
+        return self._compute_metric_array(metrics, self.unflatten_epoch_metrics_names)
+
+    def _compute_metric_array(self, metrics_list, names_list):
+        def _get_metric(names, metrics):
+            names = [names] if isinstance(names, str) else names
+            values = None
+            if (torch.is_tensor(metrics) or isinstance(metrics, np.ndarray)) and len(metrics.shape) == 0:
+                values = [float(metrics)]
+            elif isinstance(metrics, Mapping):
+                values = [float(metrics[name]) for name in names]
+            elif isinstance(metrics, Iterable):
+                values = [float(metric) for metric in metrics]
+            else:
+                values = [float(metrics)]
+            return values
+
+        return np.array(
+            [metric for names, metrics in zip(names_list, metrics_list) for metric in _get_metric(names, metrics)])
 
     def _get_batch_size(self, x, y):
         if torch.is_tensor(x) or isinstance(x, np.ndarray):

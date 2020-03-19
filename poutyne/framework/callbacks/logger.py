@@ -1,17 +1,18 @@
-import os
 import csv
+import os
+from typing import Dict, Optional, TextIO
 
-from .callbacks import Callback
 from ._utils import atomic_lambda_save
+from .callbacks import Callback
 
 
 class Logger(Callback):
-    def __init__(self, *, batch_granularity=False):
+    def __init__(self, *, batch_granularity: bool = False):
         super().__init__()
         self.batch_granularity = batch_granularity
         self.epoch_number = 0
 
-    def on_train_begin(self, logs):
+    def on_train_begin(self, logs: Dict):
         metrics = ['loss'] + self.model.metrics_names
 
         if self.batch_granularity:
@@ -22,38 +23,38 @@ class Logger(Callback):
         self.fieldnames += ['val_' + metric for metric in metrics]
         self._on_train_begin_write(logs)
 
-    def _on_train_begin_write(self, logs):
+    def _on_train_begin_write(self, logs: Dict):
         pass
 
-    def on_batch_end(self, batch_number, logs):
+    def on_train_batch_end(self, batch_number: int, logs: Dict):
         if self.batch_granularity:
             logs = self._get_logs_without_unknown_keys(logs)
-            self._on_batch_end_write(batch_number, logs)
+            self._on_train_batch_end_write(batch_number, logs)
 
-    def _on_batch_end_write(self, batch_number, logs):
+    def _on_train_batch_end_write(self, batch_number: int, logs: Dict):
         pass
 
-    def on_epoch_begin(self, epoch_number, logs):
+    def on_epoch_begin(self, epoch_number: int, logs: Dict):
         self.epoch_number = epoch_number
         self._on_epoch_begin_write(self.epoch_number, logs)
 
-    def _on_epoch_begin_write(self, epoch_number, logs):
+    def _on_epoch_begin_write(self, epoch_number: int, logs: Dict):
         pass
 
-    def on_epoch_end(self, epoch_number, logs):
+    def on_epoch_end(self, epoch_number: int, logs: Dict):
         logs = self._get_logs_without_unknown_keys(logs)
         self._on_epoch_end_write(epoch_number, logs)
 
-    def _on_epoch_end_write(self, epoch_number, logs):
+    def _on_epoch_end_write(self, epoch_number: int, logs: Dict):
         pass
 
-    def on_train_end(self, logs=None):
+    def on_train_end(self, logs: Dict):
         self._on_train_end_write(logs)
 
-    def _on_train_end_write(self, logs):
+    def _on_train_end_write(self, logs: Dict):
         pass
 
-    def _get_logs_without_unknown_keys(self, logs):
+    def _get_logs_without_unknown_keys(self, logs: Dict):
         return {k: logs[k] for k in self.fieldnames if logs.get(k) is not None}
 
     def _get_current_learning_rates(self):
@@ -75,13 +76,13 @@ class CSVLogger(Logger):
 
     """
 
-    def __init__(self, filename, *, batch_granularity=False, separator=',', append=False):
+    def __init__(self, filename: str, *, batch_granularity: bool = False, separator: str = ',', append: bool = False):
         super().__init__(batch_granularity=batch_granularity)
         self.filename = filename
         self.separator = separator
         self.append = append
 
-    def _on_train_begin_write(self, logs):
+    def _on_train_begin_write(self, logs: Dict):
         open_flag = 'a' if self.append else 'w'
         self.csvfile = open(self.filename, open_flag, newline='')
         self.writer = csv.DictWriter(self.csvfile, fieldnames=self.fieldnames, delimiter=self.separator)
@@ -89,15 +90,15 @@ class CSVLogger(Logger):
             self.writer.writeheader()
             self.csvfile.flush()
 
-    def _on_batch_end_write(self, batch_number, logs):
+    def _on_train_batch_end_write(self, batch_number: int, logs: Dict):
         self.writer.writerow(logs)
         self.csvfile.flush()
 
-    def _on_epoch_end_write(self, epoch_number, logs):
+    def _on_epoch_end_write(self, epoch_number: int, logs: Dict):
         self.writer.writerow(dict(logs, lr=self._get_current_learning_rates()))
         self.csvfile.flush()
 
-    def _on_train_end_write(self, logs=None):
+    def _on_train_end_write(self, logs: Dict):
         self.csvfile.close()
 
 
@@ -116,14 +117,20 @@ class AtomicCSVLogger(Logger):
         append (bool): Whether to append to an existing file.
     """
 
-    def __init__(self, filename, *, batch_granularity=False, separator=',', append=False, temporary_filename=None):
+    def __init__(self,
+                 filename,
+                 *,
+                 batch_granularity: bool = False,
+                 separator: str = ',',
+                 append: bool = False,
+                 temporary_filename: Optional[str] = None):
         super().__init__(batch_granularity=batch_granularity)
         self.filename = filename
         self.temporary_filename = temporary_filename
         self.separator = separator
         self.append = append
 
-    def _save_log(self, fd, logs):
+    def _save_log(self, fd: TextIO, logs: Dict):
         olddata = None
         if os.path.exists(self.filename):
             with open(self.filename, 'r') as oldfile:
@@ -135,16 +142,16 @@ class AtomicCSVLogger(Logger):
         if logs is not None:
             csvwriter.writerow(logs)
 
-    def _on_train_begin_write(self, logs):
+    def _on_train_begin_write(self, logs: Dict):
         if not self.append:
-            atomic_lambda_save(self.filename, self._save_log, (None, ), temporary_filename=self.temporary_filename)
+            atomic_lambda_save(self.filename, self._save_log, (None,), temporary_filename=self.temporary_filename)
 
-    def _on_batch_end_write(self, batch_number, logs):
-        atomic_lambda_save(self.filename, self._save_log, (logs, ), temporary_filename=self.temporary_filename)
+    def _on_train_batch_end_write(self, batch_number: int, logs: Dict):
+        atomic_lambda_save(self.filename, self._save_log, (logs,), temporary_filename=self.temporary_filename)
 
-    def _on_epoch_end_write(self, epoch_number, logs):
+    def _on_epoch_end_write(self, epoch_number: int, logs: Dict):
         logs = dict(logs, lr=self._get_current_learning_rates())
-        atomic_lambda_save(self.filename, self._save_log, (logs, ), temporary_filename=self.temporary_filename)
+        atomic_lambda_save(self.filename, self._save_log, (logs,), temporary_filename=self.temporary_filename)
 
 
 class TensorBoardLogger(Logger):
@@ -172,13 +179,13 @@ class TensorBoardLogger(Logger):
         super().__init__(batch_granularity=False)
         self.writer = writer
 
-    def _on_batch_end_write(self, batch_number, logs):
+    def _on_train_batch_end_write(self, batch_number: int, logs):
         """
         We don't handle tensorboard writing on batch granularity
         """
         pass
 
-    def _on_epoch_end_write(self, epoch_number, logs):
+    def _on_epoch_end_write(self, epoch_number: int, logs: dict):
         logs.pop("epoch")
         grouped_items = dict()
         for k, v in logs.items():
@@ -194,12 +201,12 @@ class TensorBoardLogger(Logger):
         for k, v in grouped_items.items():
             self.writer.add_scalars(k, v, epoch_number)
         lr = self._get_current_learning_rates()
-        if isinstance(lr, (list, )):
+        if isinstance(lr, (list,)):
             self.writer.add_scalars('lr', {str(i): v for i, v in enumerate(lr)}, epoch_number)
         else:
             self.writer.add_scalars('lr', {'lr': lr}, epoch_number)
 
-    def _on_train_end_write(self, logs=None):
+    def _on_train_end_write(self, logs: Dict):
         last_epoch = self.params["epochs"]
         self.writer.add_scalars("last-epoch", last_epoch)
         self.writer.close()

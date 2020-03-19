@@ -460,7 +460,7 @@ class Experiment:
             save_every_epoch (bool, optional): Whether or not to save the experiment model's weights after
                 every epoch.
                 (Default value = False)
-            disable_tensorboard (bool, optional): Wheter or not to disable the automatic tensorboard logging
+            disable_tensorboard (bool, optional): Whether or not to disable the automatic tensorboard logging
                 callbacks.
                 (Default value = False)
             epochs (int): Number of times the entire training dataset is seen.
@@ -601,7 +601,7 @@ class Experiment:
     def _load_last_checkpoint(self):
         self.model.load_weights(self.model_checkpoint_filename)
 
-    def test(self, test_generator, *, steps=None, checkpoint='best', seed=42):
+    def test(self, test_generator, *, callbacks=None, steps=None, checkpoint='best', seed=42):
         """
         Computes and returns the loss and the metrics of the attribute model on a given test examples
         generator.
@@ -612,6 +612,9 @@ class Experiment:
         Args:
             test_generator: Generator-like object for the test set. See :func:`~Model.fit_generator()` for
                 details on the types of generators supported.
+            callbacks (List[~poutyne.framework.callbacks.Callback]): List of callbacks that will be called during
+                the testing.
+                (Default value = None)
             steps (int, optional): Number of iterations done on ``generator``.
                 (Defaults the number of steps needed to see the entire dataset)
             checkpoint (Union[str, int]): Which model checkpoint weights to load for the test evaluation.
@@ -622,19 +625,28 @@ class Experiment:
             seed (int, optional): Seed used to make the sampling deterministic.
                 (Default value = 42)
 
+        If the Experiment has logging enabled (i.e. self.logging is True), one callback will be automatically
+        included to saved the test metrics. Moreover, a :class:`~callbacks.AtomicCSVLogger` will save the test
+        metrics in an output .tsv file.
+
         Returns:
             dict sorting of all the test metrics values by their names.
         """
         set_seeds(seed)
 
+        callbacks = [] if callbacks is None else callbacks
+
+        # Copy callback list.
+        callbacks = list(callbacks)
+
         best_epoch_stats = self.load_checkpoint(checkpoint)
 
         if len(self.model.metrics_names) > 0:
-            test_loss, test_metrics = self.model.evaluate_generator(test_generator, steps=steps)
+            test_loss, test_metrics = self.model.evaluate_generator(test_generator, steps=steps, callbacks=callbacks)
             if not isinstance(test_metrics, np.ndarray):
                 test_metrics = np.array([test_metrics])
         else:
-            test_loss = self.model.evaluate_generator(test_generator, steps=steps)
+            test_loss = self.model.evaluate_generator(test_generator, steps=steps, callbacks=callbacks)
             test_metrics = np.array([])
 
         test_metrics_names = ['test_loss'] + \

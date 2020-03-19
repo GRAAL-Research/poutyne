@@ -41,60 +41,8 @@ NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FO
 OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
-
-
-class CallbackList:
-    def __init__(self, callbacks=None):
-        callbacks = callbacks or []
-        self.callbacks = list(callbacks)
-
-    def append(self, callback):
-        self.callbacks.append(callback)
-
-    def set_params(self, params):
-        for callback in self.callbacks:
-            callback.set_params(params)
-
-    def set_model(self, model):
-        for callback in self.callbacks:
-            callback.set_model(model)
-
-    def on_epoch_begin(self, epoch_number, logs=None):
-        logs = logs or {}
-        for callback in self.callbacks:
-            callback.on_epoch_begin(epoch_number, logs)
-
-    def on_epoch_end(self, epoch_number, logs=None):
-        logs = logs or {}
-        for callback in self.callbacks:
-            callback.on_epoch_end(epoch_number, logs)
-
-    def on_batch_begin(self, batch_number, logs=None):
-        logs = logs or {}
-        for callback in self.callbacks:
-            callback.on_batch_begin(batch_number, logs)
-
-    def on_batch_end(self, batch_number, logs=None):
-        logs = logs or {}
-        for callback in self.callbacks:
-            callback.on_batch_end(batch_number, logs)
-
-    def on_backward_end(self, batch_number):
-        for callback in self.callbacks:
-            callback.on_backward_end(batch_number)
-
-    def on_train_begin(self, logs=None):
-        logs = logs or {}
-        for callback in self.callbacks:
-            callback.on_train_begin(logs)
-
-    def on_train_end(self, logs=None):
-        logs = logs or {}
-        for callback in self.callbacks:
-            callback.on_train_end(logs)
-
-    def __iter__(self):
-        return iter(self.callbacks)
+import warnings
+from typing import Dict, List
 
 
 class Callback:
@@ -107,16 +55,17 @@ class Callback:
 
     def __init__(self):
         self.model = None
+        self.params = None
 
-    def set_params(self, params):
+    def set_params(self, params: Dict):
         self.params = params
 
     def set_model(self, model):
         self.model = model
 
-    def on_epoch_begin(self, epoch_number, logs):
+    def on_epoch_begin(self, epoch_number: int, logs: Dict):
         """
-        Is called before the begining of each epoch.
+        Is called before the beginning of each epoch.
 
         Args:
             epoch_number (int): The epoch number.
@@ -124,7 +73,7 @@ class Callback:
         """
         pass
 
-    def on_epoch_end(self, epoch_number, logs):
+    def on_epoch_end(self, epoch_number: int, logs: Dict):
         """
         Is called before the end of each epoch.
 
@@ -146,9 +95,9 @@ class Callback:
         """
         pass
 
-    def on_batch_begin(self, batch_number, logs):
+    def on_train_batch_begin(self, batch_number: int, logs: Dict):
         """
-        Is called before the begining of each batch.
+        Is called before the beginning of the training batch.
 
         Args:
             batch_number (int): The batch number.
@@ -156,26 +105,73 @@ class Callback:
         """
         pass
 
-    def on_batch_end(self, batch_number, logs):
+    def on_train_batch_end(self, batch_number: int, logs: Dict):
         """
-        Is called before the end of each batch.
+        Is called before the end of the training batch.
 
         Args:
             batch_number (int): The batch number.
-            logs (dict): Contains the following keys:
-
-                 * 'batch': The batch number.
-                 * 'loss': The loss of the batch.
-                 * 'time': The computation time of the batch.
-                 * Other metrics: One key for each type of metrics.
-
-        Example::
-
-            logs = {'batch': 6, 'time': 0.10012837, 'loss': 4.34462, 'accuracy': 0.766}
+            logs (dict): Usually an empty dict.
         """
         pass
 
-    def on_backward_end(self, batch_number):
+    def on_test_batch_begin(self, batch_number: int, logs: Dict):
+        """
+        Is called before the beginning of the testing batch.
+
+        Args:
+            batch_number (int): The batch number.
+            logs (dict): Usually an empty dict.
+        """
+        pass
+
+    def on_test_batch_end(self, batch_number: int, logs: Dict):
+        """
+        Is called before the end of the testing batch.
+
+        Args:
+            batch_number (int): The batch number.
+            logs (dict): Usually an empty dict.
+        """
+        pass
+
+    def on_train_begin(self, logs: Dict):
+        """
+        Is called before the beginning of the training.
+
+        Args:
+            logs (dict): Usually an empty dict.
+        """
+        pass
+
+    def on_train_end(self, logs: Dict):
+        """
+        Is called before the end of the training.
+
+        Args:
+            logs (dict): Usually an empty dict.
+        """
+        pass
+
+    def on_test_begin(self, logs: Dict):
+        """
+        Is called before the beginning of the testing.
+
+        Args:
+            logs (dict): Usually an empty dict.
+        """
+        pass
+
+    def on_test_end(self, logs: Dict):
+        """
+        Is called before the end of the testing.
+
+        Args:
+            logs (dict): Usually an empty dict.
+        """
+        pass
+
+    def on_backward_end(self, batch_number: int):
         """
         Is called after the backpropagation but before the optimization step.
 
@@ -184,20 +180,92 @@ class Callback:
         """
         pass
 
-    def on_train_begin(self, logs):
-        """
-        Is called before the begining of the training.
 
-        Args:
-            logs (dict): Usually an empty dict.
-        """
-        pass
+class CallbackList:
+    def __init__(self, callbacks: List[Callback]):
+        callbacks = callbacks or []
+        self.callbacks = list(callbacks)
 
-    def on_train_end(self, logs):
-        """
-        Is called before the end of the training.
+    def append(self, callback: Callback):
+        self.callbacks.append(callback)
 
-        Args:
-            logs (dict): Usually an empty dict.
-        """
-        pass
+    def set_params(self, params: Dict):
+        for callback in self.callbacks:
+            callback.set_params(params)
+
+    def set_model(self, model):
+        for callback in self.callbacks:
+            callback.set_model(model)
+
+    def on_epoch_begin(self, epoch_number: int, logs: Dict):
+        logs = logs or {}
+        for callback in self.callbacks:
+            callback.on_epoch_begin(epoch_number, logs)
+
+    def on_epoch_end(self, epoch_number: int, logs: Dict):
+        logs = logs or {}
+        for callback in self.callbacks:
+            callback.on_epoch_end(epoch_number, logs)
+
+    def on_train_batch_begin(self, batch_number: int, logs: Dict):
+        logs = logs or {}
+        for callback in self.callbacks:
+            if hasattr(callback, 'on_batch_begin'):
+                warnings.warn(
+                    'on_batch_begin method for callback has been deprecated as of version 0.7. '
+                    'Use on_batch_train_begin instead.',
+                    Warning,
+                    stacklevel=2)
+                callback.on_batch_begin(batch_number, logs)
+            else:
+                callback.on_train_batch_begin(batch_number, logs)
+
+    def on_train_batch_end(self, batch_number: int, logs: Dict):
+        logs = logs or {}
+        for callback in self.callbacks:
+            if hasattr(callback, 'on_batch_end'):
+                warnings.warn(
+                    'on_batch_end method for callback has been deprecated as of version 0.7. '
+                    'Use on_batch_train_end instead.',
+                    Warning,
+                    stacklevel=2)
+                callback.on_batch_end(batch_number, logs)
+            else:
+                callback.on_train_batch_end(batch_number, logs)
+
+    def on_test_batch_begin(self, batch_number: int, logs: Dict):
+        logs = logs or {}
+        for callback in self.callbacks:
+            callback.on_test_batch_begin(batch_number, logs)
+
+    def on_test_batch_end(self, batch_number: int, logs: Dict):
+        logs = logs or {}
+        for callback in self.callbacks:
+            callback.on_test_batch_end(batch_number, logs)
+
+    def on_train_begin(self, logs: Dict):
+        logs = logs or {}
+        for callback in self.callbacks:
+            callback.on_train_begin(logs)
+
+    def on_train_end(self, logs: Dict):
+        logs = logs or {}
+        for callback in self.callbacks:
+            callback.on_train_end(logs)
+
+    def on_test_begin(self, logs: Dict):
+        logs = logs or {}
+        for callback in self.callbacks:
+            callback.on_test_begin(logs)
+
+    def on_test_end(self, logs: Dict):
+        logs = logs or {}
+        for callback in self.callbacks:
+            callback.on_test_end(logs)
+
+    def on_backward_end(self, batch_number: int):
+        for callback in self.callbacks:
+            callback.on_backward_end(batch_number)
+
+    def __iter__(self):
+        return iter(self.callbacks)

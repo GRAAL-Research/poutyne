@@ -41,8 +41,10 @@ NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FO
 OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
+from typing import Dict
 
 import numpy as np
+
 from .callbacks import Callback
 
 
@@ -68,7 +70,13 @@ class EarlyStopping(Callback):
             (Default value = 'min')
     """
 
-    def __init__(self, *, monitor='val_loss', min_delta=0, patience=0, verbose=False, mode='min'):
+    def __init__(self,
+                 *,
+                 monitor: str = 'val_loss',
+                 min_delta: float = 0.,
+                 patience: int = 0,
+                 verbose: bool = False,
+                 mode: str = 'min'):
         super(EarlyStopping, self).__init__()
 
         self.monitor = monitor
@@ -89,13 +97,13 @@ class EarlyStopping(Callback):
             self.min_delta *= 1
             self.monitor_op = np.greater
 
-    def on_train_begin(self, logs):
+    def on_train_begin(self, logs: Dict):
         # Allow instances to be re-used
         self.wait = 0
         self.stopped_epoch = 0
         self.best = np.Inf if self.mode == 'min' else -np.Inf
 
-    def on_epoch_end(self, epoch_number, logs):
+    def on_epoch_end(self, epoch_number: int, logs: Dict):
         current = logs[self.monitor]
         if self.monitor_op(current - self.min_delta, self.best):
             self.best = current
@@ -106,6 +114,6 @@ class EarlyStopping(Callback):
                 self.stopped_epoch = epoch_number
                 self.model.stop_training = True
 
-    def on_train_end(self, logs):
+    def on_train_end(self, logs: Dict):
         if self.stopped_epoch > 0 and self.verbose:
             print('Epoch %05d: early stopping' % (self.stopped_epoch + 1))
