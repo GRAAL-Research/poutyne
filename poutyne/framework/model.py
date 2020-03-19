@@ -228,8 +228,7 @@ class Model:
                 (Defaults the number of steps needed to see the entire training dataset)
             validation_steps (int, optional): Same as for ``steps_per_epoch`` but for the validation
                 dataset.
-                (Defaults to ``steps_per_epoch`` if provided or the number of steps needed to
-                see the entire validation dataset)
+                (Defaults to the number of steps needed to see the entire validation dataset)
             batches_per_step (int): Number of batches on which to compute the running loss before
                 backpropagating it through the network. Note that the total loss used for backpropagation is
                 the mean of the `batches_per_step` batch losses.
@@ -327,11 +326,10 @@ class Model:
                 (Default value = 1000)
             steps_per_epoch (int, optional): Number of batch used during one epoch. Obviously, using this
                 argument may cause one epoch not to see the entire training dataset or see it multiple times.
-                (Defaults the number of steps needed to see the entire
-                training dataset)
+                See argument ``train_generator`` and ``valid_generator`` for more details of how
+                ``steps_per_epoch`` is used.
             validation_steps (int, optional): Same as for ``steps_per_epoch`` but for the validation dataset.
-                (Defaults to ``steps_per_epoch`` if provided or the number of steps needed to see the entire
-                validation dataset)
+                See argument ``valid_generator`` for more details of how ``validation_steps`` is used.
             batches_per_step (int): Number of batches on which to compute the running loss before
                 backpropagating it through the network. Note that the total loss used for backpropagation is
                 the mean of the `batches_per_step` batch losses.
