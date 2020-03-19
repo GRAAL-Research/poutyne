@@ -29,7 +29,7 @@ class ModelFittingTestCase(TestCase):
         self.epoch_metrics_values = []
         self.model = None
 
-    def _test_train_fitting(self, params, logs, has_valid=True, steps=None):
+    def _test_callbacks_train(self, params, logs, has_valid=True, steps=None):
         # pylint: disable=too-many-arguments
         if steps is None:
             steps = params['steps']
@@ -65,7 +65,7 @@ class ModelFittingTestCase(TestCase):
         self.assertEqual(len(method_calls), len(call_list) + 2)  # for set_model and set param
         self.assertEqual(method_calls[2:], call_list)
 
-    def _test_test_fitting(self, params, result_log):
+    def _test_callbacks_test(self, params, result_log):
         test_batch_dict = dict(zip(self.batch_metrics_names, self.batch_metrics_values), loss=ANY, time=ANY)
 
         call_list = []

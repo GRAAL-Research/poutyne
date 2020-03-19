@@ -64,7 +64,7 @@ class ModelDictOutputTest(ModelFittingTestCase):
                               validation_steps=None,
                               callbacks=[self.mock_callback])
         params = {'epochs': ModelDictOutputTest.epochs, 'steps': train_real_steps_per_epoch}
-        self._test_train_fitting(params, logs)
+        self._test_callbacks_train(params, logs)
 
     def test_ndarray_train_on_batch_dict_output(self):
         x = np.random.rand(ModelDictOutputTest.batch_size, 1).astype(np.float32)
