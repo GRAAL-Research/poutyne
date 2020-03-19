@@ -105,23 +105,6 @@ class TestStepIterator(StepIterator):
             self.callback.on_test_batch_end(step, batch_logs)
 
 
-class PredictStepIterator(StepIterator):
-    """
-    Step iterator used in the predict phase of the model. Only override the iter method of the `StepIterator`.
-    """
-
-    def __iter__(self):
-        time_since_last_batch = timeit.default_timer()
-        for step, data in _get_step_iterator(self.steps_per_epoch, self.generator):
-            self.callback.on_predict_batch_begin(step, {})
-
-            step_data = Step(step)
-            yield step_data, data
-
-            batch_logs, time_since_last_batch = self._iter_loop(step, step_data, time_since_last_batch)
-            self.callback.on_predict_batch_end(step, batch_logs)
-
-
 class EpochIterator:
     """
     Epoch iterator used in the training phase of the model.
