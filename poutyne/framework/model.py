@@ -12,7 +12,7 @@ from poutyne import torch_to_numpy, numpy_to_torch, torch_to
 from poutyne.framework.metrics.epoch_metrics import get_epoch_metric
 from poutyne.utils import TensorDataset
 from .callbacks import CallbackList, ProgressionCallback, Callback
-from .iterators import EpochIterator, StepIterator, _get_step_iterator
+from .iterators import EpochIterator, _get_step_iterator, TestStepIterator
 from .metrics import get_loss_or_metric, get_callables_and_names, rename_doubles, flatten_metric_names
 from .optimizers import get_optimizer
 from .warning_manager import warning_settings
@@ -502,7 +502,7 @@ class Model:
     def train_on_batch(self, x, y, return_pred=False):
         """
         Trains the network for the batch ``(x, y)`` and computes the loss and the metrics, and
-        optionaly returns the predictions.
+        optionally returns the predictions.
 
         Args:
             x: Input data as a batch.
@@ -603,7 +603,8 @@ class Model:
             x = x if isinstance(x, (tuple, list)) else (x, )
             return torch_to_numpy(self.network(*x))
 
-    def evaluate(self, x, y, batch_size=32, return_pred=False):
+    def evaluate(self, x, y, batch_size=32, return_pred=False, callbacks=None):
+        # pylint: disable=too-many-arguments
         """
         Computes the loss and the metrics of the network on batches of samples and optionally
         returns the predictions.
@@ -620,6 +621,8 @@ class Model:
                 (Default value = 32)
             return_pred (bool, optional): Whether to return the predictions.
                 (Default value = False)
+            callbacks (List[~poutyne.framework.callbacks.Callback]): List of callbacks that will be called during
+                testing. (Default value = None)
 
         Returns:
             Tuple ``(loss, metrics, pred_y)`` where specific elements are omitted if not
@@ -633,17 +636,22 @@ class Model:
             for examples with batch metrics and epoch metrics.
 
             If ``return_pred`` is True, ``pred_y`` is the list of the predictions
-            of each batch with tensors converted into Numpy arrays. It is otherwise ommited.
-
+            of each batch with tensors converted into Numpy arrays. It is otherwise omitted.
 
         """
+        callbacks = [] if callbacks is None else callbacks
+
+        # Copy callback list.
+        callbacks = list(callbacks)
+
         generator = self._dataloader_from_data((x, y), batch_size=batch_size)
-        ret = self.evaluate_generator(generator, steps=len(generator), return_pred=return_pred)
+        ret = self.evaluate_generator(generator, steps=len(generator), return_pred=return_pred, callbacks=callbacks)
         if return_pred:
             ret = (*ret[:-1], _concat(ret[-1]))
         return ret
 
-    def evaluate_generator(self, generator, *, steps=None, return_pred=False, return_ground_truth=False):
+    def evaluate_generator(self, generator, *, steps=None, return_pred=False, return_ground_truth=False,
+                           callbacks=None):
         """
         Computes the loss and the metrics of the network on batches of samples and optionaly returns
         the predictions.
@@ -657,6 +665,8 @@ class Model:
                 (Default value = False)
             return_ground_truth (bool, optional): Whether to return the ground truths.
                 (Default value = False)
+            callbacks (List[~poutyne.framework.callbacks.Callback]): List of callbacks that will be called during
+                testing. (Default value = None)
 
         Returns:
             Tuple ``(loss, metrics, pred_y, true_y)`` where specific elements are
@@ -727,15 +737,28 @@ class Model:
                     test_generator, return_pred=True, return_ground_truth=True
                 )
         """
+
+        callbacks = [] if callbacks is None else callbacks
+
+        callback_list = CallbackList(callbacks)
+        callback_list.set_model(self)
+
+        callback_list.on_test_begin({})
+
         if steps is None:
             steps = len(generator)
-        step_iterator = StepIterator(generator, steps, Callback(), self.batch_metrics_names)
+        step_iterator = TestStepIterator(generator, steps, callback_list, self.batch_metrics_names)
         loss, batch_metrics, pred_y, true_y = self._validate(step_iterator,
                                                              return_pred=return_pred,
                                                              return_ground_truth=return_ground_truth)
         epoch_metrics = self._get_epoch_metrics()
         metrics = np.concatenate((batch_metrics, epoch_metrics))
-        return self._format_return(loss, metrics, pred_y, return_pred, true_y, return_ground_truth)
+
+        res = self._format_return(loss, metrics, pred_y, return_pred, true_y, return_ground_truth)
+
+        callback_list.on_test_end(res)
+
+        return res
 
     def evaluate_on_batch(self, x, y, *, return_pred=False):
         """

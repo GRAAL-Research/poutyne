@@ -29,7 +29,7 @@ class ModelFittingTestCase(TestCase):
         self.epoch_metrics_values = []
         self.model = None
 
-    def _test_fitting(self, params, logs, has_valid=True, steps=None):
+    def _test_train_fitting(self, params, logs, has_valid=True, steps=None):
         # pylint: disable=too-many-arguments
         if steps is None:
             steps = params['steps']
@@ -59,11 +59,27 @@ class ModelFittingTestCase(TestCase):
         call_list.append(call.on_train_end({}))
 
         method_calls = self.mock_callback.method_calls
-        self.assertIn(call.set_model(self.model), method_calls[:2])
+        self.assertIn(call.set_model(self.model), method_calls[:2])  # skip set_model and set param call
         self.assertIn(call.set_params(params), method_calls[:2])
 
-        self.assertEqual(len(method_calls), len(call_list) + 2)
+        self.assertEqual(len(method_calls), len(call_list) + 2)  # for set_model and set param
         self.assertEqual(method_calls[2:], call_list)
+
+    def _test_test_fitting(self, params, result_log):
+        test_batch_dict = dict(zip(self.batch_metrics_names, self.batch_metrics_values), loss=ANY, time=ANY)
+
+        call_list = []
+        call_list.append(call.on_test_begin({}))
+        for batch in range(1, params['batch'] + 1):
+            call_list.append(call.on_test_batch_begin(batch, {}))
+            call_list.append(call.on_test_batch_end(batch, {'batch': batch, 'size': ANY, **test_batch_dict}))
+        call_list.append(call.on_test_end(result_log))
+
+        method_calls = self.mock_callback.method_calls
+        self.assertIn(call.set_model(self.model), method_calls[:1])  # skip set_model
+
+        self.assertEqual(len(method_calls), len(call_list) + 1)  # for set_model
+        self.assertEqual(method_calls[1:], call_list)
 
     def _test_size_and_type_for_generator(self, pred_y, expected_size):
         if isinstance(pred_y, (list, tuple)):

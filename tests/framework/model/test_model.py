@@ -1,11 +1,9 @@
 # pylint: disable=unused-argument,too-many-locals
-import unittest
-from unittest import skipIf
+from math import ceil
+from unittest import skipIf, skip, main
 from unittest.mock import MagicMock
 
-from math import ceil
 import numpy as np
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -14,7 +12,6 @@ from torch.utils.data import DataLoader
 from poutyne.framework import Model, warning_settings
 from poutyne.framework.metrics import EpochMetric
 from poutyne.utils import TensorDataset
-
 from .base import ModelFittingTestCase
 
 some_metric_1_value = 1.
@@ -152,7 +149,7 @@ class ModelTest(ModelFittingTestCase):
                                         validation_steps=ModelTest.steps_per_epoch,
                                         callbacks=[self.mock_callback])
         params = {'epochs': ModelTest.epochs, 'steps': ModelTest.steps_per_epoch}
-        self._test_fitting(params, logs)
+        self._test_train_fitting(params, logs)
 
     def test_fitting_without_valid_generator(self):
         train_generator = some_data_tensor_generator(ModelTest.batch_size)
@@ -162,7 +159,7 @@ class ModelTest(ModelFittingTestCase):
                                         steps_per_epoch=ModelTest.steps_per_epoch,
                                         callbacks=[self.mock_callback])
         params = {'epochs': ModelTest.epochs, 'steps': ModelTest.steps_per_epoch}
-        self._test_fitting(params, logs, has_valid=False)
+        self._test_train_fitting(params, logs, has_valid=False)
 
     def test_correct_optim_calls_1_batch_per_step(self):
         train_generator = some_data_tensor_generator(ModelTest.batch_size)
@@ -286,7 +283,7 @@ class ModelTest(ModelFittingTestCase):
                                         validation_steps=ModelTest.steps_per_epoch,
                                         callbacks=[self.mock_callback])
         params = {'epochs': ModelTest.epochs, 'steps': ModelTest.steps_per_epoch}
-        self._test_fitting(params, logs)
+        self._test_train_fitting(params, logs)
 
     def test_fitting_with_data_loader(self):
         train_real_steps_per_epoch = 30
@@ -316,7 +313,7 @@ class ModelTest(ModelFittingTestCase):
                                         validation_steps=None,
                                         callbacks=[self.mock_callback])
         params = {'epochs': ModelTest.epochs, 'steps': train_real_steps_per_epoch}
-        self._test_fitting(params, logs)
+        self._test_train_fitting(params, logs)
 
     def test_fitting_with_tensor(self):
         train_real_steps_per_epoch = 30
@@ -345,7 +342,7 @@ class ModelTest(ModelFittingTestCase):
                               validation_steps=None,
                               callbacks=[self.mock_callback])
         params = {'epochs': ModelTest.epochs, 'steps': train_real_steps_per_epoch}
-        self._test_fitting(params, logs)
+        self._test_train_fitting(params, logs)
 
     def test_fitting_with_np_array(self):
         train_real_steps_per_epoch = 30
@@ -374,7 +371,7 @@ class ModelTest(ModelFittingTestCase):
                               validation_steps=None,
                               callbacks=[self.mock_callback])
         params = {'epochs': ModelTest.epochs, 'steps': train_real_steps_per_epoch}
-        self._test_fitting(params, logs)
+        self._test_train_fitting(params, logs)
 
     def test_fitting_with_generator_with_len(self):
         train_real_steps_per_epoch = 30
@@ -389,7 +386,7 @@ class ModelTest(ModelFittingTestCase):
                                         validation_steps=None,
                                         callbacks=[self.mock_callback])
         params = {'epochs': ModelTest.epochs, 'steps': train_real_steps_per_epoch}
-        self._test_fitting(params, logs)
+        self._test_train_fitting(params, logs)
 
     def test_fitting_with_generator_with_stop_iteration(self):
         train_real_steps_per_epoch = 30
@@ -403,7 +400,7 @@ class ModelTest(ModelFittingTestCase):
                                         validation_steps=None,
                                         callbacks=[self.mock_callback])
         params = {'epochs': ModelTest.epochs, 'steps': None}
-        self._test_fitting(params, logs, steps=train_real_steps_per_epoch)
+        self._test_train_fitting(params, logs, steps=train_real_steps_per_epoch)
 
     def test_tensor_train_on_batch(self):
         x = torch.rand(ModelTest.batch_size, 1)
@@ -445,6 +442,17 @@ class ModelTest(ModelFittingTestCase):
         _, _, pred_y = self.model.evaluate(x, y, batch_size=ModelTest.batch_size, return_pred=True)
         self.assertEqual(pred_y.shape, (ModelTest.evaluate_dataset_len, 1))
 
+    def test_evaluate_with_callback(self):
+        x = torch.rand(ModelTest.evaluate_dataset_len, 1)
+        y = torch.rand(ModelTest.evaluate_dataset_len, 1)
+        # We also test the unpacking.
+        _, _, pred_y = self.model.evaluate(x,
+                                           y,
+                                           batch_size=ModelTest.batch_size,
+                                           return_pred=True,
+                                           callbacks=[self.mock_callback])
+        self.assertEqual(pred_y.shape, (ModelTest.evaluate_dataset_len, 1))
+
     def test_evaluate_with_np_array(self):
         x = np.random.rand(ModelTest.evaluate_dataset_len, 1).astype(np.float32)
         y = np.random.rand(ModelTest.evaluate_dataset_len, 1).astype(np.float32)
@@ -476,6 +484,17 @@ class ModelTest(ModelFittingTestCase):
             self.assertEqual(type(pred), np.ndarray)
             self.assertEqual(pred.shape, (ModelTest.batch_size, 1))
         self.assertEqual(np.concatenate(pred_y).shape, (num_steps * ModelTest.batch_size, 1))
+
+    def test_evaluate_generator_with_callback(self):
+        num_steps = 10
+        generator = some_data_tensor_generator(ModelTest.batch_size)
+        result_log = self.model.evaluate_generator(generator,
+                                                   steps=num_steps,
+                                                   return_pred=True,
+                                                   callbacks=[self.mock_callback])
+
+        params = {'batch': ModelTest.epochs}
+        self._test_test_fitting(params, result_log)
 
     def test_evaluate_generator_with_ground_truth(self):
         num_steps = 10
@@ -660,7 +679,7 @@ class ModelTest(ModelFittingTestCase):
         for p in self.pytorch_network.parameters():
             self.assertEqual(p.device, device)
 
-    @unittest.skip("Not sure if this test is still relevant with multi IO")
+    @skip("Not sure if this test is still relevant with multi IO")
     def test_disable_batch_size_warning(self):
         import warnings
 
@@ -713,4 +732,4 @@ class ModelTest(ModelFittingTestCase):
 
 
 if __name__ == '__main__':
-    unittest.main()
+    main()
