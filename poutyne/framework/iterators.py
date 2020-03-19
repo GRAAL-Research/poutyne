@@ -3,8 +3,6 @@ import timeit
 
 import numpy as np
 
-from .callbacks import Callback
-
 
 class Step:
     def __init__(self, number):
@@ -28,11 +26,21 @@ def _get_step_iterator(steps, generator):
 
 
 class StepIterator:
-    def __init__(self, generator, steps_per_epoch, callback, batch_metrics_names):
+    def __init__(self, generator, steps_per_epoch, batch_metrics_names, callback=None, mode=None):
+        # pylint: disable=too-many-arguments
         self.generator = generator
         self.steps_per_epoch = steps_per_epoch
-        self.callback = callback
         self.batch_metrics_names = batch_metrics_names
+
+        self.on_batch_begin = lambda *_: None
+        self.on_batch_end = lambda *_: None
+
+        if mode == 'train':
+            self.on_batch_begin = callback.on_train_batch_begin
+            self.on_batch_end = callback.on_train_batch_end
+        elif mode == 'test':
+            self.on_batch_begin = callback.on_test_batch_begin
+            self.on_batch_end = callback.on_test_batch_end
 
         self.losses_sum = 0.
         self.metrics_sum = np.zeros(len(self.batch_metrics_names))
@@ -48,61 +56,32 @@ class StepIterator:
         return self.metrics_sum / self.sizes_sum
 
     def __iter__(self):
-        pass
-
-    def _iter_loop(self, step, step_data, time_since_last_batch):
-        self.losses_sum += step_data.loss * step_data.size
-        self.metrics_sum += step_data.metrics * step_data.size
-        self.sizes_sum += step_data.size
-
-        batch_end_time = timeit.default_timer()
-        batch_total_time = batch_end_time - time_since_last_batch
-        time_since_last_batch = batch_end_time
-
-        metrics_dict = dict(zip(self.batch_metrics_names, step_data.metrics))
-
-        batch_logs = {
-            'batch': step,
-            'size': step_data.size,
-            'time': batch_total_time,
-            'loss': step_data.loss,
-            **metrics_dict
-        }
-        return batch_logs, time_since_last_batch
-
-
-class TrainStepIterator(StepIterator):
-    """
-    Step iterator used in the train phase of the model. Only override the iter method of the `StepIterator`.
-    """
-
-    def __iter__(self):
         time_since_last_batch = timeit.default_timer()
         for step, data in _get_step_iterator(self.steps_per_epoch, self.generator):
-            self.callback.on_train_batch_begin(step, {})
+            self.on_batch_begin(step, {})
 
             step_data = Step(step)
             yield step_data, data
 
-            batch_logs, time_since_last_batch = self._iter_loop(step, step_data, time_since_last_batch)
-            self.callback.on_train_batch_end(step, batch_logs)
+            self.losses_sum += step_data.loss * step_data.size
+            self.metrics_sum += step_data.metrics * step_data.size
+            self.sizes_sum += step_data.size
 
+            batch_end_time = timeit.default_timer()
+            batch_total_time = batch_end_time - time_since_last_batch
+            time_since_last_batch = batch_end_time
 
-class TestStepIterator(StepIterator):
-    """
-    Step iterator used in the test phase of the model. Only override the iter method of the `StepIterator`.
-    """
+            metrics_dict = dict(zip(self.batch_metrics_names, step_data.metrics))
 
-    def __iter__(self):
-        time_since_last_batch = timeit.default_timer()
-        for step, data in _get_step_iterator(self.steps_per_epoch, self.generator):
-            self.callback.on_test_batch_begin(step, {})
+            batch_logs = {
+                'batch': step,
+                'size': step_data.size,
+                'time': batch_total_time,
+                'loss': step_data.loss,
+                **metrics_dict
+            }
 
-            step_data = Step(step)
-            yield step_data, data
-
-            batch_logs, time_since_last_batch = self._iter_loop(step, step_data, time_since_last_batch)
-            self.callback.on_test_batch_end(step, batch_logs)
+            self.on_batch_end(step, batch_logs)
 
 
 class EpochIterator:
@@ -155,13 +134,18 @@ class EpochIterator:
             self.callback.on_epoch_begin(epoch, {})
             epoch_begin_time = timeit.default_timer()
 
-            train_step_iterator = TrainStepIterator(self.train_generator, self.steps_per_epoch, self.callback,
-                                                    self.batch_metrics_names)
+            train_step_iterator = StepIterator(self.train_generator,
+                                               self.steps_per_epoch,
+                                               self.batch_metrics_names,
+                                               self.callback,
+                                               mode="train")
 
             valid_step_iterator = None
             if self.valid_generator is not None:
-                valid_step_iterator = TrainStepIterator(self.valid_generator, self.validation_steps, Callback(),
-                                                        self.batch_metrics_names)
+                valid_step_iterator = StepIterator(self.train_generator,
+                                                   self.steps_per_epoch,
+                                                   self.batch_metrics_names,
+                                                   mode="train")
 
             yield train_step_iterator, valid_step_iterator
 

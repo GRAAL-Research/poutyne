@@ -63,43 +63,6 @@ class Callback:
     def set_model(self, model):
         self.model = model
 
-    def on_batch_begin(self, batch_number: int, logs: Dict):
-        """
-        Is called before the beginning of each batch.
-
-        Args:
-            batch_number (int): The batch number.
-            logs (dict): Usually an empty dict.
-
-        .. warning::
-        `on_batch_begin` method is deprecated as of version 0.7. Use `on_train_batch_begin` instead.
-
-        """
-        pass
-
-    def on_batch_end(self, batch_number: int, logs: Dict):
-        """
-        Is called before the end of each batch.
-
-        Args:
-            batch_number (int): The batch number.
-            logs (dict): Contains the following keys:
-
-                 * 'batch': The batch number.
-                 * 'loss': The loss of the batch.
-                 * 'time': The computation time of the batch.
-                 * Other metrics: One key for each type of metrics.
-
-        Example::
-
-            logs = {'batch': 6, 'time': 0.10012837, 'loss': 4.34462, 'accuracy': 0.766}
-
-        .. warning::
-        `on_batch_end` method is deprecated as of version 0.7. Use `on_train_batch_end` instead.
-
-        """
-        pass
-
     def on_epoch_begin(self, epoch_number: int, logs: Dict):
         """
         Is called before the beginning of each epoch.
@@ -233,24 +196,6 @@ class CallbackList:
     def set_model(self, model):
         for callback in self.callbacks:
             callback.set_model(model)
-
-    def on_batch_begin(self, batch_number: int, logs: Dict):
-        """
-        .. warning::
-        `on_batch_begin` method is deprecated as of version 0.7. Use `on_train_batch_begin` instead.
-        """
-        logs = logs or {}
-        for callback in self.callbacks:
-            callback.on_batch_begin(batch_number, logs)
-
-    def on_batch_end(self, batch_number: int, logs: Dict):
-        """
-        .. warning::
-        `on_batch_end` method is deprecated as of version 0.7. Use `on_train_batch_begin` instead.
-        """
-        logs = logs or {}
-        for callback in self.callbacks:
-            callback.on_batch_end(batch_number, logs)
 
     def on_epoch_begin(self, epoch_number: int, logs: Dict):
         logs = logs or {}

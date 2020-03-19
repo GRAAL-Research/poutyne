@@ -12,7 +12,7 @@ from poutyne import torch_to_numpy, numpy_to_torch, torch_to
 from poutyne.framework.metrics.epoch_metrics import get_epoch_metric
 from poutyne.utils import TensorDataset
 from .callbacks import CallbackList, ProgressionCallback, Callback
-from .iterators import EpochIterator, _get_step_iterator, TestStepIterator
+from .iterators import EpochIterator, _get_step_iterator, StepIterator
 from .metrics import get_loss_or_metric, get_callables_and_names, rename_doubles, flatten_metric_names
 from .optimizers import get_optimizer
 from .warning_manager import warning_settings
@@ -747,7 +747,7 @@ class Model:
 
         if steps is None:
             steps = len(generator)
-        step_iterator = TestStepIterator(generator, steps, callback_list, self.batch_metrics_names)
+        step_iterator = StepIterator(generator, steps, self.batch_metrics_names, callback_list, mode="test")
         loss, batch_metrics, pred_y, true_y = self._validate(step_iterator,
                                                              return_pred=return_pred,
                                                              return_ground_truth=return_ground_truth)
