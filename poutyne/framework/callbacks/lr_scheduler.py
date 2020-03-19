@@ -65,11 +65,11 @@ for name, module_cls in torch.optim.lr_scheduler.__dict__.items():
             issubclass(module_cls, _LRScheduler) and \
             module_cls != _LRScheduler:
         _new_cls = type(
-            name, (_PyTorchLRSchedulerWrapper,), {
+            name, (_PyTorchLRSchedulerWrapper, ), {
                 '__init__':
-                    new_init(module_cls),
+                new_init(module_cls),
                 '__doc__':
-                    """
+                """
                             See:
                                 :class:`~torch.optim.lr_scheduler.{name}`
                             """.format(name=name)

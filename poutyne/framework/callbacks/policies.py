@@ -209,7 +209,7 @@ def sgdr_phases(
         `SGDR: Stochastic Gradient Descent with Warm Restarts
         <https://arxiv.org/abs/1608.03983>`_
     """
-    steps = [base_cycle_length * (cycle_mult ** i) for i in range(cycles)]
+    steps = [base_cycle_length * (cycle_mult**i) for i in range(cycles)]
     return [Phase(lr=cosinespace(lr[0], lr[1], step)) for step in steps]
 
 
