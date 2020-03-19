@@ -76,7 +76,7 @@ class ModelFittingTestCase(TestCase):
         call_list.append(call.on_test_end(result_log))
 
         method_calls = self.mock_callback.method_calls
-        self.assertIn(call.set_model(self.model), method_calls[:1])  # skip set_model
+        self.assertEqual(call.set_model(self.model), method_calls[0])  # skip set_model
 
         self.assertEqual(len(method_calls), len(call_list) + 1)  # for set_model
         self.assertEqual(method_calls[1:], call_list)
