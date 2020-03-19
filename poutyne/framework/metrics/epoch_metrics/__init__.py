@@ -1,6 +1,7 @@
 # pylint: disable=wildcard-import
 from .base import *
 from .fscores import *
+from .sklearn_metrics import *
 
 all_epochs_metrics_dict = dict(f1=F1)
 

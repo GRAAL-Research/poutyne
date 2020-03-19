@@ -2,6 +2,7 @@
 import contextlib
 import warnings
 from collections import defaultdict
+from typing import Iterable, Mapping
 
 import numpy as np
 import torch
@@ -12,7 +13,7 @@ from poutyne.framework.metrics.epoch_metrics import get_epoch_metric
 from poutyne.utils import TensorDataset
 from .callbacks import CallbackList, ProgressionCallback, Callback
 from .iterators import EpochIterator, StepIterator, _get_step_iterator
-from .metrics import get_loss_or_metric, get_callables_and_names
+from .metrics import get_loss_or_metric, get_callables_and_names, rename_doubles, flatten_metric_names
 from .optimizers import get_optimizer
 from .warning_manager import warning_settings
 from ..utils import _concat
@@ -43,6 +44,31 @@ class Model:
         epoch_metrics (list): List of functions with the same signature as
             :class:`~poutyne.framework.metrics.epoch_metrics.EpochMetric`
             (Default value = None)
+
+    Note:
+        The name of each batch and epoch metric can be change by passing a tuple ``(name, metric)`` instead
+        of simply the metric function or object, where ``name`` is the alternative name of the metric.
+
+        Batch and epoch metrics can return multiple metrics (e.g. an epoch metric could return an F1-score
+        with the associated precision and recall). The metrics can returned via an iterable (tuple, list,
+        Numpy arrays, tensors, etc.) or via a mapping (e.g. a dict). However, in this case, the names of
+        the different metric has to be passed in some way. There are two ways to do so. The easiest one
+        is to pass the metric as a tuple ``(names, metric)`` where ``names`` is a tuple containing a name for
+        each metric returned. Another way is to override the attribute ``__name__`` of the function or object
+        so that it returns a tuple containing a name for all metrics returned. Note that, when the metric
+        returns a mapping, the names of the different metrics must be keys in the mapping.
+
+        Example:
+
+        .. code-block:: python
+
+            # Example with custom batch metrics
+            my_custom_metric = lambda input, target: 42.
+            my_custom_metric2 = lambda input, target: torch.tensor([42., 43.])
+            my_custom_metric3 = lambda input, target: {'a': 42., 'b': 43.}
+            batch_metrics = [('custom_name', my_custom_metric),
+                             (('metric_1', 'metric_2'), my_custom_metric2),
+                             (('a', 'b'), my_custom_metric3)]
 
     Attributes:
         network (torch.nn.Module): The associated PyTorch network.
@@ -134,15 +160,25 @@ class Model:
         self.optimizer = get_optimizer(optimizer, self.network)
         self.loss_function = get_loss_or_metric(loss_function)
 
-        self.batch_metrics = list(map(get_loss_or_metric, batch_metrics))
-        self.batch_metrics, self.batch_metrics_names = get_callables_and_names(self.batch_metrics)
-
-        self.epoch_metrics = list(map(get_epoch_metric, epoch_metrics))
-        self.epoch_metrics, self.epoch_metrics_names = get_callables_and_names(self.epoch_metrics)
-
-        self.metrics_names = self.batch_metrics_names + self.epoch_metrics_names
+        self._set_metrics_attributes(batch_metrics, epoch_metrics)
 
         self.device = None
+
+    def _set_metrics_attributes(self, batch_metrics, epoch_metrics):
+        batch_metrics = list(map(get_loss_or_metric, batch_metrics))
+        self.batch_metrics, batch_metrics_names = get_callables_and_names(batch_metrics)
+
+        epoch_metrics = list(map(get_epoch_metric, epoch_metrics))
+        self.epoch_metrics, epoch_metrics_names = get_callables_and_names(epoch_metrics)
+
+        batch_metrics_names, epoch_metrics_names = rename_doubles(batch_metrics_names, epoch_metrics_names)
+
+        self.unflatten_batch_metrics_names = batch_metrics_names
+        self.unflatten_epoch_metrics_names = epoch_metrics_names
+
+        self.batch_metrics_names = flatten_metric_names(batch_metrics_names)
+        self.epoch_metrics_names = flatten_metric_names(epoch_metrics_names)
+        self.metrics_names = self.batch_metrics_names + self.epoch_metrics_names
 
     @contextlib.contextmanager
     def _set_training_mode(self, training):
@@ -755,18 +791,37 @@ class Model:
         if not return_loss_tensor:
             loss = float(loss)
         with torch.no_grad():
-            metrics = self._compute_metrics(pred_y, y)
+            metrics = self._compute_batch_metrics(pred_y, y)
             for epoch_metric in self.epoch_metrics:
                 epoch_metric(pred_y, y)
 
         pred_y = torch_to_numpy(pred_y) if return_pred else None
         return loss, metrics, pred_y
 
-    def _compute_metrics(self, pred_y, y):
-        return np.array([float(metric(pred_y, y)) for metric in self.batch_metrics])
+    def _compute_batch_metrics(self, pred_y, y):
+        metrics = [metric(pred_y, y) for metric in self.batch_metrics]
+        return self._compute_metric_array(metrics, self.unflatten_batch_metrics_names)
 
     def _get_epoch_metrics(self):
-        return np.array([float(epoch_metric.get_metric()) for epoch_metric in self.epoch_metrics])
+        metrics = [epoch_metric.get_metric() for epoch_metric in self.epoch_metrics]
+        return self._compute_metric_array(metrics, self.unflatten_epoch_metrics_names)
+
+    def _compute_metric_array(self, metrics_list, names_list):
+        def _get_metric(names, metrics):
+            names = [names] if isinstance(names, str) else names
+            values = None
+            if (torch.is_tensor(metrics) or isinstance(metrics, np.ndarray)) and len(metrics.shape) == 0:
+                values = [float(metrics)]
+            elif isinstance(metrics, Mapping):
+                values = [float(metrics[name]) for name in names]
+            elif isinstance(metrics, Iterable):
+                values = [float(metric) for metric in metrics]
+            else:
+                values = [float(metrics)]
+            return values
+
+        return np.array(
+            [metric for names, metrics in zip(names_list, metrics_list) for metric in _get_metric(names, metrics)])
 
     def _get_batch_size(self, x, y):
         if torch.is_tensor(x) or isinstance(x, np.ndarray):
