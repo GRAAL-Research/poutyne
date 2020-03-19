@@ -1,4 +1,4 @@
-from typing import Dict, Union, Optional
+from typing import Dict, Optional
 
 from .callbacks import Callback, CallbackList
 
@@ -17,11 +17,7 @@ class DelayCallback(Callback):
             the callback(s) before the :func:`~poutyne.framework.callbacks.Callback.on_train_batch_begin()` method.
     """
 
-    def __init__(self,
-                 callbacks: Callback,
-                 *,
-                 epoch_delay: Optional[int] = None,
-                 batch_delay: Optional[int] = None):
+    def __init__(self, callbacks: Callback, *, epoch_delay: Optional[int] = None, batch_delay: Optional[int] = None):
         super().__init__()
         if isinstance(callbacks, CallbackList):
             self.callbacks = callbacks

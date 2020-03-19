@@ -1,6 +1,6 @@
 import csv
 import os
-from typing import Dict, Union, Optional, TextIO
+from typing import Dict, Optional, TextIO
 
 from ._utils import atomic_lambda_save
 from .callbacks import Callback
