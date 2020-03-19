@@ -1,12 +1,8 @@
-import os
-
 import csv
-
-import unittest
-from unittest import TestCase, skipIf
-from unittest.mock import MagicMock, call
-
+import os
 from tempfile import TemporaryDirectory
+from unittest import TestCase, skipIf, main
+from unittest.mock import MagicMock, call
 
 import torch
 import torch.nn as nn
@@ -151,6 +147,7 @@ class BaseTensorBoardLoggerTest:
             calls.append(call('loss', {'loss': h['loss'], 'val_loss': h['val_loss']}, h['epoch']))
             calls.append(call('lr', {'lr': 1e-3}, h['epoch']))
         self.writer.add_scalars.assert_has_calls(calls, any_order=True)
+        self.writer.add_scalars.assert_called_with('last-epoch', 10)
 
 
 @skipIf(XSummaryWriter is None, "Needs tensorboardX to run this test")
@@ -164,4 +161,4 @@ class TorchTensorboardLoggerTest(BaseTensorBoardLoggerTest, TestCase):
 
 
 if __name__ == '__main__':
-    unittest.main()
+    main()
