@@ -55,9 +55,9 @@ class BestModelRestoreTest(TestCase):
         checkpointer.on_train_begin({})
         for epoch, val_loss in enumerate(val_losses, 1):
             checkpointer.on_epoch_begin(epoch, {})
-            checkpointer.on_batch_begin(1, {})
+            checkpointer.on_train_batch_begin(1, {})
             loss = self._update_model(generator)
-            checkpointer.on_batch_end(1, {'batch': 1, 'size': BestModelRestoreTest.batch_size, 'loss': loss})
+            checkpointer.on_train_batch_end(1, {'batch': 1, 'size': BestModelRestoreTest.batch_size, 'loss': loss})
             checkpointer.on_epoch_end(epoch, {'epoch': epoch, 'loss': loss, 'val_loss': val_loss})
             if epoch == best_epoch:
                 best_epoch_weights = torch_to_numpy(self.model.get_weight_copies())

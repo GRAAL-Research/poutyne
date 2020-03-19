@@ -41,8 +41,10 @@ NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FO
 OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
-from .callbacks import Callback
+from typing import BinaryIO, Dict, Optional, Callable
+
 from ._utils import atomic_lambda_save
+from .callbacks import Callback
 
 
 class PeriodicSaveCallback(Callback):
@@ -88,16 +90,16 @@ class PeriodicSaveCallback(Callback):
     """
 
     def __init__(self,
-                 filename,
+                 filename: str,
                  *,
-                 monitor='val_loss',
-                 mode='min',
-                 save_best_only=False,
-                 period=1,
-                 verbose=False,
-                 temporary_filename=None,
-                 atomic_write=True,
-                 open_mode='wb'):
+                 monitor: str = 'val_loss',
+                 mode: str = 'min',
+                 save_best_only: bool = False,
+                 period: int = 1,
+                 verbose: bool = False,
+                 temporary_filename: Optional[str] = None,
+                 atomic_write: bool = True,
+                 open_mode: str = 'wb'):
         super().__init__()
         self.filename = filename
         self.monitor = monitor
@@ -120,17 +122,17 @@ class PeriodicSaveCallback(Callback):
 
         self.period = period
 
-    def save_file(self, fd, epoch_number, logs):
+    def save_file(self, fd: BinaryIO, epoch_number: int, logs: Dict):
         raise NotImplementedError
 
-    def _save_file(self, filename, epoch_number, logs):
+    def _save_file(self, filename: str, epoch_number: int, logs: Dict):
         atomic_lambda_save(filename,
                            self.save_file, (epoch_number, logs),
                            temporary_filename=self.temporary_filename,
                            open_mode=self.open_mode,
                            atomic=self.atomic_write)
 
-    def on_epoch_end(self, epoch_number, logs):
+    def on_epoch_end(self, epoch_number: int, logs: Dict):
         filename = self.filename.format_map(logs)
 
         if self.save_best_only:
@@ -162,9 +164,9 @@ class PeriodicSaveLambda(PeriodicSaveCallback):
         :class:`~poutyne.framework.callbacks.PeriodicSaveCallback`
     """
 
-    def __init__(self, func, *args, **kwargs):
+    def __init__(self, func: Callable, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.func = func
 
-    def save_file(self, fd, epoch_number, logs):
+    def save_file(self, fd: str, epoch_number: int, logs: Dict):
         self.func(fd, epoch_number, logs)

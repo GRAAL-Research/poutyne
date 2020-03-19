@@ -14,7 +14,7 @@ import contextlib
 from collections import OrderedDict
 from itertools import islice, chain
 from math import cos, pi
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Optional
 
 from .callbacks import Callback
 
@@ -36,7 +36,7 @@ class linspace:
         [0.0, 0.5, 1.0]
     """
 
-    def __init__(self, start: float, end: float, steps: int):
+    def __init__(self, start: int, end: int, steps: int):
         self.start = start
         self.end = end
         self.steps = steps
@@ -62,7 +62,7 @@ class cosinespace:
         [0.0, 0.5, 1.0]
     """
 
-    def __init__(self, start, end, steps):
+    def __init__(self, start: int, end: int, steps: int):
         self.start = start
         self.end = end
         self.steps = steps
@@ -86,7 +86,7 @@ class Phase:
         momentum (List[float], optional): a configuration space for the momentum.
     """
 
-    def __init__(self, *, lr=None, momentum=None):
+    def __init__(self, *, lr: Optional[float] = None, momentum: Optional[float] = None):
         if lr is None and momentum is None:
             raise ValueError("You must specify lr and/or momentum.")
 
@@ -232,7 +232,7 @@ class OptimizerPolicy(Callback):
         self.current_step = initial_step
         self.phases_iter = iter(self)
 
-    def on_batch_begin(self, batch_number, logs):
+    def on_train_batch_begin(self, batch_number: int, logs: Dict):
         # Don't do anything when we run out of phases.
         with contextlib.suppress(StopIteration):
             spec = next(self.phases_iter)

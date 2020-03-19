@@ -37,7 +37,7 @@ class History(Callback):
     def on_epoch_end(self, epoch_number, logs):
         self.history.append(logs)
 
-    def on_batch_end(self, batch_number, logs):
+    def on_train_batch_end(self, batch_number, logs):
         self.history.append(logs)
 
     def on_train_begin(self, logs):

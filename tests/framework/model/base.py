@@ -7,6 +7,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 
+from poutyne.framework import Callback
 from poutyne.utils import _concat
 
 
@@ -20,7 +21,7 @@ class ModelFittingTestCase(TestCase):
     cuda_device = int(os.environ.get('CUDA_DEVICE', 0))
 
     def setUp(self):
-        self.mock_callback = MagicMock()
+        self.mock_callback = MagicMock(spec=Callback)
         self.batch_metrics = []
         self.batch_metrics_names = []
         self.batch_metrics_values = []
@@ -29,7 +30,7 @@ class ModelFittingTestCase(TestCase):
         self.epoch_metrics_values = []
         self.model = None
 
-    def _test_fitting(self, params, logs, has_valid=True, steps=None):
+    def _test_callbacks_train(self, params, logs, has_valid=True, steps=None):
         # pylint: disable=too-many-arguments
         if steps is None:
             steps = params['steps']
@@ -52,18 +53,34 @@ class ModelFittingTestCase(TestCase):
         for epoch in range(1, params['epochs'] + 1):
             call_list.append(call.on_epoch_begin(epoch, {}))
             for step in range(1, steps + 1):
-                call_list.append(call.on_batch_begin(step, {}))
+                call_list.append(call.on_train_batch_begin(step, {}))
                 call_list.append(call.on_backward_end(step))
-                call_list.append(call.on_batch_end(step, {'batch': step, 'size': ANY, **train_batch_dict}))
+                call_list.append(call.on_train_batch_end(step, {'batch': step, 'size': ANY, **train_batch_dict}))
             call_list.append(call.on_epoch_end(epoch, {'epoch': epoch, **log_dict}))
         call_list.append(call.on_train_end({}))
 
         method_calls = self.mock_callback.method_calls
-        self.assertIn(call.set_model(self.model), method_calls[:2])
+        self.assertIn(call.set_model(self.model), method_calls[:2])  # skip set_model and set param call
         self.assertIn(call.set_params(params), method_calls[:2])
 
-        self.assertEqual(len(method_calls), len(call_list) + 2)
+        self.assertEqual(len(method_calls), len(call_list) + 2)  # for set_model and set param
         self.assertEqual(method_calls[2:], call_list)
+
+    def _test_callbacks_test(self, params, result_log):
+        test_batch_dict = dict(zip(self.batch_metrics_names, self.batch_metrics_values), loss=ANY, time=ANY)
+
+        call_list = []
+        call_list.append(call.on_test_begin({}))
+        for batch in range(1, params['batch'] + 1):
+            call_list.append(call.on_test_batch_begin(batch, {}))
+            call_list.append(call.on_test_batch_end(batch, {'batch': batch, 'size': ANY, **test_batch_dict}))
+        call_list.append(call.on_test_end(result_log))
+
+        method_calls = self.mock_callback.method_calls
+        self.assertEqual(call.set_model(self.model), method_calls[0])  # skip set_model
+
+        self.assertEqual(len(method_calls), len(call_list) + 1)  # for set_model
+        self.assertEqual(method_calls[1:], call_list)
 
     def _test_size_and_type_for_generator(self, pred_y, expected_size):
         if isinstance(pred_y, (list, tuple)):

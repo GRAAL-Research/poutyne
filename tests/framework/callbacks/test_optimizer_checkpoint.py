@@ -58,9 +58,9 @@ class OptimizerCheckpointTest(TestCase):
         checkpointer.on_train_begin({})
         for epoch in range(1, OptimizerCheckpointTest.epochs + 1):
             checkpointer.on_epoch_begin(epoch, {})
-            checkpointer.on_batch_begin(1, {})
+            checkpointer.on_train_batch_begin(1, {})
             loss = self._update_model(generator)
-            checkpointer.on_batch_end(1, {'batch': 1, 'size': OptimizerCheckpointTest.batch_size, 'loss': loss})
+            checkpointer.on_train_batch_end(1, {'batch': 1, 'size': OptimizerCheckpointTest.batch_size, 'loss': loss})
             checkpointer.on_epoch_end(epoch, {'epoch': epoch, 'loss': loss, 'val_loss': 1})
             filename = self.checkpoint_filename.format(epoch=epoch)
             self.assertTrue(os.path.isfile(filename))
