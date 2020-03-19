@@ -20,8 +20,8 @@ class DelayCallback(Callback):
     def __init__(self,
                  callbacks: Callback,
                  *,
-                 epoch_delay: Optional[Union[int]] = None,
-                 batch_delay: Optional[Union[int]] = None):
+                 epoch_delay: Optional[int] = None,
+                 batch_delay: Optional[int] = None):
         super().__init__()
         if isinstance(callbacks, CallbackList):
             self.callbacks = callbacks
