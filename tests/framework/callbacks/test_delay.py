@@ -6,7 +6,7 @@ import torch
 import torch.nn as nn
 
 from poutyne.framework import Model
-from poutyne.framework.callbacks import DelayCallback
+from poutyne.framework.callbacks import DelayCallback, Callback
 
 
 def some_data_generator(batch_size):
@@ -27,7 +27,7 @@ class DelayCallbackTest(TestCase):
         self.loss_function = nn.MSELoss()
         self.optimizer = torch.optim.SGD(self.pytorch_network.parameters(), lr=1e-3)
         self.model = Model(self.pytorch_network, self.optimizer, self.loss_function)
-        self.mock_callback = MagicMock()
+        self.mock_callback = MagicMock(spec=Callback)
         self.delay_callback = DelayCallback(self.mock_callback)
         self.train_dict = {'loss': ANY, 'time': ANY}
         self.log_dict = {'loss': ANY, 'val_loss': ANY, 'time': ANY}

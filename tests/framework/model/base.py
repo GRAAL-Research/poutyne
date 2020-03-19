@@ -7,6 +7,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 
+from poutyne.framework import Callback
 from poutyne.utils import _concat
 
 
@@ -20,7 +21,7 @@ class ModelFittingTestCase(TestCase):
     cuda_device = int(os.environ.get('CUDA_DEVICE', 0))
 
     def setUp(self):
-        self.mock_callback = MagicMock()
+        self.mock_callback = MagicMock(spec=Callback)
         self.batch_metrics = []
         self.batch_metrics_names = []
         self.batch_metrics_values = []

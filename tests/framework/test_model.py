@@ -1,19 +1,16 @@
 # pylint: disable=too-many-lines,too-many-locals,unused-argument
 import os
-
-import unittest
-from unittest import TestCase, skipIf
+from math import ceil
+from unittest import TestCase, skipIf, skip, main
 from unittest.mock import MagicMock, call, ANY
 
-from math import ceil
 import numpy as np
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
 
-from poutyne.framework import Model, warning_settings
+from poutyne.framework import Model, warning_settings, Callback
 from poutyne.framework.metrics import EpochMetric
 from poutyne.utils import TensorDataset
 from poutyne.utils import _concat
@@ -253,7 +250,7 @@ class ModelTest(TestCase):
                                         batch_metrics=self.batch_metrics,
                                         epoch_metrics=self.epoch_metrics)
 
-        self.mock_callback = MagicMock()
+        self.mock_callback = MagicMock(spec=Callback)
 
     def test_fitting_tensor_generator(self):
         train_generator = some_data_tensor_generator(ModelTest.batch_size)
@@ -1283,7 +1280,7 @@ class ModelTest(TestCase):
         for p in self.pytorch_network.parameters():
             self.assertEqual(p.device, device)
 
-    @unittest.skip("Not sure if this test is still relevant with multi IO")
+    @skip("Not sure if this test is still relevant with multi IO")
     def test_disable_batch_size_warning(self):
         import warnings
 
@@ -1336,4 +1333,4 @@ class ModelTest(TestCase):
 
 
 if __name__ == '__main__':
-    unittest.main()
+    main()
