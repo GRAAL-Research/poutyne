@@ -123,7 +123,7 @@ class AtomicCSVLogger(Logger):
                  batch_granularity: bool = False,
                  separator: str = ',',
                  append: bool = False,
-                 temporary_filename: Optional[Union[str]] = None):
+                 temporary_filename: Optional[str] = None):
         super().__init__(batch_granularity=batch_granularity)
         self.filename = filename
         self.temporary_filename = temporary_filename
