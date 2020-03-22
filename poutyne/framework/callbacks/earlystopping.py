@@ -56,7 +56,7 @@ class EarlyStopping(Callback):
     Stop training when a monitored quantity has stopped improving.
 
     Args:
-        monitor (int): Quantity to be monitored.
+        monitor (str): Quantity to be monitored.
         min_delta (float): Minimum change in the monitored quantity to qualify as an improvement,
             i.e. an absolute change of less than min_delta, will count as no improvement.
             (Default value = 0)
