@@ -208,5 +208,5 @@ class TensorBoardLogger(Logger):
 
     def _on_train_end_write(self, logs: Dict):
         last_epoch = self.params["epochs"]
-        self.writer.add_scalars("last-epoch", last_epoch)
+        self.writer.add_scalar("last-epoch", last_epoch)
         self.writer.close()
