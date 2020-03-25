@@ -165,7 +165,6 @@ class BaseTensorBoardLoggerTest:
             calls.append(call('loss', {'loss': h['loss'], 'val_loss': h['val_loss']}, h['epoch']))
             calls.append(call('lr', {'lr': self.lr}, h['epoch']))
         self.writer.add_scalars.assert_has_calls(calls, any_order=True)
-        self.writer.add_scalars.assert_called_with('last-epoch', self.num_epochs)
 
 
 @skipIf(XSummaryWriter is None, "Needs tensorboardX to run this test")
