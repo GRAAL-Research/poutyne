@@ -31,11 +31,11 @@ class GradientTracker(Callback):
         self.running_max = None
 
     def on_epoch_begin(self, epoch, logs):
-        self.running_mean = np.zeros([self.number_layers])
-        self.running_variance = np.zeros([self.number_layers])
-        self.running_m2 = np.zeros([self.number_layers])
-        self.running_min = np.zeros([self.number_layers])
-        self.running_max = np.zeros([self.number_layers])
+        self.running_mean = np.zeros([self.number_layers], dtype="float32")
+        self.running_variance = np.zeros([self.number_layers], dtype="float32")
+        self.running_m2 = np.zeros([self.number_layers], dtype="float32")
+        self.running_min = np.zeros([self.number_layers], dtype="float32")
+        self.running_max = np.zeros([self.number_layers], dtype="float32")
 
     def on_epoch_end(self, epoch, logs):
         for index, layer_name in enumerate(self.layer_names):
@@ -58,14 +58,14 @@ class GradientTracker(Callback):
         batch_layer_means = []
         batch_layer_min = []
         batch_layer_max = []
-        for layer_name, layer_params in self.model.model.named_parameters():
+        for layer_name, layer_params in self.model.network.named_parameters():
             if self._keep_layer(layer_params, layer_name):
                 layer_gradient = layer_params.grad
                 abs_value_layer_gradient = layer_gradient.abs()
 
-                batch_layer_means.append(abs_value_layer_gradient.mean())
-                batch_layer_min.append(layer_gradient.min())
-                batch_layer_max.append(layer_gradient.max())
+                batch_layer_means.append(abs_value_layer_gradient.mean().cpu().detach().numpy())
+                batch_layer_min.append(layer_gradient.min().cpu().detach().numpy())
+                batch_layer_max.append(layer_gradient.max().cpu().detach().numpy())
 
         batch_layer_means = np.array(batch_layer_means)
         self.previous_mean = self.running_mean
@@ -80,11 +80,11 @@ class GradientTracker(Callback):
         batch_layer_min = np.array(batch_layer_min)
         batch_layer_max = np.array(batch_layer_max)
 
-        self.running_min = np.min(batch_layer_min, self.running_min)
-        self.running_max = np.max(batch_layer_max, self.running_max)
+        self.running_min = np.minimum(batch_layer_min, self.running_min)
+        self.running_max = np.maximum(batch_layer_max, self.running_max)
 
     def on_train_begin(self, logs):
-        for layer_name, layer_params in self.model.model.named_parameters():
+        for layer_name, layer_params in self.model.network.named_parameters():
             if self._keep_layer(layer_params, layer_name):
                 self.layer_names.append(layer_name)
 
