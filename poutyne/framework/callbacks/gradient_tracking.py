@@ -31,6 +31,7 @@ class GradientTracker(Callback):
         self.running_max = None
 
     def on_epoch_begin(self, epoch, logs):
+        # pylint: disable=unused-argument
         self.running_mean = np.zeros([self.number_layers], dtype="float32")
         self.running_variance = np.zeros([self.number_layers], dtype="float32")
         self.running_m2 = np.zeros([self.number_layers], dtype="float32")
@@ -44,17 +45,14 @@ class GradientTracker(Callback):
             self.writer.add_scalars(graph_name,
                                     {"std_dev_up": self.running_mean[index] + np.sqrt(self.running_variance[index])},
                                     epoch)
-            self.writer.add_scalars(
-                graph_name, {"std_dev_down": self.running_mean[index] - np.sqrt(self.running_variance[index])},
-                epoch)
+            self.writer.add_scalars(graph_name,
+                                    {"std_dev_down": self.running_mean[index] - np.sqrt(self.running_variance[index])},
+                                    epoch)
             graph_name = "other_gradient_stats/" + layer_name
             self.writer.add_scalars(graph_name, {"min": self.running_min[index]}, epoch)
             self.writer.add_scalars(graph_name, {"max": self.running_max[index]}, epoch)
 
     def on_train_batch_end(self, batch, logs):
-        self._on_batch_end_write(batch)
-
-    def _on_batch_end_write(self, batch):
         batch_layer_means = []
         batch_layer_min = []
         batch_layer_max = []
@@ -68,12 +66,12 @@ class GradientTracker(Callback):
                 batch_layer_max.append(layer_gradient.max().cpu().detach().numpy())
 
         batch_layer_means = np.array(batch_layer_means)
-        self.previous_mean = self.running_mean
+        previous_mean = self.running_mean
 
-        self.running_mean = self.previous_mean + (batch_layer_means - self.previous_mean) / batch
+        self.running_mean = previous_mean + (batch_layer_means - previous_mean) / batch
 
-        self.running_m2 = self.running_m2 + (batch_layer_means - self.previous_mean) * (batch_layer_means -
-                                                                                        self.running_mean)
+        self.running_m2 = self.running_m2 + (batch_layer_means - previous_mean) * (batch_layer_means -
+                                                                                   self.running_mean)
 
         self.running_variance = self.running_m2 / (batch - 1) if batch > 1 else self.running_variance
 
@@ -97,5 +95,4 @@ class GradientTracker(Callback):
         layer_require_grad = layer_params.requires_grad
         if self.keep_bias:
             return layer_require_grad
-        else:
-            return layer_require_grad and ("bias" not in layer_name)
+        return layer_require_grad and ("bias" not in layer_name)
