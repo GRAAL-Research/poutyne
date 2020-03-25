@@ -101,7 +101,7 @@ class TensorBoardGradientTrackerTest(TestCase):
         self._test_tracking(keep_bias)
 
     def _test_tracking(self, keep_bias):
-        expected_call = list()
+        expected_calls = list()
         for epoch in range(1, self.num_epochs + 1):
             layer_names = [""]
             if self.num_layer > 1:
@@ -109,23 +109,23 @@ class TensorBoardGradientTrackerTest(TestCase):
                 for layer_idx in range(self.num_layer):
                     layer_names.append("{}.".format(layer_idx))
             for layer_name in layer_names:
-                expected_call.append(call('gradient_distributions/{}weight'.format(layer_name), {'mean': ANY}, epoch))
-                expected_call.append(
+                expected_calls.append(call('gradient_distributions/{}weight'.format(layer_name), {'mean': ANY}, epoch))
+                expected_calls.append(
                     call('gradient_distributions/{}weight'.format(layer_name), {'std_dev_up': ANY}, epoch))
-                expected_call.append(
+                expected_calls.append(
                     call('gradient_distributions/{}weight'.format(layer_name), {'std_dev_down': ANY}, epoch))
-                expected_call.append(call('other_gradient_stats/{}weight'.format(layer_name), {'min': ANY}, epoch))
-                expected_call.append(call('other_gradient_stats/{}weight'.format(layer_name), {'max': ANY}, epoch))
+                expected_calls.append(call('other_gradient_stats/{}weight'.format(layer_name), {'min': ANY}, epoch))
+                expected_calls.append(call('other_gradient_stats/{}weight'.format(layer_name), {'max': ANY}, epoch))
 
                 if keep_bias:
-                    expected_call.append(call('gradient_distributions/{}bias'.format(layer_name), {'mean': ANY}, epoch))
-                    expected_call.append(
+                    expected_calls.append(call('gradient_distributions/{}bias'.format(layer_name), {'mean': ANY}, epoch))
+                    expected_calls.append(
                         call('gradient_distributions/{}bias'.format(layer_name), {'std_dev_up': ANY}, epoch))
-                    expected_call.append(
+                    expected_calls.append(
                         call('gradient_distributions/{}bias'.format(layer_name), {'std_dev_down': ANY}, epoch))
-                    expected_call.append(call('other_gradient_stats/{}bias'.format(layer_name), {'min': ANY}, epoch))
-                    expected_call.append(call('other_gradient_stats/{}bias'.format(layer_name), {'max': ANY}, epoch))
+                    expected_calls.append(call('other_gradient_stats/{}bias'.format(layer_name), {'min': ANY}, epoch))
+                    expected_calls.append(call('other_gradient_stats/{}bias'.format(layer_name), {'max': ANY}, epoch))
 
         method_calls = self.writer.add_scalars.mock_calls
-        self.assertEqual(len(method_calls), len(expected_call))
-        self.assertEqual(method_calls, expected_call)
+        self.assertEqual(len(method_calls), len(expected_calls))
+        self.assertEqual(method_calls, expected_calls)
