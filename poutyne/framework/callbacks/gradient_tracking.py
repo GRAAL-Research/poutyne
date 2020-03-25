@@ -1,13 +1,24 @@
-import torch
-from torch.tensor import Tensor
+import numpy as np
+from torch.utils.tensorboard import SummaryWriter
 
 from poutyne.framework import Callback
 
 
 class GradientTracker(Callback):
-    def __init__(self, writer, keep_bias=False):
+    """
+    args:
+        logging_path (str): The path to log the Tensorboard entries. If you want to log the Tensorboard entries in the
+        same Tensorboard entries as the :class:`~poutyne.framework.callbacks.logger.TensorBoardLogger` you need to use
+        the same logging directory as the one used for the experiment appended with "tensorboard"
+        (e.g. `"./logging/tensorboard"`).
+        keep_bias (bool): Either or not to log the bias of the network.
+
+    """
+
+    def __init__(self, logging_path: str, keep_bias: bool = False) -> None:
         super().__init__()
-        self.writer = writer
+
+        self.writer = SummaryWriter(logging_path)
         self.keep_bias = keep_bias
 
         self.layer_names = []
@@ -19,21 +30,28 @@ class GradientTracker(Callback):
         self.running_min = None
         self.running_max = None
 
-    def on_train_begin(self, logs):
-        for layer_name, layer_params in self.model.model.named_parameters():
-            if self._keep_layer(layer_params, layer_name):
-                self.layer_names.append(layer_name)
-
-        self.number_layers = len(self.layer_names)
-
     def on_epoch_begin(self, epoch, logs):
-        self.running_mean = torch.zeros([self.number_layers])
-        self.running_variance = torch.zeros([self.number_layers])
-        self.running_m2 = torch.zeros([self.number_layers])
-        self.running_min = torch.zeros([self.number_layers])
-        self.running_max = torch.zeros([self.number_layers])
+        self.running_mean = np.zeros([self.number_layers])
+        self.running_variance = np.zeros([self.number_layers])
+        self.running_m2 = np.zeros([self.number_layers])
+        self.running_min = np.zeros([self.number_layers])
+        self.running_max = np.zeros([self.number_layers])
 
-    def on_batch_end(self, batch, logs):
+    def on_epoch_end(self, epoch, logs):
+        for index, layer_name in enumerate(self.layer_names):
+            graph_name = "gradient_distributions/" + layer_name
+            self.writer.add_scalars(graph_name, {"mean": self.running_mean[index]}, epoch)
+            self.writer.add_scalars(graph_name,
+                                    {"std_dev_up": self.running_mean[index] + np.sqrt(self.running_variance[index])},
+                                    epoch)
+            self.writer.add_scalars(
+                graph_name, {"std_dev_down": self.running_mean[index] - np.sqrt(self.running_variance[index])},
+                epoch)
+            graph_name = "other_gradient_stats/" + layer_name
+            self.writer.add_scalars(graph_name, {"min": self.running_min[index]}, epoch)
+            self.writer.add_scalars(graph_name, {"max": self.running_max[index]}, epoch)
+
+    def on_train_batch_end(self, batch, logs):
         self._on_batch_end_write(batch)
 
     def _on_batch_end_write(self, batch):
@@ -49,7 +67,7 @@ class GradientTracker(Callback):
                 batch_layer_min.append(layer_gradient.min())
                 batch_layer_max.append(layer_gradient.max())
 
-        batch_layer_means = Tensor(batch_layer_means)
+        batch_layer_means = np.array(batch_layer_means)
         self.previous_mean = self.running_mean
 
         self.running_mean = self.previous_mean + (batch_layer_means - self.previous_mean) / batch
