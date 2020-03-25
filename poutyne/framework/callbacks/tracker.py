@@ -4,21 +4,17 @@ from torch.utils.tensorboard import SummaryWriter
 from poutyne.framework import Callback
 
 
-class GradientTracker(Callback):
+class TensorBoardGradientTracker(Callback):
     """
     args:
-        logging_path (str): The path to log the Tensorboard entries. If you want to log the Tensorboard entries in the
-        same Tensorboard entries as the :class:`~poutyne.framework.callbacks.logger.TensorBoardLogger` you need to use
-        the same logging directory as the one used for the experiment appended with "tensorboard"
-        (e.g. `"./logging/tensorboard"`).
+        writer (~torch.utils.tensorboard.writer.SummaryWriter): The TensorBoard writer.
         keep_bias (bool): Either or not to log the bias of the network.
-
     """
 
-    def __init__(self, logging_path: str, keep_bias: bool = False) -> None:
+    def __init__(self, writer: SummaryWriter, keep_bias: bool = False) -> None:
         super().__init__()
 
-        self.writer = SummaryWriter(logging_path)
+        self.writer = writer
         self.keep_bias = keep_bias
 
         self.layer_names = []
