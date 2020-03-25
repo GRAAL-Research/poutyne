@@ -87,6 +87,19 @@ class TensorBoardGradientTrackerTest(TestCase):
         self.model.fit_generator(train_gen, valid_gen, epochs=self.num_epochs, steps_per_epoch=5, callbacks=[tracker])
         self._test_tracking(keep_bias)
 
+    def test_tracking_two_layers_shallow_model(self):
+        self.num_layer = 2
+        self.pytorch_network = nn.Sequential(nn.Linear(1, 4), nn.Linear(4, 1))
+        self.optimizer = torch.optim.SGD(self.pytorch_network.parameters(), lr=self.lr)
+        self.model = Model(self.pytorch_network, self.optimizer, self.loss_function)
+
+        keep_bias = False
+        train_gen = some_data_generator(20)
+        valid_gen = some_data_generator(20)
+        tracker = TensorBoardGradientTracker(self.writer, keep_bias=keep_bias)
+        self.model.fit_generator(train_gen, valid_gen, epochs=self.num_epochs, steps_per_epoch=5, callbacks=[tracker])
+        self._test_tracking(keep_bias)
+
     def test_tracking_N_layers_model_with_bias(self):
         self.num_layer = 4
         self.pytorch_network = nn.Sequential(nn.Linear(1, 1), nn.Linear(1, 1), nn.Linear(1, 1), nn.Linear(1, 1))
@@ -101,7 +114,7 @@ class TensorBoardGradientTrackerTest(TestCase):
         self._test_tracking(keep_bias)
 
     def _test_tracking(self, keep_bias):
-        expected_calls = list()
+        expected_calls = []
         for epoch in range(1, self.num_epochs + 1):
             layer_names = [""]
             if self.num_layer > 1:
@@ -118,7 +131,8 @@ class TensorBoardGradientTrackerTest(TestCase):
                 expected_calls.append(call('other_gradient_stats/{}weight'.format(layer_name), {'max': ANY}, epoch))
 
                 if keep_bias:
-                    expected_calls.append(call('gradient_distributions/{}bias'.format(layer_name), {'mean': ANY}, epoch))
+                    expected_calls.append(
+                        call('gradient_distributions/{}bias'.format(layer_name), {'mean': ANY}, epoch))
                     expected_calls.append(
                         call('gradient_distributions/{}bias'.format(layer_name), {'std_dev_up': ANY}, epoch))
                     expected_calls.append(
