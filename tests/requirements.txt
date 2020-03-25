@@ -1,1 +1,3 @@
 scikit-learn
+tensorboard
+tensorboardX
