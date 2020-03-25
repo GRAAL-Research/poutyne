@@ -186,6 +186,7 @@ class TensorBoardLogger(Logger):
         pass
 
     def _on_epoch_end_write(self, epoch_number: int, logs: dict):
+        logs.pop("epoch")
         grouped_items = dict()
         for k, v in logs.items():
             if 'val_' in k:
@@ -206,4 +207,6 @@ class TensorBoardLogger(Logger):
             self.writer.add_scalars('lr', {'lr': lr}, epoch_number)
 
     def _on_train_end_write(self, logs: Dict):
+        last_epoch = self.params["epochs"]
+        self.writer.add_scalars("last-epoch", last_epoch)
         self.writer.close()
