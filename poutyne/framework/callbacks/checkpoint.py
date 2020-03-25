@@ -1,7 +1,8 @@
 import warnings
+from typing import Dict, BinaryIO
 
-from .periodic import PeriodicSaveCallback
 from .lr_scheduler import _PyTorchLRSchedulerWrapper, ReduceLROnPlateau
+from .periodic import PeriodicSaveCallback
 
 
 class ModelCheckpoint(PeriodicSaveCallback):
@@ -18,17 +19,17 @@ class ModelCheckpoint(PeriodicSaveCallback):
         :class:`~poutyne.framework.callbacks.PeriodicSaveCallback`
     """
 
-    def __init__(self, *args, restore_best=False, **kwargs):
+    def __init__(self, *args, restore_best: bool = False, **kwargs):
         super().__init__(*args, **kwargs)
 
         self.restore_best = restore_best
         if self.restore_best and not self.save_best_only:
             raise ValueError("The 'restore_best' argument only works when 'save_best_only' is also true.")
 
-    def save_file(self, fd, epoch_number, logs):
+    def save_file(self, fd: BinaryIO, epoch_number: int, logs: Dict):
         self.model.save_weights(fd)
 
-    def on_train_end(self, logs):
+    def on_train_end(self, logs: Dict):
         if self.restore_best:
             if self.best_filename is not None:
                 if self.verbose:
@@ -53,7 +54,7 @@ class OptimizerCheckpoint(PeriodicSaveCallback):
         :class:`~poutyne.framework.callbacks.PeriodicSaveCallback`
     """
 
-    def save_file(self, fd, epoch_number, logs):
+    def save_file(self, fd: BinaryIO, epoch_number: int, logs: Dict):
         self.model.save_optimizer_state(fd)
 
 
@@ -77,17 +78,17 @@ class LRSchedulerCheckpoint(PeriodicSaveCallback):
         :class:`~poutyne.framework.callbacks.PeriodicSaveCallback`
     """
 
-    def __init__(self, lr_scheduler, *args, **kwargs):
+    def __init__(self, lr_scheduler: _PyTorchLRSchedulerWrapper, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.lr_scheduler = lr_scheduler
 
         if not isinstance(self.lr_scheduler, (_PyTorchLRSchedulerWrapper, ReduceLROnPlateau)):
             raise ValueError("Unknown scheduler callback '%s'." % lr_scheduler)
 
-    def save_file(self, fd, epoch_number, logs):
+    def save_file(self, fd: BinaryIO, epoch_number: int, logs: Dict):
         self.lr_scheduler.save_state(fd)
 
-    def set_params(self, params):
+    def set_params(self, params: Dict):
         self.lr_scheduler.set_params(params)
         super().set_params(params)
 
@@ -95,30 +96,30 @@ class LRSchedulerCheckpoint(PeriodicSaveCallback):
         self.lr_scheduler.set_model(model)
         super().set_model(model)
 
-    def on_epoch_begin(self, epoch_number, logs):
+    def on_epoch_begin(self, epoch_number: int, logs: Dict):
         self.lr_scheduler.on_epoch_begin(epoch_number, logs)
         super().on_epoch_begin(epoch_number, logs)
 
-    def on_epoch_end(self, epoch_number, logs):
+    def on_epoch_end(self, epoch_number: int, logs: Dict):
         self.lr_scheduler.on_epoch_end(epoch_number, logs)
         super().on_epoch_end(epoch_number, logs)
 
-    def on_batch_begin(self, batch_number, logs):
-        self.lr_scheduler.on_batch_begin(batch_number, logs)
-        super().on_batch_begin(batch_number, logs)
+    def on_train_batch_begin(self, batch_number: int, logs: Dict):
+        self.lr_scheduler.on_train_batch_begin(batch_number, logs)
+        super().on_train_batch_begin(batch_number, logs)
 
-    def on_batch_end(self, batch_number, logs):
-        self.lr_scheduler.on_batch_end(batch_number, logs)
-        super().on_batch_end(batch_number, logs)
+    def on_train_batch_end(self, batch_number: int, logs: Dict):
+        self.lr_scheduler.on_train_batch_end(batch_number, logs)
+        super().on_train_batch_end(batch_number, logs)
 
-    def on_backward_end(self, batch_number):
+    def on_backward_end(self, batch_number: int):
         self.lr_scheduler.on_backward_end(batch_number)
         super().on_backward_end(batch_number)
 
-    def on_train_begin(self, logs):
+    def on_train_begin(self, logs: Dict):
         self.lr_scheduler.on_train_begin(logs)
         super().on_train_begin(logs)
 
-    def on_train_end(self, logs):
+    def on_train_end(self, logs: Dict):
         self.lr_scheduler.on_train_end(logs)
         super().on_train_end(logs)

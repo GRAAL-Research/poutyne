@@ -21,7 +21,7 @@ from poutyne.framework.callbacks import ModelCheckpoint, \
     OptimizerCheckpoint, \
     LRSchedulerCheckpoint, \
     PeriodicSaveLambda, \
-    CSVLogger, \
+    AtomicCSVLogger, \
     TensorBoardLogger, \
     BestModelRestore
 
@@ -35,7 +35,7 @@ class Experiment:
 
     Args:
         directory (str): Path to the experiment's working directory. Will be used for the automatic logging.
-        model (torch.nn.Module): A PyTorch module.
+        network (torch.nn.Module): A PyTorch network.
         device (torch.torch.device): The device to which the model is sent. If None, the model will be
             kept on its current device.
             (Default value = None)
@@ -66,15 +66,17 @@ class Experiment:
         monitor_metric (str): Which metric to consider for best model performance calculation. Should be in
             the format '{metric_name}' or 'val_{metric_name}' (i.e. 'val_loss'). If None, will follow the value
             suggested by ``task`` or default to 'val_loss'.
-            (Default value = None)
+
+            .. warning:: If you do not plan on using a validation set, you must set the monitor metric to another
+                value.
         monitor_mode (str): Which mode, either 'min' or 'max', should be used when considering the ``monitor_metric``
-            value. If None, will follow the value suggested by ``task`` or default 'min'.
-            (Default value = None)
+            value. If None, will follow the value suggested by ``task`` or default to 'min'.
         task (str): Any str beginning with either 'classif' or 'reg'. Specifying a ``task`` can assign default
             values to the ``loss_function``, ``batch_metrics``, ``monitor_mode`` and ``monitor_mode``. For ``task``
             that begins with 'reg', the only default value is the loss function that is the mean squared error. When
             beginning with 'classif', the default loss function is the cross-entropy loss, the default batch metrics
-            will be the accuracy and the default monitoring will be set on 'val_acc' with a 'max' mode.
+            will be the accuracy, the default epoch metrics will be the F1 score and the default monitoring will be
+            set on 'val_acc' with a 'max' mode.
             (Default value = None)
 
     Example:
@@ -102,11 +104,11 @@ class Experiment:
             valid_generator = DataLoader(valid_dataset, batch_size=32)
 
             # Our network
-            pytorch_module = torch.nn.Linear(num_features, num_train_samples)
+            pytorch_network = torch.nn.Linear(num_features, num_train_samples)
 
             # Intialization of our experimentation and network training
             exp = Experiment('./simple_example',
-                             pytorch_module,
+                             pytorch_network,
                              optimizer='sgd',
                              task='classif')
             exp.train(train_generator, valid_generator, epochs=5)
@@ -169,6 +171,7 @@ class Experiment:
     OPTIMIZER_CHECKPOINT_FILENAME = 'checkpoint.optim'
     OPTIMIZER_CHECKPOINT_TMP_FILENAME = 'checkpoint.tmp.optim'
     LOG_FILENAME = 'log.tsv'
+    LOG_TMP_FILENAME = 'log.tmp.tsv'
     TENSORBOARD_DIRECTORY = 'tensorboard'
     EPOCH_FILENAME = 'last.epoch'
     EPOCH_TMP_FILENAME = 'last.tmp.epoch'
@@ -178,7 +181,7 @@ class Experiment:
 
     def __init__(self,
                  directory,
-                 module,
+                 network,
                  *,
                  device=None,
                  logging=True,
@@ -198,12 +201,12 @@ class Experiment:
         batch_metrics = [] if batch_metrics is None else batch_metrics
         epoch_metrics = [] if epoch_metrics is None else epoch_metrics
 
-        loss_function = self._get_loss_function(loss_function, module, task)
-        batch_metrics = self._get_batch_metrics(batch_metrics, module, task)
-        epoch_metrics = self._get_epoch_metrics(epoch_metrics, module, task)
+        loss_function = self._get_loss_function(loss_function, network, task)
+        batch_metrics = self._get_batch_metrics(batch_metrics, network, task)
+        epoch_metrics = self._get_epoch_metrics(epoch_metrics, network, task)
         self._set_monitor(monitor_metric, monitor_mode, task)
 
-        self.model = Model(module, optimizer, loss_function, batch_metrics=batch_metrics, epoch_metrics=epoch_metrics)
+        self.model = Model(network, optimizer, loss_function, batch_metrics=batch_metrics, epoch_metrics=epoch_metrics)
         if device is not None:
             self.model.to(device)
 
@@ -216,6 +219,7 @@ class Experiment:
         self.optimizer_checkpoint_filename = join_dir(Experiment.OPTIMIZER_CHECKPOINT_FILENAME)
         self.optimizer_checkpoint_tmp_filename = join_dir(Experiment.OPTIMIZER_CHECKPOINT_TMP_FILENAME)
         self.log_filename = join_dir(Experiment.LOG_FILENAME)
+        self.log_tmp_filename = join_dir(Experiment.LOG_TMP_FILENAME)
         self.tensorboard_directory = join_dir(Experiment.TENSORBOARD_DIRECTORY)
         self.epoch_filename = join_dir(Experiment.EPOCH_FILENAME)
         self.epoch_tmp_filename = join_dir(Experiment.EPOCH_TMP_FILENAME)
@@ -223,10 +227,10 @@ class Experiment:
         self.lr_scheduler_tmp_filename = join_dir(Experiment.LR_SCHEDULER_TMP_FILENAME)
         self.test_log_filename = join_dir(Experiment.TEST_LOG_FILENAME)
 
-    def _get_loss_function(self, loss_function, module, task):
+    def _get_loss_function(self, loss_function, network, task):
         if loss_function is None:
-            if hasattr(module, 'loss_function'):
-                return module.loss_function
+            if hasattr(network, 'loss_function'):
+                return network.loss_function
             if task is not None:
                 if task.startswith('classif'):
                     return 'cross_entropy'
@@ -234,18 +238,18 @@ class Experiment:
                     return 'mse'
         return loss_function
 
-    def _get_batch_metrics(self, batch_metrics, module, task):
+    def _get_batch_metrics(self, batch_metrics, network, task):
         if batch_metrics is None or len(batch_metrics) == 0:
-            if hasattr(module, 'batch_metrics'):
-                return module.batch_metrics
+            if hasattr(network, 'batch_metrics'):
+                return network.batch_metrics
             if task is not None and task.startswith('classif'):
                 return ['accuracy']
         return batch_metrics
 
-    def _get_epoch_metrics(self, epoch_metrics, module, task):
+    def _get_epoch_metrics(self, epoch_metrics, network, task):
         if epoch_metrics is None or len(epoch_metrics) == 0:
-            if hasattr(module, 'epoch_metrics'):
-                return module.epoch_metrics
+            if hasattr(network, 'epoch_metrics'):
+                return network.epoch_metrics
             if task is not None and task.startswith('classif'):
                 return ['f1']
         return epoch_metrics
@@ -282,6 +286,33 @@ class Experiment:
         else:
             best_epoch_index = history[self.monitor_metric].idxmax()
         return history.iloc[best_epoch_index:best_epoch_index + 1]
+
+    def get_saved_epochs(self):
+        """
+        Returns a pandas DataFrame which each row corresponds to an epoch having
+        a saved checkpoint.
+
+        Returns:
+            pandas DataFrame which each row corresponds to an epoch having a saved
+            checkpoint.
+        """
+        if pd is None:
+            raise ImportError("pandas needs to be installed to use this function.")
+
+        history = pd.read_csv(self.log_filename, sep='\t')
+        metrics = history[self.monitor_metric].tolist()
+        if self.monitor_mode == 'min':
+            monitor_op = lambda x, y: x < y
+            current_best = float('Inf')
+        elif self.monitor_mode == 'max':
+            monitor_op = lambda x, y: x > y
+            current_best = -float('Inf')
+        saved_epoch_indices = []
+        for i, metric in enumerate(metrics):
+            if monitor_op(metric, current_best):
+                current_best = metric
+                saved_epoch_indices.append(i)
+        return history.iloc[saved_epoch_indices]
 
     def _warn_missing_file(self, filename):
         warnings.warn("Missing checkpoint: %s." % filename)
@@ -362,9 +393,11 @@ class Experiment:
         callbacks = []
         if not disable_tensorboard:
             if SummaryWriter is None:
-                warnings.warn("tensorboard does not seem to be installed. "
-                              "To remove this warning, set the 'disable_tensorboard' "
-                              "flag to True or install tensorboard.")
+                warnings.warn(
+                    "tensorboard does not seem to be installed. "
+                    "To remove this warning, set the 'disable_tensorboard' "
+                    "flag to True or install tensorboard.",
+                    stacklevel=3)
             else:
                 tensorboard_writer = SummaryWriter(self.tensorboard_directory)
                 callbacks += [TensorBoardLogger(tensorboard_writer)]
@@ -408,7 +441,7 @@ class Experiment:
         new best (according to monitor mode) model weights in appropriate checkpoint files.
         :class:`~callbacks.OptimizerCheckpoint` and :class:`~callbacks.LRSchedulerCheckpoint` will also respectively
         handle the saving of the optimizer and LR scheduler's respective states for future retrieval. Moreover, a
-        :class:`~callbacks.CSVLogger` will save all available epoch statistics in an output .tsv file. Lastly, a
+        :class:`~callbacks.AtomicCSVLogger` will save all available epoch statistics in an output .tsv file. Lastly, a
         :class:`~callbacks.TensorBoardLogger` handles automatic TensorBoard logging of various neural network
         statistics.
 
@@ -427,7 +460,7 @@ class Experiment:
             save_every_epoch (bool, optional): Whether or not to save the experiment model's weights after
                 every epoch.
                 (Default value = False)
-            disable_tensorboard (bool, optional): Wheter or not to disable the automatic tensorboard logging
+            disable_tensorboard (bool, optional): Whether or not to disable the automatic tensorboard logging
                 callbacks.
                 (Default value = False)
             epochs (int): Number of times the entire training dataset is seen.
@@ -466,7 +499,12 @@ class Experiment:
             # Restarting optimization if needed.
             initial_epoch = self._load_epoch_state(lr_schedulers)
 
-            callbacks += [CSVLogger(self.log_filename, separator='\t', append=initial_epoch != 1)]
+            callbacks += [
+                AtomicCSVLogger(self.log_filename,
+                                separator='\t',
+                                append=initial_epoch != 1,
+                                temporary_filename=self.log_tmp_filename)
+            ]
 
             callbacks += self._init_model_restoring_callbacks(initial_epoch, save_every_epoch)
             callbacks += [
@@ -563,7 +601,7 @@ class Experiment:
     def _load_last_checkpoint(self):
         self.model.load_weights(self.model_checkpoint_filename)
 
-    def test(self, test_generator, *, steps=None, checkpoint='best', seed=42):
+    def test(self, test_generator, *, callbacks=None, steps=None, checkpoint='best', seed=42):
         """
         Computes and returns the loss and the metrics of the attribute model on a given test examples
         generator.
@@ -574,6 +612,9 @@ class Experiment:
         Args:
             test_generator: Generator-like object for the test set. See :func:`~Model.fit_generator()` for
                 details on the types of generators supported.
+            callbacks (List[~poutyne.framework.callbacks.Callback]): List of callbacks that will be called during
+                the testing.
+                (Default value = None)
             steps (int, optional): Number of iterations done on ``generator``.
                 (Defaults the number of steps needed to see the entire dataset)
             checkpoint (Union[str, int]): Which model checkpoint weights to load for the test evaluation.
@@ -584,22 +625,35 @@ class Experiment:
             seed (int, optional): Seed used to make the sampling deterministic.
                 (Default value = 42)
 
+        If the Experiment has logging enabled (i.e. self.logging is True), one callback will be automatically
+        included to saved the test metrics. Moreover, a :class:`~callbacks.AtomicCSVLogger` will save the test
+        metrics in an output .tsv file.
+
         Returns:
             dict sorting of all the test metrics values by their names.
         """
         set_seeds(seed)
 
+        callbacks = [] if callbacks is None else callbacks
+
+        # Copy callback list.
+        callbacks = list(callbacks)
+
         best_epoch_stats = self.load_checkpoint(checkpoint)
 
-        test_loss, test_metrics = self.model.evaluate_generator(test_generator, steps=steps)
-        if not isinstance(test_metrics, np.ndarray):
-            test_metrics = np.array([test_metrics])
+        if len(self.model.metrics_names) > 0:
+            test_loss, test_metrics = self.model.evaluate_generator(test_generator, steps=steps, callbacks=callbacks)
+            if not isinstance(test_metrics, np.ndarray):
+                test_metrics = np.array([test_metrics])
+        else:
+            test_loss = self.model.evaluate_generator(test_generator, steps=steps, callbacks=callbacks)
+            test_metrics = np.array([])
 
         test_metrics_names = ['test_loss'] + \
                              ['test_' + metric_name for metric_name in self.model.metrics_names]
         test_metrics_values = np.concatenate(([test_loss], test_metrics))
 
-        test_metrics_dict = {col: val for col, val in zip(test_metrics_names, test_metrics_values)}
+        test_metrics_dict = dict(zip(test_metrics_names, test_metrics_values))
         test_metrics_str = ', '.join('%s: %g' % (col, val) for col, val in test_metrics_dict.items())
         print("On best model: %s" % test_metrics_str)
 

@@ -25,10 +25,10 @@ class ModelCheckpointTest(TestCase):
 
     def setUp(self):
         torch.manual_seed(42)
-        self.pytorch_module = nn.Linear(1, 1)
+        self.pytorch_network = nn.Linear(1, 1)
         self.loss_function = nn.MSELoss()
-        self.optimizer = torch.optim.SGD(self.pytorch_module.parameters(), lr=1e-3)
-        self.model = Model(self.pytorch_module, self.optimizer, self.loss_function)
+        self.optimizer = torch.optim.SGD(self.pytorch_network.parameters(), lr=1e-3)
+        self.model = Model(self.pytorch_network, self.optimizer, self.loss_function)
         self.temp_dir_obj = TemporaryDirectory()
         self.checkpoint_filename = os.path.join(self.temp_dir_obj.name, 'my_checkpoint_{epoch}.ckpt')
 
@@ -155,19 +155,19 @@ class ModelCheckpointTest(TestCase):
         checkpointer.on_train_begin({})
         for epoch, (val_loss, has_checkpoint) in enumerate(zip(val_losses, has_checkpoints), 1):
             checkpointer.on_epoch_begin(epoch, {})
-            checkpointer.on_batch_begin(1, {})
+            checkpointer.on_train_batch_begin(1, {})
             loss = self._update_model(generator)
-            checkpointer.on_batch_end(1, {'batch': 1, 'size': ModelCheckpointTest.batch_size, 'loss': loss})
+            checkpointer.on_train_batch_end(1, {'batch': 1, 'size': ModelCheckpointTest.batch_size, 'loss': loss})
             checkpointer.on_epoch_end(epoch, {'epoch': epoch, 'loss': loss, 'val_loss': val_loss})
             filename = self.checkpoint_filename.format(epoch=epoch)
             self.assertEqual(has_checkpoint, os.path.isfile(filename))
         checkpointer.on_train_end({})
 
     def _update_model(self, generator):
-        self.pytorch_module.zero_grad()
+        self.pytorch_network.zero_grad()
 
         x, y = next(generator)
-        pred_y = self.pytorch_module(x)
+        pred_y = self.pytorch_network(x)
         loss = self.loss_function(pred_y, y)
         loss.backward()
 

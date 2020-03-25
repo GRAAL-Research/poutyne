@@ -9,6 +9,7 @@
   :description: Poutyne is a Keras-like framework for PyTorch and handles much of the boilerplating code needed to train neural networks.
   :keywords: poutyne, poutine, deep learning, pytorch, neural network, keras, machine learning, data science, python
   :author: Frédérik Paradis
+  :property="og:image": https://poutyne.org/_static/logos/poutyne-notext.png
 
 Here is Poutyne
 ===============
@@ -72,14 +73,14 @@ Create yourself a `PyTorch <https://pytorch.org/docs/master/nn.html>`_ network:
 
 .. code-block:: python
 
-  pytorch_module = torch.nn.Linear(num_features, num_classes)
+  pytorch_network = torch.nn.Linear(num_features, num_classes)
 
 
 You can now use Poutyne's model to train your network easily:
 
 .. code-block:: python
 
-  model = Model(pytorch_module, 'sgd', 'cross_entropy',
+  model = Model(pytorch_network, 'sgd', 'cross_entropy',
                 batch_metrics=['accuracy'], epoch_metrics=['f1'])
   model.fit(
       train_x, train_y,
@@ -147,7 +148,7 @@ We welcome user input, whether it is regarding bugs found in the library or feat
 License
 =======
 
-Poutyne is GPLv3 licensed, as found in the `LICENSE file <https://github.com/GRAAL-Research/poutyne/blob/master/LICENSE>`_.
+Poutyne is LGPLv3 licensed, as found in the `LICENSE file <https://github.com/GRAAL-Research/poutyne/blob/master/LICENSE>`_.
 
 
 Why this name, Poutyne?

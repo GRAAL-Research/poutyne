@@ -1,12 +1,8 @@
-import os
-
 import csv
-
-import unittest
-from unittest import TestCase, skipIf
-from unittest.mock import MagicMock, call
-
+import os
 from tempfile import TemporaryDirectory
+from unittest import TestCase, skipIf, main
+from unittest.mock import MagicMock, call
 
 import torch
 import torch.nn as nn
@@ -21,8 +17,9 @@ try:
 except ImportError:
     XSummaryWriter = None
 
-from poutyne.framework import Model
-from poutyne.framework.callbacks import CSVLogger, Callback, TensorBoardLogger
+from poutyne.framework import Model, Callback, TensorBoardLogger
+from poutyne.framework import CSVLogger as NonAtomicCSVLogger
+from poutyne.framework import AtomicCSVLogger
 
 
 def some_data_generator(batch_size):
@@ -36,23 +33,26 @@ class History(Callback):
     def on_epoch_end(self, epoch_number, logs):
         self.history.append(logs)
 
-    def on_batch_end(self, batch_number, logs):
+    def on_train_batch_end(self, batch_number, logs):
         self.history.append(logs)
 
     def on_train_begin(self, logs):
         self.history = []
 
 
-class CSVLoggerTest(TestCase):
+class BaseCSVLoggerTest:
+    # pylint: disable=not-callable,no-member
+    CSVLogger = None
     batch_size = 20
     lr = 1e-3
+    num_epochs = 10
 
     def setUp(self):
         torch.manual_seed(42)
-        self.pytorch_module = nn.Linear(1, 1)
+        self.pytorch_network = nn.Linear(1, 1)
         self.loss_function = nn.MSELoss()
-        self.optimizer = torch.optim.SGD(self.pytorch_module.parameters(), lr=CSVLoggerTest.lr)
-        self.model = Model(self.pytorch_module, self.optimizer, self.loss_function)
+        self.optimizer = torch.optim.SGD(self.pytorch_network.parameters(), lr=BaseCSVLoggerTest.lr)
+        self.model = Model(self.pytorch_network, self.optimizer, self.loss_function)
         self.temp_dir_obj = TemporaryDirectory()
         self.csv_filename = os.path.join(self.temp_dir_obj.name, 'my_log.csv')
 
@@ -62,29 +62,41 @@ class CSVLoggerTest(TestCase):
     def test_logging(self):
         train_gen = some_data_generator(20)
         valid_gen = some_data_generator(20)
-        logger = CSVLogger(self.csv_filename)
-        history = self.model.fit_generator(train_gen, valid_gen, epochs=10, steps_per_epoch=5, callbacks=[logger])
+        logger = self.CSVLogger(self.csv_filename)
+        history = self.model.fit_generator(train_gen,
+                                           valid_gen,
+                                           epochs=self.num_epochs,
+                                           steps_per_epoch=5,
+                                           callbacks=[logger])
         self._test_logging(history)
 
     def test_logging_with_batch_granularity(self):
         train_gen = some_data_generator(20)
         valid_gen = some_data_generator(20)
-        logger = CSVLogger(self.csv_filename, batch_granularity=True)
+        logger = self.CSVLogger(self.csv_filename, batch_granularity=True)
         history = History()
-        self.model.fit_generator(train_gen, valid_gen, epochs=10, steps_per_epoch=5, callbacks=[logger, history])
+        self.model.fit_generator(train_gen,
+                                 valid_gen,
+                                 epochs=self.num_epochs,
+                                 steps_per_epoch=5,
+                                 callbacks=[logger, history])
         self._test_logging(history.history)
 
     def test_logging_append(self):
         train_gen = some_data_generator(20)
         valid_gen = some_data_generator(20)
-        logger = CSVLogger(self.csv_filename)
-        history = self.model.fit_generator(train_gen, valid_gen, epochs=10, steps_per_epoch=5, callbacks=[logger])
-        logger = CSVLogger(self.csv_filename, append=True)
+        logger = self.CSVLogger(self.csv_filename)
+        history = self.model.fit_generator(train_gen,
+                                           valid_gen,
+                                           epochs=self.num_epochs,
+                                           steps_per_epoch=5,
+                                           callbacks=[logger])
+        logger = self.CSVLogger(self.csv_filename, append=True)
         history2 = self.model.fit_generator(train_gen,
                                             valid_gen,
                                             epochs=20,
                                             steps_per_epoch=5,
-                                            initial_epoch=10,
+                                            initial_epoch=self.num_epochs,
                                             callbacks=[logger])
         self._test_logging(history + history2)
 
@@ -94,7 +106,7 @@ class CSVLoggerTest(TestCase):
             rows = []
             for row in reader:
                 if row['epoch'] != '':
-                    self.assertAlmostEqual(float(row['lr']), CSVLoggerTest.lr)
+                    self.assertAlmostEqual(float(row['lr']), BaseCSVLoggerTest.lr)
                 del row['lr']
                 rows.append(row)
         self.assertEqual(len(rows), len(history))
@@ -108,17 +120,26 @@ class CSVLoggerTest(TestCase):
                     self.assertEqual(str(row[k]), str(hist_entry[k]))
 
 
+class NonAtomicCSVLoggerTest(BaseCSVLoggerTest, TestCase):
+    CSVLogger = NonAtomicCSVLogger
+
+
+class AtomicCSVLoggerTest(BaseCSVLoggerTest, TestCase):
+    CSVLogger = AtomicCSVLogger
+
+
 class BaseTensorBoardLoggerTest:
     SummaryWriter = None
     batch_size = 20
     lr = 1e-3
+    num_epochs = 10
 
     def setUp(self):
         torch.manual_seed(42)
-        self.pytorch_module = nn.Linear(1, 1)
+        self.pytorch_network = nn.Linear(1, 1)
         self.loss_function = nn.MSELoss()
-        self.optimizer = torch.optim.SGD(self.pytorch_module.parameters(), lr=BaseTensorBoardLoggerTest.lr)
-        self.model = Model(self.pytorch_module, self.optimizer, self.loss_function)
+        self.optimizer = torch.optim.SGD(self.pytorch_network.parameters(), lr=BaseTensorBoardLoggerTest.lr)
+        self.model = Model(self.pytorch_network, self.optimizer, self.loss_function)
         self.temp_dir_obj = TemporaryDirectory()
         # pylint: disable=not-callable
         self.writer = self.SummaryWriter(self.temp_dir_obj.name)
@@ -131,15 +152,20 @@ class BaseTensorBoardLoggerTest:
         train_gen = some_data_generator(20)
         valid_gen = some_data_generator(20)
         logger = TensorBoardLogger(self.writer)
-        history = self.model.fit_generator(train_gen, valid_gen, epochs=10, steps_per_epoch=5, callbacks=[logger])
+        history = self.model.fit_generator(train_gen,
+                                           valid_gen,
+                                           epochs=self.num_epochs,
+                                           steps_per_epoch=5,
+                                           callbacks=[logger])
         self._test_logging(history)
 
     def _test_logging(self, history):
         calls = list()
         for h in history:
             calls.append(call('loss', {'loss': h['loss'], 'val_loss': h['val_loss']}, h['epoch']))
-            calls.append(call('lr', {'lr': 1e-3}, h['epoch']))
+            calls.append(call('lr', {'lr': self.lr}, h['epoch']))
         self.writer.add_scalars.assert_has_calls(calls, any_order=True)
+        self.writer.add_scalars.assert_called_with('last-epoch', self.num_epochs)
 
 
 @skipIf(XSummaryWriter is None, "Needs tensorboardX to run this test")
@@ -153,4 +179,4 @@ class TorchTensorboardLoggerTest(BaseTensorBoardLoggerTest, TestCase):
 
 
 if __name__ == '__main__':
-    unittest.main()
+    main()

@@ -12,9 +12,9 @@ that uses the phases, steps through them, and sets the parameters of the optimiz
 ###############################################################################
 import contextlib
 from collections import OrderedDict
-from math import cos, pi
 from itertools import islice, chain
-from typing import Dict, List, Tuple
+from math import cos, pi
+from typing import Dict, List, Tuple, Optional
 
 from .callbacks import Callback
 
@@ -36,7 +36,7 @@ class linspace:
         [0.0, 0.5, 1.0]
     """
 
-    def __init__(self, start: float, end: float, steps: int):
+    def __init__(self, start: int, end: int, steps: int):
         self.start = start
         self.end = end
         self.steps = steps
@@ -62,7 +62,7 @@ class cosinespace:
         [0.0, 0.5, 1.0]
     """
 
-    def __init__(self, start, end, steps):
+    def __init__(self, start: int, end: int, steps: int):
         self.start = start
         self.end = end
         self.steps = steps
@@ -86,7 +86,7 @@ class Phase:
         momentum (List[float], optional): a configuration space for the momentum.
     """
 
-    def __init__(self, *, lr=None, momentum=None):
+    def __init__(self, *, lr: Optional[float] = None, momentum: Optional[float] = None):
         if lr is None and momentum is None:
             raise ValueError("You must specify lr and/or momentum.")
 
@@ -100,7 +100,7 @@ class Phase:
         names = list(self.configuration.keys())
         values = self.configuration.values()
         for values in zip(*self.configuration.values()):
-            yield {name: value for name, value in zip(names, values)}
+            yield dict(zip(names, values))
 
     def __repr__(self):
         return "\n".join([
@@ -133,13 +133,12 @@ class Phase:
 
 ###############################################################################
 # complex policies build from simple phases
-def one_cycle_phases(
-        steps: int,
-        lr: Tuple[float, float] = (0.1, 1),
-        momentum: Tuple[float, float] = (0.95, 0.85),
-        finetune_lr: float = .01,
-        finetune_fraction: float = 0.1,
-) -> List[Phase]:
+# pylint
+def one_cycle_phases(steps: int,
+                     lr: Tuple[float, float] = (0.1, 1),
+                     momentum: Tuple[float, float] = (0.95, 0.85),
+                     finetune_lr: float = .01,
+                     finetune_fraction: float = 0.1) -> List[Phase]:
     """
     The "one-cycle" policy as described in the paper `Super-Convergence: Very Fast Training of
     Neural Networks Using Large Learning Rates <https://arxiv.org/abs/1708.07120>`_.
@@ -233,7 +232,7 @@ class OptimizerPolicy(Callback):
         self.current_step = initial_step
         self.phases_iter = iter(self)
 
-    def on_batch_begin(self, batch_number, logs):
+    def on_train_batch_begin(self, batch_number: int, logs: Dict):
         # Don't do anything when we run out of phases.
         with contextlib.suppress(StopIteration):
             spec = next(self.phases_iter)

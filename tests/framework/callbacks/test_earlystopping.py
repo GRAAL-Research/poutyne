@@ -20,10 +20,10 @@ class EarlyStoppingTest(TestCase):
 
     def setUp(self):
         torch.manual_seed(42)
-        self.pytorch_module = nn.Linear(1, 1)
+        self.pytorch_network = nn.Linear(1, 1)
         self.loss_function = nn.MSELoss()
-        self.optimizer = torch.optim.SGD(self.pytorch_module.parameters(), lr=1e-3)
-        self.model = Model(self.pytorch_module, self.optimizer, self.loss_function)
+        self.optimizer = torch.optim.SGD(self.pytorch_network.parameters(), lr=1e-3)
+        self.model = Model(self.pytorch_network, self.optimizer, self.loss_function)
 
     def test_integration(self):
         train_gen = some_data_generator(20)
@@ -62,9 +62,9 @@ class EarlyStoppingTest(TestCase):
         earlystopper.on_train_begin({})
         for epoch, val_loss in enumerate(val_losses, 1):
             earlystopper.on_epoch_begin(epoch, {})
-            earlystopper.on_batch_begin(1, {})
+            earlystopper.on_train_batch_begin(1, {})
             loss = self._update_model(generator)
-            earlystopper.on_batch_end(1, {'batch': 1, 'size': EarlyStoppingTest.batch_size, 'loss': loss})
+            earlystopper.on_train_batch_end(1, {'batch': 1, 'size': EarlyStoppingTest.batch_size, 'loss': loss})
             earlystopper.on_epoch_end(epoch, {'epoch': epoch, 'loss': loss, 'val_loss': val_loss})
             self.assertEqual(self.model.stop_training, epoch == early_stop_epoch)
             if epoch == early_stop_epoch:
@@ -73,10 +73,10 @@ class EarlyStoppingTest(TestCase):
         earlystopper.on_train_end({})
 
     def _update_model(self, generator):
-        self.pytorch_module.zero_grad()
+        self.pytorch_network.zero_grad()
 
         x, y = next(generator)
-        pred_y = self.pytorch_module(x)
+        pred_y = self.pytorch_network(x)
         loss = self.loss_function(pred_y, y)
         loss.backward()
 

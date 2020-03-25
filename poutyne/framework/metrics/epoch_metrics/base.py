@@ -9,10 +9,6 @@ class EpochMetric(ABC, nn.Module):
     of the epoch.
     """
 
-    def __init__(self):
-        super().__init__()
-        self.__name__ = self.__class__.__name__
-
     @abstractmethod
     def forward(self, y_pred, y_true):
         """
@@ -27,6 +23,7 @@ class EpochMetric(ABC, nn.Module):
     @abstractmethod
     def get_metric(self):
         """
-        Compute and return the metric.
+        Compute and return the metric. The information kept for the computation of the metric
+        is cleaned so that a new epoch can be done.
         """
         pass

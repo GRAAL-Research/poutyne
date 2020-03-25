@@ -1,6 +1,6 @@
 ![Poutyne Logo](https://github.com/GRAAL-Research/poutyne/blob/master/docs/source/_static/logos/poutyne-dark.png)
 
-[![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](http://www.gnu.org/licenses/gpl-3.0)
+[![License: LGPL v3](https://img.shields.io/badge/License-LGPL%20v3-blue.svg)](http://www.gnu.org/licenses/lgpl-3.0)
 [![Build Status](https://travis-ci.org/GRAAL-Research/poutyne.svg?branch=master)](https://travis-ci.org/GRAAL-Research/poutyne)
 
 ## Here is Poutyne.
@@ -62,13 +62,13 @@ test_y = np.random.randint(num_classes, size=num_test_samples).astype('int64')
 Create yourself a [PyTorch](https://pytorch.org/docs/master/nn.html) network:
 
 ```python
-pytorch_module = torch.nn.Linear(num_features, num_classes)
+pytorch_network = torch.nn.Linear(num_features, num_classes)
 ```
 
 You can now use Poutyne's model to train your network easily:
 
 ```python
-model = Model(pytorch_module, 'sgd', 'cross_entropy',
+model = Model(pytorch_network, 'sgd', 'cross_entropy',
               batch_metrics=['accuracy'], epoch_metrics=['f1'])
 model.fit(
     train_x, train_y,
@@ -136,7 +136,7 @@ We welcome user input, whether it is regarding bugs found in the library or feat
 
 ## License
 
-Poutyne is GPLv3 licensed, as found in the [LICENSE file](https://github.com/GRAAL-Research/poutyne/blob/master/LICENSE).
+Poutyne is LGPLv3 licensed, as found in the [LICENSE file](https://github.com/GRAAL-Research/poutyne/blob/master/LICENSE).
 
 ------------------
 

@@ -6,7 +6,7 @@ import torch
 import torch.nn as nn
 
 from poutyne.framework import Model
-from poutyne.framework.callbacks import DelayCallback
+from poutyne.framework.callbacks import DelayCallback, Callback
 
 
 def some_data_generator(batch_size):
@@ -23,11 +23,11 @@ class DelayCallbackTest(TestCase):
 
     def setUp(self):
         torch.manual_seed(42)
-        self.pytorch_module = nn.Linear(1, 1)
+        self.pytorch_network = nn.Linear(1, 1)
         self.loss_function = nn.MSELoss()
-        self.optimizer = torch.optim.SGD(self.pytorch_module.parameters(), lr=1e-3)
-        self.model = Model(self.pytorch_module, self.optimizer, self.loss_function)
-        self.mock_callback = MagicMock()
+        self.optimizer = torch.optim.SGD(self.pytorch_network.parameters(), lr=1e-3)
+        self.model = Model(self.pytorch_network, self.optimizer, self.loss_function)
+        self.mock_callback = MagicMock(spec=Callback)
         self.delay_callback = DelayCallback(self.mock_callback)
         self.train_dict = {'loss': ANY, 'time': ANY}
         self.log_dict = {'loss': ANY, 'val_loss': ANY, 'time': ANY}
@@ -50,10 +50,10 @@ class DelayCallbackTest(TestCase):
         for epoch in range(epoch_delay + 1, DelayCallbackTest.epochs + 1):
             call_list.append(call.on_epoch_begin(epoch, {}))
             for step in range(1, params['steps'] + 1):
-                call_list.append(call.on_batch_begin(step, {}))
+                call_list.append(call.on_train_batch_begin(step, {}))
                 call_list.append(call.on_backward_end(step))
                 call_list.append(
-                    call.on_batch_end(step, {
+                    call.on_train_batch_end(step, {
                         'batch': step,
                         'size': DelayCallbackTest.batch_size,
                         **self.train_dict
@@ -96,10 +96,10 @@ class DelayCallbackTest(TestCase):
             call_list.append(call.on_epoch_begin(epoch, {}))
             start_step = batch_in_epoch_delay + 1 if epoch == epoch_delay + 1 else 1
             for step in range(start_step, params['steps'] + 1):
-                call_list.append(call.on_batch_begin(step, {}))
+                call_list.append(call.on_train_batch_begin(step, {}))
                 call_list.append(call.on_backward_end(step))
                 call_list.append(
-                    call.on_batch_end(step, {
+                    call.on_train_batch_end(step, {
                         'batch': step,
                         'size': DelayCallbackTest.batch_size,
                         **self.train_dict
