@@ -1,5 +1,4 @@
-from collections import OrderedDict
-from typing import Dict
+from typing import Dict, List
 
 import numpy as np
 from torch.utils.tensorboard import SummaryWriter
@@ -62,21 +61,18 @@ class GradientStatsTracker:
         self.running_min = np.minimum(batch_layer_min, self.running_min)
         self.running_max = np.maximum(batch_layer_max, self.running_max)
 
-    def get_stats(self) -> Dict:
-        formatted_stats = OrderedDict()
+    def get_stats(self) -> List:
+        formatted_stats = []
         for index, layer_name in enumerate(self.layer_names):
-            stats = OrderedDict()
-            stats["mean"] = self.running_mean[index]
-            stats["std_dev_up"] = self.running_mean[index] + np.sqrt(self.running_variance[index])
-            stats["std_dev_down"] = self.running_mean[index] - np.sqrt(self.running_variance[index])
+            stats = [("mean", self.running_mean[index]),
+                     ("std_dev_up", self.running_mean[index] + np.sqrt(self.running_variance[index])),
+                     ("std_dev_down", self.running_mean[index] - np.sqrt(self.running_variance[index]))]
 
-            formatted_stats["gradient_distributions/" + layer_name] = stats
+            formatted_stats.append(("gradient_distributions/{}".format(layer_name), stats))
 
-            other_stats = OrderedDict()
-            other_stats["min"] = self.running_min[index]
-            other_stats["max"] = self.running_max[index]
+            other_stats = [("min", self.running_min[index]), ("max", self.running_max[index])]
 
-            formatted_stats["other_gradient_stats/" + layer_name] = other_stats
+            formatted_stats.append(("other_gradient_stats/{}".format(layer_name), other_stats))
         return formatted_stats
 
     def _keep_layer(self, layer_params, layer_name):
@@ -106,8 +102,8 @@ class TensorBoardGradientTracker(Callback):
 
     def on_epoch_end(self, epoch, logs):
         formatted_stats = self.tracker.get_stats()
-        for layer_name, stats in formatted_stats.items():
-            for stat_name, value in stats.items():
+        for layer_name, stats in formatted_stats:
+            for stat_name, value in stats:
                 self.writer.add_scalars(layer_name, {stat_name: value}, epoch)
 
     def on_train_batch_end(self, batch, logs):
