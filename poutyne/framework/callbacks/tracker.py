@@ -1,7 +1,7 @@
 import numpy as np
 from torch.utils.tensorboard import SummaryWriter
 
-from poutyne.framework import Callback
+from .callbacks import Callback
 
 
 class TensorBoardGradientTracker(Callback):
