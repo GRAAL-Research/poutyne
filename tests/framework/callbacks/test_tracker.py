@@ -11,7 +11,7 @@ try:
 except ImportError:
     SummaryWriter = None
 
-from poutyne.framework import Model, TensorBoardGradientTracker, GradientStatsTracker, Tracker
+from poutyne.framework import Model, TensorBoardGradientTracker, WeightsGradientsStatsTracker, Tracker
 
 
 class TrackerTest(TestCase):
@@ -42,7 +42,7 @@ class TrackerTest(TestCase):
 
 class GradientStatsTrackerTest(TestCase):
     def setUp(self):
-        self.tracker = GradientStatsTracker()
+        self.tracker = WeightsGradientsStatsTracker(number_layers=2)
 
         self.other_value = 0.00
         self.layer_1_min = -0.15
@@ -125,8 +125,7 @@ class GradientStatsTrackerTest(TestCase):
             }
         }
 
-    def test_tracking_one_layer_model(self):
-        self.tracker.init(number_layers=2)  # init the running stats
+    def test_compute_two_layers_statistic(self):
         self._run_n_batch(num_batch=1)
         self._test_batch_stats(self.first_batch_expected_stats)
 
@@ -135,6 +134,18 @@ class GradientStatsTrackerTest(TestCase):
 
         self._run_n_batch(num_batch=3)
         self._test_batch_stats(self.third_batch_expected_stats)
+
+    def _run_n_batch(self, num_batch):
+        for batch_number in range(1, num_batch + 1):
+            layer_1_params = MagicMock()
+            layer_1_params.grad = self.layer_1_gradients * batch_number
+            layer_2_params = MagicMock()
+            layer_2_params.grad = self.layer_2_gradients * batch_number
+
+            named_parameters = ((n, p)
+                                for n, p in [(self.layer_1_name, layer_1_params), (self.layer_2_name, layer_2_params)])
+
+            self.tracker.batch_statistic_upgrade(named_parameters=named_parameters)
 
     def _test_batch_stats(self, batch_expected):
         batch_actual_stats = self.tracker.get_stats(self.layer_names)
@@ -148,12 +159,6 @@ class GradientStatsTrackerTest(TestCase):
         self.assertEqual(expected.keys(), actual.keys())
         for expected_value, actual_value in zip(expected.values(), actual.values()):
             self.assertAlmostEqual(float(expected_value), float(actual_value), places=3)
-
-    def _run_n_batch(self, num_batch):
-        for batch_number in range(1, num_batch + 1):
-            self.tracker.upgrade_layer_batch_grad(layer_gradient=self.layer_1_gradients * batch_number)
-            self.tracker.upgrade_layer_batch_grad(layer_gradient=self.layer_2_gradients * batch_number)
-            self.tracker.upgrade_batch_grad(batch_number=batch_number)
 
 
 def some_data_generator(batch_size):
