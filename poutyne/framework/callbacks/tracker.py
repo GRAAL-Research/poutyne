@@ -20,11 +20,11 @@ class WeightsGradientsStatsTracker:
 
         self.reset()
 
-    def batch_statistic_upgrade(self, named_parameters: Tuple[str, torch.nn.parameter.Parameter]) -> None:
+    def batch_statistic_upgrade(self, named_parameters: List[Tuple[str, torch.nn.parameter.Parameter]]) -> None:
         """
         Accumulate the running mean, running variance, min and the max for all the layers.
         Args:
-             named_parameters (Tuple[str, ~torch.nn.parameter.Parameter): The named parameters of the model to
+             named_parameters (List[Tuple[str, ~torch.nn.parameter.Parameter]): The named parameters of the model to
              track.
         """
         batch_layer_means = []
