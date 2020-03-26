@@ -1,28 +1,22 @@
-\documentclass[MSc,english,french]{ulthese}
-\ifxetex\else \usepackage[utf8]{inputenc} \fi
-\frenchbsetup{%
-	StandardItemizeEnv=true,
-	ThinSpaceInFrenchNumbers=true,
-	og=«, fg=»
-}
+\documentclass[10pt, a4paper]{article}
+
 
 
 \usepackage{multirow}
 \usepackage{amsmath}
-\bibliographystyle{plainnat}
 
 \begin{document}
-\chapter*{Welford's Online Algorithm for the computation of the Running Variance}
-To compute the absolute mean and variance for every layer weights' gradients updated per epoch, we use Welford's online algorithm \citep{doi:10.1080/00401706.1962.10490022}. 
+\section*{Welford's Online Algorithm for the computation of the Running Variance}
+In the weights' gradients stats tracker class (WeightsGradientsStatsTracker) we have two mains statistics, the running absolute mean and the running absolute mean variance. The first is the mean of the absolute value of all the gradient for every weights per layer. The second is the variance of the observed absolute mean of all the gradient for every weights per layer. To compute those statistic, we use Welford's online algorithm \cite{doi:10.1080/00401706.1962.10490022}. 
 
-\section*{Computing the Running Absolute Mean of the Weights' Gradient Per Layer}
+\subsection*{Computing the Running Absolute Mean of the Weights' Gradient Per Layer}
 The $n$-th running absolute mean for the $i$-th layer gradients mean weights' is
 \begin{equation*}
 \bar{x}_{n, i} = \bar{x}_{n - 1 , i} + \frac{x_{n, i} - \bar{x}_{n - 1, i} }{n}
 \end{equation*}	
 where $\bar{x}_{n - 1, i}$ is the previous running absolute mean for the layer $i$, $n$ is the batch number (i.e. how many times we have updated the variance) and $x_{n, i}$ is the absolute mean of the weights' gradients of the layer $i$. Also, when $n = 1$, $\bar{x}_{n - 1, i} = 0$.
 
-\section*{Computing the Running Variance of the Weights Gradient Per Layer}
+\subsection*{Computing the Running Variance of the Absolute Mean Weights Gradient Per Layer}
 The $n$-th running variance for the $i$-th layer weights' gradients absolute mean is
 \begin{equation*}
 s^2_{n, i} = \frac{M_{2, n, i}}{n - 1}
@@ -34,8 +28,7 @@ M_{2, n, i} = M_{2, n- 1, i} + (x_{n, i} - \bar{x}_{n-1, i}) \times (x_{n, i} - 
 
 Also, when $n = 1$, $M_{2, n, i} = 0$ and $s^2_{n, i} = 0$.
 
-\newpage
-\section*{Example of Computation}
+\subsection*{Example of Computation}
 Having the following two layers gradients weights' update
 
 \begin{align*}
@@ -83,5 +76,6 @@ s^2_{3, 1} &= \frac{0.00845 + (0.39 - 0.195)\times(0.39 - 0.26)}{3 - 1} = 0.0169
 s^2_{3, 2} &= \frac{0.00933889 + (0.41 - 0.205)\times(0.41 - 0.27\bar{3})}{3 - 1} = 0.018677778
 \end{align*}
 
+\bibliographystyle{plainnat}
 \bibliography{welfordcompute}
 \end{document}

@@ -9,10 +9,10 @@ from .callbacks import Callback
 
 class WeightsGradientsStatsTracker:
     """
-    The weights' gradient statistic tracker will compute the running absolute mean, running absolute mean variance, min
-    and max per layer. The tracker is using the `Welford's online algorithm
-    <https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Welford's_online_algorithm>`_ to compute the
-    running absolute mean and running variance of the weights' gradients.
+    The weights' gradient statistic tracker will compute the running absolute mean, running absolute mean variance
+    (i.e. the variance of the absolute mean), min and max per layer. The tracker is using the `Welford's online
+    algorithm <https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Welford's_online_algorithm>`_
+    to compute the running absolute mean and running variance of the weights' gradients.
     """
 
     def __init__(self, number_layers) -> None:
