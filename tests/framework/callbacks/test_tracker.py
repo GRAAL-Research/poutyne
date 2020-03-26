@@ -59,7 +59,7 @@ class GradientStatsTrackerTest(TestCase):
 
         # The value have been compute manual according to the Welford's online algorithm
         # https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Welford's_online_algorithm
-        # We refer to the WelfordCompute.pdf for the expected value.
+        # We refer to the WelfordCompute document in tests/framework/callbacks for the expected value computation.
         mean_1 = 0.13
         mean_2 = 0.1366666
         s2_1 = 0
