@@ -1,3 +1,4 @@
+import math
 from tempfile import TemporaryDirectory
 from unittest import TestCase, skipIf
 from unittest.mock import MagicMock, call, ANY
@@ -10,7 +11,149 @@ try:
 except ImportError:
     SummaryWriter = None
 
-from poutyne.framework import Model, Callback, TensorBoardGradientTracker
+from poutyne.framework import Model, TensorBoardGradientTracker, GradientStatsTracker, Tracker
+
+
+class TrackerTest(TestCase):
+    def test_keep_good_layer(self):
+        # pylint: disable=protected-access
+        tracker = Tracker(keep_bias=False)
+        layer_to_keep_params = MagicMock()
+        layer_to_keep_params.requires_grad = True
+        self.assertTrue(tracker._keep_layer(layer_to_keep_params, "fake_layer_name_to_keep"))
+        self.assertFalse(tracker._keep_layer(layer_to_keep_params, "bias_name_not_to_keep"))
+
+        layer_not_to_keep_params = MagicMock()
+        layer_not_to_keep_params.requires_grad = False
+        self.assertFalse(tracker._keep_layer(layer_not_to_keep_params, "fake_layer_name_not_to_keep"))
+        self.assertFalse(tracker._keep_layer(layer_not_to_keep_params, "bias_name_not_to_keep"))
+
+        tracker = Tracker(keep_bias=True)
+        layer_to_keep_params = MagicMock()
+        layer_to_keep_params.requires_grad = True
+        self.assertTrue(tracker._keep_layer(layer_to_keep_params, "fake_layer_name_to_keep"))
+        self.assertTrue(tracker._keep_layer(layer_to_keep_params, "bias_name_to_keep"))
+
+        layer_not_to_keep_params = MagicMock()
+        layer_not_to_keep_params.requires_grad = False
+        self.assertFalse(tracker._keep_layer(layer_not_to_keep_params, "fake_layer_name_not_to_keep"))
+        self.assertFalse(tracker._keep_layer(layer_not_to_keep_params, "bias_name_not_to_keep"))
+
+
+class GradientStatsTrackerTest(TestCase):
+    def setUp(self):
+        self.tracker = GradientStatsTracker()
+
+        self.other_value = 0.00
+        self.layer_1_min = -0.15
+        self.layer_1_max = 0.24
+        self.layer_1_gradients = torch.Tensor([[self.layer_1_max], [self.other_value], [self.layer_1_min]])
+
+        self.layer_2_min = -0.16
+        self.layer_2_max = 0.25
+        self.layer_2_gradients = torch.Tensor([[self.layer_2_min], [self.layer_2_max], [self.other_value]])
+
+        self.layer_1_name = "fake_name_1"
+        self.layer_2_name = "fake_name_2"
+        self.layer_names = [self.layer_1_name, self.layer_2_name]
+
+        # The value have been compute manual according to the Welford's online algorithm
+        # https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Welford's_online_algorithm
+        # We refer to the WelfordCompute.pdf for the expected value.
+        mean_1 = 0.13
+        mean_2 = 0.1366666
+        s2_1 = 0
+        s2_2 = 0
+        self.first_batch_expected_stats = {
+            self.layer_1_name: {
+                "mean": mean_1,
+                "mean_std_dev_up": mean_1 + math.sqrt(s2_1),
+                "mean_std_dev_down": mean_1 - math.sqrt(s2_1),
+                "min": self.layer_1_min,
+                "max": self.layer_1_max
+            },
+            self.layer_2_name: {
+                "mean": mean_2,
+                "mean_std_dev_up": mean_2 + math.sqrt(s2_2),
+                "mean_std_dev_down": mean_2 - math.sqrt(s2_2),
+                "min": self.layer_2_min,
+                "max": self.layer_2_max
+            }
+        }
+
+        mean_1 = 0.195
+        mean_2 = 0.205
+        s2_1 = 0.00845
+        s2_2 = 0.0093889
+        # *2 for min and max since the weights are 3 times the layers gradients
+        self.second_batch_expected_stats = {
+            self.layer_1_name: {
+                "mean": mean_1,
+                "mean_std_dev_up": mean_1 + math.sqrt(s2_1),
+                "mean_std_dev_down": mean_1 - math.sqrt(s2_1),
+                "min": self.layer_1_min * 2,
+                "max": self.layer_1_max * 2
+            },
+            self.layer_2_name: {
+                "mean": mean_2,
+                "mean_std_dev_up": mean_2 + math.sqrt(s2_2),
+                "mean_std_dev_down": mean_2 - math.sqrt(s2_2),
+                "min": self.layer_2_min * 2,
+                "max": self.layer_2_max * 2
+            }
+        }
+
+        mean_1 = 0.26
+        mean_2 = 0.27333333333
+        s2_1 = 0.0169
+        s2_2 = 0.018677778
+        # *3 for min and max since the weights are 3 times the layers gradients
+        self.third_batch_expected_stats = {
+            self.layer_1_name: {
+                "mean": mean_1,
+                "mean_std_dev_up": mean_1 + math.sqrt(s2_1),
+                "mean_std_dev_down": mean_1 - math.sqrt(s2_1),
+                "min": self.layer_1_min * 3,
+                "max": self.layer_1_max * 3
+            },
+            self.layer_2_name: {
+                "mean": mean_2,
+                "mean_std_dev_up": mean_2 + math.sqrt(s2_2),
+                "mean_std_dev_down": mean_2 - math.sqrt(s2_2),
+                "min": self.layer_2_min * 3,
+                "max": self.layer_2_max * 3
+            }
+        }
+
+    def test_tracking_one_layer_model(self):
+        self.tracker.init(number_layers=2)  # init the running stats
+        self._run_n_batch(num_batch=1)
+        self._test_batch_stats(self.first_batch_expected_stats)
+
+        self._run_n_batch(num_batch=2)
+        self._test_batch_stats(self.second_batch_expected_stats)
+
+        self._run_n_batch(num_batch=3)
+        self._test_batch_stats(self.third_batch_expected_stats)
+
+    def _test_batch_stats(self, batch_expected):
+        batch_actual_stats = self.tracker.get_stats(self.layer_names)
+
+        self._test_stats(batch_expected[self.layer_1_name], batch_actual_stats[self.layer_1_name])
+
+        self._test_stats(batch_expected[self.layer_2_name], batch_actual_stats[self.layer_2_name])
+
+    def _test_stats(self, expected, actual):
+        self.assertEqual(len(expected), len(actual))
+        self.assertEqual(expected.keys(), actual.keys())
+        for expected_value, actual_value in zip(expected.values(), actual.values()):
+            self.assertAlmostEqual(float(expected_value), float(actual_value), places=3)
+
+    def _run_n_batch(self, num_batch):
+        for batch_number in range(1, num_batch + 1):
+            self.tracker.upgrade_layer_batch_grad(layer_gradient=self.layer_1_gradients * batch_number)
+            self.tracker.upgrade_layer_batch_grad(layer_gradient=self.layer_2_gradients * batch_number)
+            self.tracker.upgrade_batch_grad(batch_number=batch_number)
 
 
 def some_data_generator(batch_size):
@@ -18,17 +161,6 @@ def some_data_generator(batch_size):
         x = torch.rand(batch_size, 1)
         y = torch.rand(batch_size, 1)
         yield x, y
-
-
-class History(Callback):
-    def on_epoch_end(self, epoch_number, logs):
-        self.history.append(logs)
-
-    def on_train_batch_end(self, batch_number, logs):
-        self.history.append(logs)
-
-    def on_train_begin(self, logs):
-        self.history = []
 
 
 @skipIf(SummaryWriter is None, "Unable to import SummaryWriter from torch")
@@ -124,22 +256,24 @@ class TensorBoardGradientTrackerTest(TestCase):
             for layer_name in layer_names:
                 expected_calls.append(call('gradient_distributions/{}weight'.format(layer_name), {'mean': ANY}, epoch))
                 expected_calls.append(
-                    call('gradient_distributions/{}weight'.format(layer_name), {'std_dev_up': ANY}, epoch))
+                    call('gradient_distributions/{}weight'.format(layer_name), {'mean_std_dev_up': ANY}, epoch))
                 expected_calls.append(
-                    call('gradient_distributions/{}weight'.format(layer_name), {'std_dev_down': ANY}, epoch))
+                    call('gradient_distributions/{}weight'.format(layer_name), {'mean_std_dev_down': ANY}, epoch))
                 expected_calls.append(call('other_gradient_stats/{}weight'.format(layer_name), {'min': ANY}, epoch))
                 expected_calls.append(call('other_gradient_stats/{}weight'.format(layer_name), {'max': ANY}, epoch))
 
                 if keep_bias:
+                    expected_calls.append(call('gradient_distributions/{}bias'.format(layer_name), {'mean': ANY},
+                                               epoch))
                     expected_calls.append(
-                        call('gradient_distributions/{}bias'.format(layer_name), {'mean': ANY}, epoch))
+                        call('gradient_distributions/{}bias'.format(layer_name), {'mean_std_dev_up': ANY}, epoch))
                     expected_calls.append(
-                        call('gradient_distributions/{}bias'.format(layer_name), {'std_dev_up': ANY}, epoch))
-                    expected_calls.append(
-                        call('gradient_distributions/{}bias'.format(layer_name), {'std_dev_down': ANY}, epoch))
+                        call('gradient_distributions/{}bias'.format(layer_name), {'mean_std_dev_down': ANY}, epoch))
                     expected_calls.append(call('other_gradient_stats/{}bias'.format(layer_name), {'min': ANY}, epoch))
                     expected_calls.append(call('other_gradient_stats/{}bias'.format(layer_name), {'max': ANY}, epoch))
 
         method_calls = self.writer.add_scalars.mock_calls
         self.assertEqual(len(method_calls), len(expected_calls))
         self.assertEqual(method_calls, expected_calls)
+
+        self.assertIn(expected_calls, method_calls)

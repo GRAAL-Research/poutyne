@@ -1,6 +1,7 @@
-from typing import Dict
+from typing import Dict, List
 
 import numpy as np
+import torch
 from torch.utils.tensorboard import SummaryWriter
 
 from .callbacks import Callback
@@ -18,31 +19,34 @@ class Tracker(Callback):
 
         self.tracker = GradientStatsTracker()
 
-    def on_epoch_begin(self, epoch, logs):
+    def on_epoch_begin(self, epoch: int, logs: Dict):
         # pylint: disable=unused-argument
         self.tracker.init(self.number_layers)
 
-    def on_train_batch_end(self, batch, logs):
+    def on_train_batch_end(self, batch: int, logs: Dict):
         for layer_name, layer_params in self.model.network.named_parameters():
             if self._keep_layer(layer_params, layer_name):
                 layer_gradient = layer_params.grad
                 self.tracker.upgrade_layer_batch_grad(layer_gradient)
         self.tracker.upgrade_batch_grad(batch)
 
-    def on_train_begin(self, logs):
+    def on_train_begin(self, logs: Dict):
         for layer_name, layer_params in self.model.network.named_parameters():
             self._get_layers_to_track(layer_name, layer_params)
 
-    def on_train_end(self, logs):
+    def on_train_end(self, logs: Dict):
         self.writer.close()
 
-    def _get_layers_to_track(self, layer_name, layer_params):
+    def on_epoch_end(self, epoch: int, logs: Dict):
+        pass
+
+    def _get_layers_to_track(self, layer_name: str, layer_params: torch.nn.parameter.Parameter):
         if self._keep_layer(layer_params, layer_name):
             self.layer_names.append(layer_name)
 
         self.number_layers = len(self.layer_names)
 
-    def _keep_layer(self, layer_params, layer_name):
+    def _keep_layer(self, layer_params: torch.nn.parameter.Parameter, layer_name: str):
         layer_require_grad = layer_params.requires_grad
         if self.keep_bias:
             return layer_require_grad
@@ -50,7 +54,14 @@ class Tracker(Callback):
 
 
 class GradientStatsTracker:
-    def __init__(self):
+    # pylint: disable=line-too-long
+    """
+    The gradient statistic tracker will compute the running absolute mean, running variance, min and max per layer.
+    The tracker is using the `Welford's online algorithm <https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Welford's_online_algorithm>`_
+    to compute the running absolute mean and running variance.
+    """
+
+    def __init__(self) -> None:
         self.running_mean = None
         self.running_variance = None
         self.running_m2 = None  # used to calculate the variance
@@ -63,27 +74,43 @@ class GradientStatsTracker:
         self.batch_layer_min = []
         self.batch_layer_max = []
 
-    def init(self, number_layers):
+    def init(self, number_layers: int) -> None:
+        """
+        Init the running variable to accumulate the statistics.
+        Args:
+            number_layers (int): The number of layers to keep track on.
+        """
         self.number_layers = number_layers
         self.reset()
 
-    def upgrade_layer_batch_grad(self, layer_gradient):
+    def upgrade_layer_batch_grad(self, layer_gradient: torch.Tensor) -> None:
+        """
+        Accumulate a layer gradients mean, min and max statistics used to compute the overall batch statistics.
+        Args:
+            layer_gradient (~torch.Tensor): A tensor of the layer gradients.
+        """
         abs_value_layer_gradient = layer_gradient.abs()
 
         self.batch_layer_means.append(abs_value_layer_gradient.mean().cpu().detach().numpy())
         self.batch_layer_min.append(layer_gradient.min().cpu().detach().numpy())
         self.batch_layer_max.append(layer_gradient.max().cpu().detach().numpy())
 
-    def upgrade_batch_grad(self, batch):
+    def upgrade_batch_grad(self, batch_number: int) -> None:
+        """
+        Accumulate the running mean, running variance, min and the max for all the layers.
+        Note: This will reset the layers gradients tracker batch statistics value.
+        Args:
+             batch_number (int): The batch number of the upgrade.
+        """
         batch_layer_means = np.array(self.batch_layer_means)
         previous_mean = self.running_mean
 
-        self.running_mean = previous_mean + (batch_layer_means - previous_mean) / batch
+        self.running_mean = previous_mean + (batch_layer_means - previous_mean) / batch_number
 
         self.running_m2 = self.running_m2 + (batch_layer_means - previous_mean) * (batch_layer_means -
                                                                                    self.running_mean)
 
-        self.running_variance = self.running_m2 / (batch - 1) if batch > 1 else self.running_variance
+        self.running_variance = self.running_m2 / (batch_number - 1) if batch_number > 1 else self.running_variance
 
         batch_layer_min = np.array(self.batch_layer_min)
         batch_layer_max = np.array(self.batch_layer_max)
@@ -93,13 +120,23 @@ class GradientStatsTracker:
 
         self._reset_batch_gradient_tracker()
 
-    def get_stats(self, layer_names) -> Dict:
+    def get_stats(self, layer_names: List[str]) -> Dict:
+        """
+        Get the accumulated layers statistics
+        Note: This will reset the gradient tracker statistics value.
+        Args:
+            layer_names (List[str]): The names of the layer to get statistics from.
+        Returns:
+            A dictionary where the keys are the layer names and the values are the statistics of the layer.
+            The statistics is also a dictionary where the keys are the logged statistics
+            (mean, mean +/- std deviation, min and max) and the values are the corresponding statistic value.
+        """
         formatted_stats = {}
         for index, layer_name in enumerate(layer_names):
             stats = {
                 "mean": self.running_mean[index],
-                "std_dev_up": self.running_mean[index] + np.sqrt(self.running_variance[index]),
-                "std_dev_down": self.running_mean[index] - np.sqrt(self.running_variance[index]),
+                "mean_std_dev_up": self.running_mean[index] + np.sqrt(self.running_variance[index]),
+                "mean_std_dev_down": self.running_mean[index] - np.sqrt(self.running_variance[index]),
                 "min": self.running_min[index],
                 "max": self.running_max[index]
             }
@@ -109,7 +146,10 @@ class GradientStatsTracker:
         self.reset()
         return formatted_stats
 
-    def reset(self):
+    def reset(self) -> None:
+        """
+        Reset the running mean, variance, min and max.
+        """
         self.running_mean = np.zeros([self.number_layers], dtype="float32")
         self.running_variance = np.zeros([self.number_layers], dtype="float32")
         self.running_m2 = np.zeros([self.number_layers], dtype="float32")
@@ -124,6 +164,7 @@ class GradientStatsTracker:
 
 class TensorBoardGradientTracker(Tracker):
     """
+    Wrapper to track epoch statistic of the gradient per layer and log them in TensorBoard.
     args:
         writer (~torch.utils.tensorboard.writer.SummaryWriter): The TensorBoard writer.
         keep_bias (bool): Either or not to log the bias of the network.
@@ -134,8 +175,8 @@ class TensorBoardGradientTracker(Tracker):
 
         self.writer = writer
 
-    def on_epoch_end(self, epoch, logs):
-        gradient_distributions_stats = ["mean", "std_dev_up", "std_dev_down"]
+    def on_epoch_end(self, epoch: int, logs: Dict) -> None:
+        gradient_distributions_stats = ["mean", "mean_std_dev_up", "mean_std_dev_down"]
         other_gradient_stats = ["min", "max"]
 
         formatted_stats = self.tracker.get_stats(self.layer_names)
