@@ -9,11 +9,11 @@
 
 \usepackage{multirow}
 \usepackage{amsmath}
-
+\bibliographystyle{plainnat}
 
 \begin{document}
 \chapter*{Welford's Online Algorithm for the computation of the Running Variance}
-To compute the absolute mean and variance for every layer weights' gradients updated per epoch, we use Welford's online algorithm. 
+To compute the absolute mean and variance for every layer weights' gradients updated per epoch, we use Welford's online algorithm \citep{doi:10.1080/00401706.1962.10490022}. 
 
 \section*{Computing the Running Absolute Mean of the Weights' Gradient Per Layer}
 The $n$-th running absolute mean for the $i$-th layer gradients mean weights' is
@@ -82,5 +82,6 @@ the running means and variances are
 s^2_{3, 1} &= \frac{0.00845 + (0.39 - 0.195)\times(0.39 - 0.26)}{3 - 1} = 0.0169\\
 s^2_{3, 2} &= \frac{0.00933889 + (0.41 - 0.205)\times(0.41 - 0.27\bar{3})}{3 - 1} = 0.018677778
 \end{align*}
-	
+
+\bibliography{welfordcompute}
 \end{document}

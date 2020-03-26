@@ -118,3 +118,5 @@ XDG_*
 *.aux
 *.out
 *.synctex.gz
+*.bbl
+*.blg
