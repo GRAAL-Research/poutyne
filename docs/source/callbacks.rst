@@ -48,8 +48,6 @@ Logging
 Tracking
 --------
 
-.. autoclass:: WeightsGradientsStatsTracker
-
 .. autoclass:: TensorBoardGradientTracker
 
 Checkpointing
