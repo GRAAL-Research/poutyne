@@ -43,12 +43,12 @@ class WeightsGradientsStatsTracker:
         batch_layer_means = np.array(batch_layer_means)
         previous_mean = self.running_mean
 
-        self.running_mean = previous_mean + (batch_layer_means - previous_mean) / self.counter
+        self.running_mean = previous_mean + (batch_layer_means - previous_mean) / self.count
 
         self.running_m2 = self.running_m2 + (batch_layer_means - previous_mean) * (batch_layer_means -
                                                                                    self.running_mean)
 
-        self.running_variance = self.running_m2 / (self.counter - 1) if self.counter > 1 else self.running_variance
+        self.running_variance = self.running_m2 / (self.count - 1) if self.count > 1 else self.running_variance
 
         batch_layer_min = np.array(batch_layer_min)
         batch_layer_max = np.array(batch_layer_max)
@@ -56,7 +56,7 @@ class WeightsGradientsStatsTracker:
         self.running_min = np.minimum(batch_layer_min, self.running_min)
         self.running_max = np.maximum(batch_layer_max, self.running_max)
 
-        self.counter += 1
+        self.count += 1
 
     def get_stats(self, layer_names: List[str]) -> Dict:
         """
@@ -86,14 +86,14 @@ class WeightsGradientsStatsTracker:
 
     def reset(self) -> None:
         """
-        Reset the running mean, variance, min, max and counter values.
+        Reset the running mean, variance, min, max and count values.
         """
         self.running_mean = np.zeros([self.number_layers], dtype="float32")
         self.running_variance = np.zeros([self.number_layers], dtype="float32")
         self.running_m2 = np.zeros([self.number_layers], dtype="float32")
         self.running_min = np.zeros([self.number_layers], dtype="float32")
         self.running_max = np.zeros([self.number_layers], dtype="float32")
-        self.counter = 1
+        self.count = 1
 
 
 class Tracker(Callback):
