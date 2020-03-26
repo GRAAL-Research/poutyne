@@ -44,14 +44,14 @@ class GradientStatsTrackerTest(TestCase):
     def setUp(self):
         self.tracker = WeightsGradientsStatsTracker(number_layers=2)
 
-        self.other_value = 0.00
+        self.absolute_min_both_layer = 0.00
         self.layer_1_min = -0.15
         self.layer_1_max = 0.24
-        self.layer_1_gradients = torch.Tensor([[self.layer_1_max], [self.other_value], [self.layer_1_min]])
+        self.layer_1_gradients = torch.Tensor([[self.layer_1_max], [self.absolute_min_both_layer], [self.layer_1_min]])
 
-        self.layer_2_min = -0.16
-        self.layer_2_max = 0.25
-        self.layer_2_gradients = torch.Tensor([[self.layer_2_min], [self.layer_2_max], [self.other_value]])
+        self.layer_2_min = -0.25
+        self.layer_2_max = 0.16
+        self.layer_2_gradients = torch.Tensor([[self.layer_2_max], [self.layer_2_min], [self.absolute_min_both_layer]])
 
         self.layer_1_name = "fake_name_1"
         self.layer_2_name = "fake_name_2"
@@ -70,14 +70,18 @@ class GradientStatsTrackerTest(TestCase):
                 "mean_std_dev_up": mean_1 + math.sqrt(s2_1),
                 "mean_std_dev_down": mean_1 - math.sqrt(s2_1),
                 "min": self.layer_1_min,
-                "max": self.layer_1_max
+                "abs_min": self.absolute_min_both_layer,
+                "max": self.layer_1_max,
+                "abs_max": self.layer_1_max
             },
             self.layer_2_name: {
                 "mean": mean_2,
                 "mean_std_dev_up": mean_2 + math.sqrt(s2_2),
                 "mean_std_dev_down": mean_2 - math.sqrt(s2_2),
                 "min": self.layer_2_min,
-                "max": self.layer_2_max
+                "abs_min": self.absolute_min_both_layer,
+                "max": self.layer_2_max,
+                "abs_max": math.fabs(self.layer_2_min)  # since the absolute value is higher than the normal max
             }
         }
 
@@ -92,14 +96,18 @@ class GradientStatsTrackerTest(TestCase):
                 "mean_std_dev_up": mean_1 + math.sqrt(s2_1),
                 "mean_std_dev_down": mean_1 - math.sqrt(s2_1),
                 "min": self.layer_1_min * 2,
-                "max": self.layer_1_max * 2
+                "abs_min": self.absolute_min_both_layer,
+                "max": self.layer_1_max * 2,
+                "abs_max": self.layer_1_max * 2
             },
             self.layer_2_name: {
                 "mean": mean_2,
                 "mean_std_dev_up": mean_2 + math.sqrt(s2_2),
                 "mean_std_dev_down": mean_2 - math.sqrt(s2_2),
                 "min": self.layer_2_min * 2,
-                "max": self.layer_2_max * 2
+                "abs_min": self.absolute_min_both_layer,
+                "max": self.layer_2_max * 2,
+                "abs_max": math.fabs(self.layer_2_min * 2)  # since the absolute value is higher than the normal max
             }
         }
 
@@ -114,14 +122,18 @@ class GradientStatsTrackerTest(TestCase):
                 "mean_std_dev_up": mean_1 + math.sqrt(s2_1),
                 "mean_std_dev_down": mean_1 - math.sqrt(s2_1),
                 "min": self.layer_1_min * 3,
-                "max": self.layer_1_max * 3
+                "abs_min": self.absolute_min_both_layer,
+                "max": self.layer_1_max * 3,
+                "abs_max": self.layer_1_max * 3
             },
             self.layer_2_name: {
                 "mean": mean_2,
                 "mean_std_dev_up": mean_2 + math.sqrt(s2_2),
                 "mean_std_dev_down": mean_2 - math.sqrt(s2_2),
                 "min": self.layer_2_min * 3,
-                "max": self.layer_2_max * 3
+                "abs_min": self.absolute_min_both_layer,
+                "max": self.layer_2_max * 3,
+                "abs_max": math.fabs(self.layer_2_min * 3)  # since the absolute value is higher than the normal max
             }
         }
 

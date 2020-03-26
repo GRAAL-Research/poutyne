@@ -22,40 +22,50 @@ class WeightsGradientsStatsTracker:
 
     def batch_statistic_upgrade(self, named_parameters: Iterable[Tuple[str, torch.nn.parameter.Parameter]]) -> None:
         """
-        Accumulate the running mean, running variance, min and the max for all the layers.
+        Accumulate the running absolute mean, running absolute mean variance, min, absolute min, max ant the absolute
+        max for all the layers.
 
         Args:
              named_parameters (Iterable[Tuple[str, ~torch.nn.parameter.Parameter]): The named parameters of the model to
              track.
         """
-        batch_layer_means = []
+        batch_layer_abs_means = []
         batch_layer_min = []
+        batch_layer_abs_min = []
         batch_layer_max = []
+        batch_layer_abs_max = []
 
         for _, layer_params in named_parameters:
             layer_gradient = layer_params.grad
 
             abs_value_layer_gradient = layer_gradient.abs()
 
-            batch_layer_means.append(abs_value_layer_gradient.mean().cpu().detach().numpy())
+            batch_layer_abs_means.append(abs_value_layer_gradient.mean().cpu().detach().numpy())
+
             batch_layer_min.append(layer_gradient.min().cpu().detach().numpy())
+            batch_layer_abs_min.append(abs_value_layer_gradient.min().cpu().detach().numpy())
+
             batch_layer_max.append(layer_gradient.max().cpu().detach().numpy())
+            batch_layer_abs_max.append(abs_value_layer_gradient.max().cpu().detach().numpy())
 
-        batch_layer_means = np.array(batch_layer_means)
-        previous_mean = self.running_mean
+        batch_layer_abs_means = np.array(batch_layer_abs_means)
+        previous_mean = self.running_abs_mean
 
-        self.running_mean = previous_mean + (batch_layer_means - previous_mean) / self.count
+        self.running_abs_mean = previous_mean + (batch_layer_abs_means - previous_mean) / self.count
 
-        self.running_m2 = self.running_m2 + (batch_layer_means - previous_mean) * (batch_layer_means -
-                                                                                   self.running_mean)
+        self.running_m2 = self.running_m2 + (batch_layer_abs_means - previous_mean) * (batch_layer_abs_means -
+                                                                                       self.running_abs_mean)
 
-        self.running_variance = self.running_m2 / (self.count - 1) if self.count > 1 else self.running_variance
+        self.running_abs_mean_var = self.running_m2 / (self.count - 1) if self.count > 1 else self.running_abs_mean_var
 
         batch_layer_min = np.array(batch_layer_min)
         batch_layer_max = np.array(batch_layer_max)
 
         self.running_min = np.minimum(batch_layer_min, self.running_min)
+        self.running_abs_min = np.minimum(batch_layer_abs_min, self.running_abs_min)
+
         self.running_max = np.maximum(batch_layer_max, self.running_max)
+        self.running_abs_max = np.maximum(batch_layer_abs_max, self.running_abs_max)
 
         self.count += 1
 
@@ -71,16 +81,19 @@ class WeightsGradientsStatsTracker:
         Returns:
             A dictionary where the keys are the layer names and the values are the statistics of the layer.
             The statistics is also a dictionary where the keys are the logged statistics
-            (mean, mean +/- std deviation, min and max) and the values are the corresponding statistic values.
+            (mean, mean +/- std deviation, min, absolute min, max and the absolute max) and the values are
+            the corresponding statistic values.
         """
         formatted_stats = {}
         for index, layer_name in enumerate(layer_names):
             stats = {
-                "mean": self.running_mean[index],
-                "mean_std_dev_up": self.running_mean[index] + np.sqrt(self.running_variance[index]),
-                "mean_std_dev_down": self.running_mean[index] - np.sqrt(self.running_variance[index]),
+                "mean": self.running_abs_mean[index],
+                "mean_std_dev_up": self.running_abs_mean[index] + np.sqrt(self.running_abs_mean_var[index]),
+                "mean_std_dev_down": self.running_abs_mean[index] - np.sqrt(self.running_abs_mean_var[index]),
                 "min": self.running_min[index],
-                "max": self.running_max[index]
+                "abs_min": self.running_abs_min[index],
+                "max": self.running_max[index],
+                "abs_max": self.running_abs_max[index]
             }
 
             formatted_stats.update({layer_name: stats})
@@ -90,13 +103,15 @@ class WeightsGradientsStatsTracker:
 
     def reset(self) -> None:
         """
-        Reset the running mean, variance, min, max and count values.
+        Reset the running absolute mean, absolute mean variance, min, absolute min, max, absolute max and count values.
         """
-        self.running_mean = np.zeros([self.number_layers], dtype="float32")
-        self.running_variance = np.zeros([self.number_layers], dtype="float32")
+        self.running_abs_mean = np.zeros([self.number_layers], dtype="float32")
+        self.running_abs_mean_var = np.zeros([self.number_layers], dtype="float32")
         self.running_m2 = np.zeros([self.number_layers], dtype="float32")
         self.running_min = np.zeros([self.number_layers], dtype="float32")
+        self.running_abs_min = np.zeros([self.number_layers], dtype="float32")
         self.running_max = np.zeros([self.number_layers], dtype="float32")
+        self.running_abs_max = np.zeros([self.number_layers], dtype="float32")
         self.count = 1
 
 
