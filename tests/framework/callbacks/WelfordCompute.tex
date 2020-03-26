@@ -12,8 +12,8 @@
 
 
 \begin{document}
-\chapter*{The Welford's Online Algorithm for Running Variance Compute}
-To compute the absolute mean and variance for every layer weights' gradients updated per epoch, we use the Welford's online algorithm. 
+\chapter*{Welford's Online Algorithm for the computation of the Running Variance}
+To compute the absolute mean and variance for every layer weights' gradients updated per epoch, we use Welford's online algorithm. 
 
 \section*{Computing the Running Absolute Mean of the Weights' Gradient Per Layer}
 The $n$-th running absolute mean for the $i$-th layer gradients mean weights' is
@@ -35,7 +35,7 @@ M_{2, n, i} = M_{2, n- 1, i} + (x_{n, i} - \bar{x}_{n-1, i}) \times (x_{n, i} - 
 Also, when $n = 1$, $M_{2, n, i} = 0$ and $s^2_{n, i} = 0$.
 
 \newpage
-\section*{Exemple of Compute}
+\section*{Example of Computation}
 Having the following two layers gradients weights' update
 
 \begin{align*}
