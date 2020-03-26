@@ -113,3 +113,8 @@ ENV/
 
 # VScode XDG
 XDG_*
+
+# LaTeX
+*.aux
+*.out
+*.synctex.gz
