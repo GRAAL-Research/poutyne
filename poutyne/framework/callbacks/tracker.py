@@ -23,6 +23,7 @@ class WeightsGradientsStatsTracker:
     def batch_statistic_upgrade(self, named_parameters: Iterable[Tuple[str, torch.nn.parameter.Parameter]]) -> None:
         """
         Accumulate the running mean, running variance, min and the max for all the layers.
+
         Args:
              named_parameters (Iterable[Tuple[str, ~torch.nn.parameter.Parameter]): The named parameters of the model to
              track.
@@ -61,9 +62,12 @@ class WeightsGradientsStatsTracker:
     def get_stats(self, layer_names: List[str]) -> Dict:
         """
         Get the accumulated statistics of the layers.
+
         Note: This will reset the gradient tracker statistics values.
+
         Args:
             layer_names (List[str]): The names of the layer to get statistics from.
+
         Returns:
             A dictionary where the keys are the layer names and the values are the statistics of the layer.
             The statistics is also a dictionary where the keys are the logged statistics
@@ -150,9 +154,23 @@ class Tracker(Callback):
 class TensorBoardGradientTracker(Tracker):
     """
     Wrapper to track the statistics of the weights' gradient per layer and log them in TensorBoard per epoch.
-    args:
+
+    Args:
         writer (~torch.utils.tensorboard.writer.SummaryWriter): The TensorBoard writer.
         keep_bias (bool): Either or not to log the bias of the network.
+
+    Example:
+        Using TensorBoardGradientTracker::
+
+            from torch.utils.tensorboard import SummaryWriter
+            from poutyne.framework import Model
+            from poutyne.framework.callbacks import TensorBoardGradientTracker
+
+            writer = SummaryWriter('runs')
+            tb_tracker = TensorBoardGradientTracker(writer)
+
+            model = Model(...)
+            model.fit_generator(..., callbacks=[tb_tracker])
     """
 
     def __init__(self, writer: SummaryWriter, keep_bias: bool = False) -> None:

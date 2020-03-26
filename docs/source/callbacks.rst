@@ -45,6 +45,13 @@ Logging
 
 .. autoclass:: TensorBoardLogger
 
+Tracking
+--------
+
+.. autoclass:: WeightsGradientsStatsTracker
+
+.. autoclass:: TensorBoardGradientTracker
+
 Checkpointing
 -------------
 
