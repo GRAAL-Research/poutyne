@@ -11,7 +11,8 @@ class WeightsGradientsStatsTracker:
     # pylint: disable=line-too-long
     """
     The weights' gradient statistic tracker will compute the running absolute mean, running variance, min and max per layer.
-    The tracker is using the `Welford's online algorithm <https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Welford's_online_algorithm>`_
+    The tracker is using the `Welford's online algorithm
+    <https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Welford's_online_algorithm>`_
     to compute the running absolute mean and running variance of the weights' gradients.
     """
 
@@ -115,7 +116,7 @@ class Tracker(Callback):
 
     def on_train_begin(self, logs: Dict):
         for layer_name, layer_params in self.model.network.named_parameters():
-            self._get_layers_to_track(layer_name, layer_params)
+            self._update_layers_to_track(layer_name, layer_params)
         self.tracker = WeightsGradientsStatsTracker(self.number_layers)
 
     def on_train_end(self, logs: Dict):
@@ -134,7 +135,7 @@ class Tracker(Callback):
         """
         pass
 
-    def _get_layers_to_track(self, layer_name: str, layer_params: torch.nn.parameter.Parameter):
+    def _update_layers_to_track(self, layer_name: str, layer_params: torch.nn.parameter.Parameter):
         if self._keep_layer(layer_params, layer_name):
             self.layer_names.append(layer_name)
 
