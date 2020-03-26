@@ -210,22 +210,26 @@ class Experiment:
         if device is not None:
             self.model.to(device)
 
-        join_dir = lambda x: os.path.join(directory, x)
+        self.best_checkpoint_filename = self.get_path(Experiment.BEST_CHECKPOINT_FILENAME)
+        self.best_checkpoint_tmp_filename = self.get_path(Experiment.BEST_CHECKPOINT_TMP_FILENAME)
+        self.model_checkpoint_filename = self.get_path(Experiment.MODEL_CHECKPOINT_FILENAME)
+        self.model_checkpoint_tmp_filename = self.get_path(Experiment.MODEL_CHECKPOINT_TMP_FILENAME)
+        self.optimizer_checkpoint_filename = self.get_path(Experiment.OPTIMIZER_CHECKPOINT_FILENAME)
+        self.optimizer_checkpoint_tmp_filename = self.get_path(Experiment.OPTIMIZER_CHECKPOINT_TMP_FILENAME)
+        self.log_filename = self.get_path(Experiment.LOG_FILENAME)
+        self.log_tmp_filename = self.get_path(Experiment.LOG_TMP_FILENAME)
+        self.tensorboard_directory = self.get_path(Experiment.TENSORBOARD_DIRECTORY)
+        self.epoch_filename = self.get_path(Experiment.EPOCH_FILENAME)
+        self.epoch_tmp_filename = self.get_path(Experiment.EPOCH_TMP_FILENAME)
+        self.lr_scheduler_filename = self.get_path(Experiment.LR_SCHEDULER_FILENAME)
+        self.lr_scheduler_tmp_filename = self.get_path(Experiment.LR_SCHEDULER_TMP_FILENAME)
+        self.test_log_filename = self.get_path(Experiment.TEST_LOG_FILENAME)
 
-        self.best_checkpoint_filename = join_dir(Experiment.BEST_CHECKPOINT_FILENAME)
-        self.best_checkpoint_tmp_filename = join_dir(Experiment.BEST_CHECKPOINT_TMP_FILENAME)
-        self.model_checkpoint_filename = join_dir(Experiment.MODEL_CHECKPOINT_FILENAME)
-        self.model_checkpoint_tmp_filename = join_dir(Experiment.MODEL_CHECKPOINT_TMP_FILENAME)
-        self.optimizer_checkpoint_filename = join_dir(Experiment.OPTIMIZER_CHECKPOINT_FILENAME)
-        self.optimizer_checkpoint_tmp_filename = join_dir(Experiment.OPTIMIZER_CHECKPOINT_TMP_FILENAME)
-        self.log_filename = join_dir(Experiment.LOG_FILENAME)
-        self.log_tmp_filename = join_dir(Experiment.LOG_TMP_FILENAME)
-        self.tensorboard_directory = join_dir(Experiment.TENSORBOARD_DIRECTORY)
-        self.epoch_filename = join_dir(Experiment.EPOCH_FILENAME)
-        self.epoch_tmp_filename = join_dir(Experiment.EPOCH_TMP_FILENAME)
-        self.lr_scheduler_filename = join_dir(Experiment.LR_SCHEDULER_FILENAME)
-        self.lr_scheduler_tmp_filename = join_dir(Experiment.LR_SCHEDULER_TMP_FILENAME)
-        self.test_log_filename = join_dir(Experiment.TEST_LOG_FILENAME)
+    def get_path(self, path):
+        """
+        Returns the path inside the experiment directory.
+        """
+        return os.path.join(self.directory, path)
 
     def _get_loss_function(self, loss_function, network, task):
         if loss_function is None:
