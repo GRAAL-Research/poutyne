@@ -1,0 +1,100 @@
+\documentclass[10pt, a4paper]{article}
+
+
+
+\usepackage{multirow}
+\usepackage{amsmath}
+\usepackage{dsfont}
+\usepackage{fullpage}
+\usepackage{parskip}
+\usepackage{mathtools}
+\DeclarePairedDelimiter\abs{\lvert}{\rvert}%
+
+\begin{document}
+	\section*{Welford's Online Algorithm for the computation of the Running Variance}
+	In the weights' gradients stats tracker class (WeightsGradientsStatsTracker), the goal is to estimate, for each set of weights updated over an epoch, the mean of the means of the absolute values of the weights' gradient and the variance of the means of the absolute values of the weights' gradient.
+	
+	Formally, for gradient $g \in \mathds{R}^n$ of a given set of weights, let $x_i = \frac{1}{n} \sum_{j=1}^n \abs*{g_j}$ be the the mean of the elements in $g$ of the $i$-th batch of the epoch. Then, we wish to estimate the absolute mean $\bar{x} = \frac{1}{N} \sum_{i=1}^N x_i$ and the variance $s^2 = \frac{1}{N-1} \sum_{i=1}^N (x_i - \bar{x})^2$ over the $x_i$s. To compute those statistic in a numerically stable way, we use Welford's online algorithm \cite{doi:10.1080/00401706.1962.10490022}.
+	
+	In the remainder of this document, we denote by $\bar{x}_i = \frac{1}{i} \sum_{j=1}^i x_j$ and $s^2 = \frac{1}{i-1} \sum_{i=1}^j (x_j - \bar{x})^2$ the absolute mean and the variance of the absolute mean of the $i$-th first elements or otherwise called running mean and running variance respectively. 
+	
+	
+	\subsection*{Computing the Running Absolute Mean of the Weights' Gradient Per Layer}
+	The $i$-th running absolute mean for the means of the weights' gradient is
+	\begin{equation*}
+	\bar{x}_{i} = \bar{x}_{i - 1} + \frac{x_{i} - \bar{x}_{i - 1} }{i}
+	\end{equation*}
+	where $\bar{x}_{i - 1}$ is the previous running absolute mean and $i$ is the batch number (i.e. how many times we have updated the variance). Also, when $i = 1$, $\bar{x}_{i - 1} = 0$.
+	
+	\subsection*{Computing the Running Variance of the Absolute Mean Weights Gradient Per Layer}
+	The $i$-th running variance for the means of the weights' gradient is
+	\begin{equation*}
+	s^2_{i} = \frac{M_{2, i}}{i - 1}
+	\end{equation*}
+	where
+	\begin{equation*}
+	M_{2, i} = M_{2, i- 1} + (x_{i} - \bar{x}_{i-1}) \times (x_{i} - \bar{x}_{i})
+	\end{equation*}
+	
+	Also, when $i = 1$, $M_{2, i} = 0$ and $s^2_{i} = 0$.
+	
+	\subsection*{Example of Computation}
+	Having the following two layers gradients weights' update
+	
+	\begin{align*}
+	\text{layer}_1 &= [ 0.24, 0.00, -0.15] \\
+	\text{layer}_2 &= [-0.16, 0.25, 0.00]
+	\end{align*}
+	
+	Thus, if $n = 1$, for $\text{layer}_1$
+	\begin{align*}
+	\bar{x}_{1} &= 0 + \frac{0.13 - 0}{1} = 0.13 \\
+	s^2_{1} &= 0 \\
+	\end{align*}
+	and for $\text{layer}_2$
+	\begin{align*}
+	\bar{x}_{1} &= 0 + \frac{0.13\bar{6} - 0}{1} = 0.13\bar{6}  \\
+	s^2_{1} &= 0
+	\end{align*}
+	
+	For $i=2$, assuming the updated weights' gradients vectors are
+	
+	\begin{align*}
+	\text{layer}_1 &= [ 0.24, 0.00, -0.15] \times 2 = [ 0.48, 0.00, -0.30] \\
+	\text{layer}_2 &= [-0.16, 0.25, 0.00] \times 2 = [-0.32, 0.50, 0.00]
+	\end{align*}
+	
+	the running mean and variance for $\text{layer}_1$ are
+	
+	\begin{align*}
+	\bar{x}_{2} &= 0.13 + \frac{0.26 - 0.13}{2} = 0.195 \\
+	s^2_{2} &= \frac{0 + (0.26 - 0.13)\times(0.26 - 0.195)}{2 - 1} = 0.00845\\
+	\end{align*}
+	and for $\text{layer}_2$
+	\begin{align*}
+	\bar{x}_{2} &= 0.13\bar{6} + \frac{0.27\bar{3} - 0.13\bar{6}}{2} =  0.205\\
+	s^2_{2} &= \frac{0 + (0.27\bar{3} - 0.13\bar{6})\times(0.27\bar{3} - 0.205)}{2 - 1} = 0.00933889
+	\end{align*}
+	
+	For $i=3$, assuming the updated weights' gradients vectors are
+	
+	\begin{align*}
+	\text{layer}_1 &= [ 0.24, 0.00, -0.15] \times 3 = [ 0.72, 0.00, -0.45] \\
+	\text{layer}_2 &= [-0.16, 0.25, 0.00] \times 3 = [-0.48, 0.75, 0.00]
+	\end{align*}
+	
+	the running mean and variance for $\text{layer}_1$ are
+	
+	\begin{align*}
+	\bar{x}_{3} &= 0.195 + \frac{0.39 - 0.195}{3} = 0.26 \\
+	s^2_{3} &= \frac{0.00845 + (0.39 - 0.195)\times(0.39 - 0.26)}{3 - 1} = 0.0169\\
+	\end{align*}
+	and for $\text{layer}_2$
+	\begin{align*}
+	\bar{x}_{3} &= 0.205 + \frac{0.41 - 0.205}{3} = 0.27\bar{3} \\
+	s^2_{3} &= \frac{0.00933889 + (0.41 - 0.205)\times(0.41 - 0.27\bar{3})}{3 - 1} = 0.018677778
+	\end{align*}
+	
+	\bibliographystyle{plainnat}
+	\bibliography{welfordcompute}
+\end{document}
