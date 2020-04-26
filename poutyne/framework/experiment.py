@@ -225,11 +225,11 @@ class Experiment:
         self.lr_scheduler_tmp_filename = self.get_path(Experiment.LR_SCHEDULER_TMP_FILENAME)
         self.test_log_filename = self.get_path(Experiment.TEST_LOG_FILENAME)
 
-    def get_path(self, path):
+    def get_path(self, *paths):
         """
         Returns the path inside the experiment directory.
         """
-        return os.path.join(self.directory, path)
+        return os.path.join(self.directory, *paths)
 
     def _get_loss_function(self, loss_function, network, task):
         if loss_function is None:
