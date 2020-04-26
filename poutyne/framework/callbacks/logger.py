@@ -142,9 +142,13 @@ class AtomicCSVLogger(Logger):
         if logs is not None:
             csvwriter.writerow(logs)
 
+    def _write_header(self, fd: TextIO):
+        csvwriter = csv.DictWriter(fd, fieldnames=self.fieldnames, delimiter=self.separator)
+        csvwriter.writeheader()
+
     def _on_train_begin_write(self, logs: Dict):
         if not self.append:
-            atomic_lambda_save(self.filename, self._save_log, (None, ), temporary_filename=self.temporary_filename)
+            atomic_lambda_save(self.filename, self._write_header, (), temporary_filename=self.temporary_filename)
 
     def _on_train_batch_end_write(self, batch_number: int, logs: Dict):
         atomic_lambda_save(self.filename, self._save_log, (logs, ), temporary_filename=self.temporary_filename)

@@ -100,6 +100,20 @@ class BaseCSVLoggerTest:
                                             callbacks=[logger])
         self._test_logging(history + history2)
 
+    def test_logging_overwrite(self):
+        train_gen = some_data_generator(20)
+        valid_gen = some_data_generator(20)
+        logger = self.CSVLogger(self.csv_filename)
+        self.model.fit_generator(train_gen, valid_gen, epochs=self.num_epochs, steps_per_epoch=5, callbacks=[logger])
+        logger = self.CSVLogger(self.csv_filename, append=False)
+        history = self.model.fit_generator(train_gen,
+                                           valid_gen,
+                                           epochs=20,
+                                           steps_per_epoch=5,
+                                           initial_epoch=self.num_epochs,
+                                           callbacks=[logger])
+        self._test_logging(history)
+
     def _test_logging(self, history):
         with open(self.csv_filename) as csvfile:
             reader = csv.DictReader(csvfile)
