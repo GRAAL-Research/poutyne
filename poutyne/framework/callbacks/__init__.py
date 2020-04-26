@@ -5,6 +5,7 @@ from .checkpoint import *
 from .clip_grad import *
 from .delay import *
 from .earlystopping import *
+from .gradient_logger import *
 from .logger import *
 from .lr_scheduler import *
 from .periodic import *
