@@ -2,7 +2,6 @@ from typing import Dict, List, Tuple, Iterable
 
 import numpy as np
 import torch
-from torch.utils.tensorboard import SummaryWriter
 
 from .callbacks import Callback
 
@@ -186,7 +185,7 @@ class TensorBoardGradientTracker(Tracker):
             model.fit_generator(..., callbacks=[tb_tracker])
     """
 
-    def __init__(self, writer: SummaryWriter, keep_bias: bool = False) -> None:
+    def __init__(self, writer, keep_bias: bool = False) -> None:
         super().__init__(keep_bias)
 
         self.writer = writer
