@@ -123,8 +123,6 @@ class Tracker(Callback):
         super().__init__()
 
         self.keep_bias = keep_bias
-        self.writer = None
-
         self.layer_names = []
         self.number_layers = 0
 
@@ -140,15 +138,12 @@ class Tracker(Callback):
             self._update_layers_to_track(layer_name, layer_params)
         self.tracker = WeightsGradientsStatsTracker(self.number_layers)
 
-    def on_train_end(self, logs: Dict):
-        self.writer.close()
-
     def on_epoch_end(self, epoch: int, logs: Dict):
         self._on_epoch_end_log(epoch, logs)
 
     def _on_epoch_end_log(self, epoch: int, logs: Dict):
         """
-        The method to define the behavior of the logging tracker into a writer.
+        The method to define the behavior of the logging tracker.
 
         Args:
             epoch (int): The epoch number.
