@@ -36,18 +36,20 @@ class WeightsGradientsStatsTracker:
         batch_layer_max = []
         batch_layer_abs_max = []
 
-        for _, layer_params in named_parameters:
-            layer_gradient = layer_params.grad
+        # Just in case we want to support second-order derivatives
+        with torch.no_grad():
+            for _, layer_params in named_parameters:
+                layer_gradient = layer_params.grad
 
-            abs_value_layer_gradient = layer_gradient.abs()
+                abs_value_layer_gradient = layer_gradient.abs()
 
-            batch_layer_abs_means.append(abs_value_layer_gradient.mean().numpy())
+                batch_layer_abs_means.append(abs_value_layer_gradient.mean().cpu().numpy())
 
-            batch_layer_min.append(layer_gradient.min().cpu().detach().numpy())
-            batch_layer_abs_min.append(abs_value_layer_gradient.min().numpy())
+                batch_layer_min.append(layer_gradient.min().cpu().numpy())
+                batch_layer_abs_min.append(abs_value_layer_gradient.min().cpu().numpy())
 
-            batch_layer_max.append(layer_gradient.max().numpy())
-            batch_layer_abs_max.append(abs_value_layer_gradient.max().numpy())
+                batch_layer_max.append(layer_gradient.max().cpu().numpy())
+                batch_layer_abs_max.append(abs_value_layer_gradient.max().cpu().numpy())
 
         batch_layer_abs_means = np.array(batch_layer_abs_means)
         previous_mean = self.running_abs_mean
