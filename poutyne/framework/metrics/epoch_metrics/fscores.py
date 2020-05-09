@@ -18,6 +18,7 @@ limitations under the License.
 from typing import Optional, Union, List, Tuple
 import torch
 from .base import EpochMetric
+from ..metrics_registering import register_epoch_metric
 
 
 class FBeta(EpochMetric):
@@ -254,6 +255,7 @@ class FBeta(EpochMetric):
         self._total_sum = None
 
 
+@register_epoch_metric
 class F1(FBeta):
     """
     Alias class for FBeta where ``metric == 'fscore'`` and ``beta == 1``.

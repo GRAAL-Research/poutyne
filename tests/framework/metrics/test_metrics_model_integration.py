@@ -207,7 +207,8 @@ class MetricsModelIntegrationTest(unittest.TestCase):
         history = model.fit(self.train_x,
                             self.train_y,
                             validation_data=(self.valid_x, self.valid_y),
-                            batch_size=MetricsModelIntegrationTest.batch_size)
+                            batch_size=MetricsModelIntegrationTest.batch_size,
+                            epochs=MetricsModelIntegrationTest.epochs)
         for logs in history:
             for name, value in zip(names, values):
                 self.assertIn(name, logs)
