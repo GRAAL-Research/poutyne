@@ -13,9 +13,6 @@ install:
     else
       export POUTYNE_RELEASE_BUILD=0;
     fi
-  - echo $POUTYNE_RELEASE_BUILD
-  - echo $TRAVIS_BRANCH
-  - echo $TRAVIS_EVENT_TYPE
   - python setup.py develop
 script:
   - yapf --diff --recursive poutyne/

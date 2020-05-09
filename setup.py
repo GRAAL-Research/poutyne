@@ -21,7 +21,9 @@ def get_version():
     except Exception:  # pylint: disable=broad-except
         sha = 'Unknown'
 
-    if os.getenv('POUTYNE_RELEASE_BUILD') != '1':
+    release_build_env = os.getenv('POUTYNE_RELEASE_BUILD')
+    print('POUTYNE_RELEASE_BUILD =', release_build_env)
+    if release_build_env != '1':
         version += '.dev1'
         if sha != 'Unknown':
             version += '+' + sha[:7]
