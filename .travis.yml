@@ -9,9 +9,9 @@ install:
   - pip install -q yapf==0.27
   - pip install -q pylint==2.3.1
   - if [ $TRAVIS_BRANCH == "stable" ] && [ $TRAVIS_EVENT_TYPE == "push" ]; then
-      export POUTYNE_RELEASE_BUILD=1
+      export POUTYNE_RELEASE_BUILD=1;
     else
-      export POUTYNE_RELEASE_BUILD=0
+      export POUTYNE_RELEASE_BUILD=0;
     fi
   - echo $POUTYNE_RELEASE_BUILD
   - echo $TRAVIS_BRANCH
