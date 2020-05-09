@@ -23,7 +23,7 @@ Use Poutyne to:
 
 Read the documentation at `Poutyne.org <https://poutyne.org>`_.
 
-Poutyne is compatible with the **latest version of PyTorch** and  **Python >= 3.5**.
+Poutyne is compatible with the **latest version of PyTorch** and  **Python >= 3.6**.
 
 Cite
 -----
