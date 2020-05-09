@@ -8,6 +8,7 @@ install:
   - pip install -q -r tests/requirements.txt
   - pip install -q yapf==0.27
   - pip install -q pylint==2.3.1
+  - python setup.py develop
 script:
   - yapf --diff --recursive poutyne/
   - yapf --diff --recursive tests/
