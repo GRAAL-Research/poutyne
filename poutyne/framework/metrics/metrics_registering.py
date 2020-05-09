@@ -67,7 +67,6 @@ register_epoch_metric = _get_registering_decorator(register_epoch_metric_class)
 
 def get_epoch_metric(epoch_metric):
     if isinstance(epoch_metric, str):
-        print(epochs_metrics_dict)
         epoch_metric = clean_epoch_metric_name(epoch_metric)
         return epochs_metrics_dict[epoch_metric]()
     return epoch_metric
