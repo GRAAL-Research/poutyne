@@ -3,10 +3,12 @@ import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
 
-from poutyne.framework import Model
+from poutyne.framework import Model, warning_settings
 from poutyne.utils import TensorDataset
 
 from .base import ModelFittingTestCase, MultiIOModel
+
+warning_settings['concatenate_returns'] = 'ignore'
 
 
 def some_data_tensor_generator_multi_input(batch_size):
@@ -126,19 +128,14 @@ class ModelMultiInputTest(ModelFittingTestCase):
         generator = DataLoader(dataset, ModelMultiInputTest.batch_size)
         loss, pred_y = self.model.evaluate_generator(generator, return_pred=True)
         self.assertEqual(type(loss), float)
-        self._test_predictions_for_evaluate_and_predict_generator(pred_y)
+        self.assertEqual(pred_y.shape, (ModelMultiInputTest.evaluate_dataset_len, 1))
 
     def test_evaluate_generator_multi_input(self):
         num_steps = 10
         generator = some_data_tensor_generator_multi_input(ModelMultiInputTest.batch_size)
         loss, pred_y = self.model.evaluate_generator(generator, steps=num_steps, return_pred=True)
         self.assertEqual(type(loss), float)
-        self._test_size_and_type_for_generator(pred_y, (ModelMultiInputTest.batch_size, 1))
-
-        # for pred in pred_y:
-        #     self.assertEqual(type(pred), np.ndarray)
-        #     self.assertEqual(pred.shape, (ModelMultiInputTest.batch_size, 1))
-        self.assertEqual(np.concatenate(pred_y).shape, (num_steps * ModelMultiInputTest.batch_size, 1))
+        self.assertEqual(pred_y.shape, (num_steps * ModelMultiInputTest.batch_size, 1))
 
     def test_tensor_evaluate_on_batch_multi_input(self):
         x1 = torch.rand(ModelMultiInputTest.batch_size, 1)
@@ -165,10 +162,8 @@ class ModelMultiInputTest(ModelFittingTestCase):
         generator = some_data_tensor_generator_multi_input(ModelMultiInputTest.batch_size)
         generator = (x for x, _ in generator)
         pred_y = self.model.predict_generator(generator, steps=num_steps)
-        for pred in pred_y:
-            self.assertEqual(type(pred), np.ndarray)
-            self.assertEqual(pred.shape, (ModelMultiInputTest.batch_size, 1))
-        self.assertEqual(np.concatenate(pred_y).shape, (num_steps * ModelMultiInputTest.batch_size, 1))
+        self.assertEqual(type(pred_y), np.ndarray)
+        self.assertEqual(pred_y.shape, (num_steps * ModelMultiInputTest.batch_size, 1))
 
     def test_tensor_predict_on_batch_multi_input(self):
         x1 = torch.rand(ModelMultiInputTest.batch_size, 1)

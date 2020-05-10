@@ -3,9 +3,11 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from poutyne.framework import Model
+from poutyne.framework import Model, warning_settings
 
 from .base import ModelFittingTestCase
+
+warning_settings['concatenate_returns'] = 'ignore'
 
 
 class DictIOModel(nn.Module):
@@ -93,7 +95,7 @@ class ModelMultiDictIOTest(ModelFittingTestCase):
         generator = some_data_tensor_generator_dict_io(ModelMultiDictIOTest.batch_size)
         loss, pred_y = self.model.evaluate_generator(generator, steps=num_steps, return_pred=True)
         self.assertEqual(type(loss), float)
-        self._test_size_and_type_for_generator(pred_y, (ModelMultiDictIOTest.batch_size, 1))
+        self._test_size_and_type_for_generator(pred_y, (num_steps * ModelMultiDictIOTest.batch_size, 1))
 
     def test_tensor_evaluate_on_batch_multi_dict_io(self):
         x, y = get_batch(ModelMultiDictIOTest.batch_size)
@@ -105,10 +107,7 @@ class ModelMultiDictIOTest(ModelFittingTestCase):
         generator = some_data_tensor_generator_dict_io(ModelMultiDictIOTest.batch_size)
         generator = (x for x, _ in generator)
         pred_y = self.model.predict_generator(generator, steps=num_steps)
-        for pred in pred_y:
-            for value in pred.values():
-                self.assertEqual(type(value), np.ndarray)
-                self.assertEqual(value.shape, (ModelMultiDictIOTest.batch_size, 1))
+        self._test_size_and_type_for_generator(pred_y, (num_steps * ModelMultiDictIOTest.batch_size, 1))
 
     def test_tensor_predict_on_batch_multi_dict_io(self):
         x1 = torch.rand(ModelMultiDictIOTest.batch_size, 1)

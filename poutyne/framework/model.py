@@ -561,10 +561,9 @@ class Model:
         """
         x = x if isinstance(x, (tuple, list)) else (x, )
         generator = self._dataloader_from_data(x, batch_size=batch_size)
-        pred_y = self.predict_generator(generator)
-        return _concat(pred_y)
+        return self.predict_generator(generator, concatenate_returns=True)
 
-    def predict_generator(self, generator, *, steps=None):
+    def predict_generator(self, generator, *, steps=None, concatenate_returns=None):
         """
         Returns the predictions of the network given batches of samples ``x``, where the tensors are
         converted into Numpy arrays.
@@ -574,10 +573,28 @@ class Model:
             supported. This should only yield input data ``x`` and not the target ``y``.
         steps (int, optional): Number of iterations done on ``generator``.
             (Defaults the number of steps needed to see the entire dataset)
+        concatenate_returns (bool, optional): Whether to concatenate the predictions
+            or the ground truths when returning them. Currently defaults to False but
+            will default to True in the next version. A warning is raised if not set in
+            the current version but the warning will be removed in the version. Disabling
+            the warning as instructed in it switches to the new behavior when
+            ``concatenate_returns`` is not set.
 
         Returns:
             List of the predictions of each batch with tensors converted into Numpy arrays.
         """
+        if concatenate_returns is None and warning_settings['concatenate_returns'] == 'warn':
+            warnings.warn("In the next version of Poutyne, the argument 'concatenate_returns' "
+                          "of 'predict_generator' will default to True. To avoid this warning, "
+                          "set 'concatenate_returns' to an appropriate boolean value in the "
+                          "keyword arguments or get the new behavior by disabling this warning with\n"
+                          "from poutyne.framework import warning_settings\n"
+                          "warning_settings['concatenate_returns'] = 'ignore'\n"
+                          "This warning will be removed in the next version.")
+            concatenate_returns = False
+        elif concatenate_returns is None:
+            concatenate_returns = True
+
         if steps is None and hasattr(generator, '__len__'):
             steps = len(generator)
         pred_y = []
@@ -586,6 +603,8 @@ class Model:
                 x = self._process_input(x)
                 x = x if isinstance(x, (tuple, list)) else (x, )
                 pred_y.append(torch_to_numpy(self.network(*x)))
+        if concatenate_returns:
+            return _concat(pred_y)
         return pred_y
 
     def predict_on_batch(self, x):
@@ -603,8 +622,7 @@ class Model:
             x = x if isinstance(x, (tuple, list)) else (x, )
             return torch_to_numpy(self.network(*x))
 
-    def evaluate(self, x, y, batch_size=32, return_pred=False, callbacks=None):
-        # pylint: disable=too-many-arguments
+    def evaluate(self, x, y, *, batch_size=32, return_pred=False, callbacks=None):
         """
         Computes the loss and the metrics of the network on batches of samples and optionally
         returns the predictions.
@@ -645,13 +663,21 @@ class Model:
         callbacks = list(callbacks)
 
         generator = self._dataloader_from_data((x, y), batch_size=batch_size)
-        ret = self.evaluate_generator(generator, steps=len(generator), return_pred=return_pred, callbacks=callbacks)
-        if return_pred:
-            ret = (*ret[:-1], _concat(ret[-1]))
-        return ret
+        return self.evaluate_generator(generator,
+                                       steps=len(generator),
+                                       return_pred=return_pred,
+                                       concatenate_returns=True,
+                                       callbacks=callbacks)
 
-    def evaluate_generator(self, generator, *, steps=None, return_pred=False, return_ground_truth=False,
+    def evaluate_generator(self,
+                           generator,
+                           *,
+                           steps=None,
+                           return_pred=False,
+                           return_ground_truth=False,
+                           concatenate_returns=None,
                            callbacks=None):
+        # pylint: disable=too-many-locals
         """
         Computes the loss and the metrics of the network on batches of samples and optionaly returns
         the predictions.
@@ -665,6 +691,12 @@ class Model:
                 (Default value = False)
             return_ground_truth (bool, optional): Whether to return the ground truths.
                 (Default value = False)
+            concatenate_returns (bool, optional): Whether to concatenate the predictions
+                or the ground truths when returning them. Currently defaults to False but
+                will default to True in the next version. A warning is raised if not set in
+                the current version but the warning will be removed in the version. Disabling
+                the warning as instructed in it switches to the new behavior when
+                ``concatenate_returns`` is not set.
             callbacks (List[~poutyne.framework.callbacks.Callback]): List of callbacks that will be called during
                 testing. (Default value = None)
 
@@ -737,6 +769,17 @@ class Model:
                     test_generator, return_pred=True, return_ground_truth=True
                 )
         """
+        if concatenate_returns is None and warning_settings['concatenate_returns'] == 'warn':
+            warnings.warn("In the next version of Poutyne, the argument 'concatenate_returns' "
+                          "of 'evaluate_generator' will default to True. To avoid this warning, "
+                          "set 'concatenate_returns' to an appropriate boolean value in the "
+                          "keyword arguments or get the new behavior by disabling this warning with\n"
+                          "from poutyne.framework import warning_settings\n"
+                          "warning_settings['concatenate_returns'] = 'ignore'\n"
+                          "This warning will be removed in the next version.")
+            concatenate_returns = False
+        elif concatenate_returns is None:
+            concatenate_returns = True
 
         callbacks = [] if callbacks is None else callbacks
 
@@ -753,6 +796,11 @@ class Model:
                                                              return_ground_truth=return_ground_truth)
         epoch_metrics = self._get_epoch_metrics()
         metrics = np.concatenate((batch_metrics, epoch_metrics))
+
+        if return_pred and concatenate_returns:
+            pred_y = _concat(pred_y)
+        if return_ground_truth and concatenate_returns:
+            true_y = _concat(true_y)
 
         res = self._format_return(loss, metrics, pred_y, return_pred, true_y, return_ground_truth)
 

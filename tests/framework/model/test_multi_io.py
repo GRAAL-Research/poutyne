@@ -2,10 +2,11 @@ import numpy as np
 import torch
 import torch.nn as nn
 
-from poutyne.framework import Model
-from poutyne.utils import _concat
+from poutyne.framework import Model, warning_settings
 
 from .base import ModelFittingTestCase, MultiIOModel
+
+warning_settings['concatenate_returns'] = 'ignore'
 
 
 def some_data_tensor_generator_multi_io(batch_size):
@@ -118,9 +119,6 @@ class ModelMultiIOTest(ModelFittingTestCase):
         pred_y = self.model.predict_generator(generator, steps=num_steps)
 
         for pred in pred_y:
-            self._test_size_and_type_for_generator(pred, (ModelMultiIOTest.batch_size, 1))
-
-        for pred in _concat(pred_y):
             self.assertEqual(pred.shape, (num_steps * ModelMultiIOTest.batch_size, 1))
 
     def test_tensor_predict_on_batch_multi_io(self):

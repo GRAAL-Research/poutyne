@@ -16,6 +16,8 @@ from poutyne.framework.metrics import EpochMetric
 from poutyne.utils import TensorDataset
 from .base import ModelFittingTestCase
 
+warning_settings['concatenate_returns'] = 'ignore'
+
 some_metric_1_value = 1.
 some_metric_2_value = 2.
 repeat_batch_metric_value = 3.
@@ -473,7 +475,7 @@ class ModelTest(ModelFittingTestCase):
         self.assertEqual(type(loss), float)
         self.assertEqual(type(metrics), np.ndarray)
         self.assertEqual(metrics.tolist(), self.batch_metrics_values + self.epoch_metrics_values)
-        self._test_predictions_for_evaluate_and_predict_generator(pred_y)
+        self.assertEqual(pred_y.shape, (ModelTest.evaluate_dataset_len, 1))
 
     def test_evaluate_generator(self):
         num_steps = 10
@@ -482,10 +484,8 @@ class ModelTest(ModelFittingTestCase):
         self.assertEqual(type(loss), float)
         self.assertEqual(type(metrics), np.ndarray)
         self.assertEqual(metrics.tolist(), self.batch_metrics_values + self.epoch_metrics_values)
-        for pred in pred_y:
-            self.assertEqual(type(pred), np.ndarray)
-            self.assertEqual(pred.shape, (ModelTest.batch_size, 1))
-        self.assertEqual(np.concatenate(pred_y).shape, (num_steps * ModelTest.batch_size, 1))
+        self.assertEqual(type(pred_y), np.ndarray)
+        self.assertEqual(pred_y.shape, (num_steps * ModelTest.batch_size, 1))
 
     def test_evaluate_generator_with_callback(self):
         num_steps = 10
@@ -508,13 +508,31 @@ class ModelTest(ModelFittingTestCase):
         self.assertEqual(type(loss), float)
         self.assertEqual(type(metrics), np.ndarray)
         self.assertEqual(metrics.tolist(), self.batch_metrics_values + self.epoch_metrics_values)
-        for pred, true in zip(pred_y, true_y):
+        self.assertEqual(type(pred_y), np.ndarray)
+        self.assertEqual(type(true_y), np.ndarray)
+        self.assertEqual(pred_y.shape, (num_steps * ModelTest.batch_size, 1))
+        self.assertEqual(true_y.shape, (num_steps * ModelTest.batch_size, 1))
+
+    def test_evaluate_generator_with_no_concatenation(self):
+        num_steps = 10
+        generator = some_data_tensor_generator(ModelTest.batch_size)
+        loss, metrics, pred_y, true_y = self.model.evaluate_generator(generator,
+                                                                      steps=num_steps,
+                                                                      return_pred=True,
+                                                                      return_ground_truth=True,
+                                                                      concatenate_returns=False)
+        self.assertEqual(type(loss), float)
+        self.assertEqual(type(metrics), np.ndarray)
+        self.assertEqual(metrics.tolist(), self.batch_metrics_values + self.epoch_metrics_values)
+
+        self.assertEqual(type(pred_y), list)
+        for pred in pred_y:
             self.assertEqual(type(pred), np.ndarray)
             self.assertEqual(pred.shape, (ModelTest.batch_size, 1))
+        self.assertEqual(type(true_y), list)
+        for true in true_y:
             self.assertEqual(type(true), np.ndarray)
             self.assertEqual(true.shape, (ModelTest.batch_size, 1))
-        self.assertEqual(np.concatenate(pred_y).shape, (num_steps * ModelTest.batch_size, 1))
-        self.assertEqual(np.concatenate(true_y).shape, (num_steps * ModelTest.batch_size, 1))
 
     def test_evaluate_with_only_one_metric(self):
         model = Model(self.pytorch_network, self.optimizer, self.loss_function, batch_metrics=self.batch_metrics[:1])
@@ -596,23 +614,33 @@ class ModelTest(ModelFittingTestCase):
     def test_predict_with_np_array(self):
         x = np.random.rand(ModelTest.evaluate_dataset_len, 1).astype(np.float32)
         pred_y = self.model.predict(x, batch_size=ModelTest.batch_size)
+        self.assertEqual(type(pred_y), np.ndarray)
         self.assertEqual(pred_y.shape, (ModelTest.evaluate_dataset_len, 1))
 
     def test_predict_data_loader(self):
         x = torch.rand(ModelTest.evaluate_dataset_len, 1)
         generator = DataLoader(x, ModelTest.batch_size)
         pred_y = self.model.predict_generator(generator)
-        self._test_predictions_for_evaluate_and_predict_generator(pred_y)
+        self.assertEqual(type(pred_y), np.ndarray)
+        self.assertEqual(pred_y.shape, (ModelTest.evaluate_dataset_len, 1))
 
     def test_predict_generator(self):
         num_steps = 10
         generator = some_data_tensor_generator(ModelTest.batch_size)
         generator = (x for x, _ in generator)
         pred_y = self.model.predict_generator(generator, steps=num_steps)
+        self.assertEqual(type(pred_y), np.ndarray)
+        self.assertEqual(pred_y.shape, (num_steps * ModelTest.batch_size, 1))
+
+    def test_predict_generator_with_no_concatenation(self):
+        num_steps = 10
+        generator = some_data_tensor_generator(ModelTest.batch_size)
+        generator = (x for x, _ in generator)
+        pred_y = self.model.predict_generator(generator, steps=num_steps, concatenate_returns=False)
+        self.assertEqual(type(pred_y), list)
         for pred in pred_y:
             self.assertEqual(type(pred), np.ndarray)
             self.assertEqual(pred.shape, (ModelTest.batch_size, 1))
-        self.assertEqual(np.concatenate(pred_y).shape, (num_steps * ModelTest.batch_size, 1))
 
     def test_tensor_predict_on_batch(self):
         x = torch.rand(ModelTest.batch_size, 1)

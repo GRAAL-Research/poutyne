@@ -8,7 +8,6 @@ import torch
 import torch.nn as nn
 
 from poutyne.framework import Callback
-from poutyne.utils import _concat
 
 
 class ModelFittingTestCase(TestCase):
@@ -92,35 +91,6 @@ class ModelFittingTestCase(TestCase):
         else:
             self.assertEqual(type(pred_y), np.ndarray)
             self.assertEqual(pred_y.shape, expected_size)
-
-    def _test_predictions_for_evaluate_and_predict_generator(self, pred_y, multi_output=False):
-        self.assertEqual(type(pred_y), list)
-        remaning_example = ModelFittingTestCase.evaluate_dataset_len
-        cur_batch_size = ModelFittingTestCase.batch_size
-
-        def down_the_rabbit_hole(obj, cur_batch_size):
-            if isinstance(obj, (list, tuple)):
-                for o in obj:
-                    down_the_rabbit_hole(o, cur_batch_size)
-            elif isinstance(obj, dict):
-                for val in obj.values():
-                    down_the_rabbit_hole(val, cur_batch_size)
-            else:
-                self.assertEqual(type(obj), np.ndarray)
-                self.assertEqual(obj.shape, (cur_batch_size, 1))
-
-        for pred in pred_y:
-            if remaning_example < ModelFittingTestCase.batch_size:
-                cur_batch_size = remaning_example
-                remaning_example = 0
-            else:
-                remaning_example -= ModelFittingTestCase.batch_size
-            self._test_size_and_type_for_generator(pred, (cur_batch_size, 1))
-        if multi_output:
-            for pred in _concat(pred_y):
-                self.assertEqual(pred.shape, (ModelFittingTestCase.evaluate_dataset_len, 1))
-        else:
-            self.assertEqual(_concat(pred_y).shape, (ModelFittingTestCase.evaluate_dataset_len, 1))
 
 
 class MultiIOModel(nn.Module):
