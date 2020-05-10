@@ -1,6 +1,8 @@
 # pylint: disable=unused-argument,too-many-locals
+import warnings
+from collections import OrderedDict
 from math import ceil
-from unittest import skipIf, skip, main
+from unittest import skipIf, main
 from unittest.mock import MagicMock
 
 import numpy as np
@@ -679,55 +681,83 @@ class ModelTest(ModelFittingTestCase):
         for p in self.pytorch_network.parameters():
             self.assertEqual(p.device, device)
 
-    @skip("Not sure if this test is still relevant with multi IO")
-    def test_disable_batch_size_warning(self):
-        import warnings
+    def test_get_batch_size(self):
+        batch_size = ModelTest.batch_size
+        x = np.random.rand(batch_size, 1).astype(np.float32)
+        y = np.random.rand(batch_size, 1).astype(np.float32)
 
-        def tuple_generator(batch_size):
-            while True:
-                x1 = torch.rand(batch_size, 1)
-                x2 = torch.rand(batch_size, 1)
-                y1 = torch.rand(batch_size, 1)
-                y2 = torch.rand(batch_size, 1)
-                yield (x1, x2), (y1, y2)
+        batch_size2 = ModelTest.batch_size + 1
+        x2 = np.random.rand(batch_size2, 1).astype(np.float32)
+        y2 = np.random.rand(batch_size2, 1).astype(np.float32)
 
-        class TupleModule(nn.Module):
-            def __init__(self):
-                super().__init__()
-                self.l1 = nn.Linear(1, 1)
-                self.l2 = nn.Linear(1, 1)
+        other_batch_size = batch_size2 + 1
 
-            def forward(self, x1, x2):
-                # x1, x2 = x
-                return self.l1(x1), self.l2(x2)
+        inf_batch_size = self.model.get_batch_size(x, y)
+        self.assertEqual(inf_batch_size, batch_size)
 
-        def loss_function(y_pred, y_true):
-            return F.mse_loss(y_pred[0], y_true[0]) + F.mse_loss(y_pred[1], y_true[1])
+        inf_batch_size = self.model.get_batch_size(x2, y2)
+        self.assertEqual(inf_batch_size, batch_size2)
 
-        pytorch_network = TupleModule()
-        optimizer = torch.optim.SGD(pytorch_network.parameters(), lr=1e-3)
-        model = Model(pytorch_network, optimizer, loss_function)
+        inf_batch_size = self.model.get_batch_size(x, y2)
+        self.assertEqual(inf_batch_size, batch_size)
 
-        train_generator = tuple_generator(ModelTest.batch_size)
-        valid_generator = tuple_generator(ModelTest.batch_size)
+        inf_batch_size = self.model.get_batch_size(x2, y)
+        self.assertEqual(inf_batch_size, batch_size2)
+
+        inf_batch_size = self.model.get_batch_size((x, x2), y)
+        self.assertEqual(inf_batch_size, batch_size)
+
+        inf_batch_size = self.model.get_batch_size((x2, x), y)
+        self.assertEqual(inf_batch_size, batch_size)
+
+        inf_batch_size = self.model.get_batch_size((x, x2), (y, y2))
+        self.assertEqual(inf_batch_size, batch_size)
+
+        inf_batch_size = self.model.get_batch_size((x2, x), (y, y2))
+        self.assertEqual(inf_batch_size, batch_size2)
+
+        inf_batch_size = self.model.get_batch_size([x, x2], y)
+        self.assertEqual(inf_batch_size, batch_size)
+
+        inf_batch_size = self.model.get_batch_size([x2, x], y)
+        self.assertEqual(inf_batch_size, batch_size)
+
+        inf_batch_size = self.model.get_batch_size([x, x2], [y, y2])
+        self.assertEqual(inf_batch_size, batch_size)
+
+        inf_batch_size = self.model.get_batch_size([x2, x], [y, y2])
+        self.assertEqual(inf_batch_size, batch_size2)
+
+        inf_batch_size = self.model.get_batch_size({'batch_size': other_batch_size, 'x': x}, {'y': y})
+        self.assertEqual(inf_batch_size, other_batch_size)
+
+        inf_batch_size = self.model.get_batch_size({'x': x}, {'batch_size': other_batch_size, 'y': y})
+        self.assertEqual(inf_batch_size, other_batch_size)
+
+        inf_batch_size = self.model.get_batch_size({'x': x}, {'y': y})
+        self.assertEqual(inf_batch_size, batch_size)
+
+        inf_batch_size = self.model.get_batch_size(OrderedDict([('x1', x), ('x2', x2)]), {'y': y})
+        self.assertEqual(inf_batch_size, batch_size)
+
+        inf_batch_size = self.model.get_batch_size(OrderedDict([('x1', x2), ('x2', x)]), {'y': y})
+        self.assertEqual(inf_batch_size, batch_size2)
+
+        inf_batch_size = self.model.get_batch_size([1, 2, 3], {'y': y})
+        self.assertEqual(inf_batch_size, batch_size)
+
+    def test_get_batch_size_warning(self):
         with warnings.catch_warnings(record=True) as w:
             warnings.simplefilter("always")
-            model.fit_generator(train_generator,
-                                valid_generator,
-                                epochs=ModelTest.epochs,
-                                steps_per_epoch=ModelTest.steps_per_epoch,
-                                validation_steps=ModelTest.steps_per_epoch)
-            num_warnings = ModelTest.steps_per_epoch * 2 * ModelTest.epochs
-            self.assertEqual(len(w), num_warnings)
+            inf_batch_size = self.model.get_batch_size([1, 2, 3], [4, 5, 6])
+            self.assertEqual(inf_batch_size, 1)
+            self.assertEqual(len(w), 1)
 
         with warnings.catch_warnings(record=True) as w:
             warnings.simplefilter("always")
             warning_settings['batch_size'] = 'ignore'
-            model.fit_generator(train_generator,
-                                valid_generator,
-                                epochs=ModelTest.epochs,
-                                steps_per_epoch=ModelTest.steps_per_epoch,
-                                validation_steps=ModelTest.steps_per_epoch)
+            inf_batch_size = self.model.get_batch_size([1, 2, 3], [4, 5, 6])
+            self.assertEqual(inf_batch_size, 1)
             self.assertEqual(len(w), 0)
 
 
