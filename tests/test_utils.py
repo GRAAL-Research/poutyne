@@ -254,6 +254,26 @@ class ConcatTest(TestCase):
         self.assertTrue((concat['a'][1] == 1).all())
         self.assertTrue((concat['b'] == 2).all())
 
+    def test_non_concatenable_values(self):
+        obj = [3] * 5
+        concat = _concat(obj)
+        self.assertEqual(concat, obj)
+        self.assertEqual(type(concat), type(obj))
+
+    def test_non_concatenable_values2(self):
+        obj = [{'a': (np.arange(5), np.ones(5), 2), 'b': 3, 'c': np.array(4)}] * 5
+        concat = _concat(obj)
+        self.assertEqual(concat['a'][0].shape, (25, ))
+        self.assertEqual(concat['a'][1].shape, (25, ))
+        self.assertEqual(concat['a'][2], (2, ) * 5)
+        self.assertEqual(concat['b'], [3] * 5)
+        self.assertEqual(concat['c'], [4] * 5)
+
+        for i in range(5):
+            for j in range(5):
+                self.assertTrue(concat['a'][0][i * 5 + j] == j)
+        self.assertTrue((concat['a'][1] == 1).all())
+
 
 if __name__ == '__main__':
     unittest.main()

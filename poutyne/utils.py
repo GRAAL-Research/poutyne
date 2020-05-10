@@ -75,13 +75,15 @@ def _apply(obj, func):
 
 def _concat(obj):
     if isinstance(obj[0], (list, tuple)):
-        return tuple([_concat(ele) for ele in zip(*obj)])
+        return type(obj[0])(_concat(ele) for ele in zip(*obj))
     if isinstance(obj[0], dict):
         concat_dict = {}
         for key in obj[0].keys():
             concat_dict[key] = _concat([o[key] for o in obj])
         return concat_dict
-    return np.concatenate(obj)
+    if isinstance(obj[0], np.ndarray) and obj[0].shape != ():
+        return np.concatenate(obj)
+    return obj
 
 
 def numpy_to_torch(obj):
