@@ -769,7 +769,8 @@ class Model:
                     test_generator, return_pred=True, return_ground_truth=True
                 )
         """
-        if concatenate_returns is None and warning_settings['concatenate_returns'] == 'warn':
+        if (return_pred or return_ground_truth) \
+                and concatenate_returns is None and warning_settings['concatenate_returns'] == 'warn':
             warnings.warn("In the next version of Poutyne, the argument 'concatenate_returns' "
                           "of 'evaluate_generator' will default to True. To avoid this warning, "
                           "set 'concatenate_returns' to an appropriate boolean value in the "
