@@ -230,8 +230,6 @@ class FBeta(EpochMetric):
             recall = recall.mean()
             fscore = fscore.mean()
 
-        self.reset()
-
         if self._label is not None:
             # Retain only selected labels and order them
             precision = precision[self._label]

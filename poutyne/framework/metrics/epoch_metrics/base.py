@@ -10,7 +10,7 @@ class EpochMetric(ABC, nn.Module):
     """
 
     @abstractmethod
-    def forward(self, y_pred, y_true):
+    def forward(self, y_pred, y_true) -> None:
         """
         To define the behavior of the metric when called.
 
@@ -23,7 +23,15 @@ class EpochMetric(ABC, nn.Module):
     @abstractmethod
     def get_metric(self):
         """
-        Compute and return the metric. The information kept for the computation of the metric
-        is cleaned so that a new epoch can be done.
+        Compute and return the metric. Should not modify the state of
+        the epoch metric.
+        """
+        pass
+
+    @abstractmethod
+    def reset(self) -> None:
+        """
+        The information kept for the computation of the metric is cleaned so
+        that a new epoch can be done.
         """
         pass

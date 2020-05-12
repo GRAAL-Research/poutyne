@@ -876,6 +876,8 @@ class Model:
 
     def _get_epoch_metrics(self):
         metrics = [epoch_metric.get_metric() for epoch_metric in self.epoch_metrics]
+        for epoch_metric in self.epoch_metrics:
+            epoch_metric.reset()
         return self._compute_metric_array(metrics, self.unflatten_epoch_metrics_names)
 
     def _compute_metric_array(self, metrics_list, names_list):
