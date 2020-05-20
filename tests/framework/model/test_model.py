@@ -48,6 +48,9 @@ class SomeEpochMetric(EpochMetric):
         self.increment = 0
         return increment_value
 
+    def reset(self):
+        pass
+
 
 some_constant_epoch_metric_value = 3
 
@@ -58,6 +61,9 @@ class SomeConstantEpochMetric(EpochMetric):
 
     def get_metric(self):
         return torch.FloatTensor([some_constant_epoch_metric_value])
+
+    def reset(self):
+        pass
 
 
 def some_data_tensor_generator(batch_size):

@@ -89,8 +89,6 @@ class SKLearnMetrics(EpochMetric):
         y_pred = np.concatenate(self.y_pred_list)
         y_true = np.concatenate(self.y_true_list)
 
-        self.reset()
-
         return {
             name: func(y_true, y_pred, sample_weight=sample_weight, **kwargs)
             for name, func, kwargs in zip(self.__name__, self.funcs, self.kwargs)

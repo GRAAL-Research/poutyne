@@ -25,6 +25,9 @@ class ConstEpochMetric(EpochMetric):
     def get_metric(self):
         return self.value
 
+    def reset(self):
+        pass
+
 
 def get_batch_metric(value):
     def some_metric_name(y_pred, y_true):
@@ -36,6 +39,9 @@ def get_batch_metric(value):
 class SomeMetricName(ConstEpochMetric):
     def get_metric(self):
         return torch.FloatTensor([self.value])
+
+    def reset(self):
+        pass
 
 
 def get_const_batch_metric(value):
