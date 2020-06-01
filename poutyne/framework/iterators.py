@@ -142,7 +142,8 @@ class EpochIterator:
 
             valid_step_iterator = None
             if self.valid_generator is not None:
-                valid_step_iterator = StepIterator(self.valid_generator, self.steps_per_epoch, self.batch_metrics_names)
+                valid_step_iterator = StepIterator(self.valid_generator, self.validation_steps,
+                                                   self.batch_metrics_names)
 
             yield train_step_iterator, valid_step_iterator
 

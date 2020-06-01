@@ -325,6 +325,56 @@ class ModelTest(ModelFittingTestCase):
         params = {'epochs': ModelTest.epochs, 'steps': train_real_steps_per_epoch}
         self._test_callbacks_train(params, logs)
 
+    def test_fitting_generator_calls(self):
+        train_real_steps_per_epoch = 30
+        train_batch_size = ModelTest.batch_size
+        train_final_batch_missing_samples = 7
+        train_size = train_real_steps_per_epoch * train_batch_size - \
+                     train_final_batch_missing_samples
+        train_x = torch.rand(train_size, 1)
+        train_y = torch.rand(train_size, 1)
+        train_dataset = TensorDataset(train_x, train_y)
+        train_generator = DataLoader(train_dataset, train_batch_size)
+
+        valid_real_steps_per_epoch = 10
+        valid_batch_size = 15
+        valid_final_batch_missing_samples = 3
+        valid_size = valid_real_steps_per_epoch * valid_batch_size - \
+                     valid_final_batch_missing_samples
+        valid_x = torch.rand(valid_size, 1)
+        valid_y = torch.rand(valid_size, 1)
+        valid_dataset = TensorDataset(valid_x, valid_y)
+        valid_generator = DataLoader(valid_dataset, valid_batch_size)
+
+        class IterableMock:
+            def __init__(self, iterable):
+                self.iterable = iterable
+                self.iter = None
+                self.calls = []
+
+            def __iter__(self):
+                self.calls.append('__iter__')
+                self.iter = iter(self.iterable)
+                return self
+
+            def __next__(self):
+                self.calls.append('__next__')
+                return next(self.iter)
+
+            def __len__(self):
+                self.calls.append('__len__')
+                return len(self.iterable)
+
+        mock_train_generator = IterableMock(train_generator)
+        mock_valid_generator = IterableMock(valid_generator)
+        self.model.fit_generator(mock_train_generator, mock_valid_generator, epochs=ModelTest.epochs)
+        expected_train_calls = ['__len__'] + \
+            (['__iter__'] + ['__next__'] * train_real_steps_per_epoch) * ModelTest.epochs
+        expected_valid_calls = ['__len__'] + \
+            (['__iter__'] + ['__next__'] * valid_real_steps_per_epoch) * ModelTest.epochs
+        self.assertEqual(mock_train_generator.calls, expected_train_calls)
+        self.assertEqual(mock_valid_generator.calls, expected_valid_calls)
+
     def test_fitting_with_tensor(self):
         train_real_steps_per_epoch = 30
         train_batch_size = ModelTest.batch_size
