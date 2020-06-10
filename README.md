@@ -116,7 +116,9 @@ pip install -U git+https://github.com/GRAAL-Research/poutyne.git@dev
 
 ------------------
 
-## Examples
+## Learning Material
+
+### Examples
 
 Look at notebook files with full working [examples](https://github.com/GRAAL-Research/poutyne/blob/master/examples/):
 
@@ -125,6 +127,9 @@ Look at notebook files with full working [examples](https://github.com/GRAAL-Res
 * [policy_cifar_example.ipynb](https://github.com/GRAAL-Research/poutyne/blob/master/examples/policy_cifar_example.ipynb) - policies API, FastAI-like learning rate policies
 * [policy_interface.ipynb](https://github.com/GRAAL-Research/poutyne/blob/master/examples/policy_interface.ipynb) - example of policies
 
+### Videos
+
+* [Presentation on Poutyne](https://youtu.be/gQ3SW5r7HSs) given at one of the weekly presentations of the Institute Intelligence and Data (IID) of Université Laval. [Slides](https://github.com/GRAAL-Research/poutyne/blob/master/slides/poutyne.pdf) and the [associated Latex source code](https://github.com/GRAAL-Research/poutyne/blob/master/slides/src/) are also available.
 
 ------------------
 
