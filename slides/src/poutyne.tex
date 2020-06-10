@@ -1,0 +1,473 @@
+\documentclass[french,english,usenames,dvipsnames]{beamer}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{babel}
+
+\usepackage{enumerate}
+\usepackage{algpseudocode}
+\usepackage{algorithm}
+\usepackage{mathtools}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{dsfont}
+\usepackage{array}
+
+\usepackage{graphicx}
+
+\usepackage{beamerthemesplit}
+\usetheme{Berlin}
+\usecolortheme{beaver}
+
+\usefonttheme[onlymath]{serif}
+
+\usepackage{caption}
+
+\usepackage{lmodern}
+
+\usepackage{seqsplit}
+
+\usepackage{bm}
+\usepackage{booktabs}
+
+\usepackage{multido}
+
+\usepackage{tikz}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.15}
+\usepackage{xcolor}
+
+\usepackage{appendixnumberbeamer}
+
+\usepackage[absolute, overlay]{textpos}
+\usepackage{transparent}
+
+\usepackage{minted}
+\usemintedstyle{trac}
+
+\usetikzlibrary{arrows.meta}
+\usetikzlibrary{fit}
+\usetikzlibrary{backgrounds}
+
+\tikzstyle{tips}=[%
+    btip/.tip = {Latex[length=6, width=3.5]},
+     -btip]
+
+\tikzset{
+    invisible/.style={opacity=0},
+    visible on/.style={alt={#1{}{invisible}}},
+    alt/.code args={<#1>#2#3}{%
+        \alt<#1>{\pgfkeysalso{#2}}{\pgfkeysalso{#3}} % \pgfkeysalso doesn't change the path
+    },
+}
+
+% Colors
+\definecolor{flame}{RGB}{255,127,42}
+\definecolor{flameBase}{RGB}{255,189,0}
+\definecolor{fries}{RGB}{254,216,107}
+\definecolor{fries3d}{RGB}{255,166,12}
+\colorlet{themeColor}{flame!90}
+\colorlet{backgroundColor}{gray!30}
+\colorlet{accentColor}{flameBase}
+
+\setbeamercolor{section in toc}{fg=black,bg=white}
+\setbeamercolor{alerted text}{fg=themeColor!65!black}
+\setbeamercolor*{palette primary}{fg = backgroundColor}
+\setbeamercolor*{palette secondary}{bg=themeColor, fg = backgroundColor}
+\setbeamercolor*{palette tertiary}{bg=themeColor, fg = backgroundColor}
+\setbeamercolor*{palette quaternary}{bg=themeColor, fg = backgroundColor}
+
+\setbeamercolor*{sidebar}{fg=themeColor,bg=white}
+
+\setbeamercolor*{palette sidebar primary}{fg=darkred!10!black}
+\setbeamercolor*{palette sidebar secondary}{fg=white}
+\setbeamercolor*{palette sidebar tertiary}{fg=darkred!50!black}
+\setbeamercolor*{palette sidebar quaternary}{fg=gray!10!white}
+
+\setbeamercolor{titlelike}{bg=gray!30!white,fg=black}
+\setbeamercolor{frametitle}{bg=white, fg=themeColor}
+\setbeamercolor{frametitle right}{bg=white, fg=white}
+
+\setbeamercolor*{section number projected}{bg=accentColor}
+\setbeamercolor*{subsection number projected}{bg=accentColor}
+\setbeamercolor*{subsubsection number projected}{bg=accentColor}
+\setbeamercolor*{item}{fg=accentColor}
+\setbeamercolor*{subitem}{fg=accentColor}
+\setbeamercolor*{subsubitem}{fg=accentColor}
+
+\setbeamercolor*{page number in head/foot}{fg=themeColor}
+
+\graphicspath{{figures/}}
+
+
+\beamertemplatenavigationsymbolsempty
+
+\setbeamertemplate{headline}{}
+
+\usepackage{etoolbox}
+
+\defbeamertemplate{footline}{nonum}{%
+    \addtocounter{framenumber}{-1}
+}
+
+\BeforeBeginEnvironment{frame}{%
+\setbeamertemplate{footline}[frame number]{}
+}
+
+\makeatletter
+\define@key{beamerframe}{nonum}[true]{%
+    \setbeamertemplate{footline}[nonum]%
+}
+\makeatother
+
+
+
+
+\def\addlogo{
+    \begin{textblock*}{0.75cm}[0, 1](2mm, \paperheight-2mm)
+    {\transparent{0.4}\includegraphics[width=0.75cm]{logo-notext.pdf}}
+    \end{textblock*}
+}
+
+\addtobeamertemplate{frametitle}{}{\addlogo}
+
+
+\title[Poutyne]{\includegraphics[scale=0.3]{logo.pdf}\\\color{black} An Easy and Flexible Deep Learning Framework for PyTorch}
+\author[Paradis et al.]{Frédérik~Paradis\textsuperscript{*}, \tiny David~Beauchemin, Mathieu~Godbout, François Laviolette}
+\date[]{June 9, 2020}
+\institute{Department of Computer Science and Software Engineering, Université~Laval\\[4mm]\textsuperscript{*}\texttt{frederik.paradis.1@ulaval.ca}}
+
+
+
+\begin{document}
+    \begin{frame}[nonum]
+        \titlepage
+        \begin{center}
+            \vspace{-10mm}
+            \begin{columns}
+                \begin{column}{0.33\textwidth}
+                    \includegraphics[width=0.8\textwidth]{crdmul_en.pdf}
+                \end{column}
+                \begin{column}{0.33\textwidth}
+                    \includegraphics[width=0.9\textwidth]{grail.pdf}
+                \end{column}
+                \begin{column}{0.33\textwidth}
+                    \hspace{-5mm}
+                    \includegraphics[width=0.9\textwidth]{ul.pdf}
+                \end{column}
+            \end{columns}
+        \end{center}
+    \end{frame}
+
+    \begin{frame}
+        \frametitle{What Is Poutyne?}
+        \begin{itemize}
+            \item Framework for training neural networks with PyTorch
+            \item Includes checkpointing and logging mechanisms
+            \item Allows to setup experiments quickly
+        \end{itemize}
+    \end{frame}
+
+    \begin{frame}
+        \frametitle{Core Principles}
+        \begin{itemize}
+            \item Easy to use for simple use cases
+            \item Flexible enough for more complex use cases
+            \item Callbacks are your friends
+        \end{itemize}
+    \end{frame}
+
+    \begin{frame}<1>[label=tableofcontents]
+        \frametitle{Poutyne Flow}
+        \begin{center}
+            \begin{tikzpicture}[tips]
+                \def\myshift{5mm}
+                \def\selectedcolor{themeColor!30}
+                \tikzstyle{noeud}=[draw, rounded corners=1mm, inner sep=3mm]
+                \node[noeud] (pytorch) {PyTorch};
+                \node[noeud, visible on=<2>, fill=\selectedcolor] (pytorch) {PyTorch};
+                \node[noeud, anchor=north] (model) at ([yshift=-\myshift]pytorch.south) {Model};
+                \node[noeud, anchor=north, visible on=<3>, fill=\selectedcolor] (model) at ([yshift=-\myshift]pytorch.south) {Model};
+                \node[noeud, anchor=east] (data) at ([xshift=-\myshift - 1cm]model.west) {Data};
+                \node[noeud, anchor=west] (callbacks) at ([xshift=\myshift + 1cm]model.east) {Callbacks};
+                \node[noeud, anchor=west, visible on=<6>, fill=\selectedcolor] (callbacks) at ([xshift=\myshift + 1cm]model.east) {Callbacks};
+                \node[noeud, anchor=north] (fit) at ([yshift=-\myshift]model.south) {Model.f\/it};
+                \node[noeud, anchor=north, visible on=<4>, fill=\selectedcolor] (fit) at ([yshift=-\myshift]model.south) {Model.f\/it};
+                \node[noeud, anchor=north] (evaluate) at ([yshift=-\myshift]fit.south) {Model.evaluate};
+                \node[noeud, anchor=north, visible on=<5>, fill=\selectedcolor] (evaluate) at ([yshift=-\myshift]fit.south) {Model.evaluate};
+
+                \node[align=left, anchor=north west] (examples) at ([xshift=0.5cm, yshift=-4mm]callbacks.south west) {Early stopping\\PyTorch LR schedulers\\Checkpointing\\Gradient clipping\\Logging\\And more!};
+                \begin{scope}[on background layer]
+                    \draw[rounded corners=1mm, draw=themeColor!80!black, line width=0.5mm] ([shift={(-3mm, 3mm)}]model.north west -| evaluate.south west) rectangle ([shift={(3mm, -3mm)}]examples.south east);
+                    \draw[rounded corners=1mm, draw=themeColor!80!black, line width=0.5mm, visible on=<7>, fill=\selectedcolor] ([shift={(-3mm, 3mm)}]model.north west -| evaluate.south west) rectangle ([shift={(3mm, -3mm)}]examples.south east);
+                    \node[anchor=south east, color=themeColor!80!black] at ([yshift=3mm]callbacks.north -| examples.east) {Experiment};
+                \end{scope}
+                \draw (pytorch) -- (model);
+                \draw (model) -- (fit.north);
+                \draw[shorten <= -2pt+\pgflinewidth, shorten >= -2pt+\pgflinewidth] (data.south east) -- (fit.north west);
+                \draw[shorten <= -2pt+\pgflinewidth, shorten >= -2pt+\pgflinewidth] (callbacks.south west) -- (fit.north east);
+                \draw (fit) -- (evaluate);
+                \draw (data) -- (evaluate.160);
+                \draw[-] (examples.south west |- callbacks.south) -- (examples.south west);
+            \end{tikzpicture}
+        \end{center}
+    \end{frame}
+
+
+    \againframe<2>[nonum]{tableofcontents}
+
+    \begin{frame}[fragile]
+        \frametitle{PyTorch}
+        \begin{itemize}
+            \item Automatic differentiation Python library
+            \item For every differentiable operation done in the ``forward'' pass, backpropagation is done in the ``backward'' pass.\\[5mm]
+            \inputminted[fontsize=\scriptsize]{python3}{code/example_pytorch.py}
+        \end{itemize}
+    \end{frame}
+
+    \begin{frame}
+        \frametitle{Usual Code for Training With PyTorch}
+
+        \begin{columns}
+			\begin{column}{0.45\textwidth}
+				\centering
+                \inputminted[fontsize=\fontsize{1.25mm}{1.5mm}]{python3}{code/long_pytorch_part1.py}
+			\end{column}
+			\begin{column}{0.55\textwidth}
+                \centering
+                \inputminted[fontsize=\fontsize{1.25mm}{1.5mm}]{python3}{code/long_pytorch_part2.py}
+			\end{column}
+        \end{columns}
+    \end{frame}
+
+    \begin{frame}
+        \frametitle{Equivalent Code for Training With Poutyne}
+        \begin{center}
+            \inputminted[fontsize=\scriptsize]{python3}{code/long_pytorch_to_poutyne_shorten.py}
+        \end{center}
+    \end{frame}
+
+
+    \againframe<3>[nonum]{tableofcontents}
+
+    \begin{frame}[fragile]
+        \frametitle{Model Class}
+        \begin{itemize}
+            \item Main class of the framework
+            \item Plays well with Numpy
+            \item No restrictions on the input or the output format of the network
+            \item Manages devices (GPUs)\\[5mm]
+            \inputminted[fontsize=\scriptsize]{python3}{code/example_model.py}
+        \end{itemize}
+    \end{frame}
+
+
+    \againframe<4>[nonum]{tableofcontents}
+
+    \begin{frame}
+        \frametitle{Poutyne Training Flow}
+        \begin{center}
+            \begin{tikzpicture}[tips]
+                \def\myshift{5mm}
+                \tikzstyle{noeud}=[draw, rounded corners=1mm, inner sep=2.5mm]
+                \node[noeud] (data) {Data};
+                \node[noeud, anchor=north] (net) at ([yshift=-\myshift]data.south) {Network};
+                \node[noeud, anchor=north] (loss) at ([yshift=-\myshift]net.south) {Loss computation};
+                \node[noeud, anchor=north] (backward) at ([yshift=-\myshift]loss.south) {Backpropagation};
+                \node[noeud, anchor=north] (optim) at ([yshift=-\myshift]backward.south) {Optimizer step};
+                \draw (data) -- (net);
+                \draw (net) -- (loss);
+                \draw (loss) -- (backward);
+                \draw (backward) -- (optim);
+                \draw (optim.south) |- ([shift={(-2.5cm, -\myshift)}]optim.south) |- ([shift={(-2.5cm, \myshift)}]data.north) -| (data.north);
+            \end{tikzpicture}
+        \end{center}
+    \end{frame}
+
+    \begin{frame}
+        \frametitle{Poutyne Training Flow}
+        \begin{center}
+            \begin{algorithmic}
+                \For{$n$ epochs}
+                    \onslide<2>{\State \textbf{Callback on epoch begin}}
+                    \For{each drawn batch $(x, y)$ in training dataset}
+                        \onslide<2>{\State \textbf{Callback on batch begin}}
+                        \State $\hat{y} = f(x; \theta)$
+                        \State $\ell = \mathcal{L}(\hat{y}, y)$
+                        \State $g = \nabla_\theta \ell$
+                        \onslide<2>{\State \textbf{Callback on backward end}}
+                        \State Update $\theta$ with $g$ using chosen optimizer.
+                        \State Compute and accumulate metrics with $\hat{y}$ and $y$.
+                        \onslide<2>{\State \textbf{Callback on batch end}}
+                    \EndFor
+                    \State Compute loss and metrics on validation dataset.
+                    \onslide<2>{\State \textbf{Callback on epoch end}}
+                \EndFor
+            \end{algorithmic}
+        \end{center}
+    \end{frame}
+
+
+    \againframe<5>[nonum]{tableofcontents}
+
+    \begin{frame}[fragile]
+        \frametitle{Evaluation Metrics}
+        Using metrics with Poutyne allows easy early stopping, checkpointing and logging.
+        \begin{itemize}
+            \item<2-> Batch metrics
+            \begin{itemize}
+                \item Decomposable metrics (e.g. accuracy, mse, etc.)
+                \item Any PyTorch loss function
+            \end{itemize}
+            \item<3-> Epoch metrics
+            \begin{itemize}
+                \item Non-decomposable metrics (e.g. F1, AUC ROC, etc.)
+                \item Provide a scikit-learn wrapper
+            \end{itemize}
+        \end{itemize}
+        \onslide<4->{
+            \vspace{2mm}
+            \inputminted[fontsize=\scriptsize]{python3}{code/example_metrics.py}
+        }
+    \end{frame}
+
+
+    \againframe<6>[nonum]{tableofcontents}
+
+    \begin{frame}[fragile]
+        \frametitle{Callbacks}
+        \inputminted[fontsize=\scriptsize]{python3}{code/callback_interface.py}
+    \end{frame}
+
+    \begin{frame}[fragile]
+        \frametitle{Callbacks}
+        \inputminted[fontsize=\scriptsize]{python3}{code/example_callbacks.py}
+    \end{frame}
+
+    \begin{frame}
+        \frametitle{Checkpointing}
+        \begin{itemize}
+            \item ModelCheckpoint
+            \item OptimizerCheckpoint
+            \item LRSchedulerCheckpoint
+        \end{itemize}
+    \end{frame}
+
+    \begin{frame}
+        \frametitle{Early Stopping and LR Scheduling}
+        \begin{itemize}
+            \item EarlyStopping
+            \item Any PyTorch LR scheduler
+            \item FastAI-like learning rate policies
+        \end{itemize}
+    \end{frame}
+
+    \begin{frame}
+        \frametitle{Playing With Gradient}
+        \begin{itemize}
+            \item Use PyTorch's respective functions
+            \begin{itemize}
+                \item ClipNorm
+                \item ClipGrad
+            \end{itemize}
+            \item TensorBoardGradientTracker
+        \end{itemize}
+    \end{frame}
+
+
+    \againframe<7>[nonum]{tableofcontents}
+
+    \begin{frame}
+        \frametitle{Experiment Class}
+        \begin{itemize}
+            \item Allows stopping and resuming optimization any time
+            \item Saves and logs everything in a single directory
+            \item Integration with Tensorboard \\[5mm]
+            \inputminted[fontsize=\scriptsize]{python3}{code/example_experiment.py}
+        \end{itemize}
+    \end{frame}
+
+
+    \begin{frame}
+        \frametitle{Experiment Class}
+        \begin{itemize}
+            \item Saves the last checkpoint and every ``best'' checkpoint (ModelCheckpoint).
+            \item Saves the last states of the optimizer and LR schedulers (OptimizerCheckpoint, LRSchedulerCheckpoint).
+            \item Logs training and validation loss and metrics into CSV and Tensorboard (CSVLogger, TensorBoardLogger).
+        \end{itemize}
+    \end{frame}
+
+
+    \begin{frame}
+        \frametitle{Related Works}
+        \onslide<1->{\textbf{PyTorch Lightning:}
+            \begin{itemize}
+                \item Flexible
+                \item Couples network with training
+                \begin{itemize}
+                    \item Requires inherting from a special class
+                    \item Everything training related is inside the network
+                \end{itemize}
+                \item Add boilerplate where it should not (e.g. adding LR schedulers seems awkward)
+            \end{itemize}}
+        \onslide<2->{\textbf{FastAI:}
+            \begin{itemize}
+                \item Lots of features
+                \item API not as intuitive
+            \end{itemize}}
+        \onslide<3->{\textbf{AllenNLP:}
+            \begin{itemize}
+                \item Specialized for NLP
+                \item Experiment framework
+                \item Trainer not flexible enough (everything in \texttt{\_\_init\_\_})
+            \end{itemize}}
+    \end{frame}
+
+    \begin{frame}[nonum]
+        \begin{center}
+            {\Huge Demo Time}
+            \\[2cm]
+            Fine-tuning with dataset: \url{http://www.vision.caltech.edu/visipedia/CUB-200.html}
+        \end{center}
+    \end{frame}
+
+    \begin{frame}
+        \frametitle{Future Works}
+        \begin{itemize}
+            \item Add tqdm and colors for progression.
+            \item Add tutorial pages to website.
+            \item Integrate multi-GPU.
+            \item Add a simpler way to add regularizer to the loss function.
+            \item Add utilities to simplify parameters initialization.
+            \item Integrate an experiment library such as MLFlow.
+        \end{itemize}
+    \end{frame}
+
+    \begin{frame}
+        \frametitle{Obtain Poutyne}
+        \begin{tabular}[t]{m{.3\textwidth} m{.7\textwidth}}
+            \includegraphics[trim=6mm 0mm 0mm 0mm,scale=0.5]{figures/qrcode.png}
+            &
+
+            Install via pip\par
+            \includegraphics[height=1.1em]{figures/python.pdf} \texttt{pip install poutyne}\par\vspace{5mm}
+            Documentation and examples available!\par
+            \includegraphics[]{figures/globe.pdf} \url{https://poutyne.org}\par
+            \includegraphics[]{figures/github.pdf} \href{https://github.com/GRAAL-Research/poutyne}{GRAAL-Research/poutyne}
+        \end{tabular}
+    \end{frame}
+
+    \begin{frame}
+        \frametitle{Poutyne in the PyTorch Ecosystem}
+        \begin{center}
+            \url{https://pytorch.org/ecosystem/}
+            \includegraphics[scale=0.20]{pytorch_ecosystem}
+        \end{center}
+    \end{frame}
+
+    \begin{frame}[nonum]
+        \addlogo
+        \begin{center}
+            {\Huge The end.\\[2cm] Questions?}
+        \end{center}
+    \end{frame}
+\end{document}
