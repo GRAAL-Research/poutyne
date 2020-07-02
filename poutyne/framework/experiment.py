@@ -361,11 +361,12 @@ class Experiment:
                     self._warn_missing_file(filename)
         return initial_epoch
 
-    def _init_model_restoring_callbacks(self, initial_epoch, save_every_epoch):
+    def _init_model_restoring_callbacks(self, initial_epoch, keep_only_last_best, save_every_epoch):
         callbacks = []
         best_checkpoint = ModelCheckpoint(self.best_checkpoint_filename,
                                           monitor=self.monitor_metric,
                                           mode=self.monitor_mode,
+                                          keep_only_last_best=keep_only_last_best,
                                           save_best_only=not save_every_epoch,
                                           restore_best=not save_every_epoch,
                                           verbose=not save_every_epoch,
@@ -427,6 +428,7 @@ class Experiment:
               *,
               callbacks=None,
               lr_schedulers=None,
+              keep_only_last_best=False,
               save_every_epoch=False,
               disable_tensorboard=False,
               epochs=1000,
@@ -461,6 +463,9 @@ class Experiment:
             lr_schedulers (List[~poutyne.framework.callbacks.lr_scheduler._PyTorchLRSchedulerWrapper]): List of
                 learning rate schedulers.
                 (Default value = None)
+            keep_only_last_best (bool): Whether only the last saved best checkpoint is kept. Applies only when
+                 `save_every_epoch` is false.
+                 (Default value = False)
             save_every_epoch (bool, optional): Whether or not to save the experiment model's weights after
                 every epoch.
                 (Default value = False)
@@ -510,7 +515,7 @@ class Experiment:
                                 temporary_filename=self.log_tmp_filename)
             ]
 
-            callbacks += self._init_model_restoring_callbacks(initial_epoch, save_every_epoch)
+            callbacks += self._init_model_restoring_callbacks(initial_epoch, save_every_epoch, keep_only_last_best)
             callbacks += [
                 ModelCheckpoint(self.model_checkpoint_filename,
                                 verbose=False,
