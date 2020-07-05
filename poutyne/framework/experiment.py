@@ -485,7 +485,9 @@ class Experiment:
                 (Default value = 42)
             coloring (Union[bool, Dict], optional): If bool, whether to display the progress of the training with
                 default colors highlighting.
-                If Dict, the field and the color to use as colorama <https://pypi.org/project/colorama/>`_ . The fields are [...] #todo
+                If Dict, the field and the color to use as colorama <https://pypi.org/project/colorama/>`_ . The fields
+                are text_color, ratio_color, metric_value_color and time_color.
+                In both case, will be ignore if verbose is set to False.
                 (Default value = True)
 
         Returns:
