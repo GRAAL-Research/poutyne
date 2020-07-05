@@ -85,7 +85,7 @@ class ColorProgress:
         sys.stdout.flush()
 
     def _epoch_formatting(self, epoch_number: int, epochs: int) -> str:
-        return self.text_color + "\rEpoch " + self.ratio_color + "%d/%d " % (epoch_number, epochs)
+        return self.text_color + "Epoch " + self.ratio_color + "%d/%d " % (epoch_number, epochs)
 
     def _epoch_total_time_formatting(self, epoch_total_time: float) -> str:
         return self.time_color + "%.2fs " % epoch_total_time

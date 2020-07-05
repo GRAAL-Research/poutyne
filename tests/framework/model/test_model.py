@@ -1,4 +1,6 @@
 # pylint: disable=unused-argument,too-many-locals
+import io
+import sys
 import warnings
 from collections import OrderedDict
 from math import ceil
@@ -15,6 +17,11 @@ from poutyne.framework import Model, warning_settings
 from poutyne.framework.metrics import EpochMetric
 from poutyne.utils import TensorDataset
 from .base import ModelFittingTestCase
+
+try:
+    import colorama as color
+except ImportError:
+    color = None
 
 warning_settings['concatenate_returns'] = 'ignore'
 
@@ -144,6 +151,8 @@ class IterableMock:
 
 class ModelTest(ModelFittingTestCase):
     # pylint: disable=too-many-public-methods
+    maxDiff = None
+
     def setUp(self):
         super().setUp()
         torch.manual_seed(42)
@@ -180,6 +189,78 @@ class ModelTest(ModelFittingTestCase):
                                         callbacks=[self.mock_callback])
         params = {'epochs': ModelTest.epochs, 'steps': ModelTest.steps_per_epoch}
         self._test_callbacks_train(params, logs)
+
+    def assertStdoutContains(self, values):
+        for value in values:
+            self.assertIn(value, self.test_out.getvalue().strip())
+
+    def assertStdoutNotContains(self, values):
+        for value in values:
+            self.assertNotIn(value, self.test_out.getvalue().strip())
+
+    @skipIf(color is None, "Unable to import colorama")
+    def test_fitting_with_coloring(self):
+        train_generator = some_data_tensor_generator(ModelTest.batch_size)
+        valid_generator = some_data_tensor_generator(ModelTest.batch_size)
+
+        # Capture the output
+        self.test_out = io.StringIO()
+        self.original_output = sys.stdout
+        sys.stdout = self.test_out
+
+        _ = self.model.fit_generator(train_generator,
+                                     valid_generator,
+                                     epochs=ModelTest.epochs,
+                                     steps_per_epoch=ModelTest.steps_per_epoch,
+                                     validation_steps=ModelTest.steps_per_epoch,
+                                     callbacks=[self.mock_callback])
+
+        self.assertStdoutContains(["[94m", "[93m", "[96m"])
+
+    @skipIf(color is None, "Unable to import colorama")
+    def test_fitting_with_user_coloring(self):
+        train_generator = some_data_tensor_generator(ModelTest.batch_size)
+        valid_generator = some_data_tensor_generator(ModelTest.batch_size)
+
+        # Capture the output
+        self.test_out = io.StringIO()
+        self.original_output = sys.stdout
+        sys.stdout = self.test_out
+
+        _ = self.model.fit_generator(train_generator,
+                                     valid_generator,
+                                     epochs=ModelTest.epochs,
+                                     steps_per_epoch=ModelTest.steps_per_epoch,
+                                     validation_steps=ModelTest.steps_per_epoch,
+                                     callbacks=[self.mock_callback],
+                                     coloring={
+                                         "text_color": 'BLACK',
+                                         "ratio_color": "BLACK",
+                                         "metric_value_color": "BLACK",
+                                         "time_color": "BLACK"
+                                     })
+
+        self.assertStdoutContains(["[30m"])
+
+    @skipIf(color is None, "Unable to import colorama")
+    def test_fitting_with_no_coloring(self):
+        train_generator = some_data_tensor_generator(ModelTest.batch_size)
+        valid_generator = some_data_tensor_generator(ModelTest.batch_size)
+
+        # Capture the output
+        self.test_out = io.StringIO()
+        self.original_output = sys.stdout
+        sys.stdout = self.test_out
+
+        _ = self.model.fit_generator(train_generator,
+                                     valid_generator,
+                                     epochs=ModelTest.epochs,
+                                     steps_per_epoch=ModelTest.steps_per_epoch,
+                                     validation_steps=ModelTest.steps_per_epoch,
+                                     callbacks=[self.mock_callback],
+                                     coloring=False)
+
+        self.assertStdoutNotContains(["[94m", "[93m", "[96m"])
 
     def test_fitting_without_valid_generator(self):
         train_generator = some_data_tensor_generator(ModelTest.batch_size)
@@ -370,9 +451,9 @@ class ModelTest(ModelFittingTestCase):
         mock_valid_generator = IterableMock(valid_generator)
         self.model.fit_generator(mock_train_generator, mock_valid_generator, epochs=ModelTest.epochs)
         expected_train_calls = ['__len__'] + \
-            (['__iter__'] + ['__next__'] * train_real_steps_per_epoch) * ModelTest.epochs
+                               (['__iter__'] + ['__next__'] * train_real_steps_per_epoch) * ModelTest.epochs
         expected_valid_calls = ['__len__'] + \
-            (['__iter__'] + ['__next__'] * valid_real_steps_per_epoch) * ModelTest.epochs
+                               (['__iter__'] + ['__next__'] * valid_real_steps_per_epoch) * ModelTest.epochs
         self.assertEqual(mock_train_generator.calls, expected_train_calls)
         self.assertEqual(mock_valid_generator.calls, expected_valid_calls)
 
@@ -401,9 +482,9 @@ class ModelTest(ModelFittingTestCase):
         mock_valid_generator = IterableMock(valid_generator)
         self.model.fit_generator(mock_train_generator, mock_valid_generator, epochs=ModelTest.epochs)
         expected_train_calls = ['__len__'] + \
-            (['__iter__'] + ['__next__'] * train_real_steps_per_epoch) * ModelTest.epochs
+                               (['__iter__'] + ['__next__'] * train_real_steps_per_epoch) * ModelTest.epochs
         expected_valid_calls = ['__len__'] + \
-            (['__iter__'] + ['__next__'] * valid_real_steps_per_epoch) * ModelTest.epochs
+                               (['__iter__'] + ['__next__'] * valid_real_steps_per_epoch) * ModelTest.epochs
         self.assertEqual(mock_train_generator.calls, expected_train_calls)
         self.assertEqual(mock_valid_generator.calls, expected_valid_calls)
 
