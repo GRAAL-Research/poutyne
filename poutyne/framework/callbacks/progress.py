@@ -1,5 +1,4 @@
 import itertools
-import sys
 from typing import Dict
 
 from .callbacks import Callback
@@ -44,9 +43,8 @@ class ProgressionCallback(Callback):
             self.color_progress.on_train_batch_end_steps(self.epoch_number, self.epochs, remaining_time, batch_number,
                                                          self.steps, metrics_str)
         else:
-            sys.stdout.write("\rEpoch %d/%d %.2fs/step Step %d: %s" %
-                             (self.epoch_number, self.epochs, times_mean, batch_number, metrics_str))
-            sys.stdout.flush()
+            self.color_progress.on_train_batch_end(self.epoch_number, self.epochs, times_mean, batch_number,
+                                                   metrics_str)
             self.last_step = batch_number
 
     def _get_metrics_string(self, logs: Dict):

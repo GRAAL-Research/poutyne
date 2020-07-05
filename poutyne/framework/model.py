@@ -1,12 +1,13 @@
 # pylint: disable=too-many-lines
 import contextlib
 import numbers
-import numpy as np
-import torch
 import warnings
 from collections import defaultdict
-from torch.utils.data import DataLoader
 from typing import Iterable, Mapping
+
+import numpy as np
+import torch
+from torch.utils.data import DataLoader
 
 from poutyne import torch_to_numpy, numpy_to_torch, torch_to
 from poutyne.framework.metrics import get_epoch_metric
@@ -200,6 +201,7 @@ class Model:
             batches_per_step=1,
             initial_epoch=1,
             verbose=True,
+            coloring=True,
             callbacks=None):
         # pylint: disable=line-too-long
         """
@@ -237,6 +239,12 @@ class Model:
                 (useful for resuming a previous training run).
                 (Default value = 1)
             verbose (bool): Whether to display the progress of the training.
+                (Default value = True)
+            coloring (Union[bool, Dict], optional): If bool, whether to display the progress of the training with
+                default colors highlighting.
+                If Dict, the field and the color to use as colorama <https://pypi.org/project/colorama/>`_ . The fields
+                are text_color, ratio_color, metric_value_color and time_color.
+                In both case, will be ignore if verbose is set to False.
                 (Default value = True)
             callbacks (List[~poutyne.framework.callbacks.Callback]): List of callbacks that will be called
                 during training.
@@ -277,6 +285,7 @@ class Model:
                                   batches_per_step=batches_per_step,
                                   initial_epoch=initial_epoch,
                                   verbose=verbose,
+                                  coloring=coloring,
                                   callbacks=callbacks)
 
     def _dataloader_from_data(self, args, batch_size):
@@ -343,7 +352,8 @@ class Model:
                 (Default value = True)
             coloring (Union[bool, Dict], optional): If bool, whether to display the progress of the training with
                 default colors highlighting.
-                If Dict, the field and the color to use as colorama <https://pypi.org/project/colorama/>`_ . The fields are [...] #todo
+                If Dict, the field and the color to use as colorama <https://pypi.org/project/colorama/>`_ . The fields
+                are text_color, ratio_color, metric_value_color and time_color.
                 In both case, will be ignore if verbose is set to False.
                 (Default value = True)
             callbacks (List[~poutyne.framework.callbacks.Callback]): List of callbacks that will be called during
