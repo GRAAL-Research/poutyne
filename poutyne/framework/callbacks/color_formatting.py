@@ -52,13 +52,18 @@ class ColorProgress:
 
     def __init__(self, coloring: Union[bool, Dict]) -> None:
         color_settings = None
+
         if isinstance(coloring, Dict):
             if colorama is None:
                 warnings.warn("The colorama package was not imported. Consider installing it for colorlog.",
                               ImportWarning)
 
-            self._validate_user_color_settings(coloring)
-            color_settings = coloring
+            for key, value in coloring.items():
+                if key in default_color_settings:
+                    default_color_settings.update({key: value})
+                else:
+                    raise KeyError("The key {} is not a supported color attribute.".format(key))
+            color_settings = default_color_settings
         elif coloring:
             if colorama is None:
                 warnings.warn("The colorama package was not imported. Consider installing it for colorlog.",
@@ -136,21 +141,3 @@ class ColorProgress:
             value = name_value[1]
             formatted_metrics += self.text_color + name + ": " + self.metric_value_color + value + " "
         return formatted_metrics
-
-    @staticmethod
-    def _validate_user_color_settings(coloring):
-        try:
-            _ = coloring["text_color"]
-            _ = coloring["ratio_color"]
-            _ = coloring["metric_value_color"]
-            _ = coloring["time_color"]
-        except KeyError as e:
-            raise UserColoringSettingsError(e)
-
-
-class UserColoringSettingsError(Exception):
-    """Error when missing a color setting for the coloring."""
-
-    def __init__(self, e):
-        self.message = f"The {e} color setting is missing."
-        super().__init__(self.message)

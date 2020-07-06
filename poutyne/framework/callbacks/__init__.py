@@ -3,6 +3,7 @@ from .best_model_restore import *
 from .callbacks import *
 from .checkpoint import *
 from .clip_grad import *
+from .color_formatting import *
 from .delay import *
 from .earlystopping import *
 from .gradient_logger import *
