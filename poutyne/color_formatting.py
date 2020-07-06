@@ -56,6 +56,8 @@ class ColorProgress:
             if colorama is None:
                 warnings.warn("The colorama package was not imported. Consider installing it for colorlog.",
                               ImportWarning)
+
+            self._validate_user_color_settings(coloring)
             color_settings = coloring
         elif coloring:
             if colorama is None:
@@ -134,3 +136,21 @@ class ColorProgress:
             value = name_value[1]
             formatted_metrics += self.text_color + name + ": " + self.metric_value_color + value + " "
         return formatted_metrics
+
+    @staticmethod
+    def _validate_user_color_settings(coloring):
+        try:
+            _ = coloring["text_color"]
+            _ = coloring["ratio_color"]
+            _ = coloring["metric_value_color"]
+            _ = coloring["time_color"]
+        except KeyError as e:
+            raise UserColoringSettingsError(e)
+
+
+class UserColoringSettingsError(Exception):
+    """Error when missing a color setting for the coloring."""
+
+    def __init__(self, e):
+        self.message = f"The {e} color setting is missing."
+        super().__init__(self.message)
