@@ -156,7 +156,6 @@ class IterableMock:
 
 class ModelTest(ModelFittingTestCase):
     # pylint: disable=too-many-public-methods
-    maxDiff = None
 
     def setUp(self):
         super().setUp()
