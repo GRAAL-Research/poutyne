@@ -59,11 +59,12 @@ class ColorProgress:
                               ImportWarning)
 
             for key, value in coloring.items():
+                default_color_settings_copy = default_color_settings.copy()
                 if key in default_color_settings:
-                    default_color_settings.update({key: value})
+                    default_color_settings_copy.update({key: value})
                 else:
                     raise KeyError("The key {} is not a supported color attribute.".format(key))
-            color_settings = default_color_settings
+            color_settings = default_color_settings_copy
         elif coloring:
             if colorama is None:
                 warnings.warn("The colorama package was not imported. Consider installing it for colorlog.",
