@@ -33,7 +33,24 @@ default_color_settings = {
 
 
 class ColorProgress:
-    def __init__(self, coloring: Union[bool, Dict]):
+    """
+    Class to managed the color templating of the training progress.
+
+    Args:
+          coloring (Union[bool, Dict], optional): If bool, whether to display the progress of the training with
+                default colors highlighting.
+                If Dict, the field and the color to use as colorama <https://pypi.org/project/colorama/>`_ . The fields
+                are text_color, ratio_color, metric_value_color and time_color.
+                In both case, will be ignore if verbose is set to False.
+                (Default value = True)
+    Attributes:
+        text_color (str): The color to use for the text.
+        ratio_color (str): The color to use for the ratio.
+        metric_value_color (str): The color to use for the metric value.
+        time_color (str): The color to use for the time.
+    """
+
+    def __init__(self, coloring: Union[bool, Dict]) -> None:
         color_settings = None
         if isinstance(coloring, Dict):
             if colorama is None:
@@ -57,13 +74,13 @@ class ColorProgress:
             self.metric_value_color = ""
             self.time_color = ""
 
-    def on_epoch_begin(self, epoch_number: int, epochs: int) -> None:
-        sys.stdout.write(self._epoch_formatting(epoch_number, epochs) + Style.RESET_ALL)
-        sys.stdout.flush()
-
     def on_epoch_end(self, epoch_number: int, epochs: int, epoch_total_time: float, steps: int,
                      metrics_str: str) -> None:
         # pylint: disable=too-many-arguments
+        """
+        Format on epoch end the epoch ratio (so far / to do), the total time for the epoch, the steps done and the
+        metrics name and values.
+        """
         print(
             self._epoch_formatting(epoch_number, epochs) + self._epoch_total_time_formatting(epoch_total_time) +
             self._step_formatting(steps, steps) + self._metric_formatting(metrics_str) + Style.RESET_ALL)
@@ -71,6 +88,10 @@ class ColorProgress:
     def on_train_batch_end_steps(self, epoch_number: int, epochs: int, remaining_time: float, batch_number: int,
                                  steps: int, metrics_str: str) -> None:
         # pylint: disable=too-many-arguments
+        """
+        Format on train batch end for a steps the epoch ratio (so far / to do), the total time for the epoch, the steps
+        done and the metrics name and values.
+        """
         sys.stdout.write(
             self._epoch_formatting(epoch_number, epochs) + self._ETA_formatting(remaining_time) +
             self._step_formatting(batch_number, steps) + self._metric_formatting(metrics_str) + Style.RESET_ALL)
@@ -79,6 +100,11 @@ class ColorProgress:
     def on_train_batch_end(self, epoch_number: int, epochs: int, times_mean: float, batch_number: int,
                            metrics_str: str) -> None:
         # pylint: disable=too-many-arguments
+        """
+        Format on train batch end the epoch ratio (so far / to do), the total time for the epoch, the steps
+        done and the metrics name and values.
+        """
+
         sys.stdout.write(
             self._epoch_formatting(epoch_number, epochs) + self._ETA_formatting(times_mean) +
             self._step_formatting(batch_number) + self._metric_formatting(metrics_str) + Style.RESET_ALL)
