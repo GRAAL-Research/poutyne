@@ -1,4 +1,4 @@
-# pylint: disable=unused-argument,too-many-locals
+# pylint: disable=unused-argument,too-many-locals, too-many-lines
 import io
 import sys
 import warnings
@@ -281,10 +281,7 @@ class ModelTest(ModelFittingTestCase):
                                          steps_per_epoch=ModelTest.steps_per_epoch,
                                          validation_steps=ModelTest.steps_per_epoch,
                                          callbacks=[self.mock_callback],
-                                         coloring={
-                                             "invalid_name": 'BLACK'
-                                         })
-
+                                         coloring={"invalid_name": 'BLACK'})
 
     @skipIf(color is None, "Unable to import colorama")
     def test_fitting_with_no_coloring(self):
