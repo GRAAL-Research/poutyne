@@ -13,7 +13,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
 
-from poutyne import UserColoringSettingsError
 from poutyne.framework import Model, warning_settings
 from poutyne.framework.metrics import EpochMetric
 from poutyne.utils import TensorDataset
@@ -250,7 +249,7 @@ class ModelTest(ModelFittingTestCase):
         self.assertStdoutContains(["[30m"])
 
     @skipIf(color is None, "Unable to import colorama")
-    def test_fitting_with_user_coloring_incomplete(self):
+    def test_fitting_with_user_partial_coloring(self):
         train_generator = some_data_tensor_generator(ModelTest.batch_size)
         valid_generator = some_data_tensor_generator(ModelTest.batch_size)
 
@@ -259,18 +258,19 @@ class ModelTest(ModelFittingTestCase):
         self.original_output = sys.stdout
         sys.stdout = self.test_out
 
-        with self.assertRaises(UserColoringSettingsError):
-            _ = self.model.fit_generator(train_generator,
-                                         valid_generator,
-                                         epochs=ModelTest.epochs,
-                                         steps_per_epoch=ModelTest.steps_per_epoch,
-                                         validation_steps=ModelTest.steps_per_epoch,
-                                         callbacks=[self.mock_callback],
-                                         coloring={
-                                             "text_color": 'BLACK',
-                                             "ratio_color": "BLACK",
-                                             "metric_value_color": "BLACK"
-                                         })
+        _ = self.model.fit_generator(train_generator,
+                                     valid_generator,
+                                     epochs=ModelTest.epochs,
+                                     steps_per_epoch=ModelTest.steps_per_epoch,
+                                     validation_steps=ModelTest.steps_per_epoch,
+                                     callbacks=[self.mock_callback],
+                                     coloring={
+                                         "text_color": 'BLACK',
+                                         "ratio_color": "BLACK",
+                                         "metric_value_color": "BLACK"
+                                     })
+
+        self.assertStdoutContains(["[30m", "[32m"])
 
     @skipIf(color is None, "Unable to import colorama")
     def test_fitting_with_no_coloring(self):
