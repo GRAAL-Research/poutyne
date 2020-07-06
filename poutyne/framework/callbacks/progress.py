@@ -15,13 +15,16 @@ class ProgressionCallback(Callback):
         self.metrics = ['loss'] + self.model.metrics_names
         self.epochs = self.params['epochs']
         self.steps = self.params['steps']
+
         if self.progress_bar:
             self.color_progress.set_progress_bar(self.steps, self.epochs)
 
     def on_epoch_begin(self, epoch_number: int, logs: Dict):
         self.step_times_sum = 0.
         self.epoch_number = epoch_number
-        self.color_progress.on_epoch_begin(self.epoch_number, self.epochs)
+
+        if self.progress_bar:
+            self.color_progress.on_epoch_begin()
 
     def on_epoch_end(self, epoch_number: int, logs: Dict):
         epoch_total_time = logs['time']
