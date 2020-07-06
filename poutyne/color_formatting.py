@@ -31,7 +31,7 @@ default_color_settings = {
     "ratio_color": "LIGHTBLUE_EX",
     "metric_value_color": "LIGHTCYAN_EX",
     "time_color": "GREEN",
-    "progress_bar_color": "RED"
+    "progress_bar_color": "LIGHTGREEN_EX"
 }
 
 
@@ -144,15 +144,15 @@ class ColorProgress:
         self.steps_progress_bar = tqdm(total=number_steps_per_epoch,
                                        file=sys.stdout,
                                        dynamic_ncols=True,
-                                       unit=" it",
-                                       bar_format="%s{l_bar}%s{bar}%s| [{rate_fmt}{postfix}]%s" %
+                                       unit=" step",
+                                       bar_format="%s{l_bar}%s{bar}%s{r_bar}%s" %
                                        (self.text_color, self.progress_bar_color, self.time_color, Style.RESET_ALL),
                                        leave=False)
         self.steps_progress_bar.clear()
         self.epoch_progress_bar = tqdm(total=number_of_epoch,
                                        file=sys.stdout,
                                        dynamic_ncols=True,
-                                       unit=" it",
+                                       unit=" epoch",
                                        bar_format="%s{l_bar}%s{bar}%s| [{rate_fmt}{postfix}]%s" %
                                        (self.text_color, self.progress_bar_color, self.time_color, Style.RESET_ALL),
                                        leave=True,
@@ -163,16 +163,18 @@ class ColorProgress:
         return self.text_color + "\rEpoch " + self.ratio_color + "%d/%d " % (epoch_number, epochs)
 
     def _epoch_total_time_formatting(self, epoch_total_time: float) -> str:
-        steps_progress_bar_text = ""
         if self.progress_bar:
-            steps_progress_bar_text = str(self.steps_progress_bar)
-        return self.time_color + "%.2fs " % epoch_total_time + steps_progress_bar_text + " "
+            string_formatted = self.text_color + self.time_color + str(self.steps_progress_bar) + " "
+        else:
+            string_formatted = self.text_color + "ETA " + self.time_color + "%.0fs " % epoch_total_time
+        return string_formatted
 
     def _ETA_formatting(self, time: float) -> str:
-        steps_progress_bar_text = ""
         if self.progress_bar:
-            steps_progress_bar_text = str(self.steps_progress_bar)
-        return self.text_color + "ETA " + self.time_color + "%.0fs " % time + steps_progress_bar_text + " "
+            string_formatted = self.text_color + self.time_color + str(self.steps_progress_bar) + " "
+        else:
+            string_formatted = self.text_color + "ETA " + self.time_color + "%.0fs " % time
+        return string_formatted
 
     def _step_formatting(self, batch_number: int, steps: Union[int, None] = None) -> str:
         if steps is None:
