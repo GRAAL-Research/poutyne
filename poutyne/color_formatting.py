@@ -195,6 +195,7 @@ class ColorProgress:
             _ = coloring["ratio_color"]
             _ = coloring["metric_value_color"]
             _ = coloring["time_color"]
+            _ = coloring["progress_bar_color"]
         except KeyError as e:
             raise UserColoringSettingsError(e)
 

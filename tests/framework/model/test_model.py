@@ -238,7 +238,8 @@ class ModelTest(ModelFittingTestCase):
                                          "text_color": 'BLACK',
                                          "ratio_color": "BLACK",
                                          "metric_value_color": "BLACK",
-                                         "time_color": "BLACK"
+                                         "time_color": "BLACK",
+                                         "progress_bar_color": "BLACK"
                                      })
 
         self.assertStdoutContains(["[30m"])
