@@ -250,6 +250,9 @@ class Model:
             progress_bar (bool): Whether or not to display a progress bar showing the epoch progress.
                 Will be ignore if verbose is set to False.
                 (Default value = True)
+                are text_color, ratio_color, metric_value_color and time_color.
+                In both case, will be ignore if verbose is set to False.
+                (Default value = True)
             callbacks (List[~poutyne.framework.callbacks.Callback]): List of callbacks that will be called
                 during training.
                 (Default value = None)
@@ -364,6 +367,8 @@ class Model:
                 (Default value = True)
             progress_bar (bool): Whether or not to display a progress bar showing the epoch progress.
                 Will be ignore if verbose is set to False.
+                are text_color, ratio_color, metric_value_color and time_color.
+                In both case, will be ignore if verbose is set to False.
                 (Default value = True)
             callbacks (List[~poutyne.framework.callbacks.Callback]): List of callbacks that will be called during
                 training. (Default value = None)
@@ -556,15 +561,15 @@ class Model:
 
     def _format_return(self, loss, metrics, pred_y, return_pred, true_y=None, return_ground_truth=False):
         # pylint: disable=too-many-arguments
-        ret = (loss, )
+        ret = (loss,)
 
-        ret += tuple(metrics.tolist()) if len(metrics) <= 1 else (metrics, )
+        ret += tuple(metrics.tolist()) if len(metrics) <= 1 else (metrics,)
 
         if return_pred:
-            ret += (pred_y, )
+            ret += (pred_y,)
 
         if return_ground_truth:
-            ret += (true_y, )
+            ret += (true_y,)
 
         return ret[0] if len(ret) == 1 else ret
 
@@ -583,7 +588,7 @@ class Model:
         Returns:
             Numpy arrays of the predictions.
         """
-        x = x if isinstance(x, (tuple, list)) else (x, )
+        x = x if isinstance(x, (tuple, list)) else (x,)
         generator = self._dataloader_from_data(x, batch_size=batch_size)
         return self.predict_generator(generator, concatenate_returns=True)
 
@@ -625,7 +630,7 @@ class Model:
         with self._set_training_mode(False):
             for _, x in _get_step_iterator(steps, generator):
                 x = self._process_input(x)
-                x = x if isinstance(x, (tuple, list)) else (x, )
+                x = x if isinstance(x, (tuple, list)) else (x,)
                 pred_y.append(torch_to_numpy(self.network(*x)))
         if concatenate_returns:
             return _concat(pred_y)
@@ -643,7 +648,7 @@ class Model:
         """
         with self._set_training_mode(False):
             x = self._process_input(x)
-            x = x if isinstance(x, (tuple, list)) else (x, )
+            x = x if isinstance(x, (tuple, list)) else (x,)
             return torch_to_numpy(self.network(*x))
 
     def evaluate(self, x, y, *, batch_size=32, return_pred=False, callbacks=None):
@@ -881,7 +886,7 @@ class Model:
 
     def _compute_loss_and_metrics(self, x, y, return_loss_tensor=False, return_pred=False):
         x, y = self._process_input(x, y)
-        x = x if isinstance(x, (list, tuple)) else (x, )
+        x = x if isinstance(x, (list, tuple)) else (x,)
         pred_y = self.network(*x)
         loss = self.loss_function(pred_y, y)
         if not return_loss_tensor:

@@ -1,5 +1,9 @@
 scikit-learn
 tensorboard
 tensorboardX
+<<<<<<< HEAD
 colorama
 tqdm
+=======
+colorama
+>>>>>>> dev

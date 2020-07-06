@@ -55,6 +55,7 @@ class ColorProgress:
         metric_value_color (str): The color to use for the metric value.
         time_color (str): The color to use for the time.
         progress_bar_color (str): The color to use for the progress bar.
+
     """
 
     def __init__(self, coloring: Union[bool, Dict]) -> None:
@@ -80,6 +81,7 @@ class ColorProgress:
             self.metric_value_color = getattr(Fore, color_settings["metric_value_color"])
             self.time_color = getattr(Fore, color_settings["time_color"])
             self.progress_bar_color = getattr(Fore, color_settings["progress_bar_color"])
+
         else:
             self.text_color = ""
             self.ratio_color = ""
@@ -125,7 +127,6 @@ class ColorProgress:
         sys.stdout.write(
             self._epoch_formatting(epoch_number, epochs) + self._step_formatting(batch_number, steps) +
             self._ETA_formatting(remaining_time) + self._metric_formatting(metrics_str) + Style.RESET_ALL)
-
         sys.stdout.flush()
 
     def on_train_batch_end(self, epoch_number: int, epochs: int, times_mean: float, batch_number: int,
@@ -157,7 +158,8 @@ class ColorProgress:
                 dynamic_ncols=True,
                 unit="step",
                 bar_format="%s{l_bar}%s{bar}%s| %s{rate_fmt} %s" %
-                (self.text_color, self.progress_bar_color, self.text_color, self.time_color, Style.RESET_ALL),
+                           (
+                           self.text_color, self.progress_bar_color, self.text_color, self.time_color, Style.RESET_ALL),
                 leave=False)
             self.steps_progress_bar.clear()
             self.epoch_progress_bar = tqdm(total=number_of_epoch,
@@ -165,7 +167,8 @@ class ColorProgress:
                                            dynamic_ncols=True,
                                            unit="epoch",
                                            bar_format="%s{l_bar}%s{bar}%s| {rate_fmt}%s" %
-                                           (self.text_color, self.progress_bar_color, self.time_color, Style.RESET_ALL),
+                                                      (self.text_color, self.progress_bar_color, self.time_color,
+                                                       Style.RESET_ALL),
                                            leave=True,
                                            desc="The training is at ")
             self.progress_bar = True

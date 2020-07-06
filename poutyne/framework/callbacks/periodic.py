@@ -41,6 +41,7 @@ NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FO
 OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
+import os
 from typing import BinaryIO, Dict, Optional, Callable
 
 from ._utils import atomic_lambda_save
@@ -73,6 +74,9 @@ class PeriodicSaveCallback(Callback):
         save_best_only (bool): If `save_best_only` is true, the latest best model according to the
             quantity monitored will not be overwritten.
             (Default value = False)
+        keep_only_last_best (bool): Whether only the last saved best checkpoint is kept. Applies only when
+             `save_best_only` is true.
+             (Default value = False)
         mode (str): One of {'min', 'max'}.
             If `save_best_only` is true, the decision to overwrite the current save file is made based
             on either the maximization or the minimization of the monitored quantity. For
@@ -95,6 +99,7 @@ class PeriodicSaveCallback(Callback):
                  monitor: str = 'val_loss',
                  mode: str = 'min',
                  save_best_only: bool = False,
+                 keep_only_last_best: bool = False,
                  period: int = 1,
                  verbose: bool = False,
                  temporary_filename: Optional[str] = None,
@@ -105,10 +110,14 @@ class PeriodicSaveCallback(Callback):
         self.monitor = monitor
         self.verbose = verbose
         self.save_best_only = save_best_only
+        self.keep_only_last_best = keep_only_last_best
         self.temporary_filename = temporary_filename
         self.atomic_write = atomic_write
         self.open_mode = open_mode
         self.best_filename = None
+
+        if self.keep_only_last_best and not self.save_best_only:
+            raise ValueError("The 'keep_only_last_best' argument only works when 'save_best_only' is also true.")
 
         if self.save_best_only:
             if mode not in ['min', 'max']:
@@ -139,12 +148,17 @@ class PeriodicSaveCallback(Callback):
             if self.monitor_op(logs[self.monitor], self.current_best):
                 old_best = self.current_best
                 self.current_best = logs[self.monitor]
+                old_best_filename = self.best_filename
                 self.best_filename = filename
 
                 if self.verbose:
                     print('Epoch %d: %s improved from %0.5f to %0.5f, saving file to %s' %
                           (epoch_number, self.monitor, old_best, self.current_best, self.best_filename))
                 self._save_file(self.best_filename, epoch_number, logs)
+                if self.keep_only_last_best and \
+                        self.best_filename != old_best_filename and \
+                        old_best_filename is not None:
+                    os.remove(old_best_filename)
         elif epoch_number % self.period == 0:
             if self.verbose:
                 print('Epoch %d: saving file to %s' % (epoch_number, filename))
