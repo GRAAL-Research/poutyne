@@ -60,6 +60,7 @@ class ColorProgress:
             self.ratio_color = ""
             self.metric_value_color = ""
             self.time_color = ""
+            self.progress_bar_color = ""
 
         self.progress_bar = False
         self.steps_progress_bar = None
