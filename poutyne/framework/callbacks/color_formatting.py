@@ -2,7 +2,10 @@ import sys
 import warnings
 from typing import Dict, Union
 
-from tqdm import tqdm
+try:
+    from tqdm import tqdm
+except ImportError:
+    tqdm = None
 
 
 class EmptyStringAttrClass:
@@ -51,6 +54,7 @@ class ColorProgress:
         ratio_color (str): The color to use for the ratio.
         metric_value_color (str): The color to use for the metric value.
         time_color (str): The color to use for the time.
+        progress_bar_color (str): The color to use for the progress bar.
     """
 
     def __init__(self, coloring: Union[bool, Dict]) -> None:
@@ -148,24 +152,27 @@ class ColorProgress:
             sys.stdout.flush()
 
     def set_progress_bar(self, number_steps_per_epoch, number_of_epoch):
-        self.steps_progress_bar = tqdm(
-            total=number_steps_per_epoch,
-            file=sys.stdout,
-            dynamic_ncols=True,
-            unit="step",
-            bar_format="%s{l_bar}%s{bar}%s| %s{rate_fmt} %s" %
-            (self.text_color, self.progress_bar_color, self.text_color, self.time_color, Style.RESET_ALL),
-            leave=False)
-        self.steps_progress_bar.clear()
-        self.epoch_progress_bar = tqdm(total=number_of_epoch,
-                                       file=sys.stdout,
-                                       dynamic_ncols=True,
-                                       unit="epoch",
-                                       bar_format="%s{l_bar}%s{bar}%s| {rate_fmt}%s" %
-                                       (self.text_color, self.progress_bar_color, self.time_color, Style.RESET_ALL),
-                                       leave=True,
-                                       desc="The training is at ")
-        self.progress_bar = True
+        if colorama is None:
+            warnings.warn("The tqdm package was not imported. Consider installing it for colorlog.", ImportWarning)
+        else:
+            self.steps_progress_bar = tqdm(
+                total=number_steps_per_epoch,
+                file=sys.stdout,
+                dynamic_ncols=True,
+                unit="step",
+                bar_format="%s{l_bar}%s{bar}%s| %s{rate_fmt} %s" %
+                (self.text_color, self.progress_bar_color, self.text_color, self.time_color, Style.RESET_ALL),
+                leave=False)
+            self.steps_progress_bar.clear()
+            self.epoch_progress_bar = tqdm(total=number_of_epoch,
+                                           file=sys.stdout,
+                                           dynamic_ncols=True,
+                                           unit="epoch",
+                                           bar_format="%s{l_bar}%s{bar}%s| {rate_fmt}%s" %
+                                           (self.text_color, self.progress_bar_color, self.time_color, Style.RESET_ALL),
+                                           leave=True,
+                                           desc="The training is at ")
+            self.progress_bar = True
 
     def _epoch_formatting(self, epoch_number: int, epochs: int) -> str:
         return self.text_color + "\rEpoch: " + self.ratio_color + "%d/%d " % (epoch_number, epochs)

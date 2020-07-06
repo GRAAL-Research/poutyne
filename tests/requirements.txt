@@ -2,3 +2,4 @@ scikit-learn
 tensorboard
 tensorboardX
 colorama
+tqdm

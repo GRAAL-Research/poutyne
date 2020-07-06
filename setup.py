@@ -70,7 +70,7 @@ def main():
         description='A Keras-like framework and utilities for PyTorch.',
         long_description=readme,
         long_description_content_type='text/markdown',
-        extras_require={"colorama": "colorama>=0.4.3"}
+        extras_require={"colorama": "colorama>=0.4.3", "tqdm": "tqdm>=2.2.3"}
     )
 
 
