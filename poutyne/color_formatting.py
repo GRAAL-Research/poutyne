@@ -144,6 +144,7 @@ class ColorProgress:
         self.steps_progress_bar = tqdm(total=number_steps_per_epoch,
                                        file=sys.stdout,
                                        dynamic_ncols=True,
+                                       unit=" it",
                                        bar_format="%s{l_bar}%s{bar}%s| [{rate_fmt}{postfix}]%s" %
                                        (self.text_color, self.progress_bar_color, self.time_color, Style.RESET_ALL),
                                        leave=False)
@@ -151,6 +152,7 @@ class ColorProgress:
         self.epoch_progress_bar = tqdm(total=number_of_epoch,
                                        file=sys.stdout,
                                        dynamic_ncols=True,
+                                       unit=" it",
                                        bar_format="%s{l_bar}%s{bar}%s| [{rate_fmt}{postfix}]%s" %
                                        (self.text_color, self.progress_bar_color, self.time_color, Style.RESET_ALL),
                                        leave=True,

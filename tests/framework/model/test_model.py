@@ -1,4 +1,4 @@
-# pylint: disable=unused-argument,too-many-locals
+# pylint: disable=unused-argument,too-many-locals, too-many-lines
 import io
 import sys
 import warnings
@@ -23,6 +23,11 @@ try:
     import colorama as color
 except ImportError:
     color = None
+
+try:
+    import tqdm as progress
+except ImportError:
+    progress = None
 
 warning_settings['concatenate_returns'] = 'ignore'
 
@@ -200,7 +205,7 @@ class ModelTest(ModelFittingTestCase):
             self.assertNotIn(value, self.test_out.getvalue().strip())
 
     @skipIf(color is None, "Unable to import colorama")
-    def test_fitting_with_coloring(self):
+    def test_fitting_with_default_coloring(self):
         train_generator = some_data_tensor_generator(ModelTest.batch_size)
         valid_generator = some_data_tensor_generator(ModelTest.batch_size)
 
@@ -285,6 +290,98 @@ class ModelTest(ModelFittingTestCase):
                                      callbacks=[self.mock_callback],
                                      coloring=False)
 
+        self.assertStdoutNotContains(["[94m", "[93m", "[96m"])
+
+    @skipIf(progress is None, "Unable to import tqdm")
+    def test_fitting_with_progress_bar_default_color(self):
+        train_generator = some_data_tensor_generator(ModelTest.batch_size)
+        valid_generator = some_data_tensor_generator(ModelTest.batch_size)
+
+        # Capture the output
+        self.test_out = io.StringIO()
+        self.original_output = sys.stdout
+        sys.stdout = self.test_out
+
+        _ = self.model.fit_generator(train_generator,
+                                     valid_generator,
+                                     epochs=ModelTest.epochs,
+                                     steps_per_epoch=ModelTest.steps_per_epoch,
+                                     validation_steps=ModelTest.steps_per_epoch,
+                                     callbacks=[self.mock_callback],
+                                     coloring=True,
+                                     progress_bar=True)
+
+        self.assertStdoutContains(["it/s", "[94m", "[93m", "[96m"])
+
+    @skipIf(progress is None, "Unable to import tqdm")
+    def test_fitting_with_progress_bar_user_color(self):
+        train_generator = some_data_tensor_generator(ModelTest.batch_size)
+        valid_generator = some_data_tensor_generator(ModelTest.batch_size)
+
+        # Capture the output
+        self.test_out = io.StringIO()
+        self.original_output = sys.stdout
+        sys.stdout = self.test_out
+
+        _ = self.model.fit_generator(train_generator,
+                                     valid_generator,
+                                     epochs=ModelTest.epochs,
+                                     steps_per_epoch=ModelTest.steps_per_epoch,
+                                     validation_steps=ModelTest.steps_per_epoch,
+                                     callbacks=[self.mock_callback],
+                                     coloring={
+                                         "text_color": 'BLACK',
+                                         "ratio_color": "BLACK",
+                                         "metric_value_color": "BLACK",
+                                         "time_color": "BLACK",
+                                         "progress_bar_color": "BLACK"
+                                     },
+                                     progress_bar=True)
+
+        self.assertStdoutContains(["it/s", "[30m"])
+
+    @skipIf(progress is None, "Unable to import tqdm")
+    def test_fitting_with_progress_bar_no_color(self):
+        train_generator = some_data_tensor_generator(ModelTest.batch_size)
+        valid_generator = some_data_tensor_generator(ModelTest.batch_size)
+
+        # Capture the output
+        self.test_out = io.StringIO()
+        self.original_output = sys.stdout
+        sys.stdout = self.test_out
+
+        _ = self.model.fit_generator(train_generator,
+                                     valid_generator,
+                                     epochs=ModelTest.epochs,
+                                     steps_per_epoch=ModelTest.steps_per_epoch,
+                                     validation_steps=ModelTest.steps_per_epoch,
+                                     callbacks=[self.mock_callback],
+                                     coloring=False,
+                                     progress_bar=True)
+
+        self.assertStdoutContains(["it/s"])
+        self.assertStdoutNotContains(["[94m", "[93m", "[96m"])
+
+    @skipIf(progress is None, "Unable to import tqdm")
+    def test_fitting_with_no_progress_bar(self):
+        train_generator = some_data_tensor_generator(ModelTest.batch_size)
+        valid_generator = some_data_tensor_generator(ModelTest.batch_size)
+
+        # Capture the output
+        self.test_out = io.StringIO()
+        self.original_output = sys.stdout
+        sys.stdout = self.test_out
+
+        _ = self.model.fit_generator(train_generator,
+                                     valid_generator,
+                                     epochs=ModelTest.epochs,
+                                     steps_per_epoch=ModelTest.steps_per_epoch,
+                                     validation_steps=ModelTest.steps_per_epoch,
+                                     callbacks=[self.mock_callback],
+                                     coloring=False,
+                                     progress_bar=False)
+
+        self.assertStdoutNotContains(["it/s"])
         self.assertStdoutNotContains(["[94m", "[93m", "[96m"])
 
     def test_fitting_without_valid_generator(self):

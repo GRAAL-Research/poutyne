@@ -202,8 +202,9 @@ class Model:
             initial_epoch=1,
             verbose=True,
             coloring=True,
+            progress_bar=True,
             callbacks=None):
-        # pylint: disable=line-too-long
+        # pylint: disable=line-too-long, too-many-locals
         """
         Trains the network on a dataset. This method creates generators and calls
         the :func:`~Model.fit_generator()` method.
@@ -246,6 +247,8 @@ class Model:
                 are text_color, ratio_color, metric_value_color, time_color and progress_bar_color.
                 In both case, will be ignore if verbose is set to False.
                 (Default value = True)
+            progress_bar (bool): Whether or not to display a progress bar showing the epoch progress.
+                (Default value = True)
             callbacks (List[~poutyne.framework.callbacks.Callback]): List of callbacks that will be called
                 during training.
                 (Default value = None)
@@ -286,6 +289,7 @@ class Model:
                                   initial_epoch=initial_epoch,
                                   verbose=verbose,
                                   coloring=coloring,
+                                  progress_bar=progress_bar,
                                   callbacks=callbacks)
 
     def _dataloader_from_data(self, args, batch_size):
@@ -305,6 +309,7 @@ class Model:
                       initial_epoch=1,
                       verbose=True,
                       coloring=True,
+                      progress_bar=True,
                       callbacks=None):
         # pylint: disable=line-too-long
         """
@@ -356,6 +361,8 @@ class Model:
                 are text_color, ratio_color, metric_value_color, time_color and progress_bar_color.
                 In both case, will be ignore if verbose is set to False.
                 (Default value = True)
+            progress_bar (bool): Whether or not to display a progress bar showing the epoch progress.
+                (Default value = True)
             callbacks (List[~poutyne.framework.callbacks.Callback]): List of callbacks that will be called during
                 training. (Default value = None)
 
@@ -388,7 +395,7 @@ class Model:
         callbacks = [] if callbacks is None else callbacks
 
         if verbose:
-            callbacks = [ProgressionCallback(coloring=coloring)] + callbacks
+            callbacks = [ProgressionCallback(coloring=coloring, progress_bar=progress_bar)] + callbacks
         callback_list = CallbackList(callbacks)
         callback_list.set_model(self)
 
