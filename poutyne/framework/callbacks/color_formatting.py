@@ -60,30 +60,26 @@ class ColorProgress:
     def __init__(self, coloring: Union[bool, Dict]) -> None:
         color_settings = None
 
-        if isinstance(coloring, Dict):
-            if colorama is None:
-                warnings.warn("The colorama package was not imported. Consider installing it for colorlog.",
-                              ImportWarning)
+        if (isinstance(coloring, Dict) or coloring) and colorama is None:
+            warnings.warn("The colorama package was not imported. Consider installing it for colorlog.", ImportWarning)
 
-            for key, value in coloring.items():
-                default_color_settings_copy = default_color_settings.copy()
-                if key in default_color_settings:
-                    default_color_settings_copy.update({key: value})
-                else:
-                    raise KeyError("The key {} is not a supported color attribute.".format(key))
-            color_settings = default_color_settings_copy
+        if isinstance(coloring, Dict):
+            color_settings = default_color_settings.copy()
+
+            invalid_keys = coloring.keys() - color_settings.keys()
+            if len(invalid_keys) != 0:
+                raise KeyError("The key(s) {} are not supported color attributes.".format(', '.join(invalid_keys)))
+
+            color_settings.update(coloring)
         elif coloring:
-            if colorama is None:
-                warnings.warn("The colorama package was not imported. Consider installing it for colorlog.",
-                              ImportWarning)
             color_settings = default_color_settings
 
         if color_settings is not None:
-            self.text_color = getattr(Fore, color_settings.get("text_color"))
-            self.ratio_color = getattr(Fore, color_settings.get("ratio_color"))
-            self.metric_value_color = getattr(Fore, color_settings.get("metric_value_color"))
-            self.time_color = getattr(Fore, color_settings.get("time_color"))
-            self.progress_bar_color = getattr(Fore, color_settings.get("progress_bar_color"))
+            self.text_color = getattr(Fore, color_settings["text_color"])
+            self.ratio_color = getattr(Fore, color_settings["ratio_color"])
+            self.metric_value_color = getattr(Fore, color_settings["metric_value_color"])
+            self.time_color = getattr(Fore, color_settings["time_color"])
+            self.progress_bar_color = getattr(Fore, color_settings["progress_bar_color"])
         else:
             self.text_color = ""
             self.ratio_color = ""

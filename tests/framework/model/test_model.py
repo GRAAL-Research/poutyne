@@ -272,6 +272,24 @@ class ModelTest(ModelFittingTestCase):
         self.assertStdoutContains(["[30m", "[32m", "[96m"])
 
     @skipIf(color is None, "Unable to import colorama")
+    def test_fitting_with_user_coloring_invalid(self):
+        train_generator = some_data_tensor_generator(ModelTest.batch_size)
+        valid_generator = some_data_tensor_generator(ModelTest.batch_size)
+
+        # Capture the output
+        self.test_out = io.StringIO()
+        self.original_output = sys.stdout
+        sys.stdout = self.test_out
+        with self.assertRaises(KeyError):
+            _ = self.model.fit_generator(train_generator,
+                                         valid_generator,
+                                         epochs=ModelTest.epochs,
+                                         steps_per_epoch=ModelTest.steps_per_epoch,
+                                         validation_steps=ModelTest.steps_per_epoch,
+                                         callbacks=[self.mock_callback],
+                                         coloring={"invalid_name": 'BLACK'})
+
+    @skipIf(color is None, "Unable to import colorama")
     def test_fitting_with_no_coloring(self):
         train_generator = some_data_tensor_generator(ModelTest.batch_size)
         valid_generator = some_data_tensor_generator(ModelTest.batch_size)
