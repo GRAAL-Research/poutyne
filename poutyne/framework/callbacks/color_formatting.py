@@ -158,8 +158,7 @@ class ColorProgress:
                 dynamic_ncols=True,
                 unit="step",
                 bar_format="%s{l_bar}%s{bar}%s| %s{rate_fmt} %s" %
-                           (
-                           self.text_color, self.progress_bar_color, self.text_color, self.time_color, Style.RESET_ALL),
+                (self.text_color, self.progress_bar_color, self.text_color, self.time_color, Style.RESET_ALL),
                 leave=False)
             self.steps_progress_bar.clear()
             self.epoch_progress_bar = tqdm(total=number_of_epoch,
@@ -167,8 +166,7 @@ class ColorProgress:
                                            dynamic_ncols=True,
                                            unit="epoch",
                                            bar_format="%s{l_bar}%s{bar}%s| {rate_fmt}%s" %
-                                                      (self.text_color, self.progress_bar_color, self.time_color,
-                                                       Style.RESET_ALL),
+                                           (self.text_color, self.progress_bar_color, self.time_color, Style.RESET_ALL),
                                            leave=True,
                                            desc="The training is at ")
             self.progress_bar = True
