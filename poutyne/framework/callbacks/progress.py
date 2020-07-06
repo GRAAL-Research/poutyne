@@ -2,7 +2,7 @@ import itertools
 from typing import Dict
 
 from .callbacks import Callback
-from ...color_formatting import ColorProgress
+from poutyne.framework.callbacks.color_formatting import ColorProgress
 
 
 class ProgressionCallback(Callback):
