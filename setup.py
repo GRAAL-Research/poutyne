@@ -1,5 +1,6 @@
 import os
 import subprocess
+
 from setuptools import setup, find_packages
 
 current_file_path = os.path.abspath(os.path.dirname(__file__))
@@ -69,6 +70,7 @@ def main():
         description='A Keras-like framework and utilities for PyTorch.',
         long_description=readme,
         long_description_content_type='text/markdown',
+        extras_require={"colorama": "colorama>=0.4.3"}
     )
 
 

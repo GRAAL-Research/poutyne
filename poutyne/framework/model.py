@@ -1,9 +1,9 @@
 # pylint: disable=too-many-lines
 import contextlib
+import numbers
 import warnings
 from collections import defaultdict
 from typing import Iterable, Mapping
-import numbers
 
 import numpy as np
 import torch
@@ -201,6 +201,7 @@ class Model:
             batches_per_step=1,
             initial_epoch=1,
             verbose=True,
+            coloring=True,
             callbacks=None):
         # pylint: disable=line-too-long
         """
@@ -238,6 +239,12 @@ class Model:
                 (useful for resuming a previous training run).
                 (Default value = 1)
             verbose (bool): Whether to display the progress of the training.
+                (Default value = True)
+            coloring (Union[bool, Dict], optional): If bool, whether to display the progress of the training with
+                default colors highlighting.
+                If Dict, the field and the color to use as colorama <https://pypi.org/project/colorama/>`_ . The fields
+                are text_color, ratio_color, metric_value_color and time_color.
+                In both case, will be ignore if verbose is set to False.
                 (Default value = True)
             callbacks (List[~poutyne.framework.callbacks.Callback]): List of callbacks that will be called
                 during training.
@@ -278,6 +285,7 @@ class Model:
                                   batches_per_step=batches_per_step,
                                   initial_epoch=initial_epoch,
                                   verbose=verbose,
+                                  coloring=coloring,
                                   callbacks=callbacks)
 
     def _dataloader_from_data(self, args, batch_size):
@@ -296,6 +304,7 @@ class Model:
                       batches_per_step=1,
                       initial_epoch=1,
                       verbose=True,
+                      coloring=True,
                       callbacks=None):
         # pylint: disable=line-too-long
         """
@@ -339,7 +348,13 @@ class Model:
             initial_epoch (int, optional): Epoch at which to start training (useful for resuming a previous
                 training run).
                 (Default value = 1)
-            verbose (bool): Whether to display the progress of the training.
+            verbose (bool, optional): Whether to display the progress of the training.
+                (Default value = True)
+            coloring (Union[bool, Dict], optional): If bool, whether to display the progress of the training with
+                default colors highlighting.
+                If Dict, the field and the color to use as colorama <https://pypi.org/project/colorama/>`_ . The fields
+                are text_color, ratio_color, metric_value_color and time_color.
+                In both case, will be ignore if verbose is set to False.
                 (Default value = True)
             callbacks (List[~poutyne.framework.callbacks.Callback]): List of callbacks that will be called during
                 training. (Default value = None)
@@ -373,7 +388,7 @@ class Model:
         callbacks = [] if callbacks is None else callbacks
 
         if verbose:
-            callbacks = [ProgressionCallback()] + callbacks
+            callbacks = [ProgressionCallback(coloring=coloring)] + callbacks
         callback_list = CallbackList(callbacks)
         callback_list.set_model(self)
 

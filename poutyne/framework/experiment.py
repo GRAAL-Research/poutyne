@@ -435,7 +435,8 @@ class Experiment:
               steps_per_epoch=None,
               validation_steps=None,
               batches_per_step=1,
-              seed=42):
+              seed=42,
+              coloring=True):
         # pylint: disable=too-many-locals
         """
         Trains or finetunes the attribute model on a dataset using a generator. If a previous training already occured
@@ -487,6 +488,12 @@ class Experiment:
                 (Default value = 1)
             seed (int, optional): Seed used to make the sampling deterministic.
                 (Default value = 42)
+            coloring (Union[bool, Dict], optional): If bool, whether to display the progress of the training with
+                default colors highlighting.
+                If Dict, the field and the color to use as colorama <https://pypi.org/project/colorama/>`_ . The fields
+                are text_color, ratio_color, metric_value_color and time_color.
+                In both case, will be ignore if verbose is set to False.
+                (Default value = True)
 
         Returns:
             List of dict containing the history of each epoch.
@@ -551,7 +558,8 @@ class Experiment:
                                             validation_steps=validation_steps,
                                             batches_per_step=batches_per_step,
                                             initial_epoch=initial_epoch,
-                                            callbacks=callbacks)
+                                            callbacks=callbacks,
+                                            coloring=coloring)
         finally:
             if tensorboard_writer is not None:
                 tensorboard_writer.close()
