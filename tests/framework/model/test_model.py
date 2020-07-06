@@ -266,11 +266,10 @@ class ModelTest(ModelFittingTestCase):
                                      callbacks=[self.mock_callback],
                                      coloring={
                                          "text_color": 'BLACK',
-                                         "ratio_color": "BLACK",
-                                         "metric_value_color": "BLACK"
+                                         "ratio_color": "BLACK"
                                      })
 
-        self.assertStdoutContains(["[30m", "[32m"])
+        self.assertStdoutContains(["[30m", "[32m", "[96m"])
 
     @skipIf(color is None, "Unable to import colorama")
     def test_fitting_with_no_coloring(self):
