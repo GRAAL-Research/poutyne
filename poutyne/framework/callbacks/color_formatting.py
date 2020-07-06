@@ -103,8 +103,9 @@ class ColorProgress:
         metrics name and values.
         """
         sys.stdout.write(
-            self._epoch_formatting(epoch_number, epochs) + self._epoch_total_time_formatting(epoch_total_time) +
-            self._step_formatting(steps, steps) + self._metric_formatting(metrics_str) + Style.RESET_ALL)
+            self._epoch_formatting(epoch_number, epochs) + self._step_formatting(steps, steps) +
+            self._epoch_total_time_formatting(epoch_total_time) + self._metric_formatting(metrics_str) +
+            Style.RESET_ALL)
         sys.stdout.flush()
 
         if self.progress_bar:
@@ -122,8 +123,8 @@ class ColorProgress:
             self.steps_progress_bar.update()
 
         sys.stdout.write(
-            self._epoch_formatting(epoch_number, epochs) + self._ETA_formatting(remaining_time) +
-            self._step_formatting(batch_number, steps) + self._metric_formatting(metrics_str) + Style.RESET_ALL)
+            self._epoch_formatting(epoch_number, epochs) + self._step_formatting(batch_number, steps) +
+            self._ETA_formatting(remaining_time) + self._metric_formatting(metrics_str) + Style.RESET_ALL)
 
         sys.stdout.flush()
 
@@ -147,28 +148,27 @@ class ColorProgress:
             sys.stdout.flush()
 
     def set_progress_bar(self, number_steps_per_epoch, number_of_epoch):
-        self.steps_progress_bar = tqdm(total=number_steps_per_epoch,
-                                       file=sys.stdout,
-                                       dynamic_ncols=True,
-                                       unit=" step",
-                                       bar_format="%s{rate_fmt}: %s{l_bar}%s{bar}%s| %s" %
-                                                  (self.time_color, self.text_color, self.progress_bar_color,
-                                                   self.text_color, Style.RESET_ALL),
-                                       leave=False)
+        self.steps_progress_bar = tqdm(
+            total=number_steps_per_epoch,
+            file=sys.stdout,
+            dynamic_ncols=True,
+            unit="step",
+            bar_format="%s{l_bar}%s{bar}%s| %s{rate_fmt} %s" %
+            (self.text_color, self.progress_bar_color, self.text_color, self.time_color, Style.RESET_ALL),
+            leave=False)
         self.steps_progress_bar.clear()
         self.epoch_progress_bar = tqdm(total=number_of_epoch,
                                        file=sys.stdout,
                                        dynamic_ncols=True,
                                        unit="epoch",
                                        bar_format="%s{l_bar}%s{bar}%s| {rate_fmt}%s" %
-                                                  (self.text_color, self.progress_bar_color, self.time_color,
-                                                   Style.RESET_ALL),
+                                       (self.text_color, self.progress_bar_color, self.time_color, Style.RESET_ALL),
                                        leave=True,
                                        desc="The training is at ")
         self.progress_bar = True
 
     def _epoch_formatting(self, epoch_number: int, epochs: int) -> str:
-        return self.text_color + "\rEpoch " + self.ratio_color + "%d/%d " % (epoch_number, epochs)
+        return self.text_color + "\rEpoch: " + self.ratio_color + "%d/%d " % (epoch_number, epochs)
 
     def _epoch_total_time_formatting(self, epoch_total_time: float) -> str:
         if self.progress_bar:
@@ -188,9 +188,9 @@ class ColorProgress:
 
     def _step_formatting(self, batch_number: int, steps: Union[int, None] = None) -> str:
         if steps is None:
-            formatted_step = self.text_color + "Step " + self.ratio_color + "%d: " % batch_number
+            formatted_step = self.text_color + "Step: " + self.ratio_color + "%d " % batch_number
         else:
-            formatted_step = self.text_color + "Step " + self.ratio_color + "%d/%d: " % (batch_number, steps)
+            formatted_step = self.text_color + "Step: " + self.ratio_color + "%d/%d " % (batch_number, steps)
         return formatted_step
 
     def _metric_formatting(self, metrics_str: str) -> str:

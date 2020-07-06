@@ -310,7 +310,7 @@ class ModelTest(ModelFittingTestCase):
                                      coloring=True,
                                      progress_bar=True)
 
-        self.assertStdoutContains(["it/s", "[94m", "[93m", "[96m"])
+        self.assertStdoutContains(["step/s", "[94m", "[93m", "[96m"])
 
     @skipIf(progress is None, "Unable to import tqdm")
     def test_fitting_with_progress_bar_user_color(self):
@@ -337,7 +337,7 @@ class ModelTest(ModelFittingTestCase):
                                      },
                                      progress_bar=True)
 
-        self.assertStdoutContains(["it/s", "[30m"])
+        self.assertStdoutContains(["step/s", "[30m"])
 
     @skipIf(progress is None, "Unable to import tqdm")
     def test_fitting_with_progress_bar_no_color(self):
@@ -358,7 +358,7 @@ class ModelTest(ModelFittingTestCase):
                                      coloring=False,
                                      progress_bar=True)
 
-        self.assertStdoutContains(["it/s"])
+        self.assertStdoutContains(["step/s"])
         self.assertStdoutNotContains(["[94m", "[93m", "[96m"])
 
     @skipIf(progress is None, "Unable to import tqdm")
