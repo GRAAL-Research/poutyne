@@ -248,6 +248,7 @@ class Model:
                 In both case, will be ignore if verbose is set to False.
                 (Default value = True)
             progress_bar (bool): Whether or not to display a progress bar showing the epoch progress.
+                Will be ignore if verbose is set to False.
                 (Default value = True)
             callbacks (List[~poutyne.framework.callbacks.Callback]): List of callbacks that will be called
                 during training.
@@ -362,6 +363,7 @@ class Model:
                 In both case, will be ignore if verbose is set to False.
                 (Default value = True)
             progress_bar (bool): Whether or not to display a progress bar showing the epoch progress.
+                Will be ignore if verbose is set to False.
                 (Default value = True)
             callbacks (List[~poutyne.framework.callbacks.Callback]): List of callbacks that will be called during
                 training. (Default value = None)
