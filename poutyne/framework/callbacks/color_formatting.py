@@ -96,7 +96,10 @@ class ColorProgress:
 
         self._set_epoch_formatted_text(epoch_number, epochs)
 
-    def on_train_batch_end(self, remaining_time: float, batch_number: int, metrics_str: str,
+    def on_train_batch_end(self,
+                           remaining_time: float,
+                           batch_number: int,
+                           metrics_str: str,
                            steps: Union[int, None] = None) -> None:
         # pylint: disable=too-many-arguments
         """
@@ -139,11 +142,11 @@ class ColorProgress:
         sys.stdout.flush()
 
     def set_progress_bar(self, number_steps_per_epoch):
-        self.steps_progress_bar = ProgressBar(number_steps_per_epoch,
-                                              unit= "step",
-                                              bar_format="%s{percentage}|%s{bar}%s| %s{rate} %s" %
-                                                         (self.text_color, self.progress_bar_color, self.text_color,
-                                                          self.time_color, Style.RESET_ALL))
+        self.steps_progress_bar = ProgressBar(
+            number_steps_per_epoch,
+            unit="step",
+            bar_format="%s{percentage}|%s{bar}%s| %s{rate} %s" %
+            (self.text_color, self.progress_bar_color, self.text_color, self.time_color, Style.RESET_ALL))
         self.progress_bar = True
 
     def _set_epoch_formatted_text(self, epoch_number: int, epochs: int) -> None:

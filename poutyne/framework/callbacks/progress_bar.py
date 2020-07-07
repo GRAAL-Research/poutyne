@@ -73,7 +73,7 @@ class ProgressBar:
 
         bar_len_complete = self.actual_steps // self.block * self.bar_character
         bar_len_incomplete = (self.bar_len - len(bar_len_complete)) * " "
-        bar = bar_len_complete + bar_len_incomplete
+        progress_bar = bar_len_complete + bar_len_incomplete
 
         actual_time = time()
         delta_t = actual_time - self.last_time
@@ -82,4 +82,5 @@ class ProgressBar:
         self.mean_rate = mean([round(1 / self.mean_time, 2), self.mean_rate])
         rate = str(round(self.mean_rate, 2)) + self.unit + "/s"
 
-        return self.bar_format.replace("{percentage}", percentage).replace("{bar}", bar).replace("{rate}", rate)
+        return self.bar_format.replace("{percentage}", percentage).replace("{bar}",
+                                                                           progress_bar).replace("{rate}", rate)

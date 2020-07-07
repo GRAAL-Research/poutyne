@@ -388,7 +388,7 @@ class ModelTest(ModelFittingTestCase):
                                      coloring=False,
                                      progress_bar=False)
 
-        self.assertStdoutNotContains(["it/s"])
+        self.assertStdoutNotContains(["step/s"])
         self.assertStdoutNotContains(["[94m", "[93m", "[96m"])
 
     def test_fitting_without_valid_generator(self):
