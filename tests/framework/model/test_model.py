@@ -23,11 +23,6 @@ try:
 except ImportError:
     color = None
 
-try:
-    import tqdm as progress
-except ImportError:
-    progress = None
-
 warning_settings['concatenate_returns'] = 'ignore'
 
 some_metric_1_value = 1.
@@ -308,7 +303,6 @@ class ModelTest(ModelFittingTestCase):
 
         self.assertStdoutNotContains(["[94m", "[93m", "[96m"])
 
-    @skipIf(progress is None, "Unable to import tqdm")
     def test_fitting_with_progress_bar_default_color(self):
         train_generator = some_data_tensor_generator(ModelTest.batch_size)
         valid_generator = some_data_tensor_generator(ModelTest.batch_size)
@@ -329,7 +323,6 @@ class ModelTest(ModelFittingTestCase):
 
         self.assertStdoutContains(["step/s", "[94m", "[93m", "[96m"])
 
-    @skipIf(progress is None, "Unable to import tqdm")
     def test_fitting_with_progress_bar_user_color(self):
         train_generator = some_data_tensor_generator(ModelTest.batch_size)
         valid_generator = some_data_tensor_generator(ModelTest.batch_size)
@@ -356,7 +349,6 @@ class ModelTest(ModelFittingTestCase):
 
         self.assertStdoutContains(["step/s", "[30m"])
 
-    @skipIf(progress is None, "Unable to import tqdm")
     def test_fitting_with_progress_bar_no_color(self):
         train_generator = some_data_tensor_generator(ModelTest.batch_size)
         valid_generator = some_data_tensor_generator(ModelTest.batch_size)
@@ -378,7 +370,6 @@ class ModelTest(ModelFittingTestCase):
         self.assertStdoutContains(["step/s"])
         self.assertStdoutNotContains(["[94m", "[93m", "[96m"])
 
-    @skipIf(progress is None, "Unable to import tqdm")
     def test_fitting_with_no_progress_bar(self):
         train_generator = some_data_tensor_generator(ModelTest.batch_size)
         valid_generator = some_data_tensor_generator(ModelTest.batch_size)
