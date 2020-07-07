@@ -1,4 +1,3 @@
-from math import ceil
 from statistics import mean
 from time import time
 from typing import Union
@@ -40,8 +39,12 @@ class ProgressBar:
 
         self.bar_character = bar_character
 
-        self.bar_len = 25
-        self.block = ceil(self.total_steps / self.bar_len)
+        if self.total_steps > 25:
+            self.bar_len = 25
+        else:
+            self.bar_len = self.total_steps
+        self.block = self.total_steps / self.bar_len
+
         self.actual_steps = 0
 
         self.mean_time = 0.0
@@ -71,9 +74,7 @@ class ProgressBar:
         """
         percentage = "%.2f" % (round(self.actual_steps / self.total_steps * 100, 2)) + "%"
 
-        bar_len_complete = self.actual_steps // self.block * self.bar_character
-        bar_len_incomplete = (self.bar_len - len(bar_len_complete)) * " "
-        progress_bar = bar_len_complete + bar_len_incomplete
+        progress_bar = self.progress_bar_formatting()
 
         actual_time = time()
         delta_t = actual_time - self.last_time
@@ -84,3 +85,18 @@ class ProgressBar:
 
         return self.bar_format.replace("{percentage}", percentage).replace("{bar}",
                                                                            progress_bar).replace("{rate}", rate)
+
+    def progress_bar_formatting(self) -> str:
+        if self.actual_steps == self.total_steps:
+            # Rounding problem for the final step in some case and we would be sometime be stuck at 24.
+            progress_bar = self.bar_len * self.bar_character
+        else:
+            bar_len_complete = round(self.actual_steps // self.block) * self.bar_character
+            if self.actual_steps > self.total_steps and len(bar_len_complete) == self.bar_len:
+                # Case where we have a block near 1 and a number of step close to 25.
+                bar_len_incomplete = (self.bar_len - 1) * " "
+                progress_bar = bar_len_complete + bar_len_incomplete
+            else:
+                bar_len_incomplete = (self.bar_len - len(bar_len_complete)) * " "
+                progress_bar = bar_len_complete + bar_len_incomplete
+        return progress_bar
