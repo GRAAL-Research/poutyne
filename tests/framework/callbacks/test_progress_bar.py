@@ -7,35 +7,12 @@ default_bar_size = 25
 
 
 class ProgressBarTest(TestCase):
-
     def test_default_bar_character_is_properly_step(self):
         smaller_bar_size = 24
         bar = ProgressBar(steps=smaller_bar_size, bar_character="#")
 
         bar.update()
         self.assertEqual(bar.progress_bar_formatting().strip(), "#")
-
-    def test_bar_formatting_steps_smaller_than_bar_size(self):
-        smaller_bar_size = 24
-        bar = ProgressBar(steps=smaller_bar_size, bar_character="#")
-
-        step = 0
-        while step < smaller_bar_size:
-            step += 1
-
-            bar.update()
-            self.assertEqual(bar.progress_bar_formatting(), "#" * step + " " * (smaller_bar_size - step))
-
-    def test_bar_formatting_steps_really_smaller_than_bar_size(self):
-        smaller_bar_size = 2
-        bar = ProgressBar(steps=smaller_bar_size, bar_character="#")
-
-        step = 0
-        while step < smaller_bar_size:
-            step += 1
-
-            bar.update()
-            self.assertEqual(bar.progress_bar_formatting(), "#" * step + " " * (smaller_bar_size - step))
 
     def test_bar_formatting_steps_equal_than_bar_size(self):
         equal_bar_size = 25

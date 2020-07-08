@@ -1,3 +1,4 @@
+import math
 from statistics import mean
 from time import time
 from typing import Union
@@ -38,12 +39,7 @@ class ProgressBar:
             self.bar_format = "{percentage}|{bar}| {rate}"
 
         self.bar_character = bar_character
-
-        if self.total_steps > 25:
-            self.bar_len = 25
-        else:
-            self.bar_len = self.total_steps
-        self.block = self.total_steps / self.bar_len
+        self.bar_len = 25
 
         self.actual_steps = 0
 
@@ -72,7 +68,7 @@ class ProgressBar:
         """
         To format the progress bar for an output.
         """
-        percentage = "%.2f" % (round(self.actual_steps / self.total_steps * 100, 2)) + "%"
+        percentage = f"{self.actual_steps / self.total_steps * 100:.2f}%"
 
         progress_bar = self.progress_bar_formatting()
 
@@ -81,22 +77,12 @@ class ProgressBar:
         self.last_time = actual_time
         self.mean_time = mean([self.mean_time, delta_t])
         self.mean_rate = mean([round(1 / self.mean_time, 2), self.mean_rate])
-        rate = str(round(self.mean_rate, 2)) + self.unit + "/s"
+        rate = f'{self.mean_rate:.2f}{self.unit}/s'
 
-        return self.bar_format.replace("{percentage}", percentage).replace("{bar}",
-                                                                           progress_bar).replace("{rate}", rate)
+        return self.bar_format.format(percentage=percentage, bar=progress_bar, rate=rate)
 
     def progress_bar_formatting(self) -> str:
-        if self.actual_steps == self.total_steps:
-            # Rounding problem for the final step in some case and we would be sometime be stuck at 24.
-            progress_bar = self.bar_len * self.bar_character
-        else:
-            bar_len_complete = round(self.actual_steps // self.block) * self.bar_character
-            if self.actual_steps > self.total_steps and len(bar_len_complete) == self.bar_len:
-                # Case where we have a block near 1 and a number of step close to 25.
-                bar_len_incomplete = (self.bar_len - 1) * " "
-                progress_bar = bar_len_complete + bar_len_incomplete
-            else:
-                bar_len_incomplete = (self.bar_len - len(bar_len_complete)) * " "
-                progress_bar = bar_len_complete + bar_len_incomplete
+        bar_len_complete = int(math.floor(self.actual_steps / self.total_steps * self.bar_len)) * self.bar_character
+        bar_len_incomplete = (self.bar_len - len(bar_len_complete)) * " "
+        progress_bar = bar_len_complete + bar_len_incomplete
         return progress_bar
