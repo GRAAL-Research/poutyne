@@ -439,7 +439,8 @@ class Experiment:
               validation_steps=None,
               batches_per_step=1,
               seed=42,
-              coloring=True):
+              coloring=True,
+              progress_bar=True):
         # pylint: disable=too-many-locals
         """
         Trains or finetunes the attribute model on a dataset using a generator. If a previous training already occured
@@ -495,7 +496,8 @@ class Experiment:
                 default colors highlighting.
                 If Dict, the field and the color to use as colorama <https://pypi.org/project/colorama/>`_ . The fields
                 are text_color, ratio_color, metric_value_color and time_color.
-                In both case, will be ignore if verbose is set to False.
+                (Default value = True)
+            progress_bar (bool): Whether or not to display a progress bar showing the epoch progress.
                 (Default value = True)
 
         Returns:
@@ -525,7 +527,7 @@ class Experiment:
                                 temporary_filename=self.log_tmp_filename)
             ]
 
-            callbacks += self._init_model_restoring_callbacks(initial_epoch, save_every_epoch, keep_only_last_best)
+            callbacks += self._init_model_restoring_callbacks(initial_epoch, keep_only_last_best, save_every_epoch)
             callbacks += [
                 ModelCheckpoint(self.model_checkpoint_filename,
                                 verbose=False,
@@ -562,7 +564,8 @@ class Experiment:
                                             batches_per_step=batches_per_step,
                                             initial_epoch=initial_epoch,
                                             callbacks=callbacks,
-                                            coloring=coloring)
+                                            coloring=coloring,
+                                            progress_bar=progress_bar)
         finally:
             if tensorboard_writer is not None:
                 tensorboard_writer.close()

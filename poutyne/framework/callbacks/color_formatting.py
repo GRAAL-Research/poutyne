@@ -2,6 +2,8 @@ import sys
 import warnings
 from typing import Dict, Union
 
+from poutyne.framework.callbacks.progress_bar import ProgressBar
+
 
 class EmptyStringAttrClass:
     """
@@ -28,7 +30,8 @@ default_color_settings = {
     "text_color": 'LIGHTYELLOW_EX',
     "ratio_color": "LIGHTBLUE_EX",
     "metric_value_color": "LIGHTCYAN_EX",
-    "time_color": "GREEN"
+    "time_color": "GREEN",
+    "progress_bar_color": "LIGHTGREEN_EX"
 }
 
 
@@ -48,6 +51,8 @@ class ColorProgress:
         ratio_color (str): The color to use for the ratio.
         metric_value_color (str): The color to use for the metric value.
         time_color (str): The color to use for the time.
+        progress_bar_color (str): The color to use for the progress bar.
+
     """
 
     def __init__(self, coloring: Union[bool, Dict]) -> None:
@@ -72,69 +77,104 @@ class ColorProgress:
             self.ratio_color = getattr(Fore, color_settings["ratio_color"])
             self.metric_value_color = getattr(Fore, color_settings["metric_value_color"])
             self.time_color = getattr(Fore, color_settings["time_color"])
+            self.progress_bar_color = getattr(Fore, color_settings["progress_bar_color"])
+
         else:
             self.text_color = ""
             self.ratio_color = ""
             self.metric_value_color = ""
             self.time_color = ""
+            self.progress_bar_color = ""
 
-    def on_epoch_end(self, epoch_number: int, epochs: int, epoch_total_time: float, steps: int,
-                     metrics_str: str) -> None:
-        # pylint: disable=too-many-arguments
-        """
-        Format on epoch end the epoch ratio (so far / to do), the total time for the epoch, the steps done and the
-        metrics name and values.
-        """
-        print(
-            self._epoch_formatting(epoch_number, epochs) + self._epoch_total_time_formatting(epoch_total_time) +
-            self._step_formatting(steps, steps) + self._metric_formatting(metrics_str) + Style.RESET_ALL)
+        self.progress_bar = False
+        self.steps_progress_bar = None
+        self.epoch_formatted_text = ""
 
-    def on_train_batch_end_steps(self, epoch_number: int, epochs: int, remaining_time: float, batch_number: int,
-                                 steps: int, metrics_str: str) -> None:
+    def on_epoch_begin(self, epoch_number, epochs) -> None:
+        if self.progress_bar:
+            self.steps_progress_bar.reset()
+
+        self._set_epoch_formatted_text(epoch_number, epochs)
+
+    def on_train_batch_end(self,
+                           remaining_time: float,
+                           batch_number: int,
+                           metrics_str: str,
+                           steps: Union[int, None] = None) -> None:
         # pylint: disable=too-many-arguments
         """
         Format on train batch end for a steps the epoch ratio (so far / to do), the total time for the epoch, the steps
         done and the metrics name and values.
         """
-        sys.stdout.write(
-            self._epoch_formatting(epoch_number, epochs) + self._ETA_formatting(remaining_time) +
-            self._step_formatting(batch_number, steps) + self._metric_formatting(metrics_str) + Style.RESET_ALL)
+        update = self.epoch_formatted_text
+
+        if self.progress_bar:
+            update += self._get_formatted_step(batch_number, steps)
+
+            self.steps_progress_bar.update()
+
+            update += str(self.steps_progress_bar) + self._get_formatted_time(remaining_time, steps)
+        else:
+            update += self._get_formatted_time(remaining_time, steps) + self._get_formatted_step(batch_number, steps)
+
+        update += self._get_formatted_metrics(metrics_str)
+
+        sys.stdout.write(update)
         sys.stdout.flush()
 
-    def on_train_batch_end(self, epoch_number: int, epochs: int, times_mean: float, batch_number: int,
-                           metrics_str: str) -> None:
+    def on_epoch_end(self, epoch_total_time: float, steps: int, metrics_str: str) -> None:
         # pylint: disable=too-many-arguments
         """
-        Format on train batch end the epoch ratio (so far / to do), the total time for the epoch, the steps
-        done and the metrics name and values.
+        Format on epoch end the epoch ratio (so far / to do), the total time for the epoch, the steps done and the
+        metrics name and values.
         """
+        update = self.epoch_formatted_text
 
-        sys.stdout.write(
-            self._epoch_formatting(epoch_number, epochs) + self._ETA_formatting(times_mean) +
-            self._step_formatting(batch_number) + self._metric_formatting(metrics_str) + Style.RESET_ALL)
+        if self.progress_bar:
+            update += self._get_formatted_step(steps, steps)
+
+            update += str(self.steps_progress_bar) + self._get_formatted_epoch_total_time(epoch_total_time)
+        else:
+            update += self._get_formatted_epoch_total_time(epoch_total_time) + self._get_formatted_step(steps, steps)
+        update += self._get_formatted_metrics(metrics_str)
+
+        print(update)
         sys.stdout.flush()
 
-    def _epoch_formatting(self, epoch_number: int, epochs: int) -> str:
-        return self.text_color + "\rEpoch " + self.ratio_color + "%d/%d " % (epoch_number, epochs)
+    def set_progress_bar(self, number_steps_per_epoch):
+        self.steps_progress_bar = ProgressBar(
+            number_steps_per_epoch,
+            bar_format="%s{percentage} |%s{bar}%s| %s" %
+            (self.text_color, self.progress_bar_color, self.text_color, Style.RESET_ALL))
+        self.progress_bar = True
 
-    def _epoch_total_time_formatting(self, epoch_total_time: float) -> str:
-        return self.time_color + "%.2fs " % epoch_total_time
+    def _set_epoch_formatted_text(self, epoch_number: int, epochs: int) -> None:
+        self.epoch_formatted_text = self.text_color + "\rEpoch: " + self.ratio_color + "%d/%d " % (epoch_number, epochs)
 
-    def _ETA_formatting(self, time: float) -> str:
-        return self.text_color + "ETA " + self.time_color + "%.0fs " % time
+    def _get_formatted_epoch_total_time(self, epoch_total_time: float) -> str:
+        return self.time_color + "%.0fs " % epoch_total_time
 
-    def _step_formatting(self, batch_number: int, steps: Union[int, None] = None) -> str:
+    def _get_formatted_time(self, time: float, steps) -> str:
         if steps is None:
-            formatted_step = self.text_color + "Step " + self.ratio_color + "%d: " % batch_number
+            formatted_time = self.time_color + "%.2fs/step " % time
         else:
-            formatted_step = self.text_color + "Step " + self.ratio_color + "%d/%d: " % (batch_number, steps)
+            formatted_time = self.text_color + "ETA: " + self.time_color + "%.2fs " % time
+        return formatted_time
+
+    def _get_formatted_step(self, batch_number: int, steps: Union[int, None]) -> str:
+        if steps is None:
+            formatted_step = self.text_color + "Step: " + self.ratio_color + "%d " % batch_number
+        else:
+            formatted_step = self.text_color + "Step: " + self.ratio_color + "%d/%d " % (batch_number, steps)
         return formatted_step
 
-    def _metric_formatting(self, metrics_str: str) -> str:
+    def _get_formatted_metrics(self, metrics_str: str) -> str:
         formatted_metrics = ""
         for metric in metrics_str.split(","):
             name_value = metric.split(":")
             name = name_value[0]
             value = name_value[1]
-            formatted_metrics += self.text_color + name + ": " + self.metric_value_color + value + " "
+            formatted_metrics += self.text_color + name + ":" + self.metric_value_color + value
+
+        formatted_metrics += Style.RESET_ALL
         return formatted_metrics
