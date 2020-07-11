@@ -4,7 +4,6 @@ import warnings
 from typing import Union, Callable, List, Dict, Tuple
 
 import numpy as np
-from pandas import DataFrame
 
 try:
     import pandas as pd
@@ -297,7 +296,7 @@ class Experiment:
             best_epoch_index = history[self.monitor_metric].idxmax()
         return history.iloc[best_epoch_index:best_epoch_index + 1]
 
-    def get_saved_epochs(self) -> DataFrame:
+    def get_saved_epochs(self):
         """
         Returns a pandas DataFrame which each row corresponds to an epoch having
         a saved checkpoint.
