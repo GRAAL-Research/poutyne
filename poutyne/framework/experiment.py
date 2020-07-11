@@ -1,7 +1,7 @@
 # pylint: disable=redefined-builtin
 import os
 import warnings
-from typing import Union, Callable, List, Dict
+from typing import Union, Callable, List, Dict, Tuple
 
 import numpy as np
 from pandas import DataFrame
@@ -17,7 +17,7 @@ try:
 except ImportError:
     SummaryWriter = None
 
-from poutyne.framework import Model, Callback
+from poutyne.framework import Model
 from poutyne.utils import set_seeds
 from poutyne.framework.callbacks import ModelCheckpoint, \
     OptimizerCheckpoint, \
@@ -37,7 +37,7 @@ class Experiment:
 
     Args:
         directory (str): Path to the experiment's working directory. Will be used for the automatic logging.
-        network (Union[torch.nn.Module, Model]): A PyTorch network or a Poutyne :class:`~poutyne.framework.Model`.
+        network (torch.nn.Module): A PyTorch network.
         device (Union[torch.device, None]): The device to which the model is sent. If None, the model will be
             kept on its current device.
             (Default value = None)
@@ -183,11 +183,11 @@ class Experiment:
 
     def __init__(self,
                  directory: str,
-                 network: Union[torch.nn.Module, Model],
+                 network: torch.nn.Module,
                  *,
                  device: Union[torch.device, None] = None,
                  logging: bool = True,
-                 optimizer: Union[torch.optim.optimizer.Optimizer, str] = 'sgd',
+                 optimizer: Union[torch.optim.Optimizer, str] = 'sgd',
                  loss_function: Union[Callable, str] = None,
                  batch_metrics: Union[List, None] = None,
                  epoch_metrics: Union[List, None] = None,
@@ -233,7 +233,8 @@ class Experiment:
         """
         return os.path.join(self.directory, *paths)
 
-    def _get_loss_function(self, loss_function: Union[Callable, str], network: torch.nn.Module, task: Union[str, None]):
+    def _get_loss_function(self, loss_function: Union[Callable, str], network: torch.nn.Module,
+                           task: Union[str, None]) -> Union[Callable, str]:
         if loss_function is None:
             if hasattr(network, 'loss_function'):
                 return network.loss_function
@@ -244,7 +245,8 @@ class Experiment:
                     return 'mse'
         return loss_function
 
-    def _get_batch_metrics(self, batch_metrics: Union[List, None], network: torch.nn.Module, task: Union[str, None]):
+    def _get_batch_metrics(self, batch_metrics: Union[List, None], network: torch.nn.Module,
+                           task: Union[str, None]) -> Union[List, None]:
         if batch_metrics is None or len(batch_metrics) == 0:
             if hasattr(network, 'batch_metrics'):
                 return network.batch_metrics
@@ -252,7 +254,8 @@ class Experiment:
                 return ['accuracy']
         return batch_metrics
 
-    def _get_epoch_metrics(self, epoch_metrics: Union[List, None], network, task: Union[str, None]):
+    def _get_epoch_metrics(self, epoch_metrics: Union[List, None], network, task: Union[str,
+                                                                                        None]) -> Union[List, None]:
         if epoch_metrics is None or len(epoch_metrics) == 0:
             if hasattr(network, 'epoch_metrics'):
                 return network.epoch_metrics
@@ -260,8 +263,8 @@ class Experiment:
                 return ['f1']
         return epoch_metrics
 
-    def _set_monitor(self, monitor_metric: Union[str, None], monitor_mode: Union[str, None],
-                     task: Union[str, None]) -> None:
+    def _set_monitor(self, monitor_metric: Union[str, None], monitor_mode: Union[str, None], task: Union[str,
+                                                                                                         None]) -> None:
         if monitor_mode is not None and monitor_mode not in ['min', 'max']:
             raise ValueError("Invalid mode '%s'" % monitor_mode)
 
@@ -324,7 +327,7 @@ class Experiment:
     def _warn_missing_file(self, filename: str) -> None:
         warnings.warn("Missing checkpoint: %s." % filename)
 
-    def _load_epoch_state(self, lr_schedulers: Callback):
+    def _load_epoch_state(self, lr_schedulers: List) -> int:
         # pylint: disable=broad-except
         initial_epoch = 1
         if os.path.isfile(self.epoch_filename):
@@ -364,7 +367,8 @@ class Experiment:
                     self._warn_missing_file(filename)
         return initial_epoch
 
-    def _init_model_restoring_callbacks(self, initial_epoch: int, keep_only_last_best: bool, save_every_epoch):
+    def _init_model_restoring_callbacks(self, initial_epoch: int, keep_only_last_best: bool,
+                                        save_every_epoch: bool) -> List:
         callbacks = []
         best_checkpoint = ModelCheckpoint(self.best_checkpoint_filename,
                                           monitor=self.monitor_metric,
@@ -396,7 +400,7 @@ class Experiment:
 
         return callbacks
 
-    def _init_tensorboard_callbacks(self, disable_tensorboard):
+    def _init_tensorboard_callbacks(self, disable_tensorboard: bool) -> Tuple:
         tensorboard_writer = None
         callbacks = []
         if not disable_tensorboard:
@@ -411,7 +415,7 @@ class Experiment:
                 callbacks += [TensorBoardLogger(tensorboard_writer)]
         return tensorboard_writer, callbacks
 
-    def _init_lr_scheduler_callbacks(self, lr_schedulers):
+    def _init_lr_scheduler_callbacks(self, lr_schedulers: List) -> List:
         callbacks = []
         if self.logging:
             for i, lr_scheduler in enumerate(lr_schedulers):
@@ -429,18 +433,18 @@ class Experiment:
               train_generator,
               valid_generator=None,
               *,
-              callbacks=None,
-              lr_schedulers=None,
-              keep_only_last_best=False,
-              save_every_epoch=False,
-              disable_tensorboard=False,
-              epochs=1000,
-              steps_per_epoch=None,
-              validation_steps=None,
-              batches_per_step=1,
-              seed=42,
-              coloring=True,
-              progress_bar=True):
+              callbacks: Union[List, None] = None,
+              lr_schedulers: Union[List, None] = None,
+              keep_only_last_best: bool = False,
+              save_every_epoch: bool = False,
+              disable_tensorboard: bool = False,
+              epochs: int = 1000,
+              steps_per_epoch: Union[int, None] = None,
+              validation_steps: Union[int, None] = None,
+              batches_per_step: int = 1,
+              seed: int = 42,
+              coloring: bool = True,
+              progress_bar: bool = True) -> List[Dict]:
         # pylint: disable=too-many-locals
         """
         Trains or finetunes the attribute model on a dataset using a generator. If a previous training already occured
@@ -570,7 +574,7 @@ class Experiment:
             if tensorboard_writer is not None:
                 tensorboard_writer.close()
 
-    def load_checkpoint(self, checkpoint, *, verbose=False):
+    def load_checkpoint(self, checkpoint: Union[int, str], *, verbose: bool = False) -> Union[Dict, None]:
         """
         Loads the attribute model's weights with the weights at a given checkpoint epoch.
 
@@ -600,7 +604,7 @@ class Experiment:
 
         return best_epoch_stats
 
-    def _load_epoch_checkpoint(self, epoch):
+    def _load_epoch_checkpoint(self, epoch: int) -> None:
         ckpt_filename = self.best_checkpoint_filename.format(epoch=epoch)
 
         if not os.path.isfile(ckpt_filename):
@@ -608,7 +612,7 @@ class Experiment:
 
         self.model.load_weights(ckpt_filename)
 
-    def _load_best_checkpoint(self, *, verbose=False):
+    def _load_best_checkpoint(self, *, verbose: bool = False) -> Dict:
         best_epoch_stats = self.get_best_epoch_stats()
         best_epoch = best_epoch_stats['epoch'].item()
 
@@ -621,10 +625,16 @@ class Experiment:
         self._load_epoch_checkpoint(best_epoch)
         return best_epoch_stats
 
-    def _load_last_checkpoint(self):
+    def _load_last_checkpoint(self) -> None:
         self.model.load_weights(self.model_checkpoint_filename)
 
-    def test(self, test_generator, *, callbacks=None, steps=None, checkpoint='best', seed=42):
+    def test(self,
+             test_generator,
+             *,
+             callbacks: Union[List, None] = None,
+             steps: Union[int, None] = None,
+             checkpoint: Union[str, int] = 'best',
+             seed: int = 42) -> Dict:
         """
         Computes and returns the loss and the metrics of the attribute model on a given test examples
         generator.
@@ -635,8 +645,8 @@ class Experiment:
         Args:
             test_generator: Generator-like object for the test set. See :func:`~Model.fit_generator()` for
                 details on the types of generators supported.
-            callbacks (List[~poutyne.framework.callbacks.Callback]): List of callbacks that will be called during
-                the testing.
+            callbacks (List[~poutyne.framework.callbacks.Callback], optional): List of callbacks that will be called
+                during the testing.
                 (Default value = None)
             steps (int, optional): Number of iterations done on ``generator``.
                 (Defaults the number of steps needed to see the entire dataset)
