@@ -37,8 +37,8 @@ class Experiment:
     Args:
         directory (str): Path to the experiment's working directory. Will be used for the automatic logging.
         network (torch.nn.Module): A PyTorch network.
-        device (Union[torch.device, None]): The device to which the model is sent. If None, the model will be
-            kept on its current device.
+        device (Union[torch.device, List[torch.device], None]): The device to which the model is sent.
+            If None, the model will be kept on its current device.
             (Default value = None)
         logging (bool): Whether or not to log the experiment's progress. If true, various logging
             callbacks will be inserted to output training and testing stats as well as to automatically
@@ -210,6 +210,7 @@ class Experiment:
         self.model = Model(network, optimizer, loss_function, batch_metrics=batch_metrics, epoch_metrics=epoch_metrics)
         if device is not None:
             self.model.to(device)
+        # batch_size > que # de GPU
 
         self.best_checkpoint_filename = self.get_path(Experiment.BEST_CHECKPOINT_FILENAME)
         self.best_checkpoint_tmp_filename = self.get_path(Experiment.BEST_CHECKPOINT_TMP_FILENAME)
