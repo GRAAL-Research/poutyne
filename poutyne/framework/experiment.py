@@ -1,6 +1,7 @@
 # pylint: disable=redefined-builtin
 import os
 import warnings
+from typing import Union, Callable, List, Dict, Tuple
 
 import numpy as np
 
@@ -36,7 +37,7 @@ class Experiment:
     Args:
         directory (str): Path to the experiment's working directory. Will be used for the automatic logging.
         network (torch.nn.Module): A PyTorch network.
-        device (torch.torch.device): The device to which the model is sent. If None, the model will be
+        device (Union[torch.device, None]): The device to which the model is sent. If None, the model will be
             kept on its current device.
             (Default value = None)
         logging (bool): Whether or not to log the experiment's progress. If true, various logging
@@ -47,36 +48,36 @@ class Experiment:
         optimizer (Union[torch.optim.Optimizer, str]): If Pytorch Optimizer, must already be initialized.
             If str, should be the optimizer's name in Pytorch (i.e. 'Adam' for torch.optim.Adam).
             (Default value = 'sgd')
-        loss_function(Union[Callable, str]) It can be any PyTorch
+        loss_function(Union[Callable, str], optional) It can be any PyTorch
             loss layer or custom loss function. It can also be a string with the same name as a PyTorch
             loss function (either the functional or object name). The loss function must have the signature
             ``loss_function(input, target)`` where ``input`` is the prediction of the network and ``target``
             is the ground truth. If ``None``, will default to, in priority order, either the model's own
             loss function or the default loss function associated with the ``task``.
             (Default value = None)
-        batch_metrics (list): List of functions with the same signature as the loss function. Each metric
+        batch_metrics (List, optional): List of functions with the same signature as the loss function. Each metric
             can be any PyTorch loss function. It can also be a string with the same name as a PyTorch
             loss function (either the functional or object name). 'accuracy' (or just 'acc') is also a
             valid metric. Each metric function is called on each batch of the optimization and on the
             validation batches at the end of the epoch.
             (Default value = None)
-        epoch_metrics (list): List of functions with the same signature as
+        epoch_metrics (List, optional): List of functions with the same signature as
             :class:`~poutyne.framework.metrics.epoch_metrics.EpochMetric`
             (Default value = None)
-        monitor_metric (str): Which metric to consider for best model performance calculation. Should be in
+        monitor_metric (str, optional): Which metric to consider for best model performance calculation. Should be in
             the format '{metric_name}' or 'val_{metric_name}' (i.e. 'val_loss'). If None, will follow the value
             suggested by ``task`` or default to 'val_loss'.
 
             .. warning:: If you do not plan on using a validation set, you must set the monitor metric to another
                 value.
-        monitor_mode (str): Which mode, either 'min' or 'max', should be used when considering the ``monitor_metric``
-            value. If None, will follow the value suggested by ``task`` or default to 'min'.
-        task (str): Any str beginning with either 'classif' or 'reg'. Specifying a ``task`` can assign default
-            values to the ``loss_function``, ``batch_metrics``, ``monitor_mode`` and ``monitor_mode``. For ``task``
-            that begins with 'reg', the only default value is the loss function that is the mean squared error. When
-            beginning with 'classif', the default loss function is the cross-entropy loss, the default batch metrics
-            will be the accuracy, the default epoch metrics will be the F1 score and the default monitoring will be
-            set on 'val_acc' with a 'max' mode.
+        monitor_mode (str, optional): Which mode, either 'min' or 'max', should be used when considering the
+            ``monitor_metric`` value. If None, will follow the value suggested by ``task`` or default to 'min'.
+        task (str, optional): Any str beginning with either 'classif' or 'reg'. Specifying a ``task``
+            can assign default values to the ``loss_function``, ``batch_metrics``, ``monitor_mode`` and
+            ``monitor_mode``. For ``task`` that begins with 'reg', the only default value is the loss function
+            that is the mean squared error. When beginning with 'classif', the default loss function is the
+            cross-entropy loss, the default batch metrics will be the accuracy, the default epoch metrics will be
+            the F1 score and the default monitoring will be set on 'val_acc' with a 'max' mode.
             (Default value = None)
 
     Example:
@@ -180,18 +181,18 @@ class Experiment:
     TEST_LOG_FILENAME = 'test_log.tsv'
 
     def __init__(self,
-                 directory,
-                 network,
+                 directory: str,
+                 network: torch.nn.Module,
                  *,
-                 device=None,
-                 logging=True,
-                 optimizer='sgd',
-                 loss_function=None,
-                 batch_metrics=None,
-                 epoch_metrics=None,
-                 monitor_metric=None,
-                 monitor_mode=None,
-                 task=None):
+                 device: Union[torch.device, None] = None,
+                 logging: bool = True,
+                 optimizer: Union[torch.optim.Optimizer, str] = 'sgd',
+                 loss_function: Union[Callable, str] = None,
+                 batch_metrics: Union[List, None] = None,
+                 epoch_metrics: Union[List, None] = None,
+                 monitor_metric: Union[str, None] = None,
+                 monitor_mode: Union[str, None] = None,
+                 task: Union[str, None] = None) -> None:
         self.directory = directory
         self.logging = logging
 
@@ -225,13 +226,14 @@ class Experiment:
         self.lr_scheduler_tmp_filename = self.get_path(Experiment.LR_SCHEDULER_TMP_FILENAME)
         self.test_log_filename = self.get_path(Experiment.TEST_LOG_FILENAME)
 
-    def get_path(self, *paths):
+    def get_path(self, *paths: str) -> str:
         """
         Returns the path inside the experiment directory.
         """
         return os.path.join(self.directory, *paths)
 
-    def _get_loss_function(self, loss_function, network, task):
+    def _get_loss_function(self, loss_function: Union[Callable, str], network: torch.nn.Module,
+                           task: Union[str, None]) -> Union[Callable, str]:
         if loss_function is None:
             if hasattr(network, 'loss_function'):
                 return network.loss_function
@@ -242,7 +244,8 @@ class Experiment:
                     return 'mse'
         return loss_function
 
-    def _get_batch_metrics(self, batch_metrics, network, task):
+    def _get_batch_metrics(self, batch_metrics: Union[List, None], network: torch.nn.Module,
+                           task: Union[str, None]) -> Union[List, None]:
         if batch_metrics is None or len(batch_metrics) == 0:
             if hasattr(network, 'batch_metrics'):
                 return network.batch_metrics
@@ -250,7 +253,8 @@ class Experiment:
                 return ['accuracy']
         return batch_metrics
 
-    def _get_epoch_metrics(self, epoch_metrics, network, task):
+    def _get_epoch_metrics(self, epoch_metrics: Union[List, None], network, task: Union[str,
+                                                                                        None]) -> Union[List, None]:
         if epoch_metrics is None or len(epoch_metrics) == 0:
             if hasattr(network, 'epoch_metrics'):
                 return network.epoch_metrics
@@ -258,7 +262,8 @@ class Experiment:
                 return ['f1']
         return epoch_metrics
 
-    def _set_monitor(self, monitor_metric, monitor_mode, task):
+    def _set_monitor(self, monitor_metric: Union[str, None], monitor_mode: Union[str, None], task: Union[str,
+                                                                                                         None]) -> None:
         if monitor_mode is not None and monitor_mode not in ['min', 'max']:
             raise ValueError("Invalid mode '%s'" % monitor_mode)
 
@@ -272,7 +277,7 @@ class Experiment:
             self.monitor_metric = 'val_acc'
             self.monitor_mode = 'max'
 
-    def get_best_epoch_stats(self):
+    def get_best_epoch_stats(self) -> Dict:
         """
         Returns all computed statistics corresponding to the best epoch according to the
         ``monitor_metric`` and ``monitor_mode`` attributes.
@@ -318,10 +323,10 @@ class Experiment:
                 saved_epoch_indices.append(i)
         return history.iloc[saved_epoch_indices]
 
-    def _warn_missing_file(self, filename):
+    def _warn_missing_file(self, filename: str) -> None:
         warnings.warn("Missing checkpoint: %s." % filename)
 
-    def _load_epoch_state(self, lr_schedulers):
+    def _load_epoch_state(self, lr_schedulers: List) -> int:
         # pylint: disable=broad-except
         initial_epoch = 1
         if os.path.isfile(self.epoch_filename):
@@ -361,7 +366,8 @@ class Experiment:
                     self._warn_missing_file(filename)
         return initial_epoch
 
-    def _init_model_restoring_callbacks(self, initial_epoch, keep_only_last_best, save_every_epoch):
+    def _init_model_restoring_callbacks(self, initial_epoch: int, keep_only_last_best: bool,
+                                        save_every_epoch: bool) -> List:
         callbacks = []
         best_checkpoint = ModelCheckpoint(self.best_checkpoint_filename,
                                           monitor=self.monitor_metric,
@@ -393,7 +399,7 @@ class Experiment:
 
         return callbacks
 
-    def _init_tensorboard_callbacks(self, disable_tensorboard):
+    def _init_tensorboard_callbacks(self, disable_tensorboard: bool) -> Tuple:
         tensorboard_writer = None
         callbacks = []
         if not disable_tensorboard:
@@ -408,7 +414,7 @@ class Experiment:
                 callbacks += [TensorBoardLogger(tensorboard_writer)]
         return tensorboard_writer, callbacks
 
-    def _init_lr_scheduler_callbacks(self, lr_schedulers):
+    def _init_lr_scheduler_callbacks(self, lr_schedulers: List) -> List:
         callbacks = []
         if self.logging:
             for i, lr_scheduler in enumerate(lr_schedulers):
@@ -426,18 +432,18 @@ class Experiment:
               train_generator,
               valid_generator=None,
               *,
-              callbacks=None,
-              lr_schedulers=None,
-              keep_only_last_best=False,
-              save_every_epoch=False,
-              disable_tensorboard=False,
-              epochs=1000,
-              steps_per_epoch=None,
-              validation_steps=None,
-              batches_per_step=1,
-              seed=42,
-              coloring=True,
-              progress_bar=True):
+              callbacks: Union[List, None] = None,
+              lr_schedulers: Union[List, None] = None,
+              keep_only_last_best: bool = False,
+              save_every_epoch: bool = False,
+              disable_tensorboard: bool = False,
+              epochs: int = 1000,
+              steps_per_epoch: Union[int, None] = None,
+              validation_steps: Union[int, None] = None,
+              batches_per_step: int = 1,
+              seed: int = 42,
+              coloring: bool = True,
+              progress_bar: bool = True) -> List[Dict]:
         # pylint: disable=too-many-locals
         """
         Trains or finetunes the attribute model on a dataset using a generator. If a previous training already occured
@@ -567,7 +573,7 @@ class Experiment:
             if tensorboard_writer is not None:
                 tensorboard_writer.close()
 
-    def load_checkpoint(self, checkpoint, *, verbose=False):
+    def load_checkpoint(self, checkpoint: Union[int, str], *, verbose: bool = False) -> Union[Dict, None]:
         """
         Loads the attribute model's weights with the weights at a given checkpoint epoch.
 
@@ -597,7 +603,7 @@ class Experiment:
 
         return best_epoch_stats
 
-    def _load_epoch_checkpoint(self, epoch):
+    def _load_epoch_checkpoint(self, epoch: int) -> None:
         ckpt_filename = self.best_checkpoint_filename.format(epoch=epoch)
 
         if not os.path.isfile(ckpt_filename):
@@ -605,7 +611,7 @@ class Experiment:
 
         self.model.load_weights(ckpt_filename)
 
-    def _load_best_checkpoint(self, *, verbose=False):
+    def _load_best_checkpoint(self, *, verbose: bool = False) -> Dict:
         best_epoch_stats = self.get_best_epoch_stats()
         best_epoch = best_epoch_stats['epoch'].item()
 
@@ -618,10 +624,16 @@ class Experiment:
         self._load_epoch_checkpoint(best_epoch)
         return best_epoch_stats
 
-    def _load_last_checkpoint(self):
+    def _load_last_checkpoint(self) -> None:
         self.model.load_weights(self.model_checkpoint_filename)
 
-    def test(self, test_generator, *, callbacks=None, steps=None, checkpoint='best', seed=42):
+    def test(self,
+             test_generator,
+             *,
+             callbacks: Union[List, None] = None,
+             steps: Union[int, None] = None,
+             checkpoint: Union[str, int] = 'best',
+             seed: int = 42) -> Dict:
         """
         Computes and returns the loss and the metrics of the attribute model on a given test examples
         generator.
@@ -632,8 +644,8 @@ class Experiment:
         Args:
             test_generator: Generator-like object for the test set. See :func:`~Model.fit_generator()` for
                 details on the types of generators supported.
-            callbacks (List[~poutyne.framework.callbacks.Callback]): List of callbacks that will be called during
-                the testing.
+            callbacks (List[~poutyne.framework.callbacks.Callback], optional): List of callbacks that will be called
+                during the testing.
                 (Default value = None)
             steps (int, optional): Number of iterations done on ``generator``.
                 (Defaults the number of steps needed to see the entire dataset)

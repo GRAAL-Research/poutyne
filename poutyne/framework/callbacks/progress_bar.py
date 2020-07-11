@@ -8,7 +8,7 @@ class ProgressBar:
 
     Args:
           steps (int): The number of steps.
-          bar_format (Union[str, None], optional): User defined format for the bar_format. By default the setting is
+          bar_format (str, optional): User defined format for the bar_format. By default the setting is
             {percentage} |{bar}|. The two argument must be {percentage} and {bar}.
           bar_character (str): The bar character to use. (Default value = \u2588 which is 'block'.)
 
