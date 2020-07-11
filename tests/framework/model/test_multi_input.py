@@ -20,6 +20,7 @@ def some_data_tensor_generator_multi_input(batch_size):
 
 
 class ModelMultiInputTest(ModelFittingTestCase):
+
     def setUp(self):
         super().setUp()
         torch.manual_seed(42)

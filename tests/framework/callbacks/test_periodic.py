@@ -21,6 +21,7 @@ def some_data_generator(batch_size):
 
 
 class PeriodicEpochSave(PeriodicSaveCallback):
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, open_mode='w', **kwargs)
 

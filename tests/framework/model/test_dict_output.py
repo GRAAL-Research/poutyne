@@ -23,6 +23,7 @@ class DictOutputModel(nn.Module):
 
 
 class ModelDictOutputTest(ModelFittingTestCase):
+
     def setUp(self):
         super().setUp()
         torch.manual_seed(42)

@@ -43,6 +43,7 @@ def repeat_batch_metric(y_pred, y_true):
 
 
 class SomeEpochMetric(EpochMetric):
+
     def __init__(self):
         super().__init__()
         self.increment = 0.0
@@ -63,6 +64,7 @@ some_constant_epoch_metric_value = 3
 
 
 class SomeConstantEpochMetric(EpochMetric):
+
     def forward(self, y_pred, y_true):
         pass
 
@@ -94,6 +96,7 @@ def some_mocked_optimizer():
 
 
 class SomeDataGeneratorUsingStopIteration:
+
     def __init__(self, batch_size, length):
         self.batch_size = batch_size
         self.length = length
@@ -105,6 +108,7 @@ class SomeDataGeneratorUsingStopIteration:
 
 
 class SomeDataGeneratorWithLen:
+
     def __init__(self, batch_size, length, num_missing_samples):
         self.batch_size = batch_size
         self.length = length
@@ -130,6 +134,7 @@ class SomeDataGeneratorWithLen:
 
 
 class IterableMock:
+
     def __init__(self, iterable):
         self.iterable = iterable
         self.iter = None

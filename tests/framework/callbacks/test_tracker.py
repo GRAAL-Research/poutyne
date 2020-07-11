@@ -15,6 +15,7 @@ from poutyne.framework import Model, TensorBoardGradientTracker, WeightsGradient
 
 
 class TrackerTest(TestCase):
+
     def test_keep_good_layer(self):
         # pylint: disable=protected-access
         tracker = Tracker(keep_bias=False)
@@ -41,6 +42,7 @@ class TrackerTest(TestCase):
 
 
 class GradientStatsTrackerTest(TestCase):
+
     def setUp(self):
         self.tracker = WeightsGradientsStatsTracker(number_layers=2)
 

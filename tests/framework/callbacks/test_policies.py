@@ -6,6 +6,7 @@ from poutyne.framework.callbacks.policies import one_cycle_phases, sgdr_phases
 
 
 class TestSpaces(unittest.TestCase):
+
     def assert_space(self, space, expected):
         for val, exp in zip(space, expected):
             self.assertAlmostEqual(val, exp, places=3)
@@ -46,6 +47,7 @@ class TestSpaces(unittest.TestCase):
 
 
 class TestPhase(unittest.TestCase):
+
     def test_init_raises_without_lr_or_momentum(self):
         with self.assertRaises(ValueError):
             Phase(lr=None, momentum=None)
@@ -77,6 +79,7 @@ class TestPhase(unittest.TestCase):
 
 
 class TestOptimizerPolicy(unittest.TestCase):
+
     def setUp(self):
         steps = 2
         phases = [Phase(lr=linspace(1, 1, steps)), Phase(lr=linspace(0, 0, steps))]
@@ -95,6 +98,7 @@ class TestOptimizerPolicy(unittest.TestCase):
 
 
 class TestOptimizerPolicyRestart(unittest.TestCase):
+
     def setUp(self):
         steps = 2
         phases = [
@@ -119,6 +123,7 @@ class TestOptimizerPolicyRestart(unittest.TestCase):
 
 
 class TestOneCycle(unittest.TestCase):
+
     def test_length(self):
         policy = OptimizerPolicy(one_cycle_phases(100))
         self.assertEqual(len(list(policy.all_steps())), 100)
@@ -128,6 +133,7 @@ class TestOneCycle(unittest.TestCase):
 
 
 class TestSGDR(unittest.TestCase):
+
     def test_length_with_cycle_mult_one(self):
         policy = OptimizerPolicy(sgdr_phases(10, 1, cycle_mult=1))
         self.assertEqual(len(list(policy.all_steps())), 10)

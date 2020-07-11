@@ -44,6 +44,7 @@ def some_data_tensor_generator_dict_io(batch_size):
 
 
 class ModelMultiDictIOTest(ModelFittingTestCase):
+
     def setUp(self):
         super().setUp()
         torch.manual_seed(42)

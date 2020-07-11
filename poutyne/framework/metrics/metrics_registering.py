@@ -2,6 +2,7 @@ from .utils import camel_to_snake
 
 
 def _get_registering_decorator(register_function):
+
     def register(name_or_func, *extra_names):
         if isinstance(name_or_func, str):
             names = [name_or_func] + list(extra_names)

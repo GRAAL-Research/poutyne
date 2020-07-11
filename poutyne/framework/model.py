@@ -904,6 +904,7 @@ class Model:
         return self._compute_metric_array(metrics, self.unflatten_epoch_metrics_names)
 
     def _compute_metric_array(self, metrics_list, names_list):
+
         def _get_metric(names, metrics):
             names = [names] if isinstance(names, str) else names
             values = None

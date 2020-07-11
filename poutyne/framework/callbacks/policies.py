@@ -15,6 +15,10 @@ from collections import OrderedDict
 from itertools import islice, chain
 from math import cos, pi
 from typing import Dict, List, Tuple, Optional
+try:
+    import matplotlib.pyplot as plt
+except ImportError:
+    plt = None
 
 from .callbacks import Callback
 
@@ -120,7 +124,6 @@ class Phase:
             The matplotlib axis.
         """
         # pylint: disable=import-error
-        import matplotlib.pyplot as plt
 
         if ax is None:
             _fig, ax = plt.subplots()
@@ -276,8 +279,6 @@ class OptimizerPolicy(Callback):
             The matplotlib axis.
         """
         # pylint: disable=import-error
-        import matplotlib.pyplot as plt
-
         if ax is None:
             _fig, ax = plt.subplots()
 

@@ -182,6 +182,7 @@ class Callback:
 
 
 class CallbackList:
+
     def __init__(self, callbacks: List[Callback]):
         callbacks = callbacks or []
         self.callbacks = list(callbacks)

@@ -6,6 +6,7 @@ from .color_formatting import ColorProgress
 
 
 class ProgressionCallback(Callback):
+
     def __init__(self, coloring=False, progress_bar=True):
         super().__init__()
         self.color_progress = ColorProgress(coloring)

@@ -9,6 +9,7 @@ from .callbacks import Callback
 
 
 class GradientLoggerBase(Callback):
+
     def __init__(self, keep_bias: bool = False, norm_type: Union[float, List[float]] = 2.) -> None:
         super().__init__()
         self.keep_bias = keep_bias
@@ -57,6 +58,7 @@ class GradientLoggerBase(Callback):
 
 
 class MemoryGradientLogger(GradientLoggerBase):
+
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         self.history = []
@@ -73,6 +75,7 @@ class MemoryGradientLogger(GradientLoggerBase):
 
 
 class TensorBoardGradientLogger(GradientLoggerBase):
+
     def __init__(self, writer, initial_step: int = 0, **kwargs) -> None:
         super().__init__(**kwargs)
         self.writer = writer
@@ -86,6 +89,7 @@ class TensorBoardGradientLogger(GradientLoggerBase):
 
 
 class AtomicCSVGradientLogger(GradientLoggerBase):
+
     def __init__(self,
                  filename,
                  *,
@@ -135,6 +139,7 @@ class AtomicCSVGradientLogger(GradientLoggerBase):
 
 
 class CSVGradientLogger(GradientLoggerBase):
+
     def __init__(self, filename, *, separator: str = ',', append: bool = False, **kwargs) -> None:
         super().__init__(**kwargs)
         self.filename = filename

@@ -15,6 +15,7 @@ from poutyne.framework.metrics.utils import rename_doubles
 
 
 class ConstEpochMetric(EpochMetric):
+
     def __init__(self, value):
         super().__init__()
         self.value = value
@@ -30,6 +31,7 @@ class ConstEpochMetric(EpochMetric):
 
 
 def get_batch_metric(value):
+
     def some_metric_name(y_pred, y_true):
         return torch.FloatTensor([value])
 
@@ -37,6 +39,7 @@ def get_batch_metric(value):
 
 
 class SomeMetricName(ConstEpochMetric):
+
     def get_metric(self):
         return torch.FloatTensor([self.value])
 
@@ -45,6 +48,7 @@ class SomeMetricName(ConstEpochMetric):
 
 
 def get_const_batch_metric(value):
+
     def const_batch_metric(y_pred, y_true):
         return value
 
@@ -132,6 +136,7 @@ class MetricsModelIntegrationTest(unittest.TestCase):
         self._test_history(model, self.metric_names, self.metric_values)
 
     def test_epoch_metrics_with_name_with_multiple_names_returned_by_tensor(self):
+
         class EpochMetricWithName(ConstEpochMetric):
             __name__ = self.metric_names
 
@@ -224,6 +229,7 @@ class MetricsModelIntegrationTest(unittest.TestCase):
 
 
 class MetricsRenamingTest(unittest.TestCase):
+
     def test_batch_metrics(self):
         actual = rename_doubles(['a', 'a'], [])
         expected = ['a1', 'a2'], []

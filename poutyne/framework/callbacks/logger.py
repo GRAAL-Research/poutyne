@@ -7,6 +7,7 @@ from .callbacks import Callback
 
 
 class Logger(Callback):
+
     def __init__(self, *, batch_granularity: bool = False):
         super().__init__()
         self.batch_granularity = batch_granularity

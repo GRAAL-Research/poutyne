@@ -3,6 +3,7 @@ from copy import deepcopy
 
 
 class CopyingMock(MagicMock):
+
     def __call__(self, *args, **kwargs):
         args = deepcopy(args)
         kwargs = deepcopy(kwargs)
