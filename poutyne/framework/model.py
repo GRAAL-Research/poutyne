@@ -3,10 +3,11 @@ import contextlib
 import numbers
 import warnings
 from collections import defaultdict
-from typing import Iterable, Mapping
+from typing import Iterable, Mapping, List
 
 import numpy as np
 import torch
+from torch.nn import DataParallel
 from torch.utils.data import DataLoader
 
 from poutyne import torch_to_numpy, numpy_to_torch, torch_to
@@ -1114,6 +1115,7 @@ class Model:
         self.network.load_state_dict(weights)
 
     def cuda(self, *args, **kwargs):
+        # todo verify if broken with devices
         """
         Tranfers the network on the GPU. The arguments are passed to the :meth:`torch.nn.Module.cuda()` method.
         Notice that the device is saved so that the batches can send to the right device before passing it to
@@ -1145,6 +1147,7 @@ class Model:
         return self
 
     def cpu(self, *args, **kwargs):
+        # todo verify if broken with devices
         """
         Tranfers the network on the CPU. The arguments are passed to the :meth:`torch.nn.Module.cpu()`
         method. Notice that the device is saved so that the batches can send to the right device
@@ -1178,7 +1181,9 @@ class Model:
     def to(self, device):
         """
         Tranfers the network on the specified device. The device is saved so that the batches can
-        send to the right device before passing it to the network.
+        send to the right device before passing it to the network. If device is a list of device for multi GPUs
+        the first device is used as the main device. If the device is "all", will take all the device available and
+        will use the first one as the main device.
 
         Note:
             PyTorch optimizers assume that the parameters have been transfered to the right device
@@ -1193,12 +1198,21 @@ class Model:
             takes care of this inconsistency by updating the parameters inside the optimizer.
 
         Args:
-            device (torch.torch.device): The device to which the network is sent.
+            device (Union[torch.torch.device, List[torch.torch.device]]): The device to which the network is sent or
+            the list of device to which the network is sent.
 
         Returns:
             `self`.
         """
-        self.device = device
+        if isinstance(device, List) or device == "all":
+            if device == "all":
+                device = [f"cuda:{device}" for device in range(torch.cuda.device_count())]
+
+            self.device = device[0]
+            self.network = DataParallel(self.network, device_ids=device)
+        else:
+            self.device = device
+
         with self._update_optim_device():
             self.network.to(self.device)
         self._transfer_loss_and_metrics_modules_to_right_device()

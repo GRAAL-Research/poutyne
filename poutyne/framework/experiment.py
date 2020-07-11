@@ -37,7 +37,9 @@ class Experiment:
     Args:
         directory (str): Path to the experiment's working directory. Will be used for the automatic logging.
         network (torch.nn.Module): A PyTorch network.
-        device (Union[torch.device, List[torch.device], None]): The device to which the model is sent.
+        device (Union[torch.device, List[torch.device], str, None]): The device to which the model is sent
+            or for multi-GPUs, the list of devices to which the model is to be sent. When using a string for a multiple
+            GPUs the option is "all", for take them all, by default the current device is use as the main one.
             If None, the model will be kept on its current device.
             (Default value = None)
         logging (bool): Whether or not to log the experiment's progress. If true, various logging
@@ -184,7 +186,7 @@ class Experiment:
                  directory: str,
                  network: torch.nn.Module,
                  *,
-                 device: Union[torch.device, None] = None,
+                 device: Union[torch.device, List[torch.device], List[str], None, str] = None,
                  logging: bool = True,
                  optimizer: Union[torch.optim.Optimizer, str] = 'sgd',
                  loss_function: Union[Callable, str] = None,
@@ -211,6 +213,10 @@ class Experiment:
         if device is not None:
             self.model.to(device)
         # batch_size > que # de GPU
+        # Creation of this class requires that torch.distributed to be already initialized,
+        # by calling torch.distributed.init_process_group().
+        # backend: nccl or gloo but nccl the fastier.
+        # https://pytorch.org/docs/master/generated/torch.nn.parallel.DistributedDataParallel.html#torch.nn.parallel.DistributedDataParallel
 
         self.best_checkpoint_filename = self.get_path(Experiment.BEST_CHECKPOINT_FILENAME)
         self.best_checkpoint_tmp_filename = self.get_path(Experiment.BEST_CHECKPOINT_TMP_FILENAME)
