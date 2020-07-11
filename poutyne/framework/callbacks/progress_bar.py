@@ -76,7 +76,7 @@ class ProgressBar:
         delta_t = actual_time - self.last_time
         self.last_time = actual_time
         self.mean_time = mean([self.mean_time, delta_t])
-        self.mean_rate = mean([round(1 / self.mean_time, 2), self.mean_rate])
+        self.mean_rate = mean([1 / self.mean_time, self.mean_rate])
         rate = f'{self.mean_rate:.2f}{self.unit}/s'
 
         return self.bar_format.format(percentage=percentage, bar=progress_bar, rate=rate)
