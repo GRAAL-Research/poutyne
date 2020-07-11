@@ -37,7 +37,7 @@ class Experiment:
 
     Args:
         directory (str): Path to the experiment's working directory. Will be used for the automatic logging.
-        network (torch.nn.Module): A PyTorch network.
+        network (Union[torch.nn.Module, Model]): A PyTorch network or a Poutyne :class:`~poutyne.framework.Model`.
         device (Union[torch.device, None]): The device to which the model is sent. If None, the model will be
             kept on its current device.
             (Default value = None)
@@ -49,31 +49,31 @@ class Experiment:
         optimizer (Union[torch.optim.Optimizer, str]): If Pytorch Optimizer, must already be initialized.
             If str, should be the optimizer's name in Pytorch (i.e. 'Adam' for torch.optim.Adam).
             (Default value = 'sgd')
-        loss_function(Union[Callable, str]) It can be any PyTorch
+        loss_function(Union[Callable, str], optional) It can be any PyTorch
             loss layer or custom loss function. It can also be a string with the same name as a PyTorch
             loss function (either the functional or object name). The loss function must have the signature
             ``loss_function(input, target)`` where ``input`` is the prediction of the network and ``target``
             is the ground truth. If ``None``, will default to, in priority order, either the model's own
             loss function or the default loss function associated with the ``task``.
             (Default value = None)
-        batch_metrics (Union[List, None]): List of functions with the same signature as the loss function. Each metric
+        batch_metrics (List, optional): List of functions with the same signature as the loss function. Each metric
             can be any PyTorch loss function. It can also be a string with the same name as a PyTorch
             loss function (either the functional or object name). 'accuracy' (or just 'acc') is also a
             valid metric. Each metric function is called on each batch of the optimization and on the
             validation batches at the end of the epoch.
             (Default value = None)
-        epoch_metrics (Union[List, None]): List of functions with the same signature as
+        epoch_metrics (List, optional): List of functions with the same signature as
             :class:`~poutyne.framework.metrics.epoch_metrics.EpochMetric`
             (Default value = None)
-        monitor_metric (Union[str, None]): Which metric to consider for best model performance calculation. Should be in
+        monitor_metric (str, optional): Which metric to consider for best model performance calculation. Should be in
             the format '{metric_name}' or 'val_{metric_name}' (i.e. 'val_loss'). If None, will follow the value
             suggested by ``task`` or default to 'val_loss'.
 
             .. warning:: If you do not plan on using a validation set, you must set the monitor metric to another
                 value.
-        monitor_mode (Union[str, None]): Which mode, either 'min' or 'max', should be used when considering the
+        monitor_mode (str, optional): Which mode, either 'min' or 'max', should be used when considering the
             ``monitor_metric`` value. If None, will follow the value suggested by ``task`` or default to 'min'.
-        task (Union[str, None]): Any str beginning with either 'classif' or 'reg'. Specifying a ``task``
+        task (str, optional): Any str beginning with either 'classif' or 'reg'. Specifying a ``task``
             can assign default values to the ``loss_function``, ``batch_metrics``, ``monitor_mode`` and
             ``monitor_mode``. For ``task`` that begins with 'reg', the only default value is the loss function
             that is the mean squared error. When beginning with 'classif', the default loss function is the
@@ -183,7 +183,7 @@ class Experiment:
 
     def __init__(self,
                  directory: str,
-                 network: torch.nn.Module,
+                 network: Union[torch.nn.Module, Model],
                  *,
                  device: Union[torch.device, None] = None,
                  logging: bool = True,
@@ -364,7 +364,7 @@ class Experiment:
                     self._warn_missing_file(filename)
         return initial_epoch
 
-    def _init_model_restoring_callbacks(self, initial_epoch, keep_only_last_best, save_every_epoch):
+    def _init_model_restoring_callbacks(self, initial_epoch: int, keep_only_last_best: bool, save_every_epoch):
         callbacks = []
         best_checkpoint = ModelCheckpoint(self.best_checkpoint_filename,
                                           monitor=self.monitor_metric,
