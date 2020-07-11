@@ -1,8 +1,10 @@
 # pylint: disable=redefined-builtin
 import os
 import warnings
+from typing import Union, Callable, List, Dict
 
 import numpy as np
+from pandas import DataFrame
 
 try:
     import pandas as pd
@@ -15,7 +17,7 @@ try:
 except ImportError:
     SummaryWriter = None
 
-from poutyne.framework import Model
+from poutyne.framework import Model, Callback
 from poutyne.utils import set_seeds
 from poutyne.framework.callbacks import ModelCheckpoint, \
     OptimizerCheckpoint, \
@@ -36,7 +38,7 @@ class Experiment:
     Args:
         directory (str): Path to the experiment's working directory. Will be used for the automatic logging.
         network (torch.nn.Module): A PyTorch network.
-        device (torch.torch.device): The device to which the model is sent. If None, the model will be
+        device (Union[torch.device, None]): The device to which the model is sent. If None, the model will be
             kept on its current device.
             (Default value = None)
         logging (bool): Whether or not to log the experiment's progress. If true, various logging
@@ -54,29 +56,29 @@ class Experiment:
             is the ground truth. If ``None``, will default to, in priority order, either the model's own
             loss function or the default loss function associated with the ``task``.
             (Default value = None)
-        batch_metrics (list): List of functions with the same signature as the loss function. Each metric
+        batch_metrics (Union[List, None]): List of functions with the same signature as the loss function. Each metric
             can be any PyTorch loss function. It can also be a string with the same name as a PyTorch
             loss function (either the functional or object name). 'accuracy' (or just 'acc') is also a
             valid metric. Each metric function is called on each batch of the optimization and on the
             validation batches at the end of the epoch.
             (Default value = None)
-        epoch_metrics (list): List of functions with the same signature as
+        epoch_metrics (Union[List, None]): List of functions with the same signature as
             :class:`~poutyne.framework.metrics.epoch_metrics.EpochMetric`
             (Default value = None)
-        monitor_metric (str): Which metric to consider for best model performance calculation. Should be in
+        monitor_metric (Union[str, None]): Which metric to consider for best model performance calculation. Should be in
             the format '{metric_name}' or 'val_{metric_name}' (i.e. 'val_loss'). If None, will follow the value
             suggested by ``task`` or default to 'val_loss'.
 
             .. warning:: If you do not plan on using a validation set, you must set the monitor metric to another
                 value.
-        monitor_mode (str): Which mode, either 'min' or 'max', should be used when considering the ``monitor_metric``
-            value. If None, will follow the value suggested by ``task`` or default to 'min'.
-        task (str): Any str beginning with either 'classif' or 'reg'. Specifying a ``task`` can assign default
-            values to the ``loss_function``, ``batch_metrics``, ``monitor_mode`` and ``monitor_mode``. For ``task``
-            that begins with 'reg', the only default value is the loss function that is the mean squared error. When
-            beginning with 'classif', the default loss function is the cross-entropy loss, the default batch metrics
-            will be the accuracy, the default epoch metrics will be the F1 score and the default monitoring will be
-            set on 'val_acc' with a 'max' mode.
+        monitor_mode (Union[str, None]): Which mode, either 'min' or 'max', should be used when considering the
+            ``monitor_metric`` value. If None, will follow the value suggested by ``task`` or default to 'min'.
+        task (Union[str, None]): Any str beginning with either 'classif' or 'reg'. Specifying a ``task``
+            can assign default values to the ``loss_function``, ``batch_metrics``, ``monitor_mode`` and
+            ``monitor_mode``. For ``task`` that begins with 'reg', the only default value is the loss function
+            that is the mean squared error. When beginning with 'classif', the default loss function is the
+            cross-entropy loss, the default batch metrics will be the accuracy, the default epoch metrics will be
+            the F1 score and the default monitoring will be set on 'val_acc' with a 'max' mode.
             (Default value = None)
 
     Example:
@@ -180,18 +182,18 @@ class Experiment:
     TEST_LOG_FILENAME = 'test_log.tsv'
 
     def __init__(self,
-                 directory,
-                 network,
+                 directory: str,
+                 network: torch.nn.Module,
                  *,
-                 device=None,
-                 logging=True,
-                 optimizer='sgd',
-                 loss_function=None,
-                 batch_metrics=None,
-                 epoch_metrics=None,
-                 monitor_metric=None,
-                 monitor_mode=None,
-                 task=None):
+                 device: Union[torch.device, None] = None,
+                 logging: bool = True,
+                 optimizer: Union[torch.optim.optimizer.Optimizer, str] = 'sgd',
+                 loss_function: Union[Callable, str] = None,
+                 batch_metrics: Union[List, None] = None,
+                 epoch_metrics: Union[List, None] = None,
+                 monitor_metric: Union[str, None] = None,
+                 monitor_mode: Union[str, None] = None,
+                 task: Union[str, None] = None) -> None:
         self.directory = directory
         self.logging = logging
 
@@ -225,13 +227,13 @@ class Experiment:
         self.lr_scheduler_tmp_filename = self.get_path(Experiment.LR_SCHEDULER_TMP_FILENAME)
         self.test_log_filename = self.get_path(Experiment.TEST_LOG_FILENAME)
 
-    def get_path(self, *paths):
+    def get_path(self, *paths: str) -> str:
         """
         Returns the path inside the experiment directory.
         """
         return os.path.join(self.directory, *paths)
 
-    def _get_loss_function(self, loss_function, network, task):
+    def _get_loss_function(self, loss_function: Union[Callable, str], network: torch.nn.Module, task: Union[str, None]):
         if loss_function is None:
             if hasattr(network, 'loss_function'):
                 return network.loss_function
@@ -242,7 +244,7 @@ class Experiment:
                     return 'mse'
         return loss_function
 
-    def _get_batch_metrics(self, batch_metrics, network, task):
+    def _get_batch_metrics(self, batch_metrics: Union[List, None], network: torch.nn.Module, task: Union[str, None]):
         if batch_metrics is None or len(batch_metrics) == 0:
             if hasattr(network, 'batch_metrics'):
                 return network.batch_metrics
@@ -250,7 +252,7 @@ class Experiment:
                 return ['accuracy']
         return batch_metrics
 
-    def _get_epoch_metrics(self, epoch_metrics, network, task):
+    def _get_epoch_metrics(self, epoch_metrics: Union[List, None], network, task: Union[str, None]):
         if epoch_metrics is None or len(epoch_metrics) == 0:
             if hasattr(network, 'epoch_metrics'):
                 return network.epoch_metrics
@@ -258,7 +260,8 @@ class Experiment:
                 return ['f1']
         return epoch_metrics
 
-    def _set_monitor(self, monitor_metric, monitor_mode, task):
+    def _set_monitor(self, monitor_metric: Union[str, None], monitor_mode: Union[str, None],
+                     task: Union[str, None]) -> None:
         if monitor_mode is not None and monitor_mode not in ['min', 'max']:
             raise ValueError("Invalid mode '%s'" % monitor_mode)
 
@@ -272,7 +275,7 @@ class Experiment:
             self.monitor_metric = 'val_acc'
             self.monitor_mode = 'max'
 
-    def get_best_epoch_stats(self):
+    def get_best_epoch_stats(self) -> Dict:
         """
         Returns all computed statistics corresponding to the best epoch according to the
         ``monitor_metric`` and ``monitor_mode`` attributes.
@@ -291,7 +294,7 @@ class Experiment:
             best_epoch_index = history[self.monitor_metric].idxmax()
         return history.iloc[best_epoch_index:best_epoch_index + 1]
 
-    def get_saved_epochs(self):
+    def get_saved_epochs(self) -> DataFrame:
         """
         Returns a pandas DataFrame which each row corresponds to an epoch having
         a saved checkpoint.
@@ -318,10 +321,10 @@ class Experiment:
                 saved_epoch_indices.append(i)
         return history.iloc[saved_epoch_indices]
 
-    def _warn_missing_file(self, filename):
+    def _warn_missing_file(self, filename: str) -> None:
         warnings.warn("Missing checkpoint: %s." % filename)
 
-    def _load_epoch_state(self, lr_schedulers):
+    def _load_epoch_state(self, lr_schedulers: Callback):
         # pylint: disable=broad-except
         initial_epoch = 1
         if os.path.isfile(self.epoch_filename):
