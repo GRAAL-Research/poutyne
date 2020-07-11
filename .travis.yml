@@ -3,11 +3,10 @@ python:
   - 3.6
   - 3.7
 install:
-  - pip install -q -r requirements.txt
-  - pip install -q -r docs/requirements.txt
-  - pip install -q -r tests/requirements.txt
-  - pip install -q yapf==0.30
-  - pip install -q pylint==2.5.3
+  - pip install -r requirements.txt
+  - pip install -r docs/requirements.txt
+  - pip install -r tests/requirements.txt
+  - pip install -r styling_requirements.txt
   - if [ $TRAVIS_BRANCH == "stable" ] && [ $TRAVIS_EVENT_TYPE == "push" ]; then
       export POUTYNE_RELEASE_BUILD=1;
     else
