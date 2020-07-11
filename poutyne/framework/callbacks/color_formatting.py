@@ -113,9 +113,9 @@ class ColorProgress:
 
             self.steps_progress_bar.update()
 
-            update += str(self.steps_progress_bar) + self._get_formatted_eta(remaining_time)
+            update += str(self.steps_progress_bar) + self._get_formatted_time(remaining_time, steps)
         else:
-            update += self._get_formatted_eta(remaining_time) + self._get_formatted_step(batch_number, steps)
+            update += self._get_formatted_time(remaining_time, steps) + self._get_formatted_step(batch_number, steps)
 
         update += self._get_formatted_metrics(metrics_str)
 
@@ -155,8 +155,12 @@ class ColorProgress:
     def _get_formatted_epoch_total_time(self, epoch_total_time: float) -> str:
         return self.time_color + "%.0fs " % epoch_total_time
 
-    def _get_formatted_eta(self, time: float) -> str:
-        return self.text_color + "ETA: " + self.time_color + "%.2fs " % time
+    def _get_formatted_time(self, time: float, steps) -> str:
+        if steps is None:
+            formatted_time = self.time_color + "%.2fs/step " % time
+        else:
+            formatted_time = self.text_color + "ETA: " + self.time_color + "%.2fs " % time
+        return formatted_time
 
     def _get_formatted_step(self, batch_number: int, steps: Union[int, None]) -> str:
         if steps is None:

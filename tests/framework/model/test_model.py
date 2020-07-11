@@ -99,9 +99,9 @@ class SomeDataGeneratorUsingStopIteration:
         self.length = length
 
     def __iter__(self):
-        return ((np.random.rand(self.batch_size, 1).astype(np.float32), np.random.rand(self.batch_size,
-                                                                                       1).astype(np.float32))
-                for i in range(self.length))
+        for _ in range(self.length):
+            yield (np.random.randn(self.batch_size,
+                                   1).astype(np.float32), np.random.randint(1, size=self.batch_size).astype(np.float32))
 
 
 class SomeDataGeneratorWithLen:
@@ -303,6 +303,7 @@ class ModelTest(ModelFittingTestCase):
 
         self.assertStdoutNotContains(["[94m", "[93m", "[96m"])
 
+    @skipIf(color is None, "Unable to import colorama")
     def test_fitting_with_progress_bar_default_color(self):
         train_generator = some_data_tensor_generator(ModelTest.batch_size)
         valid_generator = some_data_tensor_generator(ModelTest.batch_size)
@@ -323,6 +324,7 @@ class ModelTest(ModelFittingTestCase):
 
         self.assertStdoutContains(["step/s", "[94m", "[93m", "[96m"])
 
+    @skipIf(color is None, "Unable to import colorama")
     def test_fitting_with_progress_bar_user_color(self):
         train_generator = some_data_tensor_generator(ModelTest.batch_size)
         valid_generator = some_data_tensor_generator(ModelTest.batch_size)
@@ -349,6 +351,7 @@ class ModelTest(ModelFittingTestCase):
 
         self.assertStdoutContains(["step/s", "[30m"])
 
+    @skipIf(color is None, "Unable to import colorama")
     def test_fitting_with_progress_bar_no_color(self):
         train_generator = some_data_tensor_generator(ModelTest.batch_size)
         valid_generator = some_data_tensor_generator(ModelTest.batch_size)
@@ -389,6 +392,24 @@ class ModelTest(ModelFittingTestCase):
                                      progress_bar=False)
 
         self.assertStdoutNotContains(["step/s"])
+        self.assertStdoutNotContains(["[94m", "[93m", "[96m"])
+
+    def test_progress_bar_with_step_is_none(self):
+        train_generator = SomeDataGeneratorUsingStopIteration(ModelTest.batch_size, 10)
+        valid_generator = SomeDataGeneratorUsingStopIteration(ModelTest.batch_size, 10)
+
+        # Capture the output
+        self.test_out = io.StringIO()
+        self.original_output = sys.stdout
+        sys.stdout = self.test_out
+
+        _ = self.model.fit_generator(train_generator,
+                                     valid_generator,
+                                     epochs=ModelTest.epochs,
+                                     coloring=False,
+                                     progress_bar=True)
+
+        self.assertStdoutContains(["s/step"])
         self.assertStdoutNotContains(["[94m", "[93m", "[96m"])
 
     def test_fitting_without_valid_generator(self):
