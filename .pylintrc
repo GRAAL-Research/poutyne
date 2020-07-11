@@ -137,7 +137,8 @@ disable=print-statement,
         too-few-public-methods,
         unnecessary-pass,
         cyclic-import,
-        arguments-differ
+        arguments-differ,
+        isinstance-second-argument-not-valid-type # Not working with typing
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option

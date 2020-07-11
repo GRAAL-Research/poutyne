@@ -26,6 +26,7 @@ from poutyne.framework.metrics import FBeta
 
 
 class FBetaTest(TestCase):
+
     def setUp(self):
         # [0, 1, 1, 1, 3, 1]
         self.predictions = torch.Tensor([[0.35, 0.25, 0.1, 0.1, 0.2], [0.1, 0.6, 0.1, 0.2, 0.0],

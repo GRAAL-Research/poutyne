@@ -9,6 +9,7 @@ from poutyne import torch_apply
 
 
 class TorchApplyTest(TestCase):
+
     def test_apply_on_list(self):
         my_list = [MagicMock(spec=torch.Tensor) for _ in range(10)]
         torch_apply(my_list, lambda t: t.cpu())
@@ -79,6 +80,7 @@ class TorchApplyTest(TestCase):
 
 
 class TensorDatasetTest(TestCase):
+
     def test_one_tensor(self):
         range20 = np.expand_dims(np.arange(20), 1)
         dataset = TensorDataset(range20)
@@ -127,6 +129,7 @@ class TensorDatasetTest(TestCase):
 
 
 class ConcatTest(TestCase):
+
     def test_single_array(self):
         """
         Test the concatenation of a single array

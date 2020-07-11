@@ -19,6 +19,7 @@ def some_data_tensor_generator_multi_io(batch_size):
 
 
 class ModelMultiIOTest(ModelFittingTestCase):
+
     def setUp(self):
         super().setUp()
         torch.manual_seed(42)

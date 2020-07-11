@@ -5,6 +5,7 @@ import numpy as np
 
 
 class Step:
+
     def __init__(self, number):
         self.number = number
 
@@ -26,6 +27,7 @@ def _get_step_iterator(steps, generator):
 
 
 class StepIterator:
+
     def __init__(self, generator, steps_per_epoch, batch_metrics_names, callback=None, mode=None):
         # pylint: disable=too-many-arguments
         self.generator = generator

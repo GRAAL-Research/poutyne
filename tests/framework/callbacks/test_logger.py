@@ -30,6 +30,7 @@ def some_data_generator(batch_size):
 
 
 class History(Callback):
+
     def on_epoch_end(self, epoch_number, logs):
         self.history.append(logs)
 

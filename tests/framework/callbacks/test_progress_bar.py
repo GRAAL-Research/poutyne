@@ -7,6 +7,7 @@ default_bar_size = 25
 
 
 class ProgressBarTest(TestCase):
+
     def test_default_bar_character_is_properly_step(self):
         smaller_bar_size = 24
         progress_bar = ProgressBar(steps=smaller_bar_size, bar_character="#")

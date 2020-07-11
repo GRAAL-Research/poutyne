@@ -54,6 +54,7 @@ class _PyTorchLRSchedulerWrapper(Callback):
 
 
 def new_init(torch_lr_scheduler):
+
     def f(self, *args, **kwargs):
         super(type(self), self).__init__(torch_lr_scheduler, *args, **kwargs)
 
