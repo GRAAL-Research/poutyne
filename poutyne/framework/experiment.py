@@ -524,7 +524,7 @@ class Experiment:
                                 temporary_filename=self.log_tmp_filename)
             ]
 
-            callbacks += self._init_model_restoring_callbacks(initial_epoch, save_every_epoch, keep_only_last_best)
+            callbacks += self._init_model_restoring_callbacks(initial_epoch, keep_only_last_best, save_every_epoch)
             callbacks += [
                 ModelCheckpoint(self.model_checkpoint_filename,
                                 verbose=False,
