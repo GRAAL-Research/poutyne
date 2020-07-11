@@ -101,7 +101,7 @@ class SomeDataGeneratorUsingStopIteration:
     def __iter__(self):
         return ((np.random.rand(self.batch_size, 1).astype(np.float32), np.random.rand(self.batch_size,
                                                                                        1).astype(np.float32))
-                for i in range(self.length))
+                for _ in range(self.length))
 
 
 class SomeDataGeneratorWithLen:
@@ -198,7 +198,7 @@ class ModelTest(ModelFittingTestCase):
             self.assertNotIn(value, self.test_out.getvalue().strip())
 
     @skipIf(color is None, "Unable to import colorama")
-    def test_fitting_with_coloring(self):
+    def test_fitting_with_default_coloring(self):
         train_generator = some_data_tensor_generator(ModelTest.batch_size)
         valid_generator = some_data_tensor_generator(ModelTest.batch_size)
 
@@ -236,7 +236,8 @@ class ModelTest(ModelFittingTestCase):
                                          "text_color": 'BLACK',
                                          "ratio_color": "BLACK",
                                          "metric_value_color": "BLACK",
-                                         "time_color": "BLACK"
+                                         "time_color": "BLACK",
+                                         "progress_bar_color": "BLACK"
                                      })
 
         self.assertStdoutContains(["[30m"])
@@ -264,7 +265,6 @@ class ModelTest(ModelFittingTestCase):
 
         self.assertStdoutContains(["[30m", "[32m", "[96m"])
 
-    @skipIf(color is None, "Unable to import colorama")
     def test_fitting_with_user_coloring_invalid(self):
         train_generator = some_data_tensor_generator(ModelTest.batch_size)
         valid_generator = some_data_tensor_generator(ModelTest.batch_size)
@@ -280,9 +280,8 @@ class ModelTest(ModelFittingTestCase):
                                          steps_per_epoch=ModelTest.steps_per_epoch,
                                          validation_steps=ModelTest.steps_per_epoch,
                                          callbacks=[self.mock_callback],
-                                         coloring={"invalid_name": 'BLACK'})
+                                         coloring={"invalid_name": 'A COLOR'})
 
-    @skipIf(color is None, "Unable to import colorama")
     def test_fitting_with_no_coloring(self):
         train_generator = some_data_tensor_generator(ModelTest.batch_size)
         valid_generator = some_data_tensor_generator(ModelTest.batch_size)
@@ -301,6 +300,114 @@ class ModelTest(ModelFittingTestCase):
                                      coloring=False)
 
         self.assertStdoutNotContains(["[94m", "[93m", "[96m"])
+
+    @skipIf(color is None, "Unable to import colorama")
+    def test_fitting_with_progress_bar_default_color(self):
+        train_generator = some_data_tensor_generator(ModelTest.batch_size)
+        valid_generator = some_data_tensor_generator(ModelTest.batch_size)
+
+        # Capture the output
+        self.test_out = io.StringIO()
+        self.original_output = sys.stdout
+        sys.stdout = self.test_out
+
+        _ = self.model.fit_generator(train_generator,
+                                     valid_generator,
+                                     epochs=ModelTest.epochs,
+                                     steps_per_epoch=ModelTest.steps_per_epoch,
+                                     validation_steps=ModelTest.steps_per_epoch,
+                                     callbacks=[self.mock_callback],
+                                     coloring=True,
+                                     progress_bar=True)
+
+        self.assertStdoutContains(["%", "[94m", "[93m", "[96m", "\u2588"])
+
+    @skipIf(color is None, "Unable to import colorama")
+    def test_fitting_with_progress_bar_user_color(self):
+        train_generator = some_data_tensor_generator(ModelTest.batch_size)
+        valid_generator = some_data_tensor_generator(ModelTest.batch_size)
+
+        # Capture the output
+        self.test_out = io.StringIO()
+        self.original_output = sys.stdout
+        sys.stdout = self.test_out
+
+        _ = self.model.fit_generator(train_generator,
+                                     valid_generator,
+                                     epochs=ModelTest.epochs,
+                                     steps_per_epoch=ModelTest.steps_per_epoch,
+                                     validation_steps=ModelTest.steps_per_epoch,
+                                     callbacks=[self.mock_callback],
+                                     coloring={
+                                         "text_color": 'BLACK',
+                                         "ratio_color": "BLACK",
+                                         "metric_value_color": "BLACK",
+                                         "time_color": "BLACK",
+                                         "progress_bar_color": "BLACK"
+                                     },
+                                     progress_bar=True)
+
+        self.assertStdoutContains(["%", "[30m", "\u2588"])
+
+    def test_fitting_with_progress_bar_no_color(self):
+        train_generator = some_data_tensor_generator(ModelTest.batch_size)
+        valid_generator = some_data_tensor_generator(ModelTest.batch_size)
+
+        # Capture the output
+        self.test_out = io.StringIO()
+        self.original_output = sys.stdout
+        sys.stdout = self.test_out
+
+        _ = self.model.fit_generator(train_generator,
+                                     valid_generator,
+                                     epochs=ModelTest.epochs,
+                                     steps_per_epoch=ModelTest.steps_per_epoch,
+                                     validation_steps=ModelTest.steps_per_epoch,
+                                     callbacks=[self.mock_callback],
+                                     coloring=False,
+                                     progress_bar=True)
+
+        self.assertStdoutContains(["%", "\u2588"])
+        self.assertStdoutNotContains(["[94m", "[93m", "[96m"])
+
+    def test_fitting_with_no_progress_bar(self):
+        train_generator = some_data_tensor_generator(ModelTest.batch_size)
+        valid_generator = some_data_tensor_generator(ModelTest.batch_size)
+
+        # Capture the output
+        self.test_out = io.StringIO()
+        self.original_output = sys.stdout
+        sys.stdout = self.test_out
+
+        _ = self.model.fit_generator(train_generator,
+                                     valid_generator,
+                                     epochs=ModelTest.epochs,
+                                     steps_per_epoch=ModelTest.steps_per_epoch,
+                                     validation_steps=ModelTest.steps_per_epoch,
+                                     callbacks=[self.mock_callback],
+                                     coloring=False,
+                                     progress_bar=False)
+
+        self.assertStdoutNotContains(["%", "\u2588"])
+        self.assertStdoutNotContains(["[94m", "[93m", "[96m"])
+
+    def test_progress_bar_with_step_is_none(self):
+        train_generator = SomeDataGeneratorUsingStopIteration(ModelTest.batch_size, 10)
+        valid_generator = SomeDataGeneratorUsingStopIteration(ModelTest.batch_size, 10)
+
+        # Capture the output
+        self.test_out = io.StringIO()
+        self.original_output = sys.stdout
+        sys.stdout = self.test_out
+
+        _ = self.model.fit_generator(train_generator,
+                                     valid_generator,
+                                     epochs=ModelTest.epochs,
+                                     coloring=False,
+                                     progress_bar=True)
+
+        self.assertStdoutContains(["s/step"])
+        self.assertStdoutNotContains(["[94m", "[93m", "[96m", "\u2588", "%"])
 
     def test_fitting_without_valid_generator(self):
         train_generator = some_data_tensor_generator(ModelTest.batch_size)
