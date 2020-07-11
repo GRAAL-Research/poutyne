@@ -99,9 +99,9 @@ class SomeDataGeneratorUsingStopIteration:
         self.length = length
 
     def __iter__(self):
-        for _ in range(self.length):
-            yield (np.random.randn(self.batch_size,
-                                   1).astype(np.float32), np.random.randint(1, size=self.batch_size).astype(np.float32))
+        return ((np.random.rand(self.batch_size, 1).astype(np.float32), np.random.rand(self.batch_size,
+                                                                                       1).astype(np.float32))
+                for _ in range(self.length))
 
 
 class SomeDataGeneratorWithLen:
