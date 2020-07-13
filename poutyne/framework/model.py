@@ -7,7 +7,6 @@ from typing import Iterable, Mapping, List
 
 import numpy as np
 import torch
-from torch.nn import DataParallel
 from torch.utils.data import DataLoader
 
 from poutyne import torch_to_numpy, numpy_to_torch, torch_to
@@ -165,6 +164,7 @@ class Model:
         self._set_metrics_attributes(batch_metrics, epoch_metrics)
 
         self.device = None
+        self.other_device = None
 
     def _set_metrics_attributes(self, batch_metrics, epoch_metrics):
         batch_metrics = list(map(get_loss_or_metric, batch_metrics))
@@ -882,7 +882,10 @@ class Model:
     def _compute_loss_and_metrics(self, x, y, return_loss_tensor=False, return_pred=False):
         x, y = self._process_input(x, y)
         x = x if isinstance(x, (list, tuple)) else (x, )
-        pred_y = self.network(*x)
+        if self.other_device is not None:
+            pred_y = torch.nn.parallel.data_parallel(self.network, x, [self.device] + self.other_device)
+        else:
+            pred_y = self.network(*x)
         loss = self.loss_function(pred_y, y)
         if not return_loss_tensor:
             loss = float(loss)
@@ -1140,6 +1143,7 @@ class Model:
 
         # Assuming the PyTorch module has at least one parameter.
         self.device = next(self.network.parameters()).device
+        self.other_device = None
 
         self._transfer_loss_and_metrics_modules_to_right_device()
 
@@ -1166,14 +1170,12 @@ class Model:
         Returns:
             `self`.
         """
-        if isinstance(self.network, DataParallel):
-            self.network = self.network.module
-
         with self._update_optim_device():
             self.network.cpu(*args, **kwargs)
 
         # Assuming the PyTorch module has at least one parameter.
         self.device = next(self.network.parameters()).device
+        self.other_device = None
 
         self._transfer_loss_and_metrics_modules_to_right_device()
 
@@ -1205,18 +1207,14 @@ class Model:
         Returns:
             `self`.
         """
-        # Convert back first to non parallel module first
-        if isinstance(self.network, DataParallel):
-            self.network = self.network.module
-
         if isinstance(device, List) or device == "all":
             if device == "all":
                 device = [f"cuda:{device}" for device in range(torch.cuda.device_count())]
-
             self.device = device[0]
-            self.network = DataParallel(self.network, device_ids=device)
+            self.other_device = device[1:]
         else:
             self.device = device
+            self.other_device = None
 
         with self._update_optim_device():
             self.network.to(self.device)

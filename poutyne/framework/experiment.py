@@ -212,11 +212,6 @@ class Experiment:
         self.model = Model(network, optimizer, loss_function, batch_metrics=batch_metrics, epoch_metrics=epoch_metrics)
         if device is not None:
             self.model.to(device)
-        # batch_size > que # de GPU
-        # Creation of this class requires that torch.distributed to be already initialized,
-        # by calling torch.distributed.init_process_group().
-        # backend: nccl or gloo but nccl the fastier.
-        # https://pytorch.org/docs/master/generated/torch.nn.parallel.DistributedDataParallel.html#torch.nn.parallel.DistributedDataParallel
 
         self.best_checkpoint_filename = self.get_path(Experiment.BEST_CHECKPOINT_FILENAME)
         self.best_checkpoint_tmp_filename = self.get_path(Experiment.BEST_CHECKPOINT_TMP_FILENAME)
