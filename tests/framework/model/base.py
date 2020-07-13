@@ -28,6 +28,7 @@ class ModelFittingTestCase(TestCase):
         self.epoch_metrics_names = []
         self.epoch_metrics_values = []
         self.model = None
+        self.pytorch_network = None
 
     def _test_callbacks_train(self, params, logs, has_valid=True, steps=None):
         # pylint: disable=too-many-arguments
@@ -91,6 +92,10 @@ class ModelFittingTestCase(TestCase):
         else:
             self.assertEqual(type(pred_y), np.ndarray)
             self.assertEqual(pred_y.shape, expected_size)
+
+    def _test_device(self, device):
+        for p in self.pytorch_network.parameters():
+            self.assertEqual(p.device, device)
 
 
 class MultiIOModel(nn.Module):

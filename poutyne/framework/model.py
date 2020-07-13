@@ -1115,7 +1115,6 @@ class Model:
         self.network.load_state_dict(weights)
 
     def cuda(self, *args, **kwargs):
-        # todo verify if broken with devices
         """
         Tranfers the network on the GPU. The arguments are passed to the :meth:`torch.nn.Module.cuda()` method.
         Notice that the device is saved so that the batches can send to the right device before passing it to
@@ -1147,7 +1146,6 @@ class Model:
         return self
 
     def cpu(self, *args, **kwargs):
-        # todo verify if broken with devices
         """
         Tranfers the network on the CPU. The arguments are passed to the :meth:`torch.nn.Module.cpu()`
         method. Notice that the device is saved so that the batches can send to the right device
@@ -1168,6 +1166,9 @@ class Model:
         Returns:
             `self`.
         """
+        if isinstance(self.network, DataParallel):
+            self.network = self.network.module
+
         with self._update_optim_device():
             self.network.cpu(*args, **kwargs)
 
@@ -1204,6 +1205,10 @@ class Model:
         Returns:
             `self`.
         """
+        # Convert back first to non parallel module first
+        if isinstance(self.network, DataParallel):
+            self.network = self.network.module
+
         if isinstance(device, List) or device == "all":
             if device == "all":
                 device = [f"cuda:{device}" for device in range(torch.cuda.device_count())]
