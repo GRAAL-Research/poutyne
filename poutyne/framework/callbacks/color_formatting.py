@@ -19,7 +19,19 @@ try:
 
     colorama = True
 
-    init()
+    try:
+        # We don't init when Jupyter Notebook see issue https://github.com/jupyter/notebook/issues/2284
+        from IPython import get_ipython
+
+        shell = get_ipython().__class__.__name__
+        if shell == 'ZMQInteractiveShell':
+            jupyter = True
+        else:
+            init()
+            jupyter = False
+
+    except NameError:
+        init()
 except ImportError:
     colorama = None
 
@@ -121,6 +133,11 @@ class ColorProgress:
 
         update += self._get_formatted_metrics(metrics_str)
 
+        if self.style_reset and not jupyter:
+            # We skip it for Jupyter since the color token appear and otherwise the
+            # traceback will be colored using a shell or else.
+            update += Style.RESET_ALL
+
         sys.stdout.write(update)
         sys.stdout.flush()
 
@@ -147,14 +164,14 @@ class ColorProgress:
         sys.stdout.flush()
 
     def set_progress_bar(self, number_steps_per_epoch):
-        self.steps_progress_bar = ProgressBar(
-            number_steps_per_epoch,
-            bar_format="%s{percentage} |%s{bar}%s|" %
-                       (self.text_color, self.progress_bar_color, self.text_color))
+        self.steps_progress_bar = ProgressBar(number_steps_per_epoch,
+                                              bar_format="%s{percentage} |%s{bar}%s|" %
+                                              (self.text_color, self.progress_bar_color, self.text_color))
         self.progress_bar = True
 
     def _set_epoch_formatted_text(self, epoch_number: int, epochs: int) -> None:
-        self.epoch_formatted_text = "\r" + self.text_color + "Epoch: " + self.ratio_color + "%d/%d " % (epoch_number, epochs)
+        self.epoch_formatted_text = "\r" + self.text_color + "Epoch: " + self.ratio_color + "%d/%d " % (epoch_number,
+                                                                                                        epochs)
 
     def _get_formatted_epoch_total_time(self, epoch_total_time: float) -> str:
         return self.time_color + "%.0fs " % epoch_total_time
