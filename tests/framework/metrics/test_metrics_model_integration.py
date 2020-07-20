@@ -216,10 +216,7 @@ class MetricsModelIntegrationTest(unittest.TestCase):
         self._test_history(model, self.metric_names, self.metric_values)
 
     def test_batch_metrics_with_str_str_tuple(self):
-        model = Model(self.pytorch_network,
-                      self.optimizer,
-                      self.loss_function,
-                      batch_metrics=['mse', ('mse2', 'mse')])
+        model = Model(self.pytorch_network, self.optimizer, self.loss_function, batch_metrics=['mse', ('mse2', 'mse')])
         self._test_history(model, ['mse', 'mse2'], [ANY, ANY])
 
     def _test_history(self, model, names, values):
