@@ -151,7 +151,7 @@ class ColorProgress:
         self.progress_bar = True
 
     def _set_epoch_formatted_text(self, epoch_number: int, epochs: int) -> None:
-        self.epoch_formatted_text = self.text_color + "\rEpoch: " + self.ratio_color + "%d/%d " % (epoch_number, epochs)
+        self.epoch_formatted_text = "\r" + self.text_color + "Epoch: " + self.ratio_color + "%d/%d " % (epoch_number, epochs)
 
     def _get_formatted_epoch_total_time(self, epoch_total_time: float) -> str:
         return self.time_color + "%.0fs " % epoch_total_time
