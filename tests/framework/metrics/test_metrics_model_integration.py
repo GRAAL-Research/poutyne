@@ -5,6 +5,7 @@
 import os
 import unittest
 from unittest import skipIf
+from unittest.mock import ANY
 import numpy as np
 import torch
 import torch.nn as nn
@@ -213,6 +214,10 @@ class MetricsModelIntegrationTest(unittest.TestCase):
                       self.loss_function,
                       epoch_metrics=[(self.metric_names, epoch_metric)])
         self._test_history(model, self.metric_names, self.metric_values)
+
+    def test_batch_metrics_with_str_str_tuple(self):
+        model = Model(self.pytorch_network, self.optimizer, self.loss_function, batch_metrics=['mse', ('mse2', 'mse')])
+        self._test_history(model, ['mse', 'mse2'], [ANY, ANY])
 
     def _test_history(self, model, names, values):
         history = model.fit(self.train_x,

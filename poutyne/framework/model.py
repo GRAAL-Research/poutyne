@@ -249,6 +249,8 @@ class Model:
                 In both case, will be ignore if verbose is set to False.
                 (Default value = True)
             progress_bar (bool): Whether or not to display a progress bar showing the epoch progress.
+                Note that if the size of the output text with the progress bar is larger than the shell output size,
+                the formatting could be impacted (a line for every step).
                 (Default value = True)
             callbacks (List[~poutyne.framework.callbacks.Callback]): List of callbacks that will be called
                 during training.
@@ -364,6 +366,8 @@ class Model:
                 (Default value = True)
             progress_bar (bool): Whether or not to display a progress bar showing the epoch progress.
                 Will be ignore if verbose is set to False or if the number of steps is undetermined.
+                Note that if the size of the output text with the progress bar is larger than the shell output size,
+                the formatting could be impacted (a line for every step).
                 (Default value = True)
             callbacks (List[~poutyne.framework.callbacks.Callback]): List of callbacks that will be called during
                 training. (Default value = None)
