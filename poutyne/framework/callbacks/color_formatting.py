@@ -32,6 +32,8 @@ try:
 
     except ImportError:
         init()
+        jupyter = False
+
 except ImportError:
     colorama = None
 
