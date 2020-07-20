@@ -43,7 +43,10 @@ def get_loss_or_metric(loss_metric):
     if isinstance(loss_metric, str):
         loss_metric = clean_batch_metric_name(loss_metric)
         return batch_metrics_dict[loss_metric]
-
+    if isinstance(loss_metric, tuple) and isinstance(loss_metric[1], str):
+        name, loss_metric = loss_metric
+        loss_metric = clean_batch_metric_name(loss_metric)
+        return name, batch_metrics_dict[loss_metric]
     return loss_metric
 
 
@@ -70,4 +73,8 @@ def get_epoch_metric(epoch_metric):
     if isinstance(epoch_metric, str):
         epoch_metric = clean_epoch_metric_name(epoch_metric)
         return epochs_metrics_dict[epoch_metric]()
+    if isinstance(epoch_metric, tuple) and isinstance(epoch_metric[1], str):
+        name, epoch_metric = epoch_metric
+        epoch_metric = clean_epoch_metric_name(epoch_metric)
+        return name, epochs_metrics_dict[epoch_metric]()
     return epoch_metric
