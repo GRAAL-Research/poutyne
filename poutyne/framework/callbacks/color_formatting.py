@@ -37,7 +37,7 @@ try:
 except ImportError:
     colorama = None
     jupyter = False
-    
+
     Fore = EmptyStringAttrClass()
     Style = EmptyStringAttrClass()
 
