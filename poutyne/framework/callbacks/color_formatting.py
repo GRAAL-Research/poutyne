@@ -73,6 +73,7 @@ class ColorProgress:
             color_settings = default_color_settings
 
         if color_settings is not None:
+            self.style_reset = True
             self.text_color = getattr(Fore, color_settings["text_color"])
             self.ratio_color = getattr(Fore, color_settings["ratio_color"])
             self.metric_value_color = getattr(Fore, color_settings["metric_value_color"])
@@ -80,6 +81,7 @@ class ColorProgress:
             self.progress_bar_color = getattr(Fore, color_settings["progress_bar_color"])
 
         else:
+            self.style_reset = False
             self.text_color = ""
             self.ratio_color = ""
             self.metric_value_color = ""
@@ -176,5 +178,6 @@ class ColorProgress:
             value = name_value[1]
             formatted_metrics += self.text_color + name + ":" + self.metric_value_color + value
 
-        formatted_metrics += Style.RESET_ALL
+        if self.style_reset:
+            formatted_metrics += Style.RESET_ALL
         return formatted_metrics
