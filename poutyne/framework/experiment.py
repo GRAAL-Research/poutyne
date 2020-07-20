@@ -501,6 +501,8 @@ class Experiment:
                 are text_color, ratio_color, metric_value_color and time_color.
                 (Default value = True)
             progress_bar (bool): Whether or not to display a progress bar showing the epoch progress.
+                Note that if the size of the output text with the progress bar is larger than the shell output size,
+                the formatting could be impacted (a line for every step).
                 (Default value = True)
 
         Returns:
