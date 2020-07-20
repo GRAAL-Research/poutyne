@@ -30,7 +30,7 @@ try:
             init()
             jupyter = False
 
-    except NameError:
+    except ImportError:
         init()
 except ImportError:
     colorama = None
