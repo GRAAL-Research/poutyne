@@ -1215,7 +1215,8 @@ class Model:
             if device == "all":
                 device = [f"cuda:{device}" for device in range(torch.cuda.device_count())]
             self.device = device[0]
-            self.other_device = device[1:]
+            if len(device) > 1:  # case where we use all when having only one GPU or using a list of one device
+                self.other_device = device[1:]
         else:
             self.device = device
             self.other_device = None
