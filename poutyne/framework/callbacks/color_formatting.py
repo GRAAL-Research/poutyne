@@ -36,6 +36,7 @@ try:
 
 except ImportError:
     colorama = None
+    jupyter = False
 
     Fore = EmptyStringAttrClass()
     Style = EmptyStringAttrClass()
@@ -168,7 +169,7 @@ class ColorProgress:
     def set_progress_bar(self, number_steps_per_epoch):
         self.steps_progress_bar = ProgressBar(number_steps_per_epoch,
                                               bar_format="%s{percentage} |%s{bar}%s|" %
-                                              (self.text_color, self.progress_bar_color, self.text_color))
+                                                         (self.text_color, self.progress_bar_color, self.text_color))
         self.progress_bar = True
 
     def _set_epoch_formatted_text(self, epoch_number: int, epochs: int) -> None:
