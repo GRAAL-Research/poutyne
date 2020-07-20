@@ -140,6 +140,9 @@ class ColorProgress:
             update += self._get_formatted_epoch_total_time(epoch_total_time) + self._get_formatted_step(steps, steps)
         update += self._get_formatted_metrics(metrics_str)
 
+        if self.style_reset:
+            update += Style.RESET_ALL
+
         print(update)
         sys.stdout.flush()
 
@@ -178,6 +181,4 @@ class ColorProgress:
             value = name_value[1]
             formatted_metrics += self.text_color + name + ":" + self.metric_value_color + value
 
-        if self.style_reset:
-            formatted_metrics += Style.RESET_ALL
         return formatted_metrics
