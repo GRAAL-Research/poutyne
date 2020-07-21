@@ -56,6 +56,24 @@ When creating your enhancement request, please:
 
 * Include code examples to demonstrate how the enhancement would be used.
 
+
+## Prerequisites
+
+We created three requirements files to install all the tools used for the development of the library. `tests/requirements.txt` define the requirements for the tests, `styling_requirements.txt` for the styling and `docs/requirements.txt` for the documentation.
+
+You can install all the requirements with
+
+```
+pip install -r tests/requirements.txt
+pip install -r styling_requirements.txt
+pip install -r docs/requirements.txt
+```
+
+Also, you should run `python setup.py develop` to build the project and be able to build the documentation.
+```
+python setup.py develop
+```
+
 ## Use a Consistent Coding Style
 
 All of the code is formatted using [yapf](https://github.com/google/yapf) with the associated [config file](https://github.com/GRAAL-Research/poutyne/blob/master/.style.yapf). In order to format the code of your submission, simply run
