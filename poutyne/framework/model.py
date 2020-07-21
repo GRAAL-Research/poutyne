@@ -3,7 +3,7 @@ import contextlib
 import numbers
 import warnings
 from collections import defaultdict
-from typing import Iterable, Mapping
+from typing import Iterable, Mapping, List
 
 import numpy as np
 import torch
@@ -164,6 +164,7 @@ class Model:
         self._set_metrics_attributes(batch_metrics, epoch_metrics)
 
         self.device = None
+        self.other_device = None
 
     def _set_metrics_attributes(self, batch_metrics, epoch_metrics):
         batch_metrics = list(map(get_loss_or_metric, batch_metrics))
@@ -885,7 +886,10 @@ class Model:
     def _compute_loss_and_metrics(self, x, y, return_loss_tensor=False, return_pred=False):
         x, y = self._process_input(x, y)
         x = x if isinstance(x, (list, tuple)) else (x, )
-        pred_y = self.network(*x)
+        if self.other_device is not None:
+            pred_y = torch.nn.parallel.data_parallel(self.network, x, [self.device] + self.other_device)
+        else:
+            pred_y = self.network(*x)
         loss = self.loss_function(pred_y, y)
         if not return_loss_tensor:
             loss = float(loss)
@@ -1143,6 +1147,7 @@ class Model:
 
         # Assuming the PyTorch module has at least one parameter.
         self.device = next(self.network.parameters()).device
+        self.other_device = None
 
         self._transfer_loss_and_metrics_modules_to_right_device()
 
@@ -1174,6 +1179,7 @@ class Model:
 
         # Assuming the PyTorch module has at least one parameter.
         self.device = next(self.network.parameters()).device
+        self.other_device = None
 
         self._transfer_loss_and_metrics_modules_to_right_device()
 
@@ -1181,11 +1187,15 @@ class Model:
 
     def to(self, device):
         """
-        Tranfers the network on the specified device. The device is saved so that the batches can
-        send to the right device before passing it to the network.
+        Transfer the network on the specified device. The device is saved so that the batches can
+        send to the right device before passing it to the network. One could also use multi GPUs by
+        using either a list of devices or "all" to take all the available devices. In both cases,
+        the training loop will use the `~torch.nn.parallel.data_parallel()` function for single
+        node multi GPUs parallel process and the main device is the first device.
+
 
         Note:
-            PyTorch optimizers assume that the parameters have been transfered to the right device
+            PyTorch optimizers assume that the parameters have been transferred to the right device
             before their creations. Furthermore, future versions of PyTorch will no longer modify
             the parameters of a PyTorch module in-place when transferring them to another device.
             See this `issue <https://github.com/pytorch/pytorch/issues/7844>`_ and this
@@ -1197,12 +1207,22 @@ class Model:
             takes care of this inconsistency by updating the parameters inside the optimizer.
 
         Args:
-            device (torch.torch.device): The device to which the network is sent.
+            device (Union[torch.torch.device, List[torch.torch.device]]): The device to which the network is sent or
+            the list of device to which the network is sent.
 
         Returns:
             `self`.
         """
-        self.device = device
+        if isinstance(device, List) or device == "all":
+            if device == "all":
+                device = [f"cuda:{device}" for device in range(torch.cuda.device_count())]
+            self.device = device[0]
+            if len(device) > 1:  # case where we use all when having only one GPU or using a list of one device
+                self.other_device = device[1:]
+        else:
+            self.device = device
+            self.other_device = None
+
         with self._update_optim_device():
             self.network.to(self.device)
         self._transfer_loss_and_metrics_modules_to_right_device()
