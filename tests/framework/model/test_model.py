@@ -1026,10 +1026,6 @@ class ModelTest(ModelFittingTestCase):
                                      validation_steps=ModelTest.steps_per_epoch,
                                      callbacks=[self.mock_callback])
 
-    def _test_device(self, device):
-        for p in self.pytorch_network.parameters():
-            self.assertEqual(p.device, device)
-
     def test_get_batch_size(self):
         batch_size = ModelTest.batch_size
         x = np.random.rand(batch_size, 1).astype(np.float32)

@@ -37,8 +37,10 @@ class Experiment:
     Args:
         directory (str): Path to the experiment's working directory. Will be used for the automatic logging.
         network (torch.nn.Module): A PyTorch network.
-        device (Union[torch.device, None]): The device to which the model is sent. If None, the model will be
-            kept on its current device.
+        device (Union[torch.device, List[torch.device], str, None]): The device to which the model is sent
+            or for multi-GPUs, the list of devices to which the model is to be sent. When using a string for a multiple
+            GPUs the option is "all", for take them all, by default the current device is use as the main one.
+            If None, the model will be kept on its current device.
             (Default value = None)
         logging (bool): Whether or not to log the experiment's progress. If true, various logging
             callbacks will be inserted to output training and testing stats as well as to automatically
@@ -107,7 +109,7 @@ class Experiment:
             # Our network
             pytorch_network = torch.nn.Linear(num_features, num_train_samples)
 
-            # Intialization of our experimentation and network training
+            # Initialization of our experimentation and network training
             exp = Experiment('./simple_example',
                              pytorch_network,
                              optimizer='sgd',
@@ -164,6 +166,18 @@ class Experiment:
             3	    0.0637106419890187	0.01	5.759376544952392	22.875	5.65541223526001	21.0
             ...
 
+    Also, we could use more than one GPU (on a single node) by using the device argument
+
+    .. code-block:: none
+
+            # Initialization of our experimentation and network training
+            exp = Experiment('./simple_example',
+                             pytorch_network,
+                             optimizer='sgd',
+                             task='classif',
+                             device="all")
+            exp.train(train_generator, valid_generator, epochs=5)
+
     """
     BEST_CHECKPOINT_FILENAME = 'checkpoint_epoch_{epoch}.ckpt'
     BEST_CHECKPOINT_TMP_FILENAME = 'checkpoint_epoch.tmp.ckpt'
@@ -184,7 +198,7 @@ class Experiment:
                  directory: str,
                  network: torch.nn.Module,
                  *,
-                 device: Union[torch.device, None] = None,
+                 device: Union[torch.device, List[torch.device], List[str], None, str] = None,
                  logging: bool = True,
                  optimizer: Union[torch.optim.Optimizer, str] = 'sgd',
                  loss_function: Union[Callable, str] = None,
