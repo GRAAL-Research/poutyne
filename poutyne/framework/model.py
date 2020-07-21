@@ -1187,13 +1187,15 @@ class Model:
 
     def to(self, device):
         """
-        Tranfers the network on the specified device. The device is saved so that the batches can
-        send to the right device before passing it to the network. If device is a list of device for multi GPUs
-        the first device is used as the main device. If the device is "all", will take all the device available and
-        will use the first one as the main device.
+        Transfer the network on the specified device. The device is saved so that the batches can
+        send to the right device before passing it to the network. One could also use multi GPUs by
+        using either a list of devices or "all" to take all the available devices. In both cases,
+        the training loop will use the `~torch.nn.parallel.data_parallel()` function for single
+        node multi GPUs parallel process and the main device is the first device.
+
 
         Note:
-            PyTorch optimizers assume that the parameters have been transfered to the right device
+            PyTorch optimizers assume that the parameters have been transferred to the right device
             before their creations. Furthermore, future versions of PyTorch will no longer modify
             the parameters of a PyTorch module in-place when transferring them to another device.
             See this `issue <https://github.com/pytorch/pytorch/issues/7844>`_ and this

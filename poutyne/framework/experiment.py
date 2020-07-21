@@ -166,6 +166,18 @@ class Experiment:
             3	    0.0637106419890187	0.01	5.759376544952392	22.875	5.65541223526001	21.0
             ...
 
+    Also, we could use more than one GPU (on a single node) by using the device argument
+
+    .. code-block:: none
+    
+            # Intialization of our experimentation and network training
+            exp = Experiment('./simple_example',
+                             pytorch_network,
+                             optimizer='sgd',
+                             task='classif',
+                             device="all")
+            exp.train(train_generator, valid_generator, epochs=5)
+
     """
     BEST_CHECKPOINT_FILENAME = 'checkpoint_epoch_{epoch}.ckpt'
     BEST_CHECKPOINT_TMP_FILENAME = 'checkpoint_epoch.tmp.ckpt'
