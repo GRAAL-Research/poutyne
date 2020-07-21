@@ -109,7 +109,7 @@ class Experiment:
             # Our network
             pytorch_network = torch.nn.Linear(num_features, num_train_samples)
 
-            # Intialization of our experimentation and network training
+            # Initialization of our experimentation and network training
             exp = Experiment('./simple_example',
                              pytorch_network,
                              optimizer='sgd',
@@ -169,8 +169,8 @@ class Experiment:
     Also, we could use more than one GPU (on a single node) by using the device argument
 
     .. code-block:: none
-    
-            # Intialization of our experimentation and network training
+
+            # Initialization of our experimentation and network training
             exp = Experiment('./simple_example',
                              pytorch_network,
                              optimizer='sgd',
