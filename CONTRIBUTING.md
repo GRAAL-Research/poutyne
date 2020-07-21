@@ -69,7 +69,7 @@ pip install -r styling_requirements.txt
 pip install -r docs/requirements.txt
 ```
 
-Also, you should run the `setup.py develop` to build the project and be able to build the documentation.
+Also, you should run `python setup.py develop` to build the project and be able to build the documentation.
 ```
 python setup.py develop
 ```
