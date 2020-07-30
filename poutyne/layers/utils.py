@@ -1,3 +1,5 @@
+# Because nn.Module has the abstract method _forward_unimplemented
+# pylint: disable=abstract-method
 import torch.nn as nn
 
 

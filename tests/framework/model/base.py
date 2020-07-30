@@ -1,4 +1,5 @@
-# pylint: disable=too-many-locals
+# abstract-method because nn.Module has the abstract method _forward_unimplemented
+# pylint: disable=too-many-locals,abstract-method
 import os
 from unittest import TestCase
 from unittest.mock import MagicMock, call, ANY
