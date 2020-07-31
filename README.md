@@ -78,6 +78,22 @@ model.fit(
 )
 ```
 
+Also, Poutyne use by default a coloring template of the training step when the package `colorama` is installed. 
+One could either remove the coloring (`color_log=False`) or set a different coloring template using the fields: 
+`text_color`, `ratio_color`, `metric_value_color`, `time_color` and `progress_bar_color`. 
+If a field is not specified, the default color will be used. 
+
+Here an example where we set the `text_color` to MAGENTA and the `ratio_color` to BLUE.
+
+```python
+model.fit(
+    train_x, 
+    train_y, 
+    validation_data=(valid_x, valid_y),
+    epochs=5, 
+    coloring={"text_color": "MAGENTA", "ratio_color":"BLUE"})
+```
+
 This is really similar to the [model.compile](https://keras.io/models/model/#compile) and [model.fit](https://keras.io/models/model/#fit) functions as in [Keras](https://keras.io).
 
 You can evaluate the performances of your network using the ``evaluate`` method of Poutyne's model:
