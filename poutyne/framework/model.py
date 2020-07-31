@@ -560,15 +560,15 @@ class Model:
 
     def _format_return(self, loss, metrics, pred_y, return_pred, true_y=None, return_ground_truth=False):
         # pylint: disable=too-many-arguments
-        ret = (loss, )
+        ret = (loss,)
 
-        ret += tuple(metrics.tolist()) if len(metrics) <= 1 else (metrics, )
+        ret += tuple(metrics.tolist()) if len(metrics) <= 1 else (metrics,)
 
         if return_pred:
-            ret += (pred_y, )
+            ret += (pred_y,)
 
         if return_ground_truth:
-            ret += (true_y, )
+            ret += (true_y,)
 
         return ret[0] if len(ret) == 1 else ret
 
@@ -587,7 +587,7 @@ class Model:
         Returns:
             Numpy arrays of the predictions.
         """
-        x = x if isinstance(x, (tuple, list)) else (x, )
+        x = x if isinstance(x, (tuple, list)) else (x,)
         generator = self._dataloader_from_data(x, batch_size=batch_size)
         return self.predict_generator(generator, concatenate_returns=True)
 
@@ -629,7 +629,7 @@ class Model:
         with self._set_training_mode(False):
             for _, x in _get_step_iterator(steps, generator):
                 x = self._process_input(x)
-                x = x if isinstance(x, (tuple, list)) else (x, )
+                x = x if isinstance(x, (tuple, list)) else (x,)
                 pred_y.append(torch_to_numpy(self.network(*x)))
         if concatenate_returns:
             return _concat(pred_y)
@@ -647,7 +647,7 @@ class Model:
         """
         with self._set_training_mode(False):
             x = self._process_input(x)
-            x = x if isinstance(x, (tuple, list)) else (x, )
+            x = x if isinstance(x, (tuple, list)) else (x,)
             return torch_to_numpy(self.network(*x))
 
     def evaluate(self, x, y, *, batch_size=32, return_pred=False, callbacks=None):
@@ -885,7 +885,7 @@ class Model:
 
     def _compute_loss_and_metrics(self, x, y, return_loss_tensor=False, return_pred=False):
         x, y = self._process_input(x, y)
-        x = x if isinstance(x, (list, tuple)) else (x, )
+        x = x if isinstance(x, (list, tuple)) else (x,)
         if self.other_device is not None:
             pred_y = torch.nn.parallel.data_parallel(self.network, x, [self.device] + self.other_device)
         else:
@@ -1219,6 +1219,9 @@ class Model:
             self.device = device[0]
             if len(device) > 1:  # case where we use all when having only one GPU or using a list of one device
                 self.other_device = device[1:]
+            else:
+                # in case a other device was previously set
+                self.other_device = None
         else:
             self.device = device
             self.other_device = None
