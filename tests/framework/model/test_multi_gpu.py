@@ -260,4 +260,3 @@ class ModelTestMultiGPU(ModelFittingTestCase):
                                  steps_per_epoch=ModelTestMultiGPU.steps_per_epoch,
                                  validation_steps=ModelTestMultiGPU.steps_per_epoch,
                                  callbacks=[self.mock_callback])
-        self._test_multiple_gpu_mode(devices=devices)
