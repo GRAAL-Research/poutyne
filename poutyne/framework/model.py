@@ -1213,6 +1213,7 @@ class Model:
         Returns:
             `self`.
         """
+        self.other_device = None
         if isinstance(device, List) or device == "all":
             if device == "all":
                 device = [f"cuda:{device}" for device in range(torch.cuda.device_count())]
@@ -1221,7 +1222,6 @@ class Model:
                 self.other_device = device[1:]
         else:
             self.device = device
-            self.other_device = None
 
         with self._update_optim_device():
             self.network.to(self.device)
