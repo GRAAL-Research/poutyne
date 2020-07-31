@@ -1213,18 +1213,15 @@ class Model:
         Returns:
             `self`.
         """
+        self.other_device = None
         if isinstance(device, List) or device == "all":
             if device == "all":
                 device = [f"cuda:{device}" for device in range(torch.cuda.device_count())]
             self.device = device[0]
             if len(device) > 1:  # case where we use all when having only one GPU or using a list of one device
                 self.other_device = device[1:]
-            else:
-                # in case a other device was previously set
-                self.other_device = None
         else:
             self.device = device
-            self.other_device = None
 
         with self._update_optim_device():
             self.network.to(self.device)
