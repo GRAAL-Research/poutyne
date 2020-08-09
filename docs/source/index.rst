@@ -140,7 +140,7 @@ Look at notebook files with full working `examples <https://github.com/GRAAL-Res
 - `transfer_learning.ipynb <https://github.com/GRAAL-Research/poutyne/blob/master/examples/transfer_learning.ipynb>`_ - transfer learning on ResNet-18 on the `CUB-200 <http://www.vision.caltech.edu/visipedia/CUB-200-2011.html>`_ dataset.
 - `policy_cifar_example.ipynb <https://github.com/GRAAL-Research/poutyne/blob/master/examples/policy_cifar_example.ipynb>`_ - policies API, FastAI-like learning rate policies
 - `policy_interface.ipynb <https://github.com/GRAAL-Research/poutyne/blob/master/examples/policy_interface.ipynb>`_ - example of policies
-- `tips_and_tricks.ipynb <https://github.com/GRAAL-Research/poutyne/blob/master/examples/tips_and_tricks.ipynb>`_ - example of tips and tricks using Poutyne.
+- `tips_and_tricks.ipynb <https://github.com/GRAAL-Research/poutyne/blob/master/examples/tips_and_tricks.ipynb>`_ -  tips and tricks using Poutyne.
 
 Videos
 ------
