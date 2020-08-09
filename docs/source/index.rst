@@ -175,7 +175,7 @@ API Reference
 
 .. toctree::
   :maxdepth: 1
-  :caption: Package Reference
+  :caption: API
 
   model
   experiment
@@ -183,7 +183,17 @@ API Reference
   callbacks
   layers
   utils
-  examples
+
+.. toctree::
+  :glob:
+  :maxdepth: 1
+  :caption: Examples
+
+  examples/introduction
+  examples/tips_and_tricks
+  examples/policy_interface
+  examples/train_with_policy_module
+  examples/transfert_learning
 
 
 Indices and tables
