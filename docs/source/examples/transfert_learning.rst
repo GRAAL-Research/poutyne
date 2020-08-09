@@ -3,6 +3,7 @@
 
 Transfer learning example
 **************************
+.. note:: See the notebook `here <https://github.com/GRAAL-Research/poutyne/blob/master/examples/transfert_learning.ipynb>`_
 
 .. code-block:: python
 

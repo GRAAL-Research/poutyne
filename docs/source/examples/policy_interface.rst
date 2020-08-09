@@ -4,6 +4,8 @@
 Interface of the ``policy`` module
 **********************************
 
+.. note:: See the notebook `here <https://github.com/GRAAL-Research/poutyne/blob/master/examples/policy_interface.ipynb>`_
+
 About the ``policy`` Module Interface
 =====================================
 

@@ -3,6 +3,7 @@
 
 Train CIFAR with the ``policy`` module
 **************************************
+.. note:: See the notebook `here <https://github.com/GRAAL-Research/poutyne/blob/master/examples/policy_cifar_example.ipynb>`_
 
 .. code-block:: python
 

@@ -3,6 +3,9 @@
 
 Poutyne's Tips and Tricks
 *************************
+
+.. note:: See the notebook `here <https://github.com/GRAAL-Research/poutyne/blob/master/examples/tips_and_tricks.ipynb>`_
+
 Poutyne also over a variety of tools for fine-tuning the information generated during the training, such as colouring the training update message, a progress bar, multi-GPUs, user callbacks interface and a user naming interface for the metrics' names.
 
 We will explore those tools using a different problem that the one presented in :ref:`intro`
