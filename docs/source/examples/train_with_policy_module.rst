@@ -20,7 +20,7 @@ Let's import all the needed packages.
 
 
 Training constants
-=================
+==================
 
 But first, let's set the training constants, the Cuda device used for training if one is present, we set the batch size (i.e. the number of elements to see before updating the model) and the epoch number (i.e. the number of times we see the full dataset).
 .. code-block:: python
