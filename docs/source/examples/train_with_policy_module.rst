@@ -3,7 +3,9 @@
 
 Train CIFAR with the ``policy`` module
 **************************************
-.. note:: See the notebook `here <https://github.com/GRAAL-Research/poutyne/blob/master/examples/policy_cifar_example.ipynb>`_
+.. note::
+    - See the notebook `here <https://github.com/GRAAL-Research/poutyne/blob/master/examples/policy_cifar_example.ipynb>`_
+    - Run in `Google Colab <https://colab.research.google.com/github/GRAAL-Research/poutyne/blob/master/examples/policy_cifar_example.ipynb>`_
 
 Let's import all the needed packages.
 .. code-block:: python
