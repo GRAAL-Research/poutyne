@@ -67,7 +67,7 @@ For the first components, instead of using a vanilla RNN, we will use a variant 
 
 Also, since our data is textual, we will use the well-known word embeddings to encode the textual information. So the LSTM input and hidden state dimensions will be of the same size. This size corresponds to the word embeddings dimension, which in our case will be the `French pre trained <https://fasttext.cc/docs/en/crawl-vectors.html>`_ fastText embeddings of dimension 300.
 
-.. Note:: See `this <https://discuss.pytorch.org/t/could-someone-explain-batch-first-true-in-lstm/15402>`_ for the explanation why we use the ``batch_first`` argument.
+.. Note:: See this `discussion <https://discuss.pytorch.org/t/could-someone-explain-batch-first-true-in-lstm/15402>`_ for the explanation why we use the ``batch_first`` argument.
 
 .. code-block:: python
 
@@ -212,9 +212,9 @@ DataLoader
 
 Now, since all the addresses are not of the same size, it is impossible to batch size them since all elements of a tensor must have the same lengths. But there a trick, padding!
 
-The idea is simple. We will add *empty* tokens at the ends of a sequence up to the longest one in a batch. At the moment of evaluating the loss, that tokens will be skip using a ignore value (`0`). That way, we can pad and pack the sequence to minimize the training time (read `here <https://stackoverflow.com/questions/51030782/why-do-we-pack-the-sequences-in-pytorch>`_ a good explanation of why we pad and pack sequence).
+The idea is simple. We will add *empty* tokens at the ends of a sequence up to the longest one in a batch. At the moment of evaluating the loss, that tokens will be skip using a ignore value (`0`). That way, we can pad and pack the sequence to minimize the training time (read `this <https://stackoverflow.com/questions/51030782/why-do-we-pack-the-sequences-in-pytorch>`_ good explanation of why we pad and pack sequence).
 
-Also, due to how the F1 Score to compute is done, we will need a mask to ignore the paddings elements when calculating the metric. The mask value will be set to (`-100`) and will be used only at running time (see `here <https://poutyne.org/metrics.html#poutyne.framework.metrics.FBeta.forward>`_ for more details).
+Also, due to how the F1 Score to compute is done, we will need a mask to ignore the paddings elements when calculating the metric. The mask value will be set to (`-100`) and will be used only at running time (see the `documentation <https://poutyne.org/metrics.html#poutyne.framework.metrics.FBeta.forward>`_ for more details).
 
 For setting those elements, we will use the `collate_fn` of the PyTorch DataLoader, and on running time, that process will be done. We will create a function that will set the padding value (`0`) and the mask value (`-100`).
 

@@ -1,6 +1,8 @@
 .. role:: hidden
     :class: hidden-section
 
+.. _intro:
+
 Introduction to PyTorch and Poutyne
 ***********************************
 
