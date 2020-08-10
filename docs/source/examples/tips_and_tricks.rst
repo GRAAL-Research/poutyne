@@ -212,67 +212,59 @@ DataLoader
 
 Now, since all the addresses are not of the same size, it is impossible to batch size them since all elements of a tensor must have the same lengths. But there a trick, padding!
 
-The idea is simple. We will add *empty* tokens at the ends of a sequence up to the longest one in a batch. At the moment of evaluating the loss, that tokens will be skip using a mask value. That way, we can pad and pack the sequence to minimize the training time (read `here <https://stackoverflow.com/questions/51030782/why-do-we-pack-the-sequences-in-pytorch>`_ for a good explanation of why we pad and pack sequence).
+The idea is simple. We will add *empty* tokens at the ends of a sequence up to the longest one in a batch. At the moment of evaluating the loss, that tokens will be skip using a ignore value (`0`). That way, we can pad and pack the sequence to minimize the training time (read `here <https://stackoverflow.com/questions/51030782/why-do-we-pack-the-sequences-in-pytorch>`_ a good explanation of why we pad and pack sequence).
 
-For that, we will use the ``collate_fn`` of the PyTorch DataLoader, and on running time, that process will be done. We will create a class, that will save the padding value (`0`) and the mask value (``-100``) and use the ``__call__`` method to process the batch elements.
+Also, due to how the F1 Score to compute is done, we will need a mask to ignore the paddings elements when calculating the metric. The mask value will be set to (`-100`) and will be used only at running time (see `here <https://poutyne.org/metrics.html#poutyne.framework.metrics.FBeta.forward>`_ for more details).
+
+For setting those elements, we will use the `collate_fn` of the PyTorch DataLoader, and on running time, that process will be done. We will create a function that will set the padding value (`0`) and the mask value (`-100`).
 
 One time to take into account, since we have packed the sequence, we need the lengths of each sequence for the forward pass to unpack them.
 
 .. code-block:: python
 
-    class PadCollate:
+     def pad_collate_fn(batch, pad_idx=0, mask_value=-100):
         """
-            A variant of collate_fn that pads the sequence to the longest sequence in the minibatch.
+        The collate_fn that can add padding to the sequences so all can have the same length as the longest one.
+
+        Args:
+            batch (List[List, List]): The batch data, where the first element of the tuple are the word idx and the second element
+            are the target label.
+            pad_idx (int): The padding idx value to use, 0 by default.
+            mask_value (int): The mask value to use, -100 by default.
+
+        Returns:
+            A list of the padded tensor sequence idx and the padded label tensor of the size of the longest sequence length.
+
         """
 
-        def __init__(self):
-            self.pad_idx = 0
-            self.mask_value = -100
+        sequences_vectors, sequences_labels, lengths = zip(
+            *[(torch.FloatTensor(seq_vectors), torch.LongTensor(labels), len(seq_vectors)) for (seq_vectors, labels)
+              in sorted(batch, key=lambda x: len(x[0]), reverse=True)])
 
-        def _pad_collate_fn(self, batch):
-            """
-            **Args:**
+        lengths = torch.LongTensor(lengths)
 
-                :batch - list of (List, List) where the first element of the tuple are the word idx and the second element
-                are the target label.
+        padded_sequences_vectors = pad_sequence(sequences_vectors, batch_first=True, padding_value=pad_idx)
 
-            Returns:
-                A list of the padded tensor sequence idx and the padded label tensor of size of the longest sequence length.
+        padded_sequences_labels = pad_sequence(sequences_labels, batch_first=True, padding_value=pad_idx)
 
-            """
-            sequences_vectors, sequences_labels, lengths = zip(
-                *[(torch.FloatTensor(seq_vectors), torch.LongTensor(labels), len(seq_vectors)) for (seq_vectors, labels)
-                  in sorted(batch, key=lambda x: len(x[0]), reverse=True)])
+        mask = mask_padding_sequences(lengths)
+        masked_target = torch.where(mask, padded_sequences_labels,
+                                    torch.ones_like(mask) * mask_value)
 
-            lengths = torch.LongTensor(lengths)
+        # We also pass the mask for the F1 score since it need a mask tensor to be compute
+        return (padded_sequences_vectors, lengths), (masked_target, mask)
 
-            padded_sequences_vectors = pad_sequence(sequences_vectors, batch_first=True, padding_value=self.pad_idx)
+     def mask_padding_sequences(lengths):
+        """
+        Create a mask from the lengths of the padded sequences.
 
-            padded_sequences_labels = pad_sequence(sequences_labels, batch_first=True, padding_value=self.pad_idx)
+        Args:
+            lengths: The lengths use to create the padded sequence.
+        """
 
-            mask = self._mask_padding_sequences(lengths)
-            masked_target = torch.where(mask, padded_sequences_labels,
-                                        torch.ones_like(mask) * self.mask_value)
-
-            # We also pass the mask for the F1 score since it need a mask tensor to be compute
-            return (padded_sequences_vectors, lengths), (masked_target, mask)
-
-        def __call__(self, batch):
-            return self._pad_collate_fn(batch)
-
-        @staticmethod
-        def _mask_padding_sequences(lengths):
-            """
-            Create a mask from the padding sequences lengths.
-
-            Args:
-                lengths: The lengths use to create the padded sequence.
-            """
-
-            max_len = lengths[0]
-            mask = torch.arange(max_len).expand(len(lengths), max_len) < lengths.unsqueeze(1)
-            return mask.bool()
-
+        max_len = lengths[0]
+        mask = torch.arange(max_len).expand(len(lengths), max_len) < lengths.unsqueeze(1)
+        return mask.bool()
 
 .. code-block:: python
 
