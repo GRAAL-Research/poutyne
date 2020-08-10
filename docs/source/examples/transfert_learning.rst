@@ -5,6 +5,8 @@ Transfer learning example
 **************************
 .. note:: See the notebook `here <https://github.com/GRAAL-Research/poutyne/blob/master/examples/transfert_learning.ipynb>`_
 
+But first, let's import all the needed packages.
+
 .. code-block:: python
 
     import math
@@ -27,10 +29,13 @@ Transfer learning example
     from poutyne import set_seeds
     from poutyne.framework import Model, ModelCheckpoint, CSVLogger
 
+
+Also, we need to set Pythons's, NumPy's and PyTorch's seeds by using Poutyne function so that our training is (almost) reproducible.
+
 .. code-block:: python
 
-    # Set Pythons's, NumPy's and PyTorch's seeds so that our training are (almost) reproducible.
     set_seeds(42)
+
 
 .. code-block:: python
 
@@ -91,19 +96,18 @@ We do the split train/valid/test.
     download_and_extract_dataset(base_path)
     split_train_valid_test(dataset_path, train_path, valid_path, test_path)
 
+
+Now, let's set our training constants. We first have the Cuda device used for training if one is present. Secondly, we set the number of classes (i.e. one for each number). Finally, we set the batch size (i.e. the number of elements to see before updating the model), the learning rate for the optimizer, and the epoch number (i.e. the number of times we see the full dataset).
+
 .. code-block:: python
 
-    # Training constants
     cuda_device = 0
     device = torch.device("cuda:%d" % cuda_device if torch.cuda.is_available() else "cpu")
 
-.. code-block:: python
-
-    # Training hyperparameters
+    num_classes = 200
     batch_size = 32
     learning_rate = 0.1
     n_epoch = 30
-    num_classes = 200
 
 
 Creation of the PyTorch's datasets for our problem.
@@ -146,9 +150,9 @@ We freeze the network except for its head.
             if not name.startswith('fc.'):
                 param.requires_grad = False
 
-freeze_weights(resnet18)
-.. code-block:: python md
-We define callbacks for saving last epoch, best epoch and logging the results
+    freeze_weights(resnet18)
+
+We define callbacks for saving last epoch, best epoch and logging the results.
 
 .. code-block:: python
 

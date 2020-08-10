@@ -5,9 +5,9 @@ Train CIFAR with the ``policy`` module
 **************************************
 .. note:: See the notebook `here <https://github.com/GRAAL-Research/poutyne/blob/master/examples/policy_cifar_example.ipynb>`_
 
+Let's import all the needed packages.
 .. code-block:: python
 
-    # Import
     import torch
     import torchvision.datasets as datasets
     from torchvision import transforms
@@ -19,12 +19,17 @@ Train CIFAR with the ``policy`` module
     from poutyne.framework import OptimizerPolicy, one_cycle_phases
 
 
+Training constants
+=================
+
+But first, let's set the training constants, the Cuda device used for training if one is present, we set the batch size (i.e. the number of elements to see before updating the model) and the epoch number (i.e. the number of times we see the full dataset).
 .. code-block:: python
 
-    # Training constants
     cuda_device = 0
     device = torch.device("cuda:%d" % cuda_device if torch.cuda.is_available() else "cpu")
 
+    batch_size = 1024
+    epochs = 5
 
 Load the data
 =============
@@ -54,18 +59,15 @@ Load the data
 
 .. code-block:: python
 
-
-    BATCH_SIZE = 1024
-
     train_dl = DataLoader(
         train_ds,
-        batch_size=BATCH_SIZE,
+        batch_size=batch_size,
         shuffle=True,
         num_workers=8,
     )
     val_dl = DataLoader(
         val_ds,
-        batch_size=BATCH_SIZE,
+        batch_size=batch_size,
         shuffle=False,
         num_workers=8,
     )
@@ -84,11 +86,6 @@ This takes a while without GPU but is pretty quick with GPU.
         model.avgpool = nn.AdaptiveAvgPool2d(1)
         model.fc = nn.Linear(512, 10)
         return model
-
-.. code-block:: python
-
-    epochs = 5
-
 
 Training without the ``policies`` module
 ========================================

@@ -10,6 +10,7 @@ Poutyne also over a variety of tools for fine-tuning the information generated d
 
 We will explore those tools using a different problem that the one presented in :ref:`intro`
 
+Let's import all the needed packages.
 .. code-block:: python
 
     import os
@@ -29,6 +30,13 @@ We will explore those tools using a different problem that the one presented in 
     from poutyne.framework.metrics import acc
 
 
+Also, we need to set Pythons's, NumPy's and PyTorch's seeds by using Poutyne function so that our training is (almost) reproducible.
+
+.. code-block:: python
+
+    set_seeds(42)
+
+
 Train a Recurrent Neural Network (RNN)
 ======================================
 
@@ -36,20 +44,21 @@ In this example, we train an RNN, or more precisely, an LSTM, to predict the seq
 
 This task consists of detecting, by tagging, the different parts of an address such as the civic number, the street name or the postal code (or zip code). The following figure shows an example of such a tagging.
 
-..      image:: /_static/img/address_parsing.png
+.. image:: /_static/img/address_parsing.png
 
 Since addresses are written in a predetermined sequence, RNN is the best way to crack this problem. For our architecture, we will use two components, an RNN and a fully-connected layer.
 
 Training Constants
 ------------------
+Now, let's set our training constants. We first have the Cuda device used for training if one is present. Secondly, we set the batch size (i.e. the number of elements to see before updating the model) and the learning rate for the optimizer.
 
 .. code-block:: python
 
-    batch_size = 32
-    lr = 0.1
-
     cuda_device = 0
     device = torch.device("cuda:%d" % cuda_device if torch.cuda.is_available() else "cpu")
+
+    batch_size = 32
+    lr = 0.1
 
 
 
@@ -81,7 +90,7 @@ We use this layer to map the representation of the LSTM (300) to the tag space (
 
 .. code-block:: python
 
-    input_dim = dimension #the output of the LSTM
+    input_dim = dimension # the output of the LSTM
     tag_dimension = 8
 
     fully_connected_network = nn.Linear(input_dim, tag_dimension)
@@ -89,14 +98,14 @@ We use this layer to map the representation of the LSTM (300) to the tag space (
 The Dataset
 -----------
 
-Now let's take a look at the dataset; it already split into a train, valid and test set using the following.
+Now let's download our dataset; it already split into a train, valid and test set using the following.
 
 .. code-block:: python
 
-    # Download the data from a directory
-
-    #function to load the data from a repository
     def download_data(saving_dir, data_type):
+    """
+    Function to download the dataset using data_type to specify if we want the train, valid or test.
+    """
         root_url = "https://graal-research.github.io/poutyne-external-assets/tips_and_tricks_assets/{}.p"
 
         url = root_url.format(data_type)
@@ -109,9 +118,9 @@ Now let's take a look at the dataset; it already split into a train, valid and t
     download_data('./data/', "valid")
     download_data('./data/', "test")
 
-.. code-block:: python
 
-    # load the data
+Now let's load in memory the data.
+.. code-block:: python
 
     train_data = pickle.load(open("./data/train.p", "rb"))  # 80,000 examples
     valid_data = pickle.load(open("./data/valid.p", "rb"))  # 20,000 examples
@@ -242,7 +251,7 @@ One time to take into account, since we have packed the sequence, we need the le
             masked_target = torch.where(mask, padded_sequences_labels,
                                         torch.ones_like(mask) * self.mask_value)
 
-            # We also pass the mask for the F1 score sine it need a mask tensor to be compute
+            # We also pass the mask for the F1 score since it need a mask tensor to be compute
             return (padded_sequences_vectors, lengths), (masked_target, mask)
 
         def __call__(self, batch):

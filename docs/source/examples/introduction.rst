@@ -8,9 +8,10 @@ Introduction to PyTorch and Poutyne
 
 In this example, we train a simple fully-connected network and a simple convolutional network on MNIST. First, we train it by coding our own training loop as the PyTorch library expects of us to. Then, we use Poutyne to simplify our code.
 
+Let's import all the needed packages.
+
 .. code-block:: python
 
-    # Import the package needed.
     import math
 
     import matplotlib.pyplot as plt
@@ -25,9 +26,11 @@ In this example, we train a simple fully-connected network and a simple convolut
     from poutyne import set_seeds
     from poutyne.framework import Model
 
+
+Also, we need to set Pythons's, NumPy's and PyTorch's seeds by using Poutyne function so that our training is (almost) reproducible.
+
 .. code-block:: python
 
-    # Set Pythons's, NumPy's and PyTorch's seeds so that our training are (almost) reproducible.
     set_seeds(42)
 
 Basis of Training a Neural Network
@@ -41,24 +44,20 @@ Finally, a **test dataset** is used at the end to evaluate the final model.
 
 Training constants
 ------------------
+Now, let's set our training constants. We first have the Cuda device used for training if one is present. Secondly, we set the train_split to 0.8 (80%) to use 80% of the dataset for training and 20% for testing the trained model. Thirdly, we set the number of classes (i.e. one for each number). Finally, we set the batch size (i.e. the number of elements to see before updating the model), the learning rate for the optimizer, and the epoch number (i.e. the number of times we see the full dataset).
 
 .. code-block:: python
 
-    # Train on GPU if one is present
     cuda_device = 0
     device = torch.device("cuda:%d" % cuda_device if torch.cuda.is_available() else "cpu")
 
-    # The dataset is split 80/20 for the train and validation datasets respectively.
     train_split_percent = 0.8
 
-    # The MNIST dataset has 10 classes
     num_classes = 10
 
-    # Training hyperparameters
     batch_size = 32
     learning_rate = 0.1
     num_epochs = 5
-
 
 Loading the MNIST dataset
 -------------------------
@@ -89,22 +88,22 @@ The following loads the MNIST dataset and creates the PyTorch DataLoaders that s
     loaders = train_loader, valid_loader, test_loader
 
 
-Let's take a look at some examples of the dataset.
+Let's look at some examples of the dataset by looking at the first batch in our train DataLoader and formatting it into a grid and plotting it.
 
 .. code-block:: python
 
-    # Get the first batch in our train DataLoader and
-    # format it in grid.
     inputs = next(iter(train_loader))[0]
     input_grid = utils.make_grid(inputs)
 
-    # Plot the images.
     fig = plt.figure(figsize=(10, 10))
     inp = input_grid.numpy().transpose((1, 2, 0))
     plt.imshow(inp)
     plt.show()
 
 
+Here the resulting image
+
+.. image:: /_static/img/mnist_data_sneak_peak.png
 
 Neural Network Architectures
 ----------------------------

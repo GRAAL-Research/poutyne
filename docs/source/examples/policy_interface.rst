@@ -12,11 +12,6 @@ About the ``policy`` Module Interface
 The ``policy`` modules give you fine-grained control over the training process.
 This example demonstrates how the ``policy`` module works and how you can create your own policies.
 
-.. code-block:: python
-
-    import matplotlib.pyplot as plt
-
-
 Parameter Spaces and Phases
 ---------------------------
 
@@ -59,6 +54,7 @@ You can also visualize your phase:
 
 .. code-block:: python
 
+    import matplotlib.pyplot as plt
     phase.plot("lr");
 
 
