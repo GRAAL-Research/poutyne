@@ -61,7 +61,6 @@ Now, let's set our training constants. We first have the Cuda device used for tr
     lr = 0.1
 
 
-
 RNN
 ---
 For the first components, instead of using a vanilla RNN, we will use a variant of it, know as a long short-term memory (LSTM) (to learn more about `LSTM <http://colah.github.io/posts/2015-08-Understanding-LSTMs/>`_. For now, we will use a single layer unidirectional LSTM.
@@ -131,6 +130,10 @@ If we take a look at the training dataset, it's a list of 80,000 tuples where th
 .. code-block:: python
 
     train_data[0:2]
+
+Here a snapshot of the output
+
+.. image:: /_static/img/data_snapshot.png
 
 Since the address is a text, we need to *convert* it into categorical value, such as word embeddings, for that we will use a vectorizer. This embedding vectorizer will be able to extract for every word embedding value.
 
