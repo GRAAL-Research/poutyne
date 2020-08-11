@@ -438,7 +438,7 @@ Epoch metrics
 
 It's also possible to used epoch metrics such as F1-score. You could also define your own epoch metric using the ``EpochMetric`` interface.
 
-Furthermore, you could also use the ``SKLearnMetrics`` wrapper to wrap a Scikit-learn metric as an epoch metric.
+Furthermore, you could also use the ``SKLearnMetrics`` wrapper to wrap a scikit-learn metric as an epoch metric.
 
 .. code-block:: python
 
