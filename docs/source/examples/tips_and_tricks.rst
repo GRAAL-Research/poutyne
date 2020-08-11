@@ -8,7 +8,7 @@ Poutyne's Tips and Tricks
 
 Poutyne also over a variety of tools for fine-tuning the information generated during the training, such as colouring the training update message, a progress bar, multi-GPUs, user callbacks interface and a user naming interface for the metrics' names.
 
-We will explore those tools using a different problem that the one presented in :ref:`intro`
+We will explore those tools using a different problem than the one presented in :ref:`intro`
 
 Let's import all the needed packages.
 .. code-block:: python
@@ -488,5 +488,4 @@ Finally, it's also possible to use multi-GPUs for your training either by specif
     model.fit_generator(train_loader,
                         valid_loader,
                         epochs=1)
-
 
