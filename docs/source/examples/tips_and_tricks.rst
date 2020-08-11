@@ -48,9 +48,7 @@ This task consists of detecting, by tagging, the different parts of an address s
 
 Since addresses are written in a predetermined sequence, RNN is the best way to crack this problem. For our architecture, we will use two components, an RNN and a fully-connected layer.
 
-Training Constants
-------------------
-Now, let's set our training constants. We first have the Cuda device used for training if one is present. Secondly, we set the batch size (i.e. the number of elements to see before updating the model) and the learning rate for the optimizer.
+Now, let's set our training constants. We first have the CUDA device used for training if one is present. Secondly, we set the batch size (i.e. the number of elements to see before updating the model) and the learning rate for the optimizer.
 
 .. code-block:: python
 
@@ -119,6 +117,7 @@ Now let's download our dataset; it's already split into a train, valid and test 
 
 
 Now let's load in memory the data.
+
 .. code-block:: python
 
     train_data = pickle.load(open("./data/train.p", "rb"))  # 80,000 examples
@@ -212,13 +211,13 @@ DataLoader
 
 Now, since all the addresses are not of the same size, it is impossible to batch size them since all elements of a tensor must have the same lengths. But there a trick, padding!
 
-The idea is simple. We will add *empty* tokens at the ends of a sequence up to the longest one in a batch. At the moment of evaluating the loss, that tokens will be skip using a ignore value (`0`). That way, we can pad and pack the sequence to minimize the training time (read `this <https://stackoverflow.com/questions/51030782/why-do-we-pack-the-sequences-in-pytorch>`_ good explanation of why we pad and pack sequence).
+The idea is simple. We will add *empty* tokens at the ends of a sequence up to the longest one in a batch. At the moment of evaluating the loss, and when using the `masked_target` those tokens will be skipped using the default ignore value (`-100`, the `mask_value`) of Pytorch metrics. That way, we can pad and pack the sequence to minimize the training time (read `this <https://stackoverflow.com/questions/51030782/why-do-we-pack-the-sequences-in-pytorch>`_ good explanation of why we pad and pack sequence).
 
-Also, due to how the F1 Score to compute is done, we will need a mask to ignore the paddings elements when calculating the metric. The mask value will be set to (`-100`) and will be used only at running time (see the `documentation <https://poutyne.org/metrics.html#poutyne.framework.metrics.FBeta.forward>`_ for more details).
+Also, due to how the F1 Score to compute is done, we will need a mask to ignore the paddings elements when calculating the metric (i.e. a boolean to either or not use an element). The mask value (`mask`) will be set to either a `0` or `1` and will be used only at running time (see the `documentation <https://poutyne.org/metrics.html#poutyne.framework.metrics.FBeta.forward>`_ for more details).
 
-For setting those elements, we will use the `collate_fn` of the PyTorch DataLoader, and on running time, that process will be done. We will create a function that will set the padding value (`0`) and the mask value (`-100`).
+For setting those elements, we will use the `collate_fn` of the PyTorch DataLoader, and on running time, that process will be done. We will create a function that will set the padding value (`-100`) and the mask value (`0` or `1`).
 
-One thing to take into account, since we have packed the sequence, we need the lengths of each sequence for the forward pass to unpack them.
+One time to take into account, since we have packed the sequence, we need the lengths of each sequence for the forward pass to unpack them.
 
 .. code-block:: python
 
@@ -230,10 +229,13 @@ One thing to take into account, since we have packed the sequence, we need the l
             batch (List[List, List]): The batch data, where the first element of the tuple are the word idx and the second element
             are the target label.
             pad_idx (int): The padding idx value to use, 0 by default.
-            mask_value (int): The mask value to use, -100 by default.
+            mask_value (int): The mask value to use for the masked target, -100 by default.
 
         Returns:
-            A list of the padded tensor sequence idx and the padded label tensor of the size of the longest sequence length.
+            Two Tuples. The first one being a list of the padded tensor sequence idx and the padded label tensor
+            of the size of the longest sequence length. The second one being the masked target where the padded elements
+            are using the value -100 to be ignored when calculating the metrics (such as accuracy) and a mask to be used
+            for the computing of the F1 Score.
 
         """
 
@@ -266,11 +268,12 @@ One thing to take into account, since we have packed the sequence, we need the l
         mask = torch.arange(max_len).expand(len(lengths), max_len) < lengths.unsqueeze(1)
         return mask.bool()
 
+
 .. code-block:: python
 
-    train_loader = DataLoader(train_data_vectorize, batch_size=batch_size, shuffle=True, collate_fn=PadCollate())
-    valid_loader = DataLoader(valid_data_vectorize, batch_size=batch_size, collate_fn=PadCollate())
-    test_loader = DataLoader(test_data_vectorize, batch_size=batch_size, collate_fn=PadCollate())
+    train_loader = DataLoader(train_data_vectorize, batch_size=batch_size, shuffle=True, collate_fn=pad_collate_fn)
+    valid_loader = DataLoader(valid_data_vectorize, batch_size=batch_size, collate_fn=pad_collate_fn)
+    test_loader = DataLoader(test_data_vectorize, batch_size=batch_size, collate_fn=pad_collate_fn)
 
 Full Network
 ^^^^^^^^^^^^
@@ -304,10 +307,7 @@ Now, since we have packed the sequence, we cannot use the PyTorch ``nn.Sequentia
 Summary
 -------
 
-So we have created an LSTM network (``lstm_network``), a fully connected network (``fully_connected_network``), those two components are used in the full network. This full network used padded, packed sequences (defined in the forward pass), so we created the ``PadCollate`` class to process the need work. The DataLoader will conduct that process. Finally, when we load the data, this will be done using the vectorizer, so the address will be represented using word embeddings. Also, the address components will be converted into categorical value (from 0 to 7).
-
-The Training Loop
-=================
+So we have created an LSTM network (`lstm_network`), a fully connected network (`fully_connected_network`), those two components are used in the full network. This full network used padded, packed sequences (defined in the forward pass), so we created the `pad_collate_fn` function to process the needed work. The DataLoader will conduct that process. Finally, when we load the data, this will be done using the vectorizer, so the address will be represented using word embeddings. Also, the address components will be converted into categorical value (from 0 to 7).
 
 Now that we have all the components for the network let's define our SGD optimizer.
 
@@ -316,7 +316,7 @@ Now that we have all the components for the network let's define our SGD optimiz
     optimizer = optim.SGD(full_network.parameters(), lr)
 
 Poutyne Callbacks
------------------
+=================
 
 One nice feature of Poutyne is `callbacks <https://poutyne.org/callbacks.html>`_. Callbacks allow doing actions during the training of the neural network. In the following example, we use three callbacks. One that saves the latest weights in a file to be able to continue the optimization at the end of training if more epochs are needed. Another one that saves the best weights according to the performance on the validation dataset. Finally, another one that saves the displayed logs into a TSV file.
 
@@ -336,13 +336,14 @@ One nice feature of Poutyne is `callbacks <https://poutyne.org/callbacks.html>`_
         ]
 
 Making Your own Callback
-------------------------
+========================
 
 While Poutyne provides a great number of `predefined callbacks <https://poutyne.org/callbacks.html>`_, it is sometimes useful to make your own callback.
 
 In the following example, we want to see the effect of temperature on the optimization of our neural network. To do so, we either increase or decrease the temperature during the optimization. As one can see in the result, temperature either as no effect or has a detrimental effect on the performance of the neural network. This is so because the temperature has for effect to artificially changing the learning rates. Since we have found the right learning rate, increasing or decreasing, it shows no improvement on the results.
 
 .. Note:: Since we use a mask, y_true is a tuple where the first element is the ground truth and the second one is the mask.
+
 
 .. code-block:: python
 
@@ -415,7 +416,7 @@ Now let's test our training loop for one epoch using the accuracy as the batch m
                         callbacks=callbacks)
 
 Coloring
---------
+========
 
 Also, Poutyne use by default a coloring template of the training step when the package ``colorama`` is installed.
 One could either remove the coloring (``color_log=False``) or set a different coloring template using the fields:
@@ -434,7 +435,7 @@ Here an example where we set the ``text_color`` to MAGENTA and the ``ratio_color
 
 
 Epoch metrics
--------------
+=============
 
 It's also possible to used epoch metrics such as F1-score. You could also define your own epoch metric using the ``EpochMetric`` interface.
 
@@ -454,7 +455,7 @@ Furthermore, you could also use the ``SKLearnMetrics`` wrapper to wrap a scikit-
                         callbacks=callbacks)
 
 Metric naming
--------------
+=============
 
 It's also possible to name the metric using a tuple format ``(<metric name>, metric)``. That way, it's possible to use multiple times the same metric type (i.e. having micro and macro F1-score).
 
@@ -471,11 +472,12 @@ It's also possible to name the metric using a tuple format ``(<metric name>, met
                         epochs=1)
 
 Multi-GPUs
-----------
+==========
 
 Finally, it's also possible to use multi-GPUs for your training either by specifying a list of devices or using the arg ``"all"`` to take them all.
 
 .. Note:: Obviously, you need more than one GPUs for that option.
+
 
 .. code-block:: python
 

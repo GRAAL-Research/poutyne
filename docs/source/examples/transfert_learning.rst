@@ -97,7 +97,7 @@ We do the split train/valid/test.
     split_train_valid_test(dataset_path, train_path, valid_path, test_path)
 
 
-Now, let's set our training constants. We first have the Cuda device used for training if one is present. Secondly, we set the number of classes (i.e. one for each number). Finally, we set the batch size (i.e. the number of elements to see before updating the model), the learning rate for the optimizer, and the epoch number (i.e. the number of times we see the full dataset).
+Now, let's set our training constants. We first have the CUDA device used for training if one is present. Secondly, we set the number of classes (i.e. one for each number). Finally, we set the batch size (i.e. the number of elements to see before updating the model), the learning rate for the optimizer, and the number of epochs (i.e. the number of times we see the full dataset).
 
 .. code-block:: python
 

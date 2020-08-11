@@ -3,9 +3,11 @@
 
 Train CIFAR with the ``policy`` module
 **************************************
+
 .. note:: See the notebook `here <https://github.com/GRAAL-Research/poutyne/blob/master/examples/policy_cifar_example.ipynb>`_
 
 Let's import all the needed packages.
+
 .. code-block:: python
 
     import torch
@@ -19,10 +21,9 @@ Let's import all the needed packages.
     from poutyne.framework import OptimizerPolicy, one_cycle_phases
 
 
-Training constants
-==================
 
-But first, let's set the training constants, the Cuda device used for training if one is present, we set the batch size (i.e. the number of elements to see before updating the model) and the epoch number (i.e. the number of times we see the full dataset).
+But first, let's set the training constants, the Cuda device used for training if one is present, we set the batch size (i.e. the number of elements to see before updating the model) and the number of epochs (i.e. the number of times we see the full dataset).
+
 .. code-block:: python
 
     cuda_device = 0
