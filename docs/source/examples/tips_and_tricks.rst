@@ -1,7 +1,7 @@
 .. role:: hidden
     :class: hidden-section
 
-Poutyne's Tips and Tricks
+Tips and Tricks
 *************************
 
 .. note:: See the notebook `here <https://github.com/GRAAL-Research/poutyne/blob/master/examples/tips_and_tricks.ipynb>`_
