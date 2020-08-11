@@ -63,7 +63,7 @@ Now, let's set our training constants. We first have the Cuda device used for tr
 
 RNN
 ---
-For the first components, instead of using a vanilla RNN, we will use a variant of it, know as a long short-term memory (LSTM) (to learn more about `LSTM <http://colah.github.io/posts/2015-08-Understanding-LSTMs/>`_. For now, we will use a single layer unidirectional LSTM.
+For the first component, instead of using a vanilla RNN, we will use a variant of it, known as a long short-term memory (LSTM) (to learn more about `LSTM <http://colah.github.io/posts/2015-08-Understanding-LSTMs/>`_. For now, we will use a single-layer unidirectional LSTM.
 
 Also, since our data is textual, we will use the well-known word embeddings to encode the textual information. So the LSTM input and hidden state dimensions will be of the same size. This size corresponds to the word embeddings dimension, which in our case will be the `French pre trained <https://fasttext.cc/docs/en/crawl-vectors.html>`_ fastText embeddings of dimension 300.
 
@@ -488,4 +488,3 @@ Finally, it's also possible to use multi-GPUs for your training either by specif
     model.fit_generator(train_loader,
                         valid_loader,
                         epochs=1)
-
