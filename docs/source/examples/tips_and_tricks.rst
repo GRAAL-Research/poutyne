@@ -97,7 +97,7 @@ We use this layer to map the representation of the LSTM (300) to the tag space (
 The Dataset
 -----------
 
-Now let's download our dataset; it already split into a train, valid and test set using the following.
+Now let's download our dataset; it's already split into a train, valid and test set using the following.
 
 .. code-block:: python
 
