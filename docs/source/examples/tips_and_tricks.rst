@@ -218,7 +218,7 @@ Also, due to how the F1 Score to compute is done, we will need a mask to ignore 
 
 For setting those elements, we will use the `collate_fn` of the PyTorch DataLoader, and on running time, that process will be done. We will create a function that will set the padding value (`0`) and the mask value (`-100`).
 
-One time to take into account, since we have packed the sequence, we need the lengths of each sequence for the forward pass to unpack them.
+One thing to take into account, since we have packed the sequence, we need the lengths of each sequence for the forward pass to unpack them.
 
 .. code-block:: python
 
