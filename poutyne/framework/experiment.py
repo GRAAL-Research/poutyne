@@ -480,7 +480,8 @@ class Experiment:
                 :func:`~Model.fit_generator()` for details on the types of generators supported.
                 (Default value = None)
             callbacks (List[~poutyne.framework.callbacks.Callback]): List of callbacks that will be called during
-                training.
+                training. These callbacks are added after those used in this method (see above). This allows to assume
+                that they are called after those.
                 (Default value = None)
             lr_schedulers (List[~poutyne.framework.callbacks.lr_scheduler._PyTorchLRSchedulerWrapper]): List of
                 learning rate schedulers.
@@ -524,11 +525,9 @@ class Experiment:
         """
         set_seeds(seed)
 
-        callbacks = [] if callbacks is None else callbacks
         lr_schedulers = [] if lr_schedulers is None else lr_schedulers
 
-        # Copy callback list.
-        callbacks = list(callbacks)
+        expt_callbacks = []
 
         tensorboard_writer = None
         initial_epoch = 1
@@ -539,20 +538,20 @@ class Experiment:
             # Restarting optimization if needed.
             initial_epoch = self._load_epoch_state(lr_schedulers)
 
-            callbacks += [
+            expt_callbacks += [
                 AtomicCSVLogger(self.log_filename,
                                 separator='\t',
                                 append=initial_epoch != 1,
                                 temporary_filename=self.log_tmp_filename)
             ]
 
-            callbacks += self._init_model_restoring_callbacks(initial_epoch, keep_only_last_best, save_every_epoch)
-            callbacks += [
+            expt_callbacks += self._init_model_restoring_callbacks(initial_epoch, keep_only_last_best, save_every_epoch)
+            expt_callbacks += [
                 ModelCheckpoint(self.model_checkpoint_filename,
                                 verbose=False,
                                 temporary_filename=self.model_checkpoint_tmp_filename)
             ]
-            callbacks += [
+            expt_callbacks += [
                 OptimizerCheckpoint(self.optimizer_checkpoint_filename,
                                     verbose=False,
                                     temporary_filename=self.optimizer_checkpoint_tmp_filename)
@@ -560,7 +559,7 @@ class Experiment:
 
             # We save the last epoch number after the end of the epoch so that the
             # _load_epoch_state() knows which epoch to restart the optimization.
-            callbacks += [
+            expt_callbacks += [
                 PeriodicSaveLambda(lambda fd, epoch, logs: print(epoch, file=fd),
                                    self.epoch_filename,
                                    temporary_filename=self.epoch_tmp_filename,
@@ -568,11 +567,13 @@ class Experiment:
             ]
 
             tensorboard_writer, cb_list = self._init_tensorboard_callbacks(disable_tensorboard)
-            callbacks += cb_list
+            expt_callbacks += cb_list
 
         # This method returns callbacks that checkpoints the LR scheduler if logging is enabled.
         # Otherwise, it just returns the list of LR schedulers with a BestModelRestore callback.
-        callbacks += self._init_lr_scheduler_callbacks(lr_schedulers)
+        expt_callbacks += self._init_lr_scheduler_callbacks(lr_schedulers)
+
+        expt_callbacks += callbacks
 
         try:
             return self.model.fit_generator(train_generator,
@@ -582,7 +583,7 @@ class Experiment:
                                             validation_steps=validation_steps,
                                             batches_per_step=batches_per_step,
                                             initial_epoch=initial_epoch,
-                                            callbacks=callbacks,
+                                            callbacks=expt_callbacks,
                                             coloring=coloring,
                                             progress_bar=progress_bar)
         finally:
