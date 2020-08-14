@@ -216,41 +216,42 @@ The idea is simple. We add *empty* tokens at the end of each sequence up to the 
 To do this padding, we use the `collate_fn` argument of the PyTorch DataLoader, and on running time, that process will be done. One thing to take into account, since we pad the sequence, we need each sequence's lengths to unpad them in the forward pass. That way, we can pad and pack the sequence to minimize the training time (read `this good explanation <https://stackoverflow.com/questions/51030782/why-do-we-pack-the-sequences-in-pytorch>`_ of why we pad and pack sequences).
 
 .. code-block:: python
+
     def pad_collate_fn(batch):
-    """
-    The collate_fn that can add padding to the sequences so all can have
-    the same length as the longest one.
+        """
+        The collate_fn that can add padding to the sequences so all can have
+        the same length as the longest one.
 
-    Args:
-        batch (List[List, List]): The batch data, where the first element
-        of the tuple are the word idx and the second element are the target
-        label.
+        Args:
+            batch (List[List, List]): The batch data, where the first element
+            of the tuple are the word idx and the second element are the target
+            label.
 
-    Returns:
-        A tuple (x, y). The element x is a tuple containing (1) a tensor of padded
-        word vectors and (2) their respective lengths of the sequences. The element
-        y is a tensor of padded tag indices. The word vectors are padded with vectors
-        of 0s and the tag indices are padded with -100s. Padding with -100 is done
-        because the cross-entropy loss, the accuracy metric and the F1 metric ignores
-        the targets with values -100.
-    """
+        Returns:
+            A tuple (x, y). The element x is a tuple containing (1) a tensor of padded
+            word vectors and (2) their respective lengths of the sequences. The element
+            y is a tensor of padded tag indices. The word vectors are padded with vectors
+            of 0s and the tag indices are padded with -100s. Padding with -100 is done
+            because the cross-entropy loss, the accuracy metric and the F1 metric ignores
+            the targets with values -100.
+        """
 
-    # This gets us two lists of tensors and a list of integer.
-    # Each tensor in the first list is a sequence of word vectors.
-    # Each tensor in the second list is a sequence of tag indices.
-    # The list of integer consist of the lengths of the sequences in order.
-    sequences_vectors, sequences_labels, lengths = zip(*[
-        (torch.FloatTensor(seq_vectors), torch.LongTensor(labels), len(seq_vectors))
-         for (seq_vectors, labels) in sorted(batch, key=lambda x: len(x[0]), reverse=True)
-    ])
+        # This gets us two lists of tensors and a list of integer.
+        # Each tensor in the first list is a sequence of word vectors.
+        # Each tensor in the second list is a sequence of tag indices.
+        # The list of integer consist of the lengths of the sequences in order.
+        sequences_vectors, sequences_labels, lengths = zip(*[
+            (torch.FloatTensor(seq_vectors), torch.LongTensor(labels), len(seq_vectors))
+            for (seq_vectors, labels) in sorted(batch, key=lambda x: len(x[0]), reverse=True)
+        ])
 
-    lengths = torch.LongTensor(lengths)
+        lengths = torch.LongTensor(lengths)
 
-    padded_sequences_vectors = pad_sequence(sequences_vectors, batch_first=True, padding_value=0)
+        padded_sequences_vectors = pad_sequence(sequences_vectors, batch_first=True, padding_value=0)
 
-    padded_sequences_labels = pad_sequence(sequences_labels, batch_first=True, padding_value=-100)
+        padded_sequences_labels = pad_sequence(sequences_labels, batch_first=True, padding_value=-100)
 
-    return (padded_sequences_vectors, lengths), padded_sequences_labels
+        return (padded_sequences_vectors, lengths), padded_sequences_labels
 
 
 .. code-block:: python
