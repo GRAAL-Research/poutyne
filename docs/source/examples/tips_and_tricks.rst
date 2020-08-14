@@ -49,7 +49,7 @@ This task consists of detecting, by tagging, the different parts of an address s
 
 Since addresses are written in a predetermined sequence, RNN is the best way to crack this problem. For our architecture, we will use two components, an RNN and a fully-connected layer.
 
-Now, let's set our training constants. We first have the CUDA device used for training if one is present. Secondly, we set the batch size (i.e. the number of elements to see before updating the model) and the learning rate for the optimizer.
+Now, let's set our training constants. We first have the CUDA device used for training if one is present. Second, we set the batch size (i.e. the number of elements to see before updating the model) and the learning rate for the optimizer.
 
 .. code-block:: python
 
