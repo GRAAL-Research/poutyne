@@ -67,6 +67,8 @@ class FBeta(EpochMetric):
             (Default value = 'micro')
         beta (float):
             The strength of recall versus precision in the F-score. (Default value = 1.0)
+        ignore_index (int): Specifies a target value that is ignored. This also works in combination with
+            a mask if provided. (Default value = -100)
         names (Optional[Union[str, List[str]]]): The names associated to the metrics. It is a string when
             a single metric is requested. It is a list of 3 strings if all metrics are requested.
             (Default value = None)
@@ -76,6 +78,7 @@ class FBeta(EpochMetric):
                  metric: Optional[str] = None,
                  average: Union[str, int] = 'micro',
                  beta: float = 1.0,
+                 ignore_index: int = -100,
                  names: Optional[Union[str, List[str]]] = None) -> None:
         super().__init__()
         self.metric_options = ('fscore', 'precision', 'recall')
@@ -93,6 +96,7 @@ class FBeta(EpochMetric):
         self._average = average if average in average_options else None
         self._label = average if isinstance(average, int) else None
         self._beta = beta
+        self.ignore_index = ignore_index
         self.__name__ = self._get_name(names)
 
         # statistics
@@ -148,9 +152,13 @@ class FBeta(EpochMetric):
                 ground truths and the second being a mask.
         """
 
-        mask = None
+        mask = torch.zeros_like(y_true, dtype=torch.bool)
         if isinstance(y_true, tuple):
             y_true, mask = y_true
+            mask |= mask.bool()
+
+        if self.ignore_index is not None:
+            mask |= y_true != self.ignore_index
 
         # Calculate true_positive_sum, true_negative_sum, pred_sum, true_sum
         num_classes = y_pred.size(1)
@@ -166,9 +174,6 @@ class FBeta(EpochMetric):
             self._pred_sum = torch.zeros(num_classes, device=y_pred.device)
             self._total_sum = torch.zeros(num_classes, device=y_pred.device)
 
-        if mask is None:
-            mask = torch.ones_like(y_true)
-        mask = mask.to(dtype=torch.bool)
         y_true = y_true.float()
 
         argmax_y_pred = y_pred.max(dim=1)[1].float()
