@@ -30,12 +30,17 @@ You can define the space and iterate over them:
     for i in space:
         print(i)
 
+
+.. image:: /_static/img/lin_space.png
+
 .. code-block:: python
 
     space = cosinespace(1, 0, 5)
     for i in space:
         print(i)
 
+
+.. image:: /_static/img/cosine_space.png
 
 You can use the space and create a phase with them:
 
@@ -50,6 +55,8 @@ You can use the space and create a phase with them:
         print(d)
 
 
+.. image:: /_static/img/phase.png
+
 You can also visualize your phase:
 
 .. code-block:: python
@@ -57,6 +64,8 @@ You can also visualize your phase:
     import matplotlib.pyplot as plt
     phase.plot("lr");
 
+
+.. image:: /_static/img/phase_viz.png
 
 Phases can have multiple parameters:
 
@@ -70,6 +79,7 @@ Phases can have multiple parameters:
     phase.plot("lr");
     phase.plot("momentum")
 
+.. image:: /_static/img/phase_multiple_viz.png
 
 Visualize Different Phases
 --------------------------
@@ -87,6 +97,8 @@ Visualize Different Phases
     Phase(lr=cosinespace(1, 0, steps)).plot(ax=ax);
 
 
+.. image:: /_static/img/phase_multiple_phase.png
+
 Visualize Multiple Parameters in One Phase
 ------------------------------------------
 
@@ -99,6 +111,8 @@ Visualize Multiple Parameters in One Phase
     phase.plot("lr", ax=axes[0])
     phase.plot("momentum", ax=axes[1]);
 
+
+.. image:: /_static/img/phase_multiple_parameters.png
 
 Build Complex Policies From Basic Phases
 ========================================
@@ -117,6 +131,8 @@ You can build complex optimizer policies by chaining phases together:
     ])
 
     policy.plot();
+
+.. image:: /_static/img/phase_chaining.png
 
 
 Use Already Defined Complex Policies
@@ -141,12 +157,16 @@ It's easy to build your own policies, but Poutyne contains some pre-defined phas
     policy.plot();
 
 
+.. image:: /_static/img/phase_preset.png
+
 Pre-defined ones are just a list phases:
 
 .. code-block:: python
 
     sgdr_phases(base_cycle_length=200, cycles=3, cycle_mult=2)
 
+
+.. image:: /_static/img/list_phase_preset.png
 
 Here is the one-cycle policy:
 
@@ -158,4 +178,4 @@ Here is the one-cycle policy:
     tp.plot("lr")
     tp.plot("momentum");
 
-
+.. image:: /_static/img/phase_cycle.png
