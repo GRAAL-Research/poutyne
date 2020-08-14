@@ -77,7 +77,7 @@ Load the data
 The model
 =========
 
-We'll train a simple resnet18 network.
+We'll train a simple `resNet18` network.
 This takes a while without GPU but is pretty quick with GPU.
 
 .. code-block:: python
