@@ -196,6 +196,12 @@ Finally, we start the training and output its final test loss, accuracy, and mic
     best_epoch = int(logs.loc[best_epoch_idx]['epoch'])
     print("Best epoch: %d" % best_epoch)
 
+
+.. image:: /_static/img/logs.png
+
+
+.. image:: /_static/img/best.png
+
 .. code-block:: python
 
     metrics = ['loss', 'val_loss']
@@ -203,12 +209,18 @@ Finally, we start the training and output its final test loss, accuracy, and mic
     plt.legend(metrics)
     plt.show()
 
+.. image:: /_static/img/loss.png
+
+
 .. code-block:: python
 
     metrics = ['acc', 'val_acc']
     plt.plot(logs['epoch'], logs[metrics])
     plt.legend(metrics)
     plt.show()
+
+
+.. image:: /_static/img/acc.png
 
 
 Since we have created checkpoints using callbacks, we can restore the best model from those checkpoints and test it.

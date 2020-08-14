@@ -9,13 +9,13 @@ Interface of the ``policy`` module
 About the ``policy`` Module Interface
 =====================================
 
-The ``policy`` modules give you fine-grained control over the training process.
-This example demonstrates how the ``policy`` module works and how you can create your own policies.
+The :class:`~poutyne.framework.callbacks.policies` modules give you fine-grained control over the training process.
+This example demonstrates how the :class:`~poutyne.framework.callbacks.policies` module works and how you can create your own policies.
 
 Parameter Spaces and Phases
 ---------------------------
 
-Parameter spaces like ``linspace`` and ``cosinespace`` are the basic building blocks.
+Parameter spaces like :class:`~poutyne.framework.callbacks.policies.linspace` and :class:`~poutyne.framework.callbacks.policies.cosinespace` are the basic building blocks.
 
 .. code-block:: python
 
