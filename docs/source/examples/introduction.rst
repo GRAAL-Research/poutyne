@@ -46,7 +46,7 @@ Finally, a **test dataset** is used at the end to evaluate the final model.
 
 Training constants
 ------------------
-Now, let's set our training constants. We first have the CUDA device used for training if one is present. Second, we set the train_split to 0.8 (80%) to use 80% of the dataset for training and 20% for validation. Thirdly, we set the number of classes (i.e. one for each number). Finally, we set the batch size (i.e. the number of elements to see before updating the model), the learning rate for the optimizer, and the number of epochs (i.e. the number of times we see the full dataset).
+Now, let's set our training constants. We first have the CUDA device used for training if one is present. Second, we set the train_split to 0.8 (80%) to use 80% of the dataset for training and 20% for validation. Third, we set the number of classes (i.e. one for each number). Finally, we set the batch size (i.e. the number of elements to see before updating the model), the learning rate for the optimizer, and the number of epochs (i.e. the number of times we see the full dataset).
 
 .. code-block:: python
 
@@ -394,10 +394,14 @@ That is, doing your own training loop.
         test_loss, test_acc = pytorch_test(pytorch_network, test_loader, loss_function)
         print('Test:\n\tLoss: {}\n\tAccuracy: {}'.format(test_loss, test_acc))
 
+Let's train the convolutional network.
+
 .. code-block:: python
 
     fc_net = create_fully_connected_network()
     pytorch_train(fc_net)
+
+Let's train the convolutional network.
 
 .. code-block:: python
 
@@ -440,10 +444,15 @@ That is, only 8 lines of code with a better output.
         test_loss, test_acc = model.evaluate_generator(test_loader)
         print('Test:\n\tLoss: {}\n\tAccuracy: {}'.format(test_loss, test_acc))
 
+
+Let's train the fully connected network.
+
 .. code-block:: python
 
     fc_net = create_fully_connected_network()
     poutyne_train(fc_net)
+
+Let's train the convolutional network.
 
 .. code-block:: python
 
