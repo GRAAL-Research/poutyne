@@ -1,5 +1,6 @@
 """
-The source code of this file was copied from the Keras project, and has been modified.
+The source code of this file was copied from the Keras project, and has been modified. All modifications
+made from the original source code are under the LGPLv3 license.
 
 COPYRIGHT
 

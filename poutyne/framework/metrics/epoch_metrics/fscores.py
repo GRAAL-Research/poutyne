@@ -75,6 +75,7 @@ class FBeta(EpochMetric):
     """
 
     def __init__(self,
+                 *,
                  metric: Optional[str] = None,
                  average: Union[str, int] = 'micro',
                  beta: float = 1.0,
