@@ -133,7 +133,7 @@ Creation of the PyTorch's datasets for our problem.
     test_loader = torch.utils.data.DataLoader(test_set, batch_size=batch_size)
 
 
-We load a pretrained ResNet-18 networks and replace the head with the number of neurons equal to our number of classes.
+We load a pretrained ``ResNet-18`` networks and replace the head with the number of neurons equal to our number of classes.
 
 .. code-block:: python
 

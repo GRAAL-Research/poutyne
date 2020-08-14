@@ -441,7 +441,7 @@ Furthermore, you could also use the ``SKLearnMetrics`` wrapper to wrap a scikit-
                         callbacks=callbacks)
 
 
-Furthermore, you could also use the `SKLearnMetrics` wrapper to wrap a Scikit-learn metric as an epoch metric. Below, we show how to compute the AUC ROC using the `SKLearnMetrics` class. We have to inherit the class so that the data is passed into the right format for the scikit-learn `roc_auc_score` function.
+Furthermore, you could also use the ``SKLearnMetrics`` wrapper to wrap a Scikit-learn metric as an epoch metric. Below, we show how to compute the AUC ROC using the `SKLearnMetrics` class. We have to inherit the class so that the data is passed into the right format for the scikit-learn `roc_auc_score` function.
 
 .. code-block:: python
 
