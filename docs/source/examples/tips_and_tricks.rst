@@ -214,7 +214,7 @@ Now, since all the addresses are not of the same size, it is impossible to batch
 
 The idea is simple. We add *empty* tokens at the end of each sequence up to the longest one in a batch. For the word vectors, we add vectors of 0 as padding. For the tag indices, we pad with -100s. We do so because of the `cross-entropy loss <https://pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html#torch.nn.CrossEntropyLoss>`_, the accuracy metric and the `F1 metric <https://poutyne.org/metrics.html#poutyne.framework.metrics.FBeta>`_ all ignore targets with values of -100.
 
-To do this padding, we use the `collate_fn` argument of the PyTorch DataLoader, and on running time, that process will be done. One thing to take into account, since we pad the sequence, we need each sequence's lengths to unpad them in the forward pass. That way, we can pad and pack the sequence to minimize the training time (read `this good explanation <https://stackoverflow.com/questions/51030782/why-do-we-pack-the-sequences-in-pytorch>`_ of why we pad and pack sequences).
+To do this padding, we use the ``collate_fn`` argument of the PyTorch DataLoader, and on running time, that process will be done. One thing to take into account, since we pad the sequence, we need each sequence's lengths to unpad them in the forward pass. That way, we can pad and pack the sequence to minimize the training time (read `this good explanation <https://stackoverflow.com/questions/51030782/why-do-we-pack-the-sequences-in-pytorch>`_ of why we pad and pack sequences).
 
 .. code-block:: python
 
@@ -293,7 +293,7 @@ Now, since we have packed the sequence, we cannot use the PyTorch ``nn.Sequentia
 Summary
 -------
 
-So we have created an LSTM network (`lstm_network`), a fully connected network (`fully_connected_network`), those two components are used in the full network. This full network used padded, packed sequences (defined in the forward pass), so we created the `pad_collate_fn` function to process the needed work. The DataLoader will conduct that process. Finally, when we load the data, this will be done using the vectorizer, so the address will be represented using word embeddings. Also, the address components will be converted into categorical value (from 0 to 7).
+So we have created an LSTM network (``lstm_network``), a fully connected network (``fully_connected_network``), those two components are used in the full network. This full network used padded, packed sequences (defined in the forward pass), so we created the `pad_collate_fn` function to process the needed work. The DataLoader will conduct that process. Finally, when we load the data, this will be done using the vectorizer, so the address will be represented using word embeddings. Also, the address components will be converted into categorical value (from 0 to 7).
 
 Now that we have all the components for the network let's define our SGD optimizer.
 
@@ -441,7 +441,7 @@ Furthermore, you could also use the ``SKLearnMetrics`` wrapper to wrap a scikit-
                         callbacks=callbacks)
 
 
-Furthermore, you could also use the ``SKLearnMetrics`` wrapper to wrap a Scikit-learn metric as an epoch metric. Below, we show how to compute the AUC ROC using the `SKLearnMetrics` class. We have to inherit the class so that the data is passed into the right format for the scikit-learn `roc_auc_score` function.
+Furthermore, you could also use the ``SKLearnMetrics`` wrapper to wrap a Scikit-learn metric as an epoch metric. Below, we show how to compute the AUC ROC using the ``SKLearnMetrics`` class. We have to inherit the class so that the data is passed into the right format for the scikit-learn `roc_auc_score` function.
 
 .. code-block:: python
 
