@@ -25,9 +25,9 @@ Let's import all the needed packages.
     from torch.nn.utils.rnn import pad_packed_sequence, pack_padded_sequence, pad_sequence
     from torch.utils.data import DataLoader
 
+    from poutyne import set_seeds
     from poutyne.framework import Model, ModelCheckpoint, CSVLogger, Callback
-    from poutyne.framework.metrics import F1
-    from poutyne.framework.metrics import acc
+    from poutyne.framework.metrics import SKLearnMetrics
 
 
 Also, we need to set Pythons's, NumPy's and PyTorch's seeds by using Poutyne function so that our training is (almost) reproducible.
@@ -40,7 +40,7 @@ Also, we need to set Pythons's, NumPy's and PyTorch's seeds by using Poutyne fun
 Train a Recurrent Neural Network (RNN)
 ======================================
 
-In this example, we train an RNN, or more precisely, an LSTM, to predict the sequence of tags associated with a given address, known as parsing address.
+In this notebook, we train an RNN, or more precisely, an LSTM, to predict the sequence of tags associated with a given address, known as parsing address.
 
 This task consists of detecting, by tagging, the different parts of an address such as the civic number, the street name or the postal code (or zip code). The following figure shows an example of such a tagging.
 
@@ -61,7 +61,7 @@ Now, let's set our training constants. We first have the CUDA device used for tr
 
 RNN
 ---
-For the first component, instead of using a vanilla RNN, we will use a variant of it, known as a long short-term memory (LSTM) (to learn more about `LSTM <http://colah.github.io/posts/2015-08-Understanding-LSTMs/>`_. For now, we will use a single-layer unidirectional LSTM.
+For the first component, instead of using a vanilla RNN, we use a variant of it, known as a long short-term memory (LSTM) (to learn more about `LSTM <http://colah.github.io/posts/2015-08-Understanding-LSTMs/>`_. For now, we use a single-layer unidirectional LSTM.
 
 Also, since our data is textual, we will use the well-known word embeddings to encode the textual information. The LSTM input and hidden state dimensions will be of the same size. This size corresponds to the word embeddings dimension, which in our case will be the `French pre trained <https://fasttext.cc/docs/en/crawl-vectors.html>`_ fastText embeddings of dimension 300.
 
@@ -209,64 +209,48 @@ We also need a vectorizer to convert the address tag (e.g. StreeNumber, StreetNa
 DataLoader
 ^^^^^^^^^^
 
-Now, since all the addresses are not of the same size, it is impossible to batch size them since all elements of a tensor must have the same lengths. But there a trick, padding!
+Now, since all the addresses are not of the same size, it is impossible to batch them together since all elements of a tensor must have the same lengths. But there is a trick, padding!
 
-The idea is simple. We will add *empty* tokens at the ends of a sequence up to the longest one in a batch. At the moment of evaluating the loss, and when using the `masked_target` those tokens will be skipped using the default ignore value (`-100`, the `mask_value`) of Pytorch metrics. That way, we can pad and pack the sequence to minimize the training time (read `this <https://stackoverflow.com/questions/51030782/why-do-we-pack-the-sequences-in-pytorch>`_ good explanation of why we pad and pack sequence).
+The idea is simple. We add *empty* tokens at the end of each sequence up to the longest one in a batch. For the word vectors, we add vectors of 0 as padding. For the tag indices, we pad with -100s. We do so because of the `cross-entropy loss <https://pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html#torch.nn.CrossEntropyLoss>`_, the accuracy metric and the `F1 metric <https://poutyne.org/metrics.html#poutyne.framework.metrics.FBeta>`_ all ignore targets with values of -100.
 
-Also, due to how the F1 Score to compute is done, we will need a mask to ignore the paddings elements when calculating the metric (i.e. a boolean to either or not use an element). The mask value (`mask`) will be set to either a `0` or `1` and will be used only at running time (see the `documentation <https://poutyne.org/metrics.html#poutyne.framework.metrics.FBeta.forward>`_ for more details).
-
-For setting those elements, we will use the `collate_fn` of the PyTorch DataLoader, and on running time, that process will be done. We will create a function that will set the padding value (`-100`) and the mask value (`0` or `1`).
-
-One time to take into account, since we have packed the sequence, we need the lengths of each sequence for the forward pass to unpack them.
+To do this padding, we use the `collate_fn` argument of the PyTorch DataLoader, and on running time, that process will be done. One thing to take into account, since we pad the sequence, we need each sequence's lengths to unpad them in the forward pass. That way, we can pad and pack the sequence to minimize the training time (read `this good explanation <https://stackoverflow.com/questions/51030782/why-do-we-pack-the-sequences-in-pytorch>`_ of why we pad and pack sequences).
 
 .. code-block:: python
+    def pad_collate_fn(batch):
+    """
+    The collate_fn that can add padding to the sequences so all can have
+    the same length as the longest one.
 
-     def pad_collate_fn(batch, pad_idx=0, mask_value=-100):
-        """
-        The collate_fn that can add padding to the sequences so all can have the same length as the longest one.
+    Args:
+        batch (List[List, List]): The batch data, where the first element
+        of the tuple are the word idx and the second element are the target
+        label.
 
-        Args:
-            batch (List[List, List]): The batch data, where the first element of the tuple are the word idx and the second element
-            are the target label.
-            pad_idx (int): The padding idx value to use, 0 by default.
-            mask_value (int): The mask value to use for the masked target, -100 by default.
+    Returns:
+        A tuple (x, y). The element x is a tuple containing (1) a tensor of padded
+        word vectors and (2) their respective lengths of the sequences. The element
+        y is a tensor of padded tag indices. The word vectors are padded with vectors
+        of 0s and the tag indices are padded with -100s. Padding with -100 is done
+        because the cross-entropy loss, the accuracy metric and the F1 metric ignores
+        the targets with values -100.
+    """
 
-        Returns:
-            Two Tuples. The first one being a list of the padded tensor sequence idx and the padded label tensor
-            of the size of the longest sequence length. The second one being the masked target where the padded elements
-            are using the value -100 to be ignored when calculating the metrics (such as accuracy) and a mask to be used
-            for the computing of the F1 Score.
+    # This gets us two lists of tensors and a list of integer.
+    # Each tensor in the first list is a sequence of word vectors.
+    # Each tensor in the second list is a sequence of tag indices.
+    # The list of integer consist of the lengths of the sequences in order.
+    sequences_vectors, sequences_labels, lengths = zip(*[
+        (torch.FloatTensor(seq_vectors), torch.LongTensor(labels), len(seq_vectors))
+         for (seq_vectors, labels) in sorted(batch, key=lambda x: len(x[0]), reverse=True)
+    ])
 
-        """
+    lengths = torch.LongTensor(lengths)
 
-        sequences_vectors, sequences_labels, lengths = zip(
-            *[(torch.FloatTensor(seq_vectors), torch.LongTensor(labels), len(seq_vectors)) for (seq_vectors, labels)
-              in sorted(batch, key=lambda x: len(x[0]), reverse=True)])
+    padded_sequences_vectors = pad_sequence(sequences_vectors, batch_first=True, padding_value=0)
 
-        lengths = torch.LongTensor(lengths)
+    padded_sequences_labels = pad_sequence(sequences_labels, batch_first=True, padding_value=-100)
 
-        padded_sequences_vectors = pad_sequence(sequences_vectors, batch_first=True, padding_value=pad_idx)
-
-        padded_sequences_labels = pad_sequence(sequences_labels, batch_first=True, padding_value=pad_idx)
-
-        mask = mask_padding_sequences(lengths)
-        masked_target = torch.where(mask, padded_sequences_labels,
-                                    torch.ones_like(mask) * mask_value)
-
-        # We also pass the mask for the F1 score since it need a mask tensor to be compute
-        return (padded_sequences_vectors, lengths), (masked_target, mask)
-
-     def mask_padding_sequences(lengths):
-        """
-        Create a mask from the lengths of the padded sequences.
-
-        Args:
-            lengths: The lengths use to create the padded sequence.
-        """
-
-        max_len = lengths[0]
-        mask = torch.arange(max_len).expand(len(lengths), max_len) < lengths.unsqueeze(1)
-        return mask.bool()
+    return (padded_sequences_vectors, lengths), padded_sequences_labels
 
 
 .. code-block:: python
@@ -446,13 +430,39 @@ Furthermore, you could also use the ``SKLearnMetrics`` wrapper to wrap a scikit-
     model = Model(full_network,
                   optimizer,
                   loss_function,
-                  batch_metrics=[accuracy],
-                  epoch_metrics=[F1()])
+                  batch_metrics=['accuracy'],
+                  epoch_metrics=['f1'])
     model.to(device)
     model.fit_generator(train_loader,
                         valid_loader,
                         epochs=1,
                         callbacks=callbacks)
+
+
+Furthermore, you could also use the `SKLearnMetrics` wrapper to wrap a Scikit-learn metric as an epoch metric. Below, we show how to compute the AUC ROC using the `SKLearnMetrics` class. We have to inherit the class so that the data is passed into the right format for the scikit-learn `roc_auc_score` function.
+
+.. code-block:: python
+
+    class FlattenSKLearnMetrics(SKLearnMetrics):
+        def forward(self, y_pred, y_true):
+            y_pred = y_pred.softmax(1)
+            y_pred = y_pred.transpose(2, 1).flatten(0, 1)
+            y_true = y_true.flatten()
+            return super().forward(y_pred, y_true)
+
+    roc_epoch_metric = FlattenSKLearnMetrics(roc_auc_score,
+                                             kwargs=dict(multi_class='ovr', average='macro'))
+    model = Model(full_network,
+                  optimizer,
+                  loss_function,
+                  batch_metrics=['accuracy'],
+                  epoch_metrics=['f1', roc_epoch_metric])
+    model.to(device)
+    model.fit_generator(train_loader,
+                        valid_loader,
+                        epochs=1,
+                        callbacks=callbacks)
+
 
 Metric naming
 =============
