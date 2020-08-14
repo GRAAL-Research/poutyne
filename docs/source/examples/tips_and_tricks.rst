@@ -11,6 +11,7 @@ Poutyne also over a variety of tools for fine-tuning the information generated d
 We will explore those tools using a different problem than the one presented in :ref:`intro`
 
 Let's import all the needed packages.
+
 .. code-block:: python
 
     import os
