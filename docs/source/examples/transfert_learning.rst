@@ -184,8 +184,8 @@ Finally, we start the training and output its final test loss, accuracy, and mic
 
     model.fit_generator(train_loader, valid_loader, epochs=n_epoch, callbacks=callbacks)
 
-    test_loss, test_acc = model.evaluate_generator(test_loader)
-    print('Test:\n\tLoss: {}\n\tAccuracy: {}'.format(test_loss, test_acc))
+    test_loss, (test_acc, test_f1) = model.evaluate_generator(test_loader)
+    print('Test:\n\tLoss: {}\n\tAccuracy: {}\n\tF1-score: {}'.format(test_loss, test_acc, test_f1))
 
 .. code-block:: python
 
@@ -223,5 +223,5 @@ Since we have created checkpoints using callbacks, we can restore the best model
 
     model.load_weights('best_epoch_{epoch}.ckpt'.format(epoch=best_epoch))
 
-    test_loss, test_acc = model.evaluate_generator(test_loader)
-    print('Test:\n\tLoss: {}\n\tAccuracy: {}'.format(test_loss, test_acc))
+    test_loss, (test_acc, test_f1) = model.evaluate_generator(test_loader)
+    print('Test:\n\tLoss: {}\n\tAccuracy: {}\n\tF1-score: {}'.format(test_loss, test_acc, test_f1))
