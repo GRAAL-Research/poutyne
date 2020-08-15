@@ -21,7 +21,7 @@ Use Poutyne to:
 - Train models easily.
 - Use callbacks to save your best model, perform early stopping and much more.
 
-Read the documentation at `Poutyne.org <https://poutyne.org>`_.
+Read the documentation at `Poutyne.org <https://poutyne.org>`__.
 
 Poutyne is compatible with the **latest version of PyTorch** and  **Python >= 3.6**.
 
@@ -40,9 +40,9 @@ Cite
 Getting started: few seconds to Poutyne
 =======================================
 
-The core data structure of Poutyne is a :class:`~poutyne.framework.Model`, a way to train your own `PyTorch <https://pytorch.org/docs/master/nn.html>`_ neural networks.
+The core data structure of Poutyne is a :class:`~poutyne.framework.Model`, a way to train your own `PyTorch <https://pytorch.org/docs/master/nn.html>`__ neural networks.
 
-How Poutyne works is that you create your `PyTorch <https://pytorch.org/docs/master/nn.html>`_ module (neural network) as usual but when comes the time to train it you feed it into the Poutyne Model, which handles all the steps, stats and callbacks, similar to what `Keras <https://keras.io/>`_ does.
+How Poutyne works is that you create your `PyTorch <https://pytorch.org/docs/master/nn.html>`__ module (neural network) as usual but when comes the time to train it you feed it into the Poutyne Model, which handles all the steps, stats and callbacks, similar to what `Keras <https://keras.io/>`_ does.
 
 Here is a simple example:
 
@@ -69,7 +69,7 @@ Here is a simple example:
   test_y = np.random.randint(num_classes, size=num_test_samples).astype('int64')
 
 
-Create yourself a `PyTorch <https://pytorch.org/docs/master/nn.html>`_ network:
+Create yourself a `PyTorch <https://pytorch.org/docs/master/nn.html>`__ network:
 
 .. code-block:: python
 
