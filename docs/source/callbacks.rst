@@ -4,7 +4,6 @@
 Callbacks
 =========
 
-.. automodule:: poutyne
 .. currentmodule:: poutyne.framework.callbacks
 
 Callbacks are a way to interact with the optimization process. For instance, the
