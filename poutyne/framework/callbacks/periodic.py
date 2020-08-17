@@ -169,14 +169,14 @@ class PeriodicSaveCallback(Callback):
 class PeriodicSaveLambda(PeriodicSaveCallback):
     """
     Call a lambda with a file descriptor after every epoch. See
-    :class:`~poutyne.framework.callbacks.PeriodicSaveCallback` for the arguments' descriptions.
+    :class:`~poutyne.PeriodicSaveCallback` for the arguments' descriptions.
 
     Args:
         func (Callable[[fd, int, dict], None]): The lambda that will be called with a file descriptor, the
             epoch number and the epoch logs.
 
     See:
-        :class:`~poutyne.framework.callbacks.PeriodicSaveCallback`
+        :class:`~poutyne.PeriodicSaveCallback`
     """
 
     def __init__(self, func: Callable, *args, **kwargs):

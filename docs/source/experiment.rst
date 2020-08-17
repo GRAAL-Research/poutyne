@@ -6,7 +6,7 @@ Experiment
 
 .. warning:: This class is still in Beta phase. It may well be considerably modified in near future.
 
-.. currentmodule:: poutyne.framework
+.. currentmodule:: poutyne
 
 .. autoclass:: Experiment
     :members:

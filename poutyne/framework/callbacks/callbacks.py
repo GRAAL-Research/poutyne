@@ -50,8 +50,8 @@ class Callback:
     """
     Attributes:
         params (dict): Contains 'epoch' and 'steps_per_epoch' keys which are passed to the
-            :func:`Model.fit() <poutyne.framework.Model.fit>` function. It may contain other keys.
-        model (Model): A reference to the :class:`~poutyne.framework.Model` object which is using the callback.
+            :func:`Model.fit() <poutyne.Model.fit>` function. It may contain other keys.
+        model (Model): A reference to the :class:`~poutyne.Model` object which is using the callback.
     """
 
     def __init__(self):

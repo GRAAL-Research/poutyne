@@ -1,25 +1,25 @@
 .. role:: hidden
     :class: hidden-section
 
-Interface of the ``policy`` module
-**********************************
+Interface of ``policy``
+***********************
 
 .. note:: See the notebook `here <https://github.com/GRAAL-Research/poutyne/blob/master/examples/policy_interface.ipynb>`_
 
-About the ``policy`` Module Interface
-=====================================
+About ``policy``
+================
 
-The :class:`~poutyne.framework.callbacks.policies` modules give you fine-grained control over the training process.
-This example demonstrates how the :class:`~poutyne.framework.callbacks.policies` module works and how you can create your own policies.
+Policies give you fine-grained control over the training process.
+This example demonstrates how policies work and how you can create your own policies.
 
 Parameter Spaces and Phases
 ---------------------------
 
-Parameter spaces like :class:`~poutyne.framework.callbacks.policies.linspace` and :class:`~poutyne.framework.callbacks.policies.cosinespace` are the basic building blocks.
+Parameter spaces like :class:`~poutyne.linspace` and :class:`~poutyne..cosinespace` are the basic building blocks.
 
 .. code-block:: python
 
-    from poutyne.framework import linspace, cosinespace
+    from poutyne import linspace, cosinespace
 
 
 You can define the space and iterate over them:
@@ -46,7 +46,7 @@ You can use the space and create a phase with them:
 
 .. code-block:: python
 
-    from poutyne.framework import Phase
+    from poutyne import Phase
 
     phase = Phase(lr=linspace(0, 1, 3))
 
@@ -121,7 +121,7 @@ You can build complex optimizer policies by chaining phases together:
 
 .. code-block:: python
 
-    from poutyne.framework import OptimizerPolicy
+    from poutyne import OptimizerPolicy
 
     policy = OptimizerPolicy([
         Phase(lr=linspace(0, 1, 100)),
@@ -142,7 +142,7 @@ It's easy to build your own policies, but Poutyne contains some pre-defined phas
 
 .. code-block:: python
 
-    from poutyne.framework import sgdr_phases
+    from poutyne import sgdr_phases
 
     # build them manually
     policy = OptimizerPolicy([
@@ -172,7 +172,7 @@ Here is the one-cycle policy:
 
 .. code-block:: python
 
-    from poutyne.framework import one_cycle_phases
+    from poutyne import one_cycle_phases
 
     tp = OptimizerPolicy(one_cycle_phases(steps=500))
     tp.plot("lr")

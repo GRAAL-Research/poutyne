@@ -9,11 +9,11 @@ def acc(y_pred, y_true, ignore_index=-100):
     This metric computes the accuracy using a similar interface to
     :class:`~torch.nn.CrossEntropyLoss`.
 
-    Possible string name in :class:`batch_metrics argument <poutyne.framework.Model>`:
+    Possible string name in :class:`batch_metrics argument <poutyne.Model>`:
         - ``'acc'``
         - ``'accuracy'``
 
-    Keys in :class:`callback logs<poutyne.framework.callbacks.Callback>`:
+    Keys in :class:`callback logs<poutyne.Callback>`:
         - Train: ``'acc'``
         - Validation: ``'val_acc'``
 
@@ -43,12 +43,12 @@ def bin_acc(y_pred, y_true, threshold=0.):
     This metric computes the accuracy using a similar interface to
     :class:`~torch.nn.BCEWithLogitsLoss`.
 
-    Possible string name in :class:`batch_metrics argument <poutyne.framework.Model>`:
+    Possible string name in :class:`batch_metrics argument <poutyne.Model>`:
         - ``'bin_acc'``
         - ``'binary_acc'``
         - ``'binary_accuracy'``
 
-    Keys in :class:`callback logs<poutyne.framework.callbacks.Callback>`:
+    Keys in :class:`callback logs<poutyne.Callback>`:
         - Train: ``'bin_acc'``
         - Validation: ``'val_bin_acc'``
 

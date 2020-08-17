@@ -4,7 +4,7 @@
 Model
 =====
 
-.. currentmodule:: poutyne.framework
+.. currentmodule:: poutyne
 
 .. autoclass:: Model
     :members:

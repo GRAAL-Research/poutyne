@@ -2,11 +2,11 @@
 The ``policies`` module is an alternative way to configure your training process. It gives you fine
 grained control over the process.
 
-The training is divided into phases with the :class:`~poutyne.framework.callbacks.policies.Phase` class.
-A :class:`~poutyne.framework.callbacks.policies.Phase` contains parameter spaces (e.g. learning rate,
-or momentum, or both) for the optimizer. You chain :class:`~poutyne.framework.callbacks.policies.Phase`
-instances by passing them to the :class:`~poutyne.framework.callbacks.policies.OptimizerPolicy`.
-:class:`~poutyne.framework.callbacks.policies.OptimizerPolicy` is a :class:`~poutyne.framework.callbacks.Callback`
+The training is divided into phases with the :class:`~poutyne.Phase` class.
+A :class:`~poutyne.Phase` contains parameter spaces (e.g. learning rate,
+or momentum, or both) for the optimizer. You chain :class:`~poutyne.Phase`
+instances by passing them to the :class:`~poutyne.OptimizerPolicy`.
+:class:`~poutyne.OptimizerPolicy` is a :class:`~poutyne.Callback`
 that uses the phases, steps through them, and sets the parameters of the optimizer.
 """
 ###############################################################################
@@ -158,7 +158,7 @@ def one_cycle_phases(steps: int,
             Must be between 0 and 1.
 
     Returns:
-        A list of configured :class:`~poutyne.framework.callbacks.policies.Phase` instances.
+        A list of configured :class:`~poutyne.Phase` instances.
 
     References:
         `Super-Convergence: Very Fast Training of Neural Networks Using Large Learning Rates
@@ -206,7 +206,7 @@ def sgdr_phases(
             grows exponentially.
 
     Returns:
-        A list of configured :class:`~poutyne.framework.callbacks.policies.Phase` instances.
+        A list of configured :class:`~poutyne.Phase` instances.
 
     References:
         `SGDR: Stochastic Gradient Descent with Warm Restarts
@@ -219,13 +219,13 @@ def sgdr_phases(
 ###############################################################################
 class OptimizerPolicy(Callback):
     """
-    Combine different :class:`~poutyne.framework.callbacks.policies.Phase` instances
-    in an :class:`~poutyne.framework.callbacks.policies.OptimizerPolicy` and execute the policies in a
+    Combine different :class:`~poutyne.Phase` instances
+    in an :class:`~poutyne.OptimizerPolicy` and execute the policies in a
     row.
 
     Args:
-        phases (List[~poutyne.framework.callbacks.policies.Phase]):
-            A list of :class:`~poutyne.framework.callbacks.policies.Phase` instances.
+        phases (List[~poutyne.Phase]):
+            A list of :class:`~poutyne.Phase` instances.
         initial_step (int): The step to start the policy in. Used for restarting.
     """
 
@@ -268,8 +268,8 @@ class OptimizerPolicy(Callback):
 
     def plot(self, param_name: str = "lr", ax=None):
         """
-        Visualize all  :class:`~poutyne.framework.callbacks.policies.Phase`s of
-        this  :class:`~poutyne.framework.callbacks.policies.OptimizerPolicy`.
+        Visualize all  :class:`~poutyne.Phase`s of
+        this  :class:`~poutyne.OptimizerPolicy`.
 
         Args:
             param_name (str, optional): the name of the parameter to plot.

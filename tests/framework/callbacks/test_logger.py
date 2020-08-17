@@ -17,9 +17,7 @@ try:
 except ImportError:
     XSummaryWriter = None
 
-from poutyne.framework import Model, Callback, TensorBoardLogger
-from poutyne.framework import CSVLogger as NonAtomicCSVLogger
-from poutyne.framework import AtomicCSVLogger
+from poutyne import Model, Callback, TensorBoardLogger, CSVLogger as NonAtomicCSVLogger, AtomicCSVLogger
 
 
 def some_data_generator(batch_size):

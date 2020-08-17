@@ -15,7 +15,7 @@ class SKLearnMetrics(EpochMetric):
         .. code-block:: python
 
             from sklearn.metrics import roc_auc_score, average_precision_score
-            from poutyne.framework.metrics import SKLearnMetrics
+            from poutyne import SKLearnMetrics
             my_epoch_metric = SKLearnMetrics([roc_auc_score, average_precision_score])
 
     Args:

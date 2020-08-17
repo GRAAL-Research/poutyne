@@ -5,7 +5,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from poutyne.framework import Model, warning_settings
+from poutyne import Model, warning_settings
 
 from .base import ModelFittingTestCase
 

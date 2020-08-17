@@ -6,9 +6,10 @@ from unittest import TestCase
 import torch
 import torch.nn as nn
 
-from poutyne.framework import Model
-from poutyne.framework import CSVGradientLogger as NonAtomicCSVGradientLogger
-from poutyne.framework import AtomicCSVGradientLogger, MemoryGradientLogger
+from poutyne import Model, \
+    CSVGradientLogger as NonAtomicCSVGradientLogger, \
+    AtomicCSVGradientLogger, \
+    MemoryGradientLogger
 
 
 def some_data_generator(batch_size):

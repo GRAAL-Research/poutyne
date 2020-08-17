@@ -8,7 +8,7 @@ from .periodic import PeriodicSaveCallback
 class ModelCheckpoint(PeriodicSaveCallback):
     """
     Save the model after every epoch. See
-    :class:`~poutyne.framework.callbacks.PeriodicSaveCallback` for the arguments' descriptions.
+    :class:`~poutyne.PeriodicSaveCallback` for the arguments' descriptions.
 
     Args:
         restore_best (bool): If `restore_best` is true, the weights of the network will be reset to
@@ -16,7 +16,7 @@ class ModelCheckpoint(PeriodicSaveCallback):
             (Default value = False)
 
     See:
-        :class:`~poutyne.framework.callbacks.PeriodicSaveCallback`
+        :class:`~poutyne.PeriodicSaveCallback`
     """
 
     def __init__(self, *args, restore_best: bool = False, **kwargs):
@@ -48,10 +48,10 @@ class OptimizerCheckpoint(PeriodicSaveCallback):
         model = Model(model, optimizer, loss_function)
         model.load_optimizer_state(filename)
 
-    See :class:`~poutyne.framework.callbacks.PeriodicSaveCallback` for the arguments' descriptions.
+    See :class:`~poutyne.PeriodicSaveCallback` for the arguments' descriptions.
 
     See:
-        :class:`~poutyne.framework.callbacks.PeriodicSaveCallback`
+        :class:`~poutyne.PeriodicSaveCallback`
     """
 
     def save_file(self, fd: BinaryIO, epoch_number: int, logs: Dict):
@@ -69,13 +69,13 @@ class LRSchedulerCheckpoint(PeriodicSaveCallback):
         lr_scheduler = AnLRSchedulerCallback(...)
         lr_scheduler.load_state(filename)
 
-    See :class:`~poutyne.framework.callbacks.PeriodicSaveCallback` for the arguments' descriptions.
+    See :class:`~poutyne.PeriodicSaveCallback` for the arguments' descriptions.
 
     Args:
         lr_scheduler: An LR scheduler callback.
 
     See:
-        :class:`~poutyne.framework.callbacks.PeriodicSaveCallback`
+        :class:`~poutyne.PeriodicSaveCallback`
     """
 
     def __init__(self, lr_scheduler: _PyTorchLRSchedulerWrapper, *args, **kwargs):

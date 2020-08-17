@@ -16,9 +16,9 @@ try:
 except ImportError:
     SummaryWriter = None
 
-from poutyne.framework import Model
-from poutyne.utils import set_seeds
-from poutyne.framework.callbacks import ModelCheckpoint, \
+from . import Model
+from ..utils import set_seeds
+from .callbacks import ModelCheckpoint, \
     OptimizerCheckpoint, \
     LRSchedulerCheckpoint, \
     PeriodicSaveLambda, \
@@ -64,7 +64,7 @@ class Experiment:
             validation batches at the end of the epoch.
             (Default value = None)
         epoch_metrics (List, optional): List of functions with the same signature as
-            :class:`~poutyne.framework.metrics.epoch_metrics.EpochMetric`
+            :class:`~poutyne.EpochMetric`
             (Default value = None)
         monitor_metric (str, optional): Which metric to consider for best model performance calculation. Should be in
             the format '{metric_name}' or 'val_{metric_name}' (i.e. 'val_loss'). If None, will follow the value
@@ -87,7 +87,7 @@ class Experiment:
 
             import torch
             from torch.utils.data import DataLoader, TensorDataset
-            from poutyne.framework import Experiment
+            from poutyne import Experiment
 
             num_features = 20
             num_classes = 5
@@ -479,11 +479,11 @@ class Experiment:
             valid_generator (optional): Generator-like object for the validation set. See
                 :func:`~Model.fit_generator()` for details on the types of generators supported.
                 (Default value = None)
-            callbacks (List[~poutyne.framework.callbacks.Callback]): List of callbacks that will be called during
+            callbacks (List[~poutyne.Callback]): List of callbacks that will be called during
                 training. These callbacks are added after those used in this method (see above). This allows to assume
                 that they are called after those.
                 (Default value = None)
-            lr_schedulers (List[~poutyne.framework.callbacks.lr_scheduler._PyTorchLRSchedulerWrapper]): List of
+            lr_schedulers (List[~poutyne.lr_scheduler._PyTorchLRSchedulerWrapper]): List of
                 learning rate schedulers.
                 (Default value = None)
             keep_only_last_best (bool): Whether only the last saved best checkpoint is kept. Applies only when
@@ -661,7 +661,7 @@ class Experiment:
         Args:
             test_generator: Generator-like object for the test set. See :func:`~Model.fit_generator()` for
                 details on the types of generators supported.
-            callbacks (List[~poutyne.framework.callbacks.Callback], optional): List of callbacks that will be called
+            callbacks (List[~poutyne.Callback], optional): List of callbacks that will be called
                 during the testing.
                 (Default value = None)
             steps (int, optional): Number of iterations done on ``generator``.

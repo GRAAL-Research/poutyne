@@ -17,8 +17,7 @@ Let's import all the needed packages.
     from torchvision.models import resnet18
     import torch.nn as nn
     import torch.optim as optim
-    from poutyne.framework import Model
-    from poutyne.framework import OptimizerPolicy, one_cycle_phases
+    from poutyne import Model, OptimizerPolicy, one_cycle_phases
 
 
 
@@ -143,4 +142,3 @@ Training with the ``policies`` module
         epochs=epochs,
         callbacks=[policy],
     )
-

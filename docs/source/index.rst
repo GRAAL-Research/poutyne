@@ -40,7 +40,7 @@ Cite
 Getting started: few seconds to Poutyne
 =======================================
 
-The core data structure of Poutyne is a :class:`~poutyne.framework.Model`, a way to train your own `PyTorch <https://pytorch.org/docs/master/nn.html>`__ neural networks.
+The core data structure of Poutyne is a :class:`~poutyne.Model`, a way to train your own `PyTorch <https://pytorch.org/docs/master/nn.html>`__ neural networks.
 
 How Poutyne works is that you create your `PyTorch <https://pytorch.org/docs/master/nn.html>`__ module (neural network) as usual but when comes the time to train it you feed it into the Poutyne Model, which handles all the steps, stats and callbacks, similar to what `Keras <https://keras.io/>`_ does.
 
@@ -49,7 +49,7 @@ Here is a simple example:
 .. code-block:: python
 
   # Import the Poutyne Model and define a toy dataset
-  from poutyne.framework import Model
+  from poutyne import Model
   import torch
   import numpy as np
 

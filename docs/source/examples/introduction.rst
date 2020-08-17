@@ -25,8 +25,7 @@ Let's import all the needed packages.
     from torchvision import transforms, utils
     from torchvision.datasets.mnist import MNIST
 
-    from poutyne import set_seeds
-    from poutyne.framework import Model
+    from poutyne import set_seeds, Model
 
 
 Also, we need to set Pythons's, NumPy's and PyTorch's seeds by using Poutyne function so that our training is (almost) reproducible.
@@ -458,7 +457,3 @@ Let's train the convolutional network.
 
     conv_net = create_convolutional_network()
     poutyne_train(conv_net)
-
-
-
-

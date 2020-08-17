@@ -2,7 +2,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 
-from poutyne.framework import Model, warning_settings
+from poutyne import Model, warning_settings
 
 from .base import ModelFittingTestCase, MultiIOModel
 

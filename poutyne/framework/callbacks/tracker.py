@@ -176,8 +176,7 @@ class TensorBoardGradientTracker(Tracker):
         Using TensorBoardGradientTracker::
 
             from torch.utils.tensorboard import SummaryWriter
-            from poutyne.framework import Model
-            from poutyne.framework.callbacks import TensorBoardGradientTracker
+            from poutyne import Model, TensorBoardGradientTracker
 
             writer = SummaryWriter('runs')
             tb_tracker = TensorBoardGradientTracker(writer)

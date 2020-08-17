@@ -5,9 +5,8 @@ from unittest import skipIf
 import torch
 from torch import nn
 
-from poutyne.framework import Model
-from poutyne.framework.metrics import EpochMetric
-from tests.framework.model.base import ModelFittingTestCase
+from poutyne import Model, EpochMetric
+from .base import ModelFittingTestCase
 
 some_metric_1_value = 1.
 some_metric_2_value = 2.

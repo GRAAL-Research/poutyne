@@ -39,7 +39,7 @@ Here is a simple example:
 
 ```python
 # Import the Poutyne Model and define a toy dataset
-from poutyne.framework import Model
+from poutyne import Model
 import torch
 import numpy as np
 

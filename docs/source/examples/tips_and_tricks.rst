@@ -26,9 +26,7 @@ Let's import all the needed packages.
     from torch.nn.utils.rnn import pad_packed_sequence, pack_padded_sequence, pad_sequence
     from torch.utils.data import DataLoader
 
-    from poutyne import set_seeds
-    from poutyne.framework import Model, ModelCheckpoint, CSVLogger, Callback
-    from poutyne.framework.metrics import SKLearnMetrics
+    from poutyne import set_seeds, Model, ModelCheckpoint, CSVLogger, Callback, SKLearnMetrics
 
 
 Also, we need to set Pythons's, NumPy's and PyTorch's seeds by using Poutyne function so that our training is (almost) reproducible.
@@ -212,7 +210,7 @@ DataLoader
 
 Now, since all the addresses are not of the same size, it is impossible to batch them together since all elements of a tensor must have the same lengths. But there is a trick, padding!
 
-The idea is simple. We add *empty* tokens at the end of each sequence up to the longest one in a batch. For the word vectors, we add vectors of 0 as padding. For the tag indices, we pad with -100s. We do so because of the :class:`~torch.nn.CrossEntropyLoss`, the accuracy metric and the :class:`~poutyne.framework.metrics.F1` metric all ignore targets with values of ``-100``.
+The idea is simple. We add *empty* tokens at the end of each sequence up to the longest one in a batch. For the word vectors, we add vectors of 0 as padding. For the tag indices, we pad with -100s. We do so because of the :class:`~torch.nn.CrossEntropyLoss`, the accuracy metric and the :class:`~poutyne.F1` metric all ignore targets with values of ``-100``.
 
 To do this padding, we use the ``collate_fn`` argument of the PyTorch :class:`~torch.utils.data.DataLoader` and on running time, that process will be done. One thing to take into account, since we pad the sequence, we need each sequence's lengths to unpad them in the forward pass. That way, we can pad and pack the sequence to minimize the training time (read `this good explanation <https://stackoverflow.com/questions/51030782/why-do-we-pack-the-sequences-in-pytorch>`_ of why we pad and pack sequences).
 
@@ -304,7 +302,7 @@ Now that we have all the components for the network let's define our SGD optimiz
 Poutyne Callbacks
 =================
 
-One nice feature of Poutyne is :class:`callbacks <poutyne.framework.callbacks.Callback>`. Callbacks allow doing actions during the training of the neural network. In the following example, we use three callbacks. One that saves the latest weights in a file to be able to continue the optimization at the end of training if more epochs are needed. Another one that saves the best weights according to the performance on the validation dataset. Finally, another one that saves the displayed logs into a TSV file.
+One nice feature of Poutyne is :class:`callbacks <poutyne.Callback>`. Callbacks allow doing actions during the training of the neural network. In the following example, we use three callbacks. One that saves the latest weights in a file to be able to continue the optimization at the end of training if more epochs are needed. Another one that saves the best weights according to the performance on the validation dataset. Finally, another one that saves the displayed logs into a TSV file.
 
 .. code-block:: python
 
@@ -324,7 +322,7 @@ One nice feature of Poutyne is :class:`callbacks <poutyne.framework.callbacks.Ca
 Making Your own Callback
 ========================
 
-While Poutyne provides a great number of :class:`callbacks <poutyne.framework.callbacks.Callback>`, it is sometimes useful to make your own callback.
+While Poutyne provides a great number of :class:`callbacks <poutyne.Callback>`, it is sometimes useful to make your own callback.
 
 In the following example, we want to see the effect of temperature on the optimization of our neural network. To do so, we either increase or decrease the temperature during the optimization. As one can see in the result, temperature either as no effect or has a detrimental effect on the performance of the neural network. This is so because the temperature has for effect to artificially changing the learning rates. Since we have found the right learning rate, increasing or decreasing, it shows no improvement on the results.
 
@@ -411,9 +409,9 @@ Here an example where we set the ``text_color`` to MAGENTA and the ``ratio_color
 Epoch metrics
 =============
 
-It's also possible to used epoch metrics such as :class:`~poutyne.framework.metrics.F1`. You could also define your own epoch metric using the :class:`~poutyne.framework.metrics.EpochMetric` interface.
+It's also possible to used epoch metrics such as :class:`~poutyne.F1`. You could also define your own epoch metric using the :class:`~poutyne.EpochMetric` interface.
 
-Furthermore, you could also use the :class:`~poutyne.framework.metrics.SKLearnMetrics` wrapper to wrap a scikit-learn metric as an epoch metric.
+Furthermore, you could also use the :class:`~poutyne.SKLearnMetrics` wrapper to wrap a scikit-learn metric as an epoch metric.
 
 .. code-block:: python
 
@@ -429,7 +427,7 @@ Furthermore, you could also use the :class:`~poutyne.framework.metrics.SKLearnMe
                         callbacks=callbacks)
 
 
-Furthermore, you could also use the :class:`~poutyne.framework.metrics.SKLearnMetrics` wrapper to wrap a Scikit-learn metric as an epoch metric. Below, we show how to compute the AUC ROC using the :class:`~poutyne.framework.metrics.SKLearnMetrics` class. We have to inherit the class so that the data is passed into the right format for the scikit-learn ``roc_auc_score`` function.
+Furthermore, you could also use the :class:`~poutyne.SKLearnMetrics` wrapper to wrap a Scikit-learn metric as an epoch metric. Below, we show how to compute the AUC ROC using the :class:`~poutyne.SKLearnMetrics` class. We have to inherit the class so that the data is passed into the right format for the scikit-learn ``roc_auc_score`` function.
 
 .. code-block:: python
 

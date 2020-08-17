@@ -26,8 +26,7 @@ But first, let's import all the needed packages.
     from torchvision import transforms
     from torchvision.datasets import ImageFolder
 
-    from poutyne import set_seeds
-    from poutyne.framework import Model, ModelCheckpoint, CSVLogger
+    from poutyne import set_seeds, Model, ModelCheckpoint, CSVLogger
 
 
 Also, we need to set Pythons's, NumPy's and PyTorch's seeds by using Poutyne function so that our training is (almost) reproducible.
