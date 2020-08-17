@@ -5,6 +5,31 @@ from .metrics_registering import register_batch_metric, register_batch_metric_fu
 
 @register_batch_metric('acc', 'accuracy')
 def acc(y_pred, y_true, ignore_index=-100):
+    r"""
+    This metric computes the accuracy using a similar interface to
+    :class:`~torch.nn.CrossEntropyLoss`.
+
+    Possible string name in :class:`batch_metrics argument <poutyne.framework.Model>`:
+        - ``'acc'``
+        - ``'accuracy'``
+
+    Keys in :class:`callback logs<poutyne.framework.callbacks.Callback>`:
+        - Train: ``'acc'``
+        - Validation: ``'val_acc'``
+
+    Args:
+        y_pred (torch.Tensor): tensor of shape :math:`(N, C)` where :math:`N = \text{batch size}`
+            and :math:`C = \text{number of classes}`, or :math:`(N, C, d_1, d_2, ..., d_K)` with
+            :math:`K \geq 1` in the case of `K`-dimensional accuracy.
+        y_true (torch.Tensor): tensor of shape :math:`(N)` where each value is
+            :math:`0 \leq \text{targets}[i] \leq C-1`, or :math:`(N, d_1, d_2, ..., d_K)`
+            with :math:`K \geq 1` in the case of K-dimensional accuracy.
+        ignore_index (int): Specifies a target value that is ignored and does not contribute
+            to the accuracy. (Default value = -100)
+
+    Returns:
+        The accuracy of the batch.
+    """
     y_pred = y_pred.argmax(1)
     weights = (y_true != ignore_index).float()
     num_labels = weights.sum()
@@ -14,6 +39,28 @@ def acc(y_pred, y_true, ignore_index=-100):
 
 @register_batch_metric('binacc', 'binaryacc', 'binaryaccuracy')
 def bin_acc(y_pred, y_true, threshold=0.):
+    r"""
+    This metric computes the accuracy using a similar interface to
+    :class:`~torch.nn.BCEWithLogitsLoss`.
+
+    Possible string name in :class:`batch_metrics argument <poutyne.framework.Model>`:
+        - ``'bin_acc'``
+        - ``'binary_acc'``
+        - ``'binary_accuracy'``
+
+    Keys in :class:`callback logs<poutyne.framework.callbacks.Callback>`:
+        - Train: ``'bin_acc'``
+        - Validation: ``'val_bin_acc'``
+
+    Args:
+        y_pred (torch.Tensor): tensor of shape :math:`(N, *)` where :math:`N = \text{batch size}`
+            and :math:`*` means, any number of additional dimensions.
+        y_true (torch.Tensor): :math:`(N, *)`, same shape as ``y_pred``
+        threshold (float): the threshold for class :math:`1`. Default value is ``0.``, that is a
+            probability of ``sigmoid(0.) = 0.5``.
+    Returns:
+        The binary accuracy of the batch.
+    """
     y_pred = (y_pred > threshold).float()
     acc_pred = (y_pred == y_true).float().mean()
     return acc_pred * 100

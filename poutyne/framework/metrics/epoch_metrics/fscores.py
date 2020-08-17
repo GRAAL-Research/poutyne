@@ -145,7 +145,7 @@ class FBeta(EpochMetric):
         Update the confusion matrix for calculating the F-score.
 
         Args:
-            y_pred (torch.Tensor): A tensor of predictions of shape (batch_size, ..., num_classes).
+            y_pred (torch.Tensor): A tensor of predictions of shape (batch_size, num_classes, ...).
             y_true (Union[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]):
                 Ground truths. A tensor of the integer class label of shape (batch_size, ...). It must
                 be the same shape as the ``y_pred`` tensor without the ``num_classes`` dimension.
