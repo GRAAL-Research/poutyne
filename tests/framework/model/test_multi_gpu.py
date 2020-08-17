@@ -68,6 +68,7 @@ def some_data_tensor_generator(batch_size):
 
 TEST_MULTI_GPUS = int(os.environ.get('MULTI_GPUS', 0))
 
+
 @skipIf(torch.cuda.device_count() < 2, "Need at least two gpus")
 @skipIf(TEST_MULTI_GPUS != 1, "Multi-gpus test not asked for.")
 class ModelTestMultiGPU(ModelFittingTestCase):
