@@ -13,9 +13,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
 
-from poutyne.framework import Model, warning_settings
-from poutyne.framework.metrics import EpochMetric
-from poutyne.utils import TensorDataset
+from poutyne import Model, warning_settings, EpochMetric, TensorDataset
 from .base import ModelFittingTestCase
 
 try:

@@ -13,8 +13,8 @@ class DelayCallback(Callback):
         epoch_delay (int, optional): Number of epochs to delay.
         batch_delay (int, optional): Number of batches to delay. The number of batches can span many
             epochs. When the batch delay expires (i.e. there are more than `batch_delay` done), the
-            :func:`~poutyne.framework.callbacks.Callback.on_epoch_begin()` method is called on
-            the callback(s) before the :func:`~poutyne.framework.callbacks.Callback.on_train_batch_begin()` method.
+            :func:`~poutyne.Callback.on_epoch_begin()` method is called on
+            the callback(s) before the :func:`~poutyne.Callback.on_train_batch_begin()` method.
     """
 
     def __init__(self, callbacks: Callback, *, epoch_delay: Optional[int] = None, batch_delay: Optional[int] = None):

@@ -7,9 +7,7 @@ from tempfile import TemporaryDirectory
 import torch
 import torch.nn as nn
 
-from poutyne import torch_to_numpy
-from poutyne.framework import Model
-from poutyne.framework.callbacks import OptimizerCheckpoint
+from poutyne import torch_to_numpy, Model, OptimizerCheckpoint
 
 
 def some_data_generator(batch_size):

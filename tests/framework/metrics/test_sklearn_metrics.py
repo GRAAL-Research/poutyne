@@ -9,8 +9,7 @@ try:
     is_sklearn_available = True
 except ImportError:
     is_sklearn_available = False
-from poutyne.framework.metrics import SKLearnMetrics
-from poutyne import TensorDataset
+from poutyne import SKLearnMetrics, TensorDataset
 
 
 def gini(y_true, y_pred, sample_weight=None):

@@ -1,4 +1,4 @@
-# pylint: disable=too-many-lines
+# pylint: disable=too-many-lines,too-many-public-methods
 import contextlib
 import numbers
 import warnings
@@ -10,14 +10,13 @@ import torch
 from torch.utils.data import DataLoader
 
 from poutyne import torch_to_numpy, numpy_to_torch, torch_to
-from poutyne.framework.metrics import get_epoch_metric
-from poutyne.utils import TensorDataset
+from .metrics import get_epoch_metric
 from .callbacks import CallbackList, ProgressionCallback, Callback
 from .iterators import EpochIterator, _get_step_iterator, StepIterator
 from .metrics import get_loss_or_metric, get_callables_and_names, rename_doubles, flatten_metric_names
 from .optimizers import get_optimizer
 from .warning_manager import warning_settings
-from ..utils import _concat
+from ..utils import TensorDataset, _concat
 
 
 class Model:
@@ -43,7 +42,7 @@ class Model:
             validation batches at the end of the epoch.
             (Default value = None)
         epoch_metrics (list): List of functions with the same signature as
-            :class:`~poutyne.framework.metrics.epoch_metrics.EpochMetric`
+            :class:`~poutyne.EpochMetric`
             (Default value = None)
 
     Note:
@@ -81,7 +80,7 @@ class Model:
     Example:
         Using Numpy arrays (or tensors) dataset::
 
-            from poutyne.framework import Model
+            from poutyne import Model
             import torch
             import numpy as np
 
@@ -118,7 +117,7 @@ class Model:
 
            import torch
            from torch.utils.data import DataLoader, TensorDataset
-           from poutyne.framework import Model
+           from poutyne import Model
 
            num_features = 20
            num_classes = 5
@@ -252,7 +251,7 @@ class Model:
                 Note that if the size of the output text with the progress bar is larger than the shell output size,
                 the formatting could be impacted (a line for every step).
                 (Default value = True)
-            callbacks (List[~poutyne.framework.callbacks.Callback]): List of callbacks that will be called
+            callbacks (List[~poutyne.Callback]): List of callbacks that will be called
                 during training.
                 (Default value = None)
 
@@ -369,7 +368,7 @@ class Model:
                 Note that if the size of the output text with the progress bar is larger than the shell output size,
                 the formatting could be impacted (a line for every step).
                 (Default value = True)
-            callbacks (List[~poutyne.framework.callbacks.Callback]): List of callbacks that will be called during
+            callbacks (List[~poutyne.Callback]): List of callbacks that will be called during
                 training. (Default value = None)
 
         Returns:
@@ -527,6 +526,16 @@ class Model:
             args = torch_to(args, self.device)
         return args[0] if len(args) == 1 else args
 
+    def preprocess_input(self, x, y=None):
+        if y is not None:
+            x, y = self._process_input(x, y)
+        else:
+            x = self._process_input(x)
+
+        x = x if isinstance(x, (tuple, list)) else (x, )
+
+        return (x, y) if y is not None else x
+
     def train_on_batch(self, x, y, return_pred=False):
         """
         Trains the network for the batch ``(x, y)`` and computes the loss and the metrics, and
@@ -616,7 +625,7 @@ class Model:
                           "of 'predict_generator' will default to True. To avoid this warning, "
                           "set 'concatenate_returns' to an appropriate boolean value in the "
                           "keyword arguments or get the new behavior by disabling this warning with\n"
-                          "from poutyne.framework import warning_settings\n"
+                          "from poutyne import warning_settings\n"
                           "warning_settings['concatenate_returns'] = 'ignore'\n"
                           "This warning will be removed in the next version.")
             concatenate_returns = False
@@ -628,8 +637,7 @@ class Model:
         pred_y = []
         with self._set_training_mode(False):
             for _, x in _get_step_iterator(steps, generator):
-                x = self._process_input(x)
-                x = x if isinstance(x, (tuple, list)) else (x, )
+                x = self.preprocess_input(x)
                 pred_y.append(torch_to_numpy(self.network(*x)))
         if concatenate_returns:
             return _concat(pred_y)
@@ -646,8 +654,7 @@ class Model:
             The predictions with tensors converted into Numpy arrays.
         """
         with self._set_training_mode(False):
-            x = self._process_input(x)
-            x = x if isinstance(x, (tuple, list)) else (x, )
+            x = self.preprocess_input(x)
             return torch_to_numpy(self.network(*x))
 
     def evaluate(self, x, y, *, batch_size=32, return_pred=False, callbacks=None):
@@ -667,7 +674,7 @@ class Model:
                 (Default value = 32)
             return_pred (bool, optional): Whether to return the predictions.
                 (Default value = False)
-            callbacks (List[~poutyne.framework.callbacks.Callback]): List of callbacks that will be called during
+            callbacks (List[~poutyne.Callback]): List of callbacks that will be called during
                 testing. (Default value = None)
 
         Returns:
@@ -725,7 +732,7 @@ class Model:
                 the current version but the warning will be removed in the version. Disabling
                 the warning as instructed in it switches to the new behavior when
                 ``concatenate_returns`` is not set.
-            callbacks (List[~poutyne.framework.callbacks.Callback]): List of callbacks that will be called during
+            callbacks (List[~poutyne.Callback]): List of callbacks that will be called during
                 testing. (Default value = None)
 
         Returns:
@@ -803,7 +810,7 @@ class Model:
                           "of 'evaluate_generator' will default to True. To avoid this warning, "
                           "set 'concatenate_returns' to an appropriate boolean value in the "
                           "keyword arguments or get the new behavior by disabling this warning with\n"
-                          "from poutyne.framework import warning_settings\n"
+                          "from poutyne import warning_settings\n"
                           "warning_settings['concatenate_returns'] = 'ignore'\n"
                           "This warning will be removed in the next version.")
             concatenate_returns = False
@@ -884,8 +891,7 @@ class Model:
         return step_iterator.loss, step_iterator.metrics, pred_list, true_list
 
     def _compute_loss_and_metrics(self, x, y, return_loss_tensor=False, return_pred=False):
-        x, y = self._process_input(x, y)
-        x = x if isinstance(x, (list, tuple)) else (x, )
+        x, y = self.preprocess_input(x, y)
         if self.other_device is not None:
             pred_y = torch.nn.parallel.data_parallel(self.network, x, [self.device] + self.other_device)
         else:
@@ -949,7 +955,7 @@ class Model:
 
         .. code-block:: python
 
-            from poutyne.framework import warning_settings\n
+            from poutyne import warning_settings\n
             warning_settings['batch_size'] = 'ignore'\n\n
 
         Args:
@@ -983,7 +989,7 @@ class Model:
                           "loss and metrics at the end of each epoch is the "
                           "mean of the batches' losses and metrics. To disable "
                           "this warning, set\n"
-                          "from poutyne.framework import warning_settings\n"
+                          "from poutyne import warning_settings\n"
                           "warning_settings['batch_size'] = 'ignore'\n\n"
                           "Here is the inferring algorithm used to compute the "
                           "batch size. 'x' and 'y' are tested in this order at "

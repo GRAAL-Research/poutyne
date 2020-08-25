@@ -1,4 +1,4 @@
-from poutyne.framework import Experiment
+from poutyne import Experiment
 
 # Instead of `task`, you can provide your own loss function and metrics.
 expt = Experiment('my_directory', network,

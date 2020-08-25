@@ -4,8 +4,8 @@ from unittest.mock import MagicMock, call
 import unittest
 import torch
 import numpy as np
-from poutyne.utils import TensorDataset, _concat
-from poutyne import torch_apply
+from poutyne.utils import _concat
+from poutyne import TensorDataset, torch_apply
 
 
 class TorchApplyTest(TestCase):

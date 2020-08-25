@@ -9,8 +9,7 @@ from tempfile import TemporaryDirectory
 import torch
 import torch.nn as nn
 
-from poutyne.framework import Model
-from poutyne.framework.callbacks import PeriodicSaveCallback
+from poutyne import Model, PeriodicSaveCallback
 
 
 def some_data_generator(batch_size):

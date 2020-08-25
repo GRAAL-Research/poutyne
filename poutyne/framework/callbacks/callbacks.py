@@ -1,5 +1,6 @@
 """
-The source code of this file was copied from the Keras project, and has been modified.
+The source code of this file was copied from the Keras project, and has been modified. All modifications
+made from the original source code are under the LGPLv3 license.
 
 COPYRIGHT
 
@@ -49,8 +50,8 @@ class Callback:
     """
     Attributes:
         params (dict): Contains 'epoch' and 'steps_per_epoch' keys which are passed to the
-            :func:`Model.fit() <poutyne.framework.Model.fit>` function. It may contain other keys.
-        model (Model): A reference to the :class:`~poutyne.framework.Model` object which is using the callback.
+            :func:`Model.fit() <poutyne.Model.fit>` function. It may contain other keys.
+        model (Model): A reference to the :class:`~poutyne.Model` object which is using the callback.
     """
 
     def __init__(self):

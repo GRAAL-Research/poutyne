@@ -4,7 +4,6 @@
 Utils
 =====
 
-.. automodule:: poutyne
 .. currentmodule:: poutyne
 
 These utils functions only support the following basic Python types: tuple,

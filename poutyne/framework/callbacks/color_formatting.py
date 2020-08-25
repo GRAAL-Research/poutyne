@@ -2,7 +2,7 @@ import sys
 import warnings
 from typing import Dict, Union
 
-from poutyne.framework.callbacks.progress_bar import ProgressBar
+from .progress_bar import ProgressBar
 
 
 class EmptyStringAttrClass:

@@ -1,4 +1,4 @@
-from poutyne.framework import Model
+from poutyne import Model
 
 model = Model(network, 'sgd', 'cross_entropy',
                 batch_metrics=['accuracy'], epoch_metrics=['f1'])

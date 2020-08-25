@@ -4,8 +4,7 @@ from unittest import TestCase
 import torch
 import torch.nn as nn
 
-from poutyne.framework import Model
-from poutyne.framework.callbacks import EarlyStopping
+from poutyne import Model, EarlyStopping
 
 
 def some_data_generator(batch_size):

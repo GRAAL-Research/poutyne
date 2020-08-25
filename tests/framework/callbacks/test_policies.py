@@ -1,8 +1,6 @@
 import unittest
 
-from poutyne.framework.callbacks.policies import linspace, cosinespace
-from poutyne.framework.callbacks.policies import Phase, OptimizerPolicy
-from poutyne.framework.callbacks.policies import one_cycle_phases, sgdr_phases
+from poutyne import linspace, cosinespace, Phase, OptimizerPolicy, one_cycle_phases, sgdr_phases
 
 
 class TestSpaces(unittest.TestCase):

@@ -22,7 +22,7 @@ from unittest import TestCase
 import numpy
 import torch
 
-from poutyne.framework.metrics import FBeta
+from poutyne import FBeta
 
 
 class FBetaTest(TestCase):

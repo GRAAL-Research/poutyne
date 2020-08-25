@@ -11,7 +11,7 @@ try:
 except ImportError:
     SummaryWriter = None
 
-from poutyne.framework import Model, TensorBoardGradientTracker, WeightsGradientsStatsTracker, Tracker
+from poutyne import Model, TensorBoardGradientTracker, WeightsGradientsStatsTracker, Tracker
 
 
 class TrackerTest(TestCase):

@@ -8,7 +8,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 
-from poutyne.framework import Callback
+from poutyne import Callback
 
 
 class ModelFittingTestCase(TestCase):

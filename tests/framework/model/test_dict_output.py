@@ -4,7 +4,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 
-from poutyne.framework import Model
+from poutyne import Model
 
 from .base import ModelFittingTestCase
 
