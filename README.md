@@ -40,11 +40,12 @@ Here is a simple example:
 ```python
 # Import the Poutyne Model and define a toy dataset
 from poutyne import Model
-import torch
+import torch.nn as nn
 import numpy as np
 
 num_features = 20
 num_classes = 5
+hidden_state_size = 100
 
 num_train_samples = 800
 train_x = np.random.randn(num_train_samples, num_features).astype('float32')
@@ -62,13 +63,17 @@ test_y = np.random.randint(num_classes, size=num_test_samples).astype('int64')
 Create yourself a [PyTorch](https://pytorch.org/docs/master/nn.html) network:
 
 ```python
-pytorch_network = torch.nn.Linear(num_features, num_classes)
+network = nn.Sequential(
+    nn.Linear(num_features, hidden_state_size),
+    nn.ReLU(),
+    nn.Linear(hidden_state_size, num_classes)
+)
 ```
 
 You can now use Poutyne's model to train your network easily:
 
 ```python
-model = Model(pytorch_network, 'sgd', 'cross_entropy',
+model = Model(network, 'sgd', 'cross_entropy',
               batch_metrics=['accuracy'], epoch_metrics=['f1'])
 model.fit(
     train_x, train_y,
@@ -83,7 +88,7 @@ This is really similar to the [model.compile](https://keras.io/models/model/#com
 You can evaluate the performances of your network using the ``evaluate`` method of Poutyne's model:
 
 ```python
-loss_and_metrics = model.evaluate(test_x, test_y)
+loss, (accuracy, f1score) = model.evaluate(test_x, test_y)
 ```
 
 Or only predict on new data:
