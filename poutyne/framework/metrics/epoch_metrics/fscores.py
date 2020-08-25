@@ -49,6 +49,13 @@ class FBeta(EpochMetric):
 
     The support is the number of occurrences of each class in ``y_true``.
 
+    Keys in :class:`logs<poutyne.Callback>` dictionary of callbacks:
+        - Train: ``'{metric}_{average}'``
+        - Validation: ``'val_{metric}_{average}'``
+
+        where ``{metric}`` and ``{average}`` are replaced by the value of their
+        respective parameters.
+
     Args:
         metric (Optional[str]): One of {'fscore', 'precision', 'recall'}.
             Whether to return the F-score, the precision or the recall. When not
@@ -270,9 +277,11 @@ class F1(FBeta):
     Possible string name in :class:`batch_metrics argument <poutyne.Model>`:
         - ``'f1'``
 
-    Keys in :class:`callback logs<poutyne.Callback>`:
-        - Train: ``'f1'``
-        - Validation: ``'val_f1'``
+    Keys in :class:`logs<poutyne.Callback>` dictionary of callbacks:
+        - Train: ``'fscore_{average}'``
+        - Validation: ``'val_fscore_{average}'``
+
+        where ``{average}`` is replaced by the value of the respective parameter.
     """
 
     def __init__(self, average='micro'):
@@ -287,9 +296,11 @@ class Precision(FBeta):
     Possible string name in :class:`batch_metrics argument <poutyne.Model>`:
         - ``'precision'``
 
-    Keys in :class:`callback logs<poutyne.Callback>`:
-        - Train: ``'precision'``
-        - Validation: ``'val_precision'``
+    Keys in :class:`logs<poutyne.Callback>` dictionary of callbacks:
+        - Train: ``'precision_{average}'``
+        - Validation: ``'val_precision_{average}'``
+
+        where ``{average}`` is replaced by the value of the respective parameter.
     """
 
     def __init__(self, average='micro'):
@@ -304,9 +315,11 @@ class Recall(FBeta):
     Possible string name in :class:`batch_metrics argument <poutyne.Model>`:
         - ``'recall'``
 
-    Keys in :class:`callback logs<poutyne.Callback>`:
-        - Train: ``'recall'``
-        - Validation: ``'val_recall'``
+    Keys in :class:`logs<poutyne.Callback>` dictionary of callbacks:
+        - Train: ``'recall_{average}'``
+        - Validation: ``'val_recall_{average}'``
+
+        where ``{average}`` is replaced by the value of the respective parameter.
     """
 
     def __init__(self, average='micro'):

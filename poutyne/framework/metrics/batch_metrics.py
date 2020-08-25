@@ -13,7 +13,7 @@ def acc(y_pred, y_true, ignore_index=-100):
         - ``'acc'``
         - ``'accuracy'``
 
-    Keys in :class:`callback logs<poutyne.Callback>`:
+    Keys in :class:`logs<poutyne.Callback>` dictionary of callbacks:
         - Train: ``'acc'``
         - Validation: ``'val_acc'``
 
@@ -48,7 +48,7 @@ def bin_acc(y_pred, y_true, threshold=0.):
         - ``'binary_acc'``
         - ``'binary_accuracy'``
 
-    Keys in :class:`callback logs<poutyne.Callback>`:
+    Keys in :class:`logs<poutyne.Callback>` dictionary of callbacks:
         - Train: ``'bin_acc'``
         - Validation: ``'val_bin_acc'``
 
