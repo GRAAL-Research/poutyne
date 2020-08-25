@@ -1,0 +1,38 @@
+# Import the Poutyne Model
+from poutyne import Model, SKLearnMetrics
+import torch.nn as nn
+import numpy as np
+from sklearn.metrics import r2_score
+
+# Define a random toy dataset
+num_features = 20
+hidden_state_size = 100
+
+num_train_samples = 800
+train_x = np.random.randn(num_train_samples, num_features).astype('float32')
+train_y = np.random.randn(num_train_samples, 1).astype('float32')
+
+num_valid_samples = 200
+valid_x = np.random.randn(num_valid_samples, num_features).astype('float32')
+valid_y = np.random.randn(num_valid_samples, 1).astype('float32')
+
+num_test_samples = 200
+test_x = np.random.randn(num_test_samples, num_features).astype('float32')
+test_y = np.random.randn(num_test_samples, 1).astype('float32')
+
+# Define the network
+network = nn.Sequential(
+    nn.Linear(num_features, hidden_state_size),
+    nn.ReLU(),
+    nn.Linear(hidden_state_size, 1)
+)
+
+# Train
+model = Model(network, 'sgd', 'mse',
+              batch_metrics=['l1'], epoch_metrics=[SKLearnMetrics(r2_score)])
+model.fit(
+    train_x, train_y,
+    validation_data=(valid_x, valid_y),
+    epochs=5,
+    batch_size=32
+)
