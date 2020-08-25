@@ -265,11 +265,52 @@ class FBeta(EpochMetric):
 @register_epoch_metric
 class F1(FBeta):
     """
-    Alias class for FBeta where ``metric == 'fscore'`` and ``beta == 1``.
+    Alias class for :class:`~poutyne.FBeta` where ``metric == 'fscore'`` and ``beta == 1``.
+
+    Possible string name in :class:`batch_metrics argument <poutyne.Model>`:
+        - ``'f1'``
+
+    Keys in :class:`callback logs<poutyne.Callback>`:
+        - Train: ``'f1'``
+        - Validation: ``'val_f1'``
     """
 
     def __init__(self, average='micro'):
         super().__init__(metric='fscore', average=average, beta=1)
+
+
+@register_epoch_metric
+class Precision(FBeta):
+    """
+    Alias class for :class:`~poutyne.FBeta` where ``metric == 'precision'`` and ``beta == 1``.
+
+    Possible string name in :class:`batch_metrics argument <poutyne.Model>`:
+        - ``'precision'``
+
+    Keys in :class:`callback logs<poutyne.Callback>`:
+        - Train: ``'precision'``
+        - Validation: ``'val_precision'``
+    """
+
+    def __init__(self, average='micro'):
+        super().__init__(metric='precision', average=average, beta=1)
+
+
+@register_epoch_metric
+class Recall(FBeta):
+    """
+    Alias class for :class:`~poutyne.FBeta` where ``metric == 'recall'`` and ``beta == 1``.
+
+    Possible string name in :class:`batch_metrics argument <poutyne.Model>`:
+        - ``'recall'``
+
+    Keys in :class:`callback logs<poutyne.Callback>`:
+        - Train: ``'recall'``
+        - Validation: ``'val_recall'``
+    """
+
+    def __init__(self, average='micro'):
+        super().__init__(metric='recall', average=average, beta=1)
 
 
 def _prf_divide(numerator, denominator):

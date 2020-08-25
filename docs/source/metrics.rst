@@ -44,5 +44,7 @@ Predefined Epoch Metrics
 .. autoclass:: FBeta
     :members:
 .. autoclass:: F1
+.. autoclass:: Precision
+.. autoclass:: Recall
 .. autoclass:: SKLearnMetrics
     :members:
