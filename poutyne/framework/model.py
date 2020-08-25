@@ -1,4 +1,4 @@
-# pylint: disable=too-many-lines
+# pylint: disable=too-many-lines,too-many-public-methods
 import contextlib
 import numbers
 import warnings
@@ -526,6 +526,16 @@ class Model:
             args = torch_to(args, self.device)
         return args[0] if len(args) == 1 else args
 
+    def preprocess_input(self, x, y=None):
+        if y is not None:
+            x, y = self._process_input(x, y)
+        else:
+            x = self._process_input(x)
+
+        x = x if isinstance(x, (tuple, list)) else (x, )
+
+        return (x, y) if y is not None else x
+
     def train_on_batch(self, x, y, return_pred=False):
         """
         Trains the network for the batch ``(x, y)`` and computes the loss and the metrics, and
@@ -627,8 +637,7 @@ class Model:
         pred_y = []
         with self._set_training_mode(False):
             for _, x in _get_step_iterator(steps, generator):
-                x = self._process_input(x)
-                x = x if isinstance(x, (tuple, list)) else (x, )
+                x = self.preprocess_input(x)
                 pred_y.append(torch_to_numpy(self.network(*x)))
         if concatenate_returns:
             return _concat(pred_y)
@@ -645,8 +654,7 @@ class Model:
             The predictions with tensors converted into Numpy arrays.
         """
         with self._set_training_mode(False):
-            x = self._process_input(x)
-            x = x if isinstance(x, (tuple, list)) else (x, )
+            x = self.preprocess_input(x)
             return torch_to_numpy(self.network(*x))
 
     def evaluate(self, x, y, *, batch_size=32, return_pred=False, callbacks=None):
@@ -883,8 +891,7 @@ class Model:
         return step_iterator.loss, step_iterator.metrics, pred_list, true_list
 
     def _compute_loss_and_metrics(self, x, y, return_loss_tensor=False, return_pred=False):
-        x, y = self._process_input(x, y)
-        x = x if isinstance(x, (list, tuple)) else (x, )
+        x, y = self.preprocess_input(x, y)
         if self.other_device is not None:
             pred_y = torch.nn.parallel.data_parallel(self.network, x, [self.device] + self.other_device)
         else:
