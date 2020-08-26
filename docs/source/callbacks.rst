@@ -44,6 +44,8 @@ Logging
 
 .. autoclass:: TensorBoardLogger
 
+.. autoclass:: ProgressionCallback
+
 Tracking
 --------
 

@@ -6,8 +6,26 @@ from .color_formatting import ColorProgress
 
 
 class ProgressionCallback(Callback):
+    """
+    Default progression callback used in :class:`~poutyne.Model`. You can use the ``progress_options``
+    in :class:`~poutyne.Model` instead of instanciating this callback. If you choose to use this callback
+    anyway, make sure to pass ``verbose=False`` to :func:`~poutyne.Model.fit()` or
+    :func:`~poutyne.Model.fit_generator()`.
 
-    def __init__(self, coloring=False, progress_bar=True):
+    Args:
+        coloring (Union[bool, Dict], optional): If bool, whether to display the progress of the training with
+            default colors highlighting.
+            If Dict, the field and the color to use as `colorama <https://pypi.org/project/colorama/>`_ . The fields
+            are ``text_color``, ``ratio_color``, ``metric_value_color``, ``time_color`` and ``progress_bar_color``.
+            In both case, will be ignore if verbose is set to False.
+            (Default value = True)
+        progress_bar (bool): Whether or not to display a progress bar showing the epoch progress.
+            Note that if the size of the output text with the progress bar is larger than the shell output size,
+            the formatting could be impacted (a line for every step).
+            (Default value = True)
+    """
+
+    def __init__(self, coloring=True, progress_bar=True):
         super().__init__()
         self.color_progress = ColorProgress(coloring)
         self.progress_bar = progress_bar

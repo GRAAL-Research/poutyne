@@ -456,8 +456,7 @@ class Experiment:
               validation_steps: Union[int, None] = None,
               batches_per_step: int = 1,
               seed: int = 42,
-              coloring: bool = True,
-              progress_bar: bool = True) -> List[Dict]:
+              progress_options: Union[dict, None] = None) -> List[Dict]:
         # pylint: disable=too-many-locals
         """
         Trains or finetunes the attribute model on a dataset using a generator. If a previous training already occured
@@ -510,15 +509,9 @@ class Experiment:
                 (Default value = 1)
             seed (int, optional): Seed used to make the sampling deterministic.
                 (Default value = 42)
-            coloring (Union[bool, Dict], optional): If bool, whether to display the progress of the training with
-                default colors highlighting.
-                If Dict, the field and the color to use as colorama <https://pypi.org/project/colorama/>`_ . The fields
-                are text_color, ratio_color, metric_value_color and time_color.
-                (Default value = True)
-            progress_bar (bool): Whether or not to display a progress bar showing the epoch progress.
-                Note that if the size of the output text with the progress bar is larger than the shell output size,
-                the formatting could be impacted (a line for every step).
-                (Default value = True)
+            progress_options (dict, optional): Keyword arguments to pass to the default progression callback used
+                in Poutyne (See :class:`~poutyne.ProgressionCallback` for the available arguments).
+                (Default value = None)
 
         Returns:
             List of dict containing the history of each epoch.
@@ -584,8 +577,7 @@ class Experiment:
                                             batches_per_step=batches_per_step,
                                             initial_epoch=initial_epoch,
                                             callbacks=expt_callbacks,
-                                            coloring=coloring,
-                                            progress_bar=progress_bar)
+                                            progress_options=progress_options)
         finally:
             if tensorboard_writer is not None:
                 tensorboard_writer.close()

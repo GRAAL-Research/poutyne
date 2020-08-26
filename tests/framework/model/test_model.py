@@ -229,19 +229,20 @@ class ModelTest(ModelFittingTestCase):
         self.original_output = sys.stdout
         sys.stdout = self.test_out
 
+        coloring = {
+            "text_color": 'BLACK',
+            "ratio_color": "BLACK",
+            "metric_value_color": "BLACK",
+            "time_color": "BLACK",
+            "progress_bar_color": "BLACK"
+        }
         _ = self.model.fit_generator(train_generator,
                                      valid_generator,
                                      epochs=ModelTest.epochs,
                                      steps_per_epoch=ModelTest.steps_per_epoch,
                                      validation_steps=ModelTest.steps_per_epoch,
                                      callbacks=[self.mock_callback],
-                                     coloring={
-                                         "text_color": 'BLACK',
-                                         "ratio_color": "BLACK",
-                                         "metric_value_color": "BLACK",
-                                         "time_color": "BLACK",
-                                         "progress_bar_color": "BLACK"
-                                     })
+                                     progress_options=dict(coloring=coloring))
 
         self.assertStdoutContains(["[30m"])
 
@@ -261,10 +262,10 @@ class ModelTest(ModelFittingTestCase):
                                      steps_per_epoch=ModelTest.steps_per_epoch,
                                      validation_steps=ModelTest.steps_per_epoch,
                                      callbacks=[self.mock_callback],
-                                     coloring={
+                                     progress_options=dict(coloring={
                                          "text_color": 'BLACK',
                                          "ratio_color": "BLACK"
-                                     })
+                                     }))
 
         self.assertStdoutContains(["[30m", "[32m", "[96m"])
 
@@ -283,7 +284,7 @@ class ModelTest(ModelFittingTestCase):
                                          steps_per_epoch=ModelTest.steps_per_epoch,
                                          validation_steps=ModelTest.steps_per_epoch,
                                          callbacks=[self.mock_callback],
-                                         coloring={"invalid_name": 'A COLOR'})
+                                         progress_options=dict(coloring={"invalid_name": 'A COLOR'}))
 
     def test_fitting_with_no_coloring(self):
         train_generator = some_data_tensor_generator(ModelTest.batch_size)
@@ -300,7 +301,7 @@ class ModelTest(ModelFittingTestCase):
                                      steps_per_epoch=ModelTest.steps_per_epoch,
                                      validation_steps=ModelTest.steps_per_epoch,
                                      callbacks=[self.mock_callback],
-                                     coloring=False)
+                                     progress_options=dict(coloring=False))
 
         self.assertStdoutNotContains(["[94m", "[93m", "[96m"])
 
@@ -320,8 +321,7 @@ class ModelTest(ModelFittingTestCase):
                                      steps_per_epoch=ModelTest.steps_per_epoch,
                                      validation_steps=ModelTest.steps_per_epoch,
                                      callbacks=[self.mock_callback],
-                                     coloring=True,
-                                     progress_bar=True)
+                                     progress_options=dict(coloring=True, progress_bar=True))
 
         self.assertStdoutContains(["%", "[94m", "[93m", "[96m", "\u2588"])
 
@@ -335,20 +335,20 @@ class ModelTest(ModelFittingTestCase):
         self.original_output = sys.stdout
         sys.stdout = self.test_out
 
+        coloring = {
+            "text_color": 'BLACK',
+            "ratio_color": "BLACK",
+            "metric_value_color": "BLACK",
+            "time_color": "BLACK",
+            "progress_bar_color": "BLACK"
+        }
         _ = self.model.fit_generator(train_generator,
                                      valid_generator,
                                      epochs=ModelTest.epochs,
                                      steps_per_epoch=ModelTest.steps_per_epoch,
                                      validation_steps=ModelTest.steps_per_epoch,
                                      callbacks=[self.mock_callback],
-                                     coloring={
-                                         "text_color": 'BLACK',
-                                         "ratio_color": "BLACK",
-                                         "metric_value_color": "BLACK",
-                                         "time_color": "BLACK",
-                                         "progress_bar_color": "BLACK"
-                                     },
-                                     progress_bar=True)
+                                     progress_options=dict(coloring=coloring, progress_bar=True))
 
         self.assertStdoutContains(["%", "[30m", "\u2588"])
 
@@ -367,8 +367,7 @@ class ModelTest(ModelFittingTestCase):
                                      steps_per_epoch=ModelTest.steps_per_epoch,
                                      validation_steps=ModelTest.steps_per_epoch,
                                      callbacks=[self.mock_callback],
-                                     coloring=False,
-                                     progress_bar=True)
+                                     progress_options=dict(coloring=False, progress_bar=True))
 
         self.assertStdoutContains(["%", "\u2588"])
         self.assertStdoutNotContains(["[94m", "[93m", "[96m"])
@@ -388,8 +387,7 @@ class ModelTest(ModelFittingTestCase):
                                      steps_per_epoch=ModelTest.steps_per_epoch,
                                      validation_steps=ModelTest.steps_per_epoch,
                                      callbacks=[self.mock_callback],
-                                     coloring=False,
-                                     progress_bar=False)
+                                     progress_options=dict(coloring=False, progress_bar=False))
 
         self.assertStdoutNotContains(["%", "\u2588"])
         self.assertStdoutNotContains(["[94m", "[93m", "[96m"])
@@ -406,8 +404,7 @@ class ModelTest(ModelFittingTestCase):
         _ = self.model.fit_generator(train_generator,
                                      valid_generator,
                                      epochs=ModelTest.epochs,
-                                     coloring=False,
-                                     progress_bar=True)
+                                     progress_options=dict(coloring=False, progress_bar=True))
 
         self.assertStdoutContains(["s/step"])
         self.assertStdoutNotContains(["[94m", "[93m", "[96m", "\u2588", "%"])

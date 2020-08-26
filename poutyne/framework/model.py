@@ -201,10 +201,9 @@ class Model:
             batches_per_step=1,
             initial_epoch=1,
             verbose=True,
-            coloring=True,
-            progress_bar=True,
+            progress_options=None,
             callbacks=None):
-        # pylint: disable=line-too-long, too-many-locals
+        # pylint: disable=line-too-long
         """
         Trains the network on a dataset. This method creates generators and calls
         the :func:`~Model.fit_generator()` method.
@@ -241,16 +240,9 @@ class Model:
                 (Default value = 1)
             verbose (bool): Whether to display the progress of the training.
                 (Default value = True)
-            coloring (Union[bool, Dict], optional): If bool, whether to display the progress of the training with
-                default colors highlighting.
-                If Dict, the field and the color to use as colorama <https://pypi.org/project/colorama/>`_ . The fields
-                are text_color, ratio_color, metric_value_color, time_color and progress_bar_color.
-                In both case, will be ignore if verbose is set to False.
-                (Default value = True)
-            progress_bar (bool): Whether or not to display a progress bar showing the epoch progress.
-                Note that if the size of the output text with the progress bar is larger than the shell output size,
-                the formatting could be impacted (a line for every step).
-                (Default value = True)
+            progress_options (dict, optional): Keyword arguments to pass to the default progression callback used
+                in Poutyne (See :class:`~poutyne.ProgressionCallback` for the available arguments).
+                (Default value = None)
             callbacks (List[~poutyne.Callback]): List of callbacks that will be called
                 during training.
                 (Default value = None)
@@ -290,8 +282,7 @@ class Model:
                                   batches_per_step=batches_per_step,
                                   initial_epoch=initial_epoch,
                                   verbose=verbose,
-                                  coloring=coloring,
-                                  progress_bar=progress_bar,
+                                  progress_options=progress_options,
                                   callbacks=callbacks)
 
     def _dataloader_from_data(self, args, batch_size):
@@ -310,8 +301,7 @@ class Model:
                       batches_per_step=1,
                       initial_epoch=1,
                       verbose=True,
-                      coloring=True,
-                      progress_bar=True,
+                      progress_options=None,
                       callbacks=None):
         # pylint: disable=line-too-long
         """
@@ -357,17 +347,9 @@ class Model:
                 (Default value = 1)
             verbose (bool, optional): Whether to display the progress of the training.
                 (Default value = True)
-            coloring (Union[bool, Dict], optional): If bool, whether to display the progress of the training with
-                default colors highlighting.
-                If Dict, the field and the color to use as colorama <https://pypi.org/project/colorama/>`_ . The fields
-                are text_color, ratio_color, metric_value_color, time_color and progress_bar_color.
-                In both case, will be ignore if verbose is set to False.
-                (Default value = True)
-            progress_bar (bool): Whether or not to display a progress bar showing the epoch progress.
-                Will be ignore if verbose is set to False or if the number of steps is undetermined.
-                Note that if the size of the output text with the progress bar is larger than the shell output size,
-                the formatting could be impacted (a line for every step).
-                (Default value = True)
+            progress_options (dict, optional): Keyword arguments to pass to the default progression callback used
+                in Poutyne (See :class:`~poutyne.ProgressionCallback` for the available arguments).
+                (Default value = None)
             callbacks (List[~poutyne.Callback]): List of callbacks that will be called during
                 training. (Default value = None)
 
@@ -400,7 +382,8 @@ class Model:
         callbacks = [] if callbacks is None else callbacks
 
         if verbose:
-            callbacks = [ProgressionCallback(coloring=coloring, progress_bar=progress_bar)] + callbacks
+            progress_options = {} if progress_options is None else progress_options
+            callbacks = [ProgressionCallback(**progress_options)] + callbacks
         callback_list = CallbackList(callbacks)
         callback_list.set_model(self)
 
