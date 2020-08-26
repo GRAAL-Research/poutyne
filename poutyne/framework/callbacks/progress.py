@@ -23,12 +23,16 @@ class ProgressionCallback(Callback):
             Note that if the size of the output text with the progress bar is larger than the shell output size,
             the formatting could be impacted (a line for every step).
             (Default value = True)
+        equal_weights (bool): Whether or not the duration of each step is weighted equally when computing the
+            average time of the steps and, thus, the ETA. By default, newer step times receive more weights than
+            older step times. Set this to true to have equal weighting instead.
     """
 
-    def __init__(self, coloring=True, progress_bar=True):
+    def __init__(self, *, coloring=True, progress_bar=True, equal_weights=False):
         super().__init__()
         self.color_progress = ColorProgress(coloring)
         self.progress_bar = progress_bar
+        self.equal_weights = equal_weights
 
     def on_train_begin(self, logs: Dict):
         self.metrics = ['loss'] + self.model.metrics_names
@@ -39,7 +43,7 @@ class ProgressionCallback(Callback):
             self.color_progress.set_progress_bar(self.steps)
 
     def on_epoch_begin(self, epoch_number: int, logs: Dict):
-        self.step_times_sum = 0.
+        self.step_times_weighted_sum = 0.
         self.epoch_number = epoch_number
 
         self.color_progress.on_epoch_begin(self.epoch_number, self.epochs)
@@ -54,16 +58,21 @@ class ProgressionCallback(Callback):
             self.color_progress.on_epoch_end(epoch_total_time, self.last_step, metrics_str)
 
     def on_train_batch_end(self, batch_number: int, logs: Dict):
-        self.step_times_sum += logs['time']
+        if self.equal_weights:
+            self.step_times_weighted_sum += logs['time']
+            step_times_rate = self.step_times_weighted_sum / batch_number
+        else:
+            self.step_times_weighted_sum += batch_number * logs['time']
+            normalizing_factor = (batch_number * (batch_number + 1)) / 2
+            step_times_rate = self.step_times_weighted_sum / normalizing_factor
 
         metrics_str = self._get_metrics_string(logs)
 
-        times_mean = self.step_times_sum / batch_number
         if self.steps is not None:
-            remaining_time = times_mean * (self.steps - batch_number)
+            remaining_time = step_times_rate * (self.steps - batch_number)
             self.color_progress.on_train_batch_end(remaining_time, batch_number, metrics_str, self.steps)
         else:
-            self.color_progress.on_train_batch_end(times_mean, batch_number, metrics_str)
+            self.color_progress.on_train_batch_end(step_times_rate, batch_number, metrics_str)
             self.last_step = batch_number
 
     def _get_metrics_string(self, logs: Dict):
