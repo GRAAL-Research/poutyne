@@ -1,6 +1,6 @@
 import torch.nn as nn
 import torch.optim as optim
-from poutyne.framework import Model
+from poutyne import Model
 
 net = nn.Sequential(
     nn.Linear(100, 64),

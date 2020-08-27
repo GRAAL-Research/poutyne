@@ -6,9 +6,7 @@ from unittest import TestCase
 import torch
 import torch.nn as nn
 
-from poutyne.framework import Model
-from poutyne.framework.callbacks import LambdaLR, StepLR, MultiStepLR, ExponentialLR, \
-    CosineAnnealingLR, ReduceLROnPlateau
+from poutyne import Model, LambdaLR, StepLR, MultiStepLR, ExponentialLR, CosineAnnealingLR, ReduceLROnPlateau
 
 
 def some_data_generator(batch_size):

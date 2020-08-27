@@ -1,12 +1,12 @@
 # pylint: disable=unused-argument
+import os
 from unittest import skipIf
 
 import torch
 from torch import nn
 
-from poutyne.framework import Model
-from poutyne.framework.metrics import EpochMetric
-from tests.framework.model.base import ModelFittingTestCase
+from poutyne import Model, EpochMetric
+from .base import ModelFittingTestCase
 
 some_metric_1_value = 1.
 some_metric_2_value = 2.
@@ -65,7 +65,11 @@ def some_data_tensor_generator(batch_size):
         yield x, y
 
 
+TEST_MULTI_GPUS = int(os.environ.get('MULTI_GPUS', 0))
+
+
 @skipIf(torch.cuda.device_count() < 2, "Need at least two gpus")
+@skipIf(TEST_MULTI_GPUS != 1, "Multi-gpus test not asked for.")
 class ModelTestMultiGPU(ModelFittingTestCase):
     # pylint: disable=too-many-public-methods
 

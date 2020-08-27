@@ -15,7 +15,7 @@ class SKLearnMetrics(EpochMetric):
         .. code-block:: python
 
             from sklearn.metrics import roc_auc_score, average_precision_score
-            from poutyne.framework.metrics import SKLearnMetrics
+            from poutyne import SKLearnMetrics
             my_epoch_metric = SKLearnMetrics([roc_auc_score, average_precision_score])
 
     Args:
@@ -25,7 +25,7 @@ class SKLearnMetrics(EpochMetric):
             corresponding to keyword arguments to pass to each corresponding metric.
             (Default value = None)
         names (Optional[Union[str, List[str]]]): Optional string or list of strings corresponding to
-            the names given to the metrics. (Default value = None)
+            the names given to the metrics. By default, the names are the names of the functions.
     """
 
     def __init__(self,

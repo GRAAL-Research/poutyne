@@ -49,6 +49,13 @@ class FBeta(EpochMetric):
 
     The support is the number of occurrences of each class in ``y_true``.
 
+    Keys in :class:`logs<poutyne.Callback>` dictionary of callbacks:
+        - Train: ``'{metric}_{average}'``
+        - Validation: ``'val_{metric}_{average}'``
+
+        where ``{metric}`` and ``{average}`` are replaced by the value of their
+        respective parameters.
+
     Args:
         metric (Optional[str]): One of {'fscore', 'precision', 'recall'}.
             Whether to return the F-score, the precision or the recall. When not
@@ -67,15 +74,19 @@ class FBeta(EpochMetric):
             (Default value = 'micro')
         beta (float):
             The strength of recall versus precision in the F-score. (Default value = 1.0)
+        ignore_index (int): Specifies a target value that is ignored. This also works in combination with
+            a mask if provided. (Default value = -100)
         names (Optional[Union[str, List[str]]]): The names associated to the metrics. It is a string when
             a single metric is requested. It is a list of 3 strings if all metrics are requested.
             (Default value = None)
     """
 
     def __init__(self,
+                 *,
                  metric: Optional[str] = None,
                  average: Union[str, int] = 'micro',
                  beta: float = 1.0,
+                 ignore_index: int = -100,
                  names: Optional[Union[str, List[str]]] = None) -> None:
         super().__init__()
         self.metric_options = ('fscore', 'precision', 'recall')
@@ -93,6 +104,7 @@ class FBeta(EpochMetric):
         self._average = average if average in average_options else None
         self._label = average if isinstance(average, int) else None
         self._beta = beta
+        self.ignore_index = ignore_index
         self.__name__ = self._get_name(names)
 
         # statistics
@@ -140,7 +152,7 @@ class FBeta(EpochMetric):
         Update the confusion matrix for calculating the F-score.
 
         Args:
-            y_pred (torch.Tensor): A tensor of predictions of shape (batch_size, ..., num_classes).
+            y_pred (torch.Tensor): A tensor of predictions of shape (batch_size, num_classes, ...).
             y_true (Union[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]):
                 Ground truths. A tensor of the integer class label of shape (batch_size, ...). It must
                 be the same shape as the ``y_pred`` tensor without the ``num_classes`` dimension.
@@ -148,9 +160,16 @@ class FBeta(EpochMetric):
                 ground truths and the second being a mask.
         """
 
-        mask = None
+        mask = True
         if isinstance(y_true, tuple):
             y_true, mask = y_true
+            mask = mask.bool()
+
+        if self.ignore_index is not None:
+            mask *= y_true != self.ignore_index
+
+        if mask is True:
+            mask = torch.ones_like(y_true, dtype=torch.bool)
 
         # Calculate true_positive_sum, true_negative_sum, pred_sum, true_sum
         num_classes = y_pred.size(1)
@@ -166,9 +185,6 @@ class FBeta(EpochMetric):
             self._pred_sum = torch.zeros(num_classes, device=y_pred.device)
             self._total_sum = torch.zeros(num_classes, device=y_pred.device)
 
-        if mask is None:
-            mask = torch.ones_like(y_true)
-        mask = mask.to(dtype=torch.bool)
         y_true = y_true.float()
 
         argmax_y_pred = y_pred.max(dim=1)[1].float()
@@ -256,11 +272,58 @@ class FBeta(EpochMetric):
 @register_epoch_metric
 class F1(FBeta):
     """
-    Alias class for FBeta where ``metric == 'fscore'`` and ``beta == 1``.
+    Alias class for :class:`~poutyne.FBeta` where ``metric == 'fscore'`` and ``beta == 1``.
+
+    Possible string name in :class:`batch_metrics argument <poutyne.Model>`:
+        - ``'f1'``
+
+    Keys in :class:`logs<poutyne.Callback>` dictionary of callbacks:
+        - Train: ``'fscore_{average}'``
+        - Validation: ``'val_fscore_{average}'``
+
+        where ``{average}`` is replaced by the value of the respective parameter.
     """
 
     def __init__(self, average='micro'):
         super().__init__(metric='fscore', average=average, beta=1)
+
+
+@register_epoch_metric
+class Precision(FBeta):
+    """
+    Alias class for :class:`~poutyne.FBeta` where ``metric == 'precision'`` and ``beta == 1``.
+
+    Possible string name in :class:`batch_metrics argument <poutyne.Model>`:
+        - ``'precision'``
+
+    Keys in :class:`logs<poutyne.Callback>` dictionary of callbacks:
+        - Train: ``'precision_{average}'``
+        - Validation: ``'val_precision_{average}'``
+
+        where ``{average}`` is replaced by the value of the respective parameter.
+    """
+
+    def __init__(self, average='micro'):
+        super().__init__(metric='precision', average=average, beta=1)
+
+
+@register_epoch_metric
+class Recall(FBeta):
+    """
+    Alias class for :class:`~poutyne.FBeta` where ``metric == 'recall'`` and ``beta == 1``.
+
+    Possible string name in :class:`batch_metrics argument <poutyne.Model>`:
+        - ``'recall'``
+
+    Keys in :class:`logs<poutyne.Callback>` dictionary of callbacks:
+        - Train: ``'recall_{average}'``
+        - Validation: ``'val_recall_{average}'``
+
+        where ``{average}`` is replaced by the value of the respective parameter.
+    """
+
+    def __init__(self, average='micro'):
+        super().__init__(metric='recall', average=average, beta=1)
 
 
 def _prf_divide(numerator, denominator):

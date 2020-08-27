@@ -16,9 +16,9 @@ try:
 except ImportError:
     SummaryWriter = None
 
-from poutyne.framework import Model
-from poutyne.utils import set_seeds
-from poutyne.framework.callbacks import ModelCheckpoint, \
+from . import Model
+from ..utils import set_seeds
+from .callbacks import ModelCheckpoint, \
     OptimizerCheckpoint, \
     LRSchedulerCheckpoint, \
     PeriodicSaveLambda, \
@@ -64,7 +64,7 @@ class Experiment:
             validation batches at the end of the epoch.
             (Default value = None)
         epoch_metrics (List, optional): List of functions with the same signature as
-            :class:`~poutyne.framework.metrics.epoch_metrics.EpochMetric`
+            :class:`~poutyne.EpochMetric`
             (Default value = None)
         monitor_metric (str, optional): Which metric to consider for best model performance calculation. Should be in
             the format '{metric_name}' or 'val_{metric_name}' (i.e. 'val_loss'). If None, will follow the value
@@ -87,7 +87,7 @@ class Experiment:
 
             import torch
             from torch.utils.data import DataLoader, TensorDataset
-            from poutyne.framework import Experiment
+            from poutyne import Experiment
 
             num_features = 20
             num_classes = 5
@@ -456,8 +456,7 @@ class Experiment:
               validation_steps: Union[int, None] = None,
               batches_per_step: int = 1,
               seed: int = 42,
-              coloring: bool = True,
-              progress_bar: bool = True) -> List[Dict]:
+              progress_options: Union[dict, None] = None) -> List[Dict]:
         # pylint: disable=too-many-locals
         """
         Trains or finetunes the attribute model on a dataset using a generator. If a previous training already occured
@@ -479,11 +478,11 @@ class Experiment:
             valid_generator (optional): Generator-like object for the validation set. See
                 :func:`~Model.fit_generator()` for details on the types of generators supported.
                 (Default value = None)
-            callbacks (List[~poutyne.framework.callbacks.Callback]): List of callbacks that will be called during
+            callbacks (List[~poutyne.Callback]): List of callbacks that will be called during
                 training. These callbacks are added after those used in this method (see above). This allows to assume
                 that they are called after those.
                 (Default value = None)
-            lr_schedulers (List[~poutyne.framework.callbacks.lr_scheduler._PyTorchLRSchedulerWrapper]): List of
+            lr_schedulers (List[~poutyne.lr_scheduler._PyTorchLRSchedulerWrapper]): List of
                 learning rate schedulers.
                 (Default value = None)
             keep_only_last_best (bool): Whether only the last saved best checkpoint is kept. Applies only when
@@ -510,15 +509,9 @@ class Experiment:
                 (Default value = 1)
             seed (int, optional): Seed used to make the sampling deterministic.
                 (Default value = 42)
-            coloring (Union[bool, Dict], optional): If bool, whether to display the progress of the training with
-                default colors highlighting.
-                If Dict, the field and the color to use as colorama <https://pypi.org/project/colorama/>`_ . The fields
-                are text_color, ratio_color, metric_value_color and time_color.
-                (Default value = True)
-            progress_bar (bool): Whether or not to display a progress bar showing the epoch progress.
-                Note that if the size of the output text with the progress bar is larger than the shell output size,
-                the formatting could be impacted (a line for every step).
-                (Default value = True)
+            progress_options (dict, optional): Keyword arguments to pass to the default progression callback used
+                in Poutyne (See :class:`~poutyne.ProgressionCallback` for the available arguments).
+                (Default value = None)
 
         Returns:
             List of dict containing the history of each epoch.
@@ -584,8 +577,7 @@ class Experiment:
                                             batches_per_step=batches_per_step,
                                             initial_epoch=initial_epoch,
                                             callbacks=expt_callbacks,
-                                            coloring=coloring,
-                                            progress_bar=progress_bar)
+                                            progress_options=progress_options)
         finally:
             if tensorboard_writer is not None:
                 tensorboard_writer.close()
@@ -661,7 +653,7 @@ class Experiment:
         Args:
             test_generator: Generator-like object for the test set. See :func:`~Model.fit_generator()` for
                 details on the types of generators supported.
-            callbacks (List[~poutyne.framework.callbacks.Callback], optional): List of callbacks that will be called
+            callbacks (List[~poutyne.Callback], optional): List of callbacks that will be called
                 during the testing.
                 (Default value = None)
             steps (int, optional): Number of iterations done on ``generator``.

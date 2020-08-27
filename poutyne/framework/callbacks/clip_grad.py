@@ -1,8 +1,11 @@
-from typing import Dict, Union
+from typing import Iterable, Union
 
+import torch
 from torch.nn.utils import clip_grad_norm_, clip_grad_value_
 
 from .callbacks import Callback
+
+_tensor_or_tensors = Union[torch.Tensor, Iterable[torch.Tensor]]
 
 
 class ClipNorm(Callback):
@@ -15,9 +18,9 @@ class ClipNorm(Callback):
 
     """
 
-    def __init__(self, parameters: Dict, max_norm: Union[float, int], *, norm_type: Union[float, int] = 2):
+    def __init__(self, parameters: _tensor_or_tensors, max_norm: float, norm_type: float = 2.0):
         super().__init__()
-        self.parameters = list(parameters)
+        self.parameters = list(parameters) if not torch.is_tensor(parameters) else [parameters]
         self.max_norm = max_norm
         self.norm_type = norm_type
 
@@ -35,9 +38,9 @@ class ClipValue(Callback):
 
     """
 
-    def __init__(self, parameters: Dict, clip_value: Union[float, int]):
+    def __init__(self, parameters: _tensor_or_tensors, clip_value: float):
         super().__init__()
-        self.parameters = list(parameters)
+        self.parameters = list(parameters) if not torch.is_tensor(parameters) else [parameters]
         self.clip_value = clip_value
 
     def on_backward_end(self, batch_number: int):

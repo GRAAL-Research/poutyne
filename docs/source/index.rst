@@ -21,12 +21,12 @@ Use Poutyne to:
 - Train models easily.
 - Use callbacks to save your best model, perform early stopping and much more.
 
-Read the documentation at `Poutyne.org <https://poutyne.org>`_.
+Read the documentation at `Poutyne.org <https://poutyne.org>`__.
 
 Poutyne is compatible with the **latest version of PyTorch** and  **Python >= 3.6**.
 
 Cite
------
+----
 .. code-block:: bib
 
   @misc{poutyne,
@@ -40,21 +40,22 @@ Cite
 Getting started: few seconds to Poutyne
 =======================================
 
-The core data structure of Poutyne is a :class:`~poutyne.framework.Model`, a way to train your own `PyTorch <https://pytorch.org/docs/master/nn.html>`_ neural networks.
+The core data structure of Poutyne is a :class:`~poutyne.Model`, a way to train your own `PyTorch <https://pytorch.org/docs/master/nn.html>`__ neural networks.
 
-How Poutyne works is that you create your `PyTorch <https://pytorch.org/docs/master/nn.html>`_ module (neural network) as usual but when comes the time to train it you feed it into the Poutyne Model, which handles all the steps, stats and callbacks, similar to what `Keras <https://keras.io/>`_ does.
+How Poutyne works is that you create your `PyTorch <https://pytorch.org/docs/master/nn.html>`__ module (neural network) as usual but when comes the time to train it you feed it into the Poutyne Model, which handles all the steps, stats and callbacks, similar to what `Keras <https://keras.io/>`_ does.
 
 Here is a simple example:
 
 .. code-block:: python
 
   # Import the Poutyne Model and define a toy dataset
-  from poutyne.framework import Model
-  import torch
+  from poutyne import Model
+  import torch.nn as nn
   import numpy as np
 
   num_features = 20
   num_classes = 5
+  hidden_state_size = 100
 
   num_train_samples = 800
   train_x = np.random.randn(num_train_samples, num_features).astype('float32')
@@ -69,18 +70,22 @@ Here is a simple example:
   test_y = np.random.randint(num_classes, size=num_test_samples).astype('int64')
 
 
-Create yourself a `PyTorch <https://pytorch.org/docs/master/nn.html>`_ network:
+Create yourself a `PyTorch <https://pytorch.org/docs/master/nn.html>`__ network:
 
 .. code-block:: python
 
-  pytorch_network = torch.nn.Linear(num_features, num_classes)
+  network = nn.Sequential(
+      nn.Linear(num_features, hidden_state_size),
+      nn.ReLU(),
+      nn.Linear(hidden_state_size, num_classes)
+  )
 
 
 You can now use Poutyne's model to train your network easily:
 
 .. code-block:: python
 
-  model = Model(pytorch_network, 'sgd', 'cross_entropy',
+  model = Model(network, 'sgd', 'cross_entropy',
                 batch_metrics=['accuracy'], epoch_metrics=['f1'])
   model.fit(
       train_x, train_y,
@@ -97,7 +102,7 @@ You can evaluate the performances of your network using the ``evaluate`` method 
 
 .. code-block:: python
 
-  loss_and_metrics = model.evaluate(test_x, test_y)
+  loss, (accuracy, f1score) = model.evaluate(test_x, test_y)
 
 
 Or only predict on new data:
@@ -137,9 +142,10 @@ Examples
 Look at notebook files with full working `examples <https://github.com/GRAAL-Research/poutyne/blob/master/examples/>`_:
 
 - `introduction_pytorch_poutyne.ipynb <https://github.com/GRAAL-Research/poutyne/blob/master/examples/introduction_pytorch_poutyne.ipynb>`_  (`tutorial version <https://github.com/GRAAL-Research/poutyne/blob/master/tutorials/introduction_pytorch_poutyne_tutorial.ipynb>`_) - comparison of Poutyne with bare PyTorch and example of a Poutyne callback.
-- `transfer_learning.ipynb <https://github.com/GRAAL-Research/poutyne/blob/master/examples/transfer_learning.ipynb>`_ - transfer learning on ResNet-18 on the `CUB-200 <http://www.vision.caltech.edu/visipedia/CUB-200-2011.html>`_ dataset.
+- `transfer_learning.ipynb <https://github.com/GRAAL-Research/poutyne/blob/master/examples/transfer_learning.ipynb>`_ - transfer learning on ``ResNet-18`` on the `CUB-200 <http://www.vision.caltech.edu/visipedia/CUB-200-2011.html>`_ dataset.
 - `policy_cifar_example.ipynb <https://github.com/GRAAL-Research/poutyne/blob/master/examples/policy_cifar_example.ipynb>`_ - policies API, FastAI-like learning rate policies
 - `policy_interface.ipynb <https://github.com/GRAAL-Research/poutyne/blob/master/examples/policy_interface.ipynb>`_ - example of policies
+- `tips_and_tricks.ipynb <https://github.com/GRAAL-Research/poutyne/blob/master/examples/tips_and_tricks.ipynb>`_ -  tips and tricks using Poutyne.
 
 Videos
 ------
@@ -174,7 +180,7 @@ API Reference
 
 .. toctree::
   :maxdepth: 1
-  :caption: Package Reference
+  :caption: API
 
   model
   experiment
@@ -182,6 +188,17 @@ API Reference
   callbacks
   layers
   utils
+
+.. toctree::
+  :glob:
+  :maxdepth: 1
+  :caption: Examples
+
+  examples/introduction
+  examples/tips_and_tricks
+  examples/policy_interface
+  examples/train_with_policy_module
+  examples/transfert_learning
 
 
 Indices and tables

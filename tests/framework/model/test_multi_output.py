@@ -3,8 +3,7 @@ import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
 
-from poutyne.framework import Model, warning_settings
-from poutyne.utils import TensorDataset
+from poutyne import Model, warning_settings, TensorDataset
 
 from .base import ModelFittingTestCase, MultiIOModel
 

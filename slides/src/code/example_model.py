@@ -1,4 +1,4 @@
-from poutyne.framework import Model
+from poutyne import Model
 
 model = Model(network, optimizer, loss_function)
 model.to(device)

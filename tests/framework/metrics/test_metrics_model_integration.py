@@ -10,9 +10,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 
-from poutyne.framework import Model
-from poutyne.framework.metrics import EpochMetric
-from poutyne.framework.metrics.utils import rename_doubles
+from poutyne import Model, EpochMetric, rename_doubles
 
 
 class ConstEpochMetric(EpochMetric):

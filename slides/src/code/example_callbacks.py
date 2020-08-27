@@ -1,4 +1,4 @@
-from poutyne.framework import Model, ModelCheckpoint, CSVLogger
+from poutyne import Model, ModelCheckpoint, CSVLogger
 
 callbacks = [
     ModelCheckpoint('last_epoch.ckpt'),

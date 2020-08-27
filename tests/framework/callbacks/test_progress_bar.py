@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from poutyne.framework import ProgressBar
+from poutyne import ProgressBar
 
 # bar size is by 25
 default_bar_size = 25
