@@ -3,7 +3,10 @@
 
 Transfer learning example
 **************************
-.. note:: See the notebook `here <https://github.com/GRAAL-Research/poutyne/blob/master/examples/transfert_learning.ipynb>`_
+.. note::
+
+    - See the notebook `here <https://github.com/GRAAL-Research/poutyne/blob/master/examples/transfert_learning.ipynb>`_
+    - Run in `Google Colab <https://colab.research.google.com/github/GRAAL-Research/poutyne/blob/master/examples/transfert_learning.ipynb>`_
 
 But first, let's import all the needed packages.
 
