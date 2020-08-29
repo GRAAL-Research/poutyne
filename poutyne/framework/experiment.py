@@ -566,7 +566,8 @@ class Experiment:
         # Otherwise, it just returns the list of LR schedulers with a BestModelRestore callback.
         expt_callbacks += self._init_lr_scheduler_callbacks(lr_schedulers)
 
-        expt_callbacks += callbacks
+        if callbacks is not None:
+            expt_callbacks += callbacks
 
         try:
             return self.model.fit_generator(train_generator,
