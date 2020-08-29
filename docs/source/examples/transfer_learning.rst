@@ -2,11 +2,11 @@
     :class: hidden-section
 
 Transfer learning example
-**************************
+*************************
 .. note::
 
-    - See the notebook `here <https://github.com/GRAAL-Research/poutyne/blob/master/examples/transfert_learning.ipynb>`_
-    - Run in `Google Colab <https://colab.research.google.com/github/GRAAL-Research/poutyne/blob/master/examples/transfert_learning.ipynb>`_
+    - See the notebook `here <https://github.com/GRAAL-Research/poutyne/blob/master/examples/transfer_learning.ipynb>`_
+    - Run in `Google Colab <https://colab.research.google.com/github/GRAAL-Research/poutyne/blob/master/examples/transfer_learning.ipynb>`_
 
 But first, let's import all the needed packages.
 
@@ -43,7 +43,7 @@ Also, we need to set Pythons's, NumPy's and PyTorch's seeds by using Poutyne fun
 
     def download_and_extract_dataset(path):
         tgz_filename = "images.tgz"
-        urllib.request.urlretrieve("http://www.vision.caltech.edu/visipedia-data/CUB-200/images.tgz", tgz_filename)
+        urllib.request.urlretrieve("https://graal.ift.ulaval.ca/public/CUB200.tgz", tgz_filename)
         os.makedirs(path, exist_ok=True)
         archive = tarfile.open(tgz_filename)
         archive.extractall(path)
