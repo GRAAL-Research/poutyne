@@ -460,3 +460,57 @@ Let's train the convolutional network.
 
     conv_net = create_convolutional_network()
     poutyne_train(conv_net)
+
+
+Making Your Own Callback
+========================
+
+While Poutyne provides a great number of :ref:`predefined callbacks <callbacks>`, it is sometimes useful to make your own callback. In addition to the documentation of the :class:`~poutyne.Callback` class, see the :ref:`Making Your Own Callback section <making_your_own_callback>` in the :ref:`Tips and Tricks page <tips_and_tricks>` for an example.
+
+Poutyne Experiment
+==================
+
+Most of the time when using Poutyne (or even Pytorch in general), we will find ourselves in an iterative model hyperparameters finetuning loop. For efficient model search, we will usually wish to save our best performing models, their training and testing statistics and even sometimes wish to retrain an already trained model for further tuning. All of the above can be easily implemented with the flexibility of Poutyne Callbacks, but having to define and initialize each and every Callback object we wish for our model quickly feels cumbersome.
+
+This is why Poutyne provides an :class:`~poutyne.Experiment`, which aims specifically at enabling quick model iteration search, while not sacrifying on the quality of a single experiment - statistics logging, best models saving, etc. Experiment is actually a simple wrapper between a PyTorch network and Poutyne's core Callback objects for logging and saving. Given a working directory where to output the various logging files and a PyTorch network, the Experiment class reduces the whole training loop to a single line.
+
+The following code uses Poutyne's :class:`~poutyne.Experiment` class to train a network for 5 epochs. The code is quite simpler than the code in the Poutyne Callbacks section while doing more (only 3 lines). Once trained for 5 epochs, it is then possible to resume the optimization at the 5th epoch for 5 more epochs until the 10th epoch using the same function.
+
+.. code-block:: python
+
+    def experiment_train(pytorch_network, working_directory, epochs=5):
+        """
+        This function creates a Poutyne Experiment, trains the input module
+        on the train loader and then tests its performance on the test loader.
+        All training and testing statistics are saved, as well as best model
+        checkpoints.
+
+        Args:
+            pytorch_network (torch.nn.Module): The neural network to train.
+            working_directory (str): The directory where to output files to save.
+            epochs (int): The number of epochs. (Default: 5)
+        """
+        print(pytorch_network)
+
+        # Poutyne Experiment
+        expt = Experiment(working_directory, pytorch_network, device=device, optimizer='sgd', task='classif')
+
+        # Train
+        expt.train(train_loader, valid_loader, epochs=epochs)
+
+        # Test
+        expt.test(test_loader)
+
+Let's train the convolutional network with Experiment for 5 epochs. Everything is saved in ``./conv_net_experiment``.
+
+.. code-block:: python
+
+    conv_net = create_convolutional_network()
+    experiment_train(conv_net, './conv_net_experiment')
+
+Let's resume training for 5 more epochs (10 epochs total).
+
+.. code-block:: python
+
+    conv_net = create_convolutional_network()
+    experiment_train(conv_net, './conv_net_experiment', epochs=10)

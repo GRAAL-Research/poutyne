@@ -26,6 +26,9 @@ Note that you can also pass the PyTorch loss functions as a loss function in :cl
 .. autofunction:: acc
 .. autofunction:: bin_acc
 
+
+.. _epoch_metrics:
+
 Epoch Metrics
 -------------
 

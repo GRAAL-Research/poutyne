@@ -1,6 +1,8 @@
 .. role:: hidden
     :class: hidden-section
 
+.. _tips_and_tricks:
+
 Tips and Tricks
 *************************
 
@@ -321,15 +323,14 @@ One nice feature of Poutyne is :class:`callbacks <poutyne.Callback>`. Callbacks 
             CSVLogger(name_of_network + '_log.tsv', separator='\t'),
         ]
 
+.. _making_your_own_callback:
+
 Making Your own Callback
 ========================
 
 While Poutyne provides a great number of :class:`callbacks <poutyne.Callback>`, it is sometimes useful to make your own callback.
 
 In the following example, we want to see the effect of temperature on the optimization of our neural network. To do so, we either increase or decrease the temperature during the optimization. As one can see in the result, temperature either as no effect or has a detrimental effect on the performance of the neural network. This is so because the temperature has for effect to artificially changing the learning rates. Since we have found the right learning rate, increasing or decreasing, it shows no improvement on the results.
-
-.. Note:: Since we use a mask, y_true is a tuple where the first element is the ground truth and the second one is the mask.
-
 
 .. code-block:: python
 
@@ -346,12 +347,11 @@ In the following example, we want to see the effect of temperature on the optimi
         def __init__(self, initial_temperature):
             super().__init__()
             self.temperature = initial_temperature
-            self.celoss = nn.CrossEntropyLoss(ignore_index=-100)  # we use the same -100 ignore index
+            self.celoss = nn.CrossEntropyLoss()
 
         def forward(self, y_pred, y_true):
             y_pred = y_pred / self.temperature
-            # Since y_true is a tuple where y_true[1] is the mask
-            return self.celoss(y_pred, y_true[0])
+            return self.celoss(y_pred, y_true)
 
 
     class TemperatureCallback(Callback):
@@ -382,7 +382,7 @@ Now let's test our training loop for one epoch using the accuracy as the batch m
 
 .. code-block:: python
 
-    model = Model(full_network, optimizer, loss_function, batch_metrics=[accuracy])
+    model = Model(full_network, optimizer, loss_function, batch_metrics=['accuracy'])
     model.to(device)
     model.fit_generator(train_loader,
                         valid_loader,

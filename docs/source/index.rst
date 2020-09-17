@@ -21,8 +21,6 @@ Use Poutyne to:
 - Train models easily.
 - Use callbacks to save your best model, perform early stopping and much more.
 
-Read the documentation at `Poutyne.org <https://poutyne.org>`__.
-
 Poutyne is compatible with the **latest version of PyTorch** and  **Python >= 3.6**.
 
 Cite
@@ -50,6 +48,7 @@ Here is a simple example:
 
   # Import the Poutyne Model and define a toy dataset
   from poutyne import Model
+  import torch
   import torch.nn as nn
   import numpy as np
 
@@ -70,6 +69,14 @@ Here is a simple example:
   test_y = np.random.randint(num_classes, size=num_test_samples).astype('int64')
 
 
+Select a PyTorch device so that it runs on GPU if you have one:
+
+.. code-block:: python
+
+  cuda_device = 0
+  device = torch.device("cuda:%d" % cuda_device if torch.cuda.is_available() else "cpu")
+
+
 Create yourself a `PyTorch <https://pytorch.org/docs/master/nn.html>`__ network:
 
 .. code-block:: python
@@ -87,6 +94,7 @@ You can now use Poutyne's model to train your network easily:
 
   model = Model(network, 'sgd', 'cross_entropy',
                 batch_metrics=['accuracy'], epoch_metrics=['f1'])
+  model.to(device)
   model.fit(
       train_x, train_y,
       validation_data=(valid_x, valid_y),
@@ -111,8 +119,32 @@ Or only predict on new data:
 
   predictions = model.predict(test_x)
 
+`See the complete code here. <https://github.com/GRAAL-Research/poutyne/blob/master/examples/basic_random_classification.py>`__ Also, `see this <https://github.com/GRAAL-Research/poutyne/blob/master/examples/basic_random_regression.py>`__ for an example for regression that also uses :ref:`epoch metrics <epoch_metrics>`.
 
-As you can see, Poutyne is inspired a lot by the friendliness of `Keras <https://keras.io/>`_. See the Poutyne documentation at `Poutyne.org <https://poutyne.org/>`_ for more.
+
+One of the strengths Poutyne are :ref:`callbacks <callbacks>`. They allow you to save checkpoints, log training statistics and more. See this `notebook <https://github.com/GRAAL-Research/poutyne/blob/master/examples/introduction_pytorch_poutyne.ipynb>`__ for an introduction to callbacks. In that vein, Poutyne also offers an :class:`~poutyne.Experiment` class that offers automatic checkpointing, logging and more using callbacks under the hood. Here is an example of usage.
+
+.. code-block:: python
+
+  from poutyne import Experiment, TensorDataset
+  from torch.utils.data import DataLoader
+
+  # We need to use dataloaders (i.e. an iterable of batches) with Experiment
+  train_loader = DataLoader(TensorDataset(train_x, train_y), batch_size=32)
+  valid_loader = DataLoader(TensorDataset(valid_x, valid_y), batch_size=32)
+  test_loader = DataLoader(TensorDataset(test_x, test_y), batch_size=32)
+
+  # Everything is saved in ./expt/my_classification_network
+  expt = Experiment('./expt/my_classification_network', network, device=device, optimizer='sgd', task='classif')
+
+  expt.train(train_loader, valid_loader, epochs=5)
+
+  expt.test(test_loader)
+
+`See the complete code here. <https://github.com/GRAAL-Research/poutyne/blob/master/examples/basic_random_classification_with_experiment.py>`__ Also, `see this <https://github.com/GRAAL-Research/poutyne/blob/master/examples/basic_random_regression_with_experiment.py>`__ for an example for regression that again also uses :ref:`epoch metrics <epoch_metrics>`.
+
+
+As you can see, Poutyne is inspired a lot by the friendliness of `Keras <https://keras.io/>`_.
 
 
 Installation
@@ -141,19 +173,19 @@ Examples
 
 Look at notebook files with full working `examples <https://github.com/GRAAL-Research/poutyne/blob/master/examples/>`_:
 
-- `introduction_pytorch_poutyne.ipynb <https://github.com/GRAAL-Research/poutyne/blob/master/examples/introduction_pytorch_poutyne.ipynb>`__  (`tutorial version <https://github.com/GRAAL-Research/poutyne/blob/master/tutorials/introduction_pytorch_poutyne_tutorial.ipynb>`_) - comparison of Poutyne with bare PyTorch and example of a Poutyne callback.
+- `introduction_pytorch_poutyne.ipynb <https://github.com/GRAAL-Research/poutyne/blob/master/examples/introduction_pytorch_poutyne.ipynb>`__  (`tutorial version <https://github.com/GRAAL-Research/poutyne/blob/master/tutorials/introduction_pytorch_poutyne_tutorial.ipynb>`_) - comparison of Poutyne with bare PyTorch and usage examples of Poutyne callbacks and the Experiment class.
+- `tips_and_tricks.ipynb <https://github.com/GRAAL-Research/poutyne/blob/master/examples/tips_and_tricks.ipynb>`__ -  tips and tricks using Poutyne
 - `transfer_learning.ipynb <https://github.com/GRAAL-Research/poutyne/blob/master/examples/transfer_learning.ipynb>`__ - transfer learning on ``ResNet-18`` on the `CUB-200 <http://www.vision.caltech.edu/visipedia/CUB-200-2011.html>`__ dataset.
 - `policy_cifar_example.ipynb <https://github.com/GRAAL-Research/poutyne/blob/master/examples/policy_cifar_example.ipynb>`__ - policies API, FastAI-like learning rate policies
 - `policy_interface.ipynb <https://github.com/GRAAL-Research/poutyne/blob/master/examples/policy_interface.ipynb>`__ - example of policies
-- `tips_and_tricks.ipynb <https://github.com/GRAAL-Research/poutyne/blob/master/examples/tips_and_tricks.ipynb>`__ -  tips and tricks using Poutyne
 
 or in ``Google Colab``:
 
-- `introduction_pytorch_poutyne.ipynb <https://colab.research.google.com/github/GRAAL-Research/poutyne/blob/master/examples/introduction_pytorch_poutyne.ipynb>`__ (`tutorial version <https://colab.research.google.com/github/GRAAL-Research/poutyne/blob/master/tutorials/introduction_pytorch_poutyne_tutorial.ipynb>`__) - comparison of Poutyne with bare PyTorch and example of a Poutyne callback.
+- `introduction_pytorch_poutyne.ipynb <https://colab.research.google.com/github/GRAAL-Research/poutyne/blob/master/examples/introduction_pytorch_poutyne.ipynb>`__ (`tutorial version <https://colab.research.google.com/github/GRAAL-Research/poutyne/blob/master/tutorials/introduction_pytorch_poutyne_tutorial.ipynb>`__) - comparison of Poutyne with bare PyTorch and usage examples of Poutyne callbacks and the Experiment class.
+- `tips_and_tricks.ipynb <https://colab.research.google.com/github/GRAAL-Research/poutyne/blob/master/examples/tips_and_tricks.ipynb>`__ -  tips and tricks using Poutyne.
 - `transfer_learning.ipynb <https://colab.research.google.com/github/GRAAL-Research/poutyne/blob/master/examples/transfer_learning.ipynb>`__ - transfer learning on ``ResNet-18`` on the `CUB-200 <http://www.vision.caltech.edu/visipedia/CUB-200-2011.html>`__ dataset.
 - `policy_cifar_example.ipynb <https://colab.research.google.com/github/GRAAL-Research/poutyne/blob/master/examples/policy_cifar_example.ipynb>`__ - policies API, FastAI-like learning rate policies
 - `policy_interface.ipynb <https://colab.research.google.com/github/GRAAL-Research/poutyne/blob/master/examples/policy_interface.ipynb>`__ - example of policies
-- `tips_and_tricks.ipynb <https://colab.research.google.com/github/GRAAL-Research/poutyne/blob/master/examples/tips_and_tricks.ipynb>`__ -  tips and tricks using Poutyne.
 
 Videos
 ------
