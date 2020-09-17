@@ -26,10 +26,11 @@ But first, let's import all the needed packages.
     import torch.optim as optim
     import torchvision.models as models
     from torch.utils import model_zoo
+    from torch.utils.data import DataLoader
     from torchvision import transforms
     from torchvision.datasets import ImageFolder
 
-    from poutyne import set_seeds, Model, ModelCheckpoint, CSVLogger
+    from poutyne import set_seeds, Model, ModelCheckpoint, CSVLogger, Experiment
 
 
 Also, we need to set Pythons's, NumPy's and PyTorch's seeds by using Poutyne function so that our training is (almost) reproducible.
@@ -43,8 +44,10 @@ Also, we need to set Pythons's, NumPy's and PyTorch's seeds by using Poutyne fun
 
     def download_and_extract_dataset(path):
         tgz_filename = "images.tgz"
+        print("Downloading dataset...")
         urllib.request.urlretrieve("https://graal.ift.ulaval.ca/public/CUB200.tgz", tgz_filename)
         os.makedirs(path, exist_ok=True)
+        print("Extracting archive...")
         archive = tarfile.open(tgz_filename)
         archive.extractall(path)
 
@@ -129,10 +132,9 @@ Creation of the PyTorch's datasets for our problem.
     valid_set = ImageFolder(valid_path, transform=transform)
     test_set = ImageFolder(test_path, transform=transform)
 
-
-    train_loader = torch.utils.data.DataLoader(train_set, batch_size=batch_size, shuffle=True)
-    valid_loader = torch.utils.data.DataLoader(valid_set, batch_size=batch_size)
-    test_loader = torch.utils.data.DataLoader(test_set, batch_size=batch_size)
+    train_loader = DataLoader(train_set, batch_size=batch_size, num_workers=8, shuffle=True)
+    valid_loader = DataLoader(valid_set, batch_size=batch_size, num_workers=8)
+    test_loader = DataLoader(test_set, batch_size=batch_size, num_workers=8)
 
 
 We load a pretrained ``ResNet-18`` networks and replace the head with the number of neurons equal to our number of classes.
@@ -239,3 +241,36 @@ Since we have created checkpoints using callbacks, we can restore the best model
 
     test_loss, (test_acc, test_f1) = model.evaluate_generator(test_loader)
     print('Test:\n\tLoss: {}\n\tAccuracy: {}\n\tF1-score: {}'.format(test_loss, test_acc, test_f1))
+
+We can also use the :class:`~poutyne.Experiment` class to train our network. This class saves checkpoints and logs as above in a directory and allows to stop and resume optimization at will. See :class:`documentation <poutyne.Experiment>` for details.
+
+.. code-block:: python
+
+    def experiment_train(epochs):
+        # Reload the pretrained network and freeze it except for its head.
+        resnet18 = models.resnet18(pretrained=True)
+        resnet18.fc = nn.Linear(resnet18.fc.in_features, num_classes)
+        freeze_weights(resnet18)
+
+        optimizer = optim.SGD(resnet18.fc.parameters(), lr=learning_rate, weight_decay=0.001)
+
+        # Poutyne Experiment
+        exp = Experiment('./cub200_resnet18_experiment', resnet18, device=device, optimizer=optimizer, task='classif')
+
+        # Train
+        exp.train(train_loader, valid_loader, epochs=epochs)
+
+        # Test
+        exp.test(test_loader)
+
+Let's train for 5 epochs.
+
+.. code-block:: python
+
+    experiment_train(epochs=5)
+
+Let's train for 5 more epochs (10 epochs total).
+
+.. code-block:: python
+
+    experiment_train(epochs=10)

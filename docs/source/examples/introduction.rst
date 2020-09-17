@@ -1,6 +1,7 @@
 .. role:: hidden
     :class: hidden-section
 
+
 .. _intro:
 
 Introduction to PyTorch and Poutyne
@@ -24,7 +25,7 @@ Let's import all the needed packages.
     import torch
     import torch.nn as nn
     import torch.optim as optim
-    from torch.utils.data.dataset import Subset
+    from torch.utils.data import Subset, DataLoader
     from torchvision import transforms, utils
     from torchvision.datasets.mnist import MNIST
 
@@ -36,6 +37,7 @@ Also, we need to set Pythons's, NumPy's and PyTorch's seeds by using Poutyne fun
 .. code-block:: python
 
     set_seeds(42)
+
 
 Basis of Training a Neural Network
 ==================================
@@ -85,9 +87,9 @@ The following loads the MNIST dataset and creates the PyTorch DataLoaders that s
     valid_indices = indices[split:]
     valid_dataset = Subset(full_train_dataset, valid_indices)
 
-    train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-    valid_loader = torch.utils.data.DataLoader(valid_dataset, batch_size=batch_size)
-    test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=batch_size)
+    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+    valid_loader = DataLoader(valid_dataset, batch_size=batch_size)
+    test_loader = DataLoader(test_dataset, batch_size=batch_size)
 
     loaders = train_loader, valid_loader, test_loader
 
@@ -462,10 +464,65 @@ Let's train the convolutional network.
     poutyne_train(conv_net)
 
 
+Poutyne Callbacks
+=================
+
+One nice feature of Poutyne is :class:`callbacks <poutyne.Callback>`. Callbacks allow doing actions during the training of the neural network. In the following example, we use three callbacks. One that saves the latest weights in a file to be able to continue the optimization at the end of training if more epochs are needed. Another one that saves the best weights according to the performance on the validation dataset. Finally, another one that saves the displayed logs into a TSV file.
+
+.. code-block:: python
+
+    def train_with_callbacks(name, pytorch_network):
+        """
+        In addition to the the `poutyne_train`, this function saves checkpoints and logs as described above.
+
+        Args:
+            name (str): a name used to save logs and checkpoints.
+            pytorch_network (torch.nn.Module): The neural network to train.
+        """
+        print(pytorch_network)
+
+        callbacks = [
+            # Save the latest weights to be able to continue the optimization at the end for more epochs.
+            ModelCheckpoint(name + '_last_epoch.ckpt', temporary_filename='last_epoch.ckpt.tmp'),
+
+            # Save the weights in a new file when the current model is better than all previous models.
+            ModelCheckpoint(name + '_best_epoch_{epoch}.ckpt', monitor='val_acc', mode='max', save_best_only=True, restore_best=True, verbose=True, temporary_filename='best_epoch.ckpt.tmp'),
+
+            # Save the losses and accuracies for each epoch in a TSV.
+            CSVLogger(name + '_log.tsv', separator='\t'),
+        ]
+
+        optimizer = optim.SGD(pytorch_network.parameters(), lr=learning_rate)
+        loss_function = nn.CrossEntropyLoss()
+
+        model = Model(pytorch_network, optimizer, loss_function, batch_metrics=['accuracy'])
+        model.to(device)
+        model.fit_generator(train_loader, valid_loader, epochs=num_epochs, callbacks=callbacks)
+
+        test_loss, test_acc = model.evaluate_generator(test_loader)
+        print('Test:\n\tLoss: {}\n\tAccuracy: {}'.format(test_loss, test_acc))
+
+
+Let's train the fully connected network with callbacks.
+
+.. code-block:: python
+
+    fc_net = create_fully_connected_network()
+    train_with_callbacks('fc', fc_net)
+
+Let's train the convolutional network with callbacks.
+
+.. code-block:: python
+
+    conv_net = create_convolutional_network()
+    train_with_callbacks('conv', conv_net)
+
+
 Making Your Own Callback
 ========================
 
 While Poutyne provides a great number of :ref:`predefined callbacks <callbacks>`, it is sometimes useful to make your own callback. In addition to the documentation of the :class:`~poutyne.Callback` class, see the :ref:`Making Your Own Callback section <making_your_own_callback>` in the :ref:`Tips and Tricks page <tips_and_tricks>` for an example.
+
 
 Poutyne Experiment
 ==================
