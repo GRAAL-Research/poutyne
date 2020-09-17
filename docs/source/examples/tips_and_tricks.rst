@@ -27,6 +27,7 @@ Let's import all the needed packages.
     import torch
     import torch.nn as nn
     import torch.optim as optim
+    from sklearn.metrics import roc_auc_score
     from torch.nn.utils.rnn import pad_packed_sequence, pack_padded_sequence, pad_sequence
     from torch.utils.data import DataLoader
 
@@ -266,7 +267,7 @@ To do this padding, we use the ``collate_fn`` argument of the PyTorch :class:`~t
 Full Network
 ^^^^^^^^^^^^
 
-Now, since we have packed the sequence, we cannot use the PyTorch :class:`~torch.nn.Sequential` constructor to define our model, so we will define the forward pass for it to unpack the sequences.
+Now, since we have packed the sequence, we cannot use the PyTorch :class:`~torch.nn.Sequential` constructor to define our model, so we will define the forward pass for it to unpack the sequences (again, read `this good explanation <https://stackoverflow.com/questions/51030782/why-do-we-pack-the-sequences-in-pytorch>`_ of why we pad and pack sequences).
 
 .. code-block:: python
 
@@ -328,7 +329,7 @@ One nice feature of Poutyne is :class:`callbacks <poutyne.Callback>`. Callbacks 
 Making Your own Callback
 ========================
 
-While Poutyne provides a great number of :class:`callbacks <poutyne.Callback>`, it is sometimes useful to make your own callback.
+While Poutyne provides a great number of :class:`predefined callbacks <poutyne.Callback>`, it is sometimes useful to make your own callback.
 
 In the following example, we want to see the effect of temperature on the optimization of our neural network. To do so, we either increase or decrease the temperature during the optimization. As one can see in the result, temperature either as no effect or has a detrimental effect on the performance of the neural network. This is so because the temperature has for effect to artificially changing the learning rates. Since we have found the right learning rate, increasing or decreasing, it shows no improvement on the results.
 
@@ -412,8 +413,6 @@ Epoch metrics
 =============
 
 It's also possible to used epoch metrics such as :class:`~poutyne.F1`. You could also define your own epoch metric using the :class:`~poutyne.EpochMetric` interface.
-
-Furthermore, you could also use the :class:`~poutyne.SKLearnMetrics` wrapper to wrap a scikit-learn metric as an epoch metric.
 
 .. code-block:: python
 
