@@ -177,7 +177,7 @@ class ColorProgress:
                                                                                                         epochs)
 
     def _get_formatted_epoch_total_time(self, epoch_total_time: float) -> str:
-        return self.time_color + "%.0fs " % epoch_total_time
+        return self.time_color + "%.2fs " % epoch_total_time
 
     def _get_formatted_time(self, time: float, steps) -> str:
         if steps is None:
