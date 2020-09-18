@@ -23,6 +23,22 @@ In addition to the predefined batch metrics below, all PyTorch loss functions ca
 The key in :class:`callback logs<poutyne.Callback>` associated with each of them is the same as its name but without the ``_loss`` suffix. For example, the loss function :func:`~torch.nn.functional.mse_loss` can be passed as a batch metric with the name ``'mse_loss'`` or simply ``'mse'`` and the keys are going to be ``'mse'`` and ``'val_mse'`` for the training and validation MSE, respectively.
 Note that you can also pass the PyTorch loss functions as a loss function in :class:`~poutyne.Model` in the same way.
 
+.. _object_oriented_batch_metrics:
+
+Object-Oriented API
+~~~~~~~~~~~~~~~~~~~
+
+Below are classes for predefined batch metrics available in Poutyne.
+
+.. autoclass:: Accuracy
+.. autoclass:: BinaryAccuracy
+
+
+Functional
+~~~~~~~~~~
+
+Below is the functional version of the classes in the :ref:`object_oriented_batch_metrics` section.
+
 .. autofunction:: acc
 .. autofunction:: bin_acc
 

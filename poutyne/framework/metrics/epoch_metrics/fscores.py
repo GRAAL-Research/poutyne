@@ -187,7 +187,7 @@ class FBeta(EpochMetric):
 
         y_true = y_true.float()
 
-        argmax_y_pred = y_pred.max(dim=1)[1].float()
+        argmax_y_pred = y_pred.argmax(1).float()
         true_positives = (y_true == argmax_y_pred) * mask
         true_positives_bins = y_true[true_positives]
 
