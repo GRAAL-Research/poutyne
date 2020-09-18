@@ -1,4 +1,3 @@
-
 from unittest import TestCase, skipIf
 
 import numpy as np
@@ -84,6 +83,7 @@ class AccuracyTest(TestCase):
 
 
 class IgnoreIndexAccuracyTest(TestCase):
+
     def setUp(self):
         self.predictions = torch.Tensor([[0.35, 0.25, 0.1, 0.1, 0.2], [0.1, 0.6, 0.1, 0.2, 0.0],
                                          [0.1, 0.6, 0.1, 0.2, 0.0], [0.1, 0.5, 0.1, 0.2, 0.0],
@@ -126,11 +126,10 @@ class IgnoreIndexAccuracyTest(TestCase):
         np.testing.assert_almost_equal(20., actual)
 
 
-
 class BinaryAccuracyTest(TestCase):
 
     def setUp(self):
-        self.predictions = torch.Tensor([-0.45, -0.66,  0.8 , -1.65,  0.42, -0.04, -0.99, -0.46,  1.12, 1.93])
+        self.predictions = torch.Tensor([-0.45, -0.66, 0.8, -1.65, 0.42, -0.04, -0.99, -0.46, 1.12, 1.93])
         self.label_predictions = torch.Tensor([0., 0., 1., 0., 1., 0., 0., 0., 1., 1.])
         self.targets = torch.Tensor([1., 0., 0., 0., 1., 0., 0., 1., 1., 0.])
         self.binary_accuracy = (self.label_predictions == self.targets).float().mean() * 100

@@ -1,3 +1,5 @@
+# Because nn.Module has the abstract method _forward_unimplemented
+# pylint: disable=abstract-method
 import torch.nn as nn
 import torch.nn.functional as F
 
@@ -5,6 +7,7 @@ from .metrics_registering import register_batch_metric, register_batch_metric_fu
 
 
 class BatchMetric(nn.Module):
+
     def __init__(self, reduction: str = 'mean'):
         super().__init__()
         REDUCTIONS = ['none', 'mean', 'sum']
@@ -53,6 +56,7 @@ class Accuracy(BatchMetric):
 
     def forward(self, y_pred, y_true):
         return acc(y_pred, y_true, ignore_index=self.ignore_index, reduction=self.reduction)
+
 
 @register_batch_metric('acc', 'accuracy')
 def acc(y_pred, y_true, ignore_index=-100, reduction='mean'):
