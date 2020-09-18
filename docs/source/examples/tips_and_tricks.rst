@@ -283,10 +283,12 @@ Now, since we have packed the sequence, we cannot use the PyTorch :class:`~torch
             """
                 Defines the computation performed at every call.
             """
+            total_length = padded_sequences_vectors.shape[1]
+
             pack_padded_sequences_vectors = pack_padded_sequence(padded_sequences_vectors, lengths, batch_first=True)
 
             lstm_out, self.hidden_state = self.lstm_network(pack_padded_sequences_vectors)
-            lstm_out, _ = pad_packed_sequence(lstm_out, batch_first=True)
+            lstm_out, _ = pad_packed_sequence(lstm_out, batch_first=True, total_length=total_length)
 
             tag_space = self.fully_connected_network(lstm_out)
             return tag_space.transpose(-1, 1) # we need to transpose since it's a sequence
