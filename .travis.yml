@@ -18,7 +18,7 @@ script:
   - yapf --diff --recursive tests/
   - pylint poutyne/
   - pylint tests/
-  - pytest
+  - pytest tests/
   - cd docs
   - ./rebuild_html_doc.sh
   - cd ..
