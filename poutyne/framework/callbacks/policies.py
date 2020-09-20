@@ -1,15 +1,3 @@
-"""
-The ``policies`` module is an alternative way to configure your training process. It gives you fine
-grained control over the process.
-
-The training is divided into phases with the :class:`~poutyne.Phase` class.
-A :class:`~poutyne.Phase` contains parameter spaces (e.g. learning rate,
-or momentum, or both) for the optimizer. You chain :class:`~poutyne.Phase`
-instances by passing them to the :class:`~poutyne.OptimizerPolicy`.
-:class:`~poutyne.OptimizerPolicy` is a :class:`~poutyne.Callback`
-that uses the phases, steps through them, and sets the parameters of the optimizer.
-"""
-###############################################################################
 import contextlib
 from collections import OrderedDict
 from itertools import islice, chain
