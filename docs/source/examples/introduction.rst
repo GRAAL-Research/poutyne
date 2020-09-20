@@ -87,9 +87,9 @@ The following loads the MNIST dataset and creates the PyTorch DataLoaders that s
     valid_indices = indices[split:]
     valid_dataset = Subset(full_train_dataset, valid_indices)
 
-    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-    valid_loader = DataLoader(valid_dataset, batch_size=batch_size)
-    test_loader = DataLoader(test_dataset, batch_size=batch_size)
+    train_loader = DataLoader(train_dataset, batch_size=batch_size, num_workers=2, shuffle=True)
+    valid_loader = DataLoader(valid_dataset, batch_size=batch_size, num_workers=2)
+    test_loader = DataLoader(test_dataset, batch_size=batch_size, num_workers=2)
 
     loaders = train_loader, valid_loader, test_loader
 
