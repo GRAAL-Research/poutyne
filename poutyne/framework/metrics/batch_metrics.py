@@ -2,7 +2,7 @@
 # pylint: disable=abstract-method
 import torch.nn as nn
 
-from .metrics_registering import register_batch_metric
+from .metrics_registering import register_batch_metric, register_batch_metric_function
 
 
 class BatchMetric(nn.Module):
@@ -152,16 +152,16 @@ class TopKAccuracy(BatchMetric):
 
 
     Possible string name in :class:`batch_metrics argument <poutyne.Model>`:
-        - ``'top1'``
-        - ``'top1_acc'``
-        - ``'top1_accuracy'``
-        - ``'top5'``
-        - ``'top5_acc'``
-        - ``'top5_accuracy'``
+        - ``'top{k}'``
+        - ``'top{k}_acc'``
+        - ``'top{k}_accuracy'``
+
+        for ``{k}`` from 1 to 10, 20, 30, ..., 100.
 
     Keys in :class:`logs<poutyne.Callback>` dictionary of callbacks:
         - Train: ``'top{k}'``
         - Validation: ``'val_top{k}'``
+
         where ``{k}`` is replaced by the value of parameter ``k``.
 
     Shape:
@@ -211,6 +211,12 @@ def top1(y_pred, y_true, **kwargs):
     return acc(y_pred, y_true, **kwargs)
 
 
-@register_batch_metric('top5', 'top5acc', 'top5accuracy')
-def top5(y_pred, y_true, **kwargs):
-    return topk(y_pred, y_true, 5, **kwargs)
+for k_value in range(2, 11):
+    register_batch_metric_function(TopKAccuracy(k_value),
+                                   [f'top{k_value}', f'top{k_value}acc', f'top{k_value}accuracy'])
+del k_value
+
+for k_value in range(20, 110, 10):
+    register_batch_metric_function(TopKAccuracy(k_value),
+                                   [f'top{k_value}', f'top{k_value}acc', f'top{k_value}accuracy'])
+del k_value
