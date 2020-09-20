@@ -134,3 +134,83 @@ def bin_acc(y_pred, y_true, *, threshold=0., reduction='mean'):
     elif reduction == 'sum':
         acc_pred = acc_pred.sum()
     return acc_pred * 100
+
+
+class TopKAccuracy(BatchMetric):
+    r"""
+    This metric computes the top-k accuracy using a similar interface to
+    :class:`~torch.nn.CrossEntropyLoss`.
+
+    Args:
+        k (int): Specifies the value of ``k`` in the top-k accuracy.
+        ignore_index (int): Specifies a target value that is ignored and does not contribute
+            to the top-k accuracy. (Default value = -100)
+        reduction (string, optional): Specifies the reduction to apply to the output:
+            ``'none'`` | ``'mean'`` | ``'sum'``. ``'none'``: no reduction will be applied,
+            ``'mean'``: the sum of the output will be divided by the number of
+            elements in the output, ``'sum'``: the output will be summed.
+
+
+    Possible string name in :class:`batch_metrics argument <poutyne.Model>`:
+        - ``'top1'``
+        - ``'top1_acc'``
+        - ``'top1_accuracy'``
+        - ``'top5'``
+        - ``'top5_acc'``
+        - ``'top5_accuracy'``
+
+    Keys in :class:`logs<poutyne.Callback>` dictionary of callbacks:
+        - Train: ``'top{k}'``
+        - Validation: ``'val_top{k}'``
+        where ``{k}`` is replaced by the value of parameter ``k``.
+
+    Shape:
+        - Input: :math:`(N, C)` where `C = number of classes`, or
+          :math:`(N, C, d_1, d_2, ..., d_K)` with :math:`K \geq 1` in the case of
+          `K`-dimensional top-k accuracy.
+        - Target: :math:`(N)` where each value is :math:`0 \leq \text{targets}[i] \leq C-1`, or
+          :math:`(N, d_1, d_2, ..., d_K)` with :math:`K \geq 1` in the case of
+          K-dimensional top-k accuracy.
+        - Output: The top-k accuracy.
+    """
+
+    def __init__(self, k: int, *, ignore_index: int = -100, reduction: str = 'mean'):
+        super().__init__(reduction)
+        self.__name__ = f'top{k}'
+        self.k = k
+        self.ignore_index = ignore_index
+
+    def forward(self, y_pred, y_true):
+        return topk(y_pred, y_true, self.k, ignore_index=self.ignore_index, reduction=self.reduction)
+
+
+def topk(y_pred, y_true, k, *, ignore_index=-100, reduction='mean'):
+    """
+    Computes the top-k accuracy.
+
+    This is a functionnal version of :class:`~poutyne.TopKAccuracy`.
+
+    See :class:`~poutyne.TopKAccuracy` for details.
+    """
+    topk_pred = y_pred.topk(k, dim=1)[1]
+    weights = (y_true != ignore_index).float()
+    num_labels = weights.sum()
+    topk_acc = (y_true.unsqueeze(1) == topk_pred).any(1).float() * weights
+
+    if reduction in ['mean', 'sum']:
+        topk_acc = topk_acc.sum()
+
+    if reduction == 'mean':
+        topk_acc = topk_acc / num_labels
+
+    return topk_acc * 100
+
+
+@register_batch_metric('top1', 'top1acc', 'top1accuracy')
+def top1(y_pred, y_true, **kwargs):
+    return acc(y_pred, y_true, **kwargs)
+
+
+@register_batch_metric('top5', 'top5acc', 'top5accuracy')
+def top5(y_pred, y_true, **kwargs):
+    return topk(y_pred, y_true, 5, **kwargs)

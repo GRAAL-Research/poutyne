@@ -32,6 +32,7 @@ Below are classes for predefined batch metrics available in Poutyne.
 
 .. autoclass:: Accuracy
 .. autoclass:: BinaryAccuracy
+.. autoclass:: TopKAccuracy
 
 
 Functional
@@ -41,6 +42,7 @@ Below is the functional version of the classes in the :ref:`object_oriented_batc
 
 .. autofunction:: acc
 .. autofunction:: bin_acc
+.. autofunction:: topk
 
 
 .. _epoch_metrics:

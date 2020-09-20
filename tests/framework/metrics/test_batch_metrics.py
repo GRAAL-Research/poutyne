@@ -3,7 +3,7 @@ from unittest import TestCase, skipIf
 import numpy as np
 import torch
 
-from poutyne import Accuracy, BinaryAccuracy, acc, bin_acc
+from poutyne import Accuracy, BinaryAccuracy, TopKAccuracy, acc, bin_acc, topk
 
 
 class AccuracyTest(TestCase):
@@ -14,7 +14,8 @@ class AccuracyTest(TestCase):
                                          [0.1, 0.2, 0.1, 0.7, 0.0], [0.1, 0.6, 0.1, 0.2, 0.0]])
         self.label_predictions = torch.Tensor([0, 1, 1, 1, 3, 1])
         self.targets = torch.Tensor([0, 4, 1, 0, 3, 0])
-        self.accuracy = (self.label_predictions == self.targets).float().mean() * 100
+        self.accuracy_none = (self.label_predictions == self.targets).float() * 100
+        self.accuracy = self.accuracy_none.mean()
 
     def test_standard(self):
         accuracy = Accuracy()
@@ -54,12 +55,12 @@ class AccuracyTest(TestCase):
         accuracy = Accuracy(reduction='none')
         actual = accuracy(self.predictions, self.targets)
         self.assertEqual(self.targets.shape, actual.shape)
-        self.assertTrue(torch.all(100. * (self.label_predictions == self.targets).float() == actual))
+        self.assertTrue(torch.all(self.accuracy_none == actual))
 
     def test_functional_none(self):
         actual = acc(self.predictions, self.targets, reduction='none')
         self.assertEqual(self.targets.shape, actual.shape)
-        self.assertTrue(torch.all(100. * (self.label_predictions == self.targets).float() == actual))
+        self.assertTrue(torch.all(self.accuracy_none == actual))
 
     def test_none_hundred(self):
         accuracy = Accuracy(reduction='none')
@@ -132,35 +133,36 @@ class BinaryAccuracyTest(TestCase):
         self.predictions = torch.Tensor([-0.45, -0.66, 0.8, -1.65, 0.42, -0.04, -0.99, -0.46, 1.12, 1.93])
         self.label_predictions = torch.Tensor([0., 0., 1., 0., 1., 0., 0., 0., 1., 1.])
         self.targets = torch.Tensor([1., 0., 0., 0., 1., 0., 0., 1., 1., 0.])
-        self.binary_accuracy = (self.label_predictions == self.targets).float().mean() * 100
+        self.binary_accuracy_none = (self.label_predictions == self.targets).float() * 100
+        self.binary_accuracy = self.binary_accuracy_none.mean()
 
     def test_standard(self):
         binary_accuracy = BinaryAccuracy()
         actual = binary_accuracy(self.predictions, self.targets)
         self.assertEqual((), actual.shape)
-        np.testing.assert_almost_equal(self.binary_accuracy, actual)
+        np.testing.assert_almost_equal(self.binary_accuracy, actual, decimal=5)
 
     def test_functional(self):
         actual = bin_acc(self.predictions, self.targets)
         self.assertEqual((), actual.shape)
-        np.testing.assert_almost_equal(self.binary_accuracy, actual)
+        np.testing.assert_almost_equal(self.binary_accuracy, actual, decimal=5)
 
     def test_hundred(self):
         binary_accuracy = BinaryAccuracy()
         actual = binary_accuracy(self.predictions, self.label_predictions)
         self.assertEqual((), actual.shape)
-        np.testing.assert_almost_equal(100., actual)
+        np.testing.assert_almost_equal(100., actual, decimal=5)
 
     def test_sum(self):
         binary_accuracy = BinaryAccuracy(reduction='sum')
         actual = binary_accuracy(self.predictions, self.targets)
         self.assertEqual((), actual.shape)
-        np.testing.assert_almost_equal((self.label_predictions == self.targets).float().sum() * 100, actual)
+        np.testing.assert_almost_equal(self.binary_accuracy_none.sum(), actual)
 
     def test_functional_sum(self):
         actual = bin_acc(self.predictions, self.targets, reduction='sum')
         self.assertEqual((), actual.shape)
-        np.testing.assert_almost_equal((self.label_predictions == self.targets).float().sum() * 100, actual)
+        np.testing.assert_almost_equal(self.binary_accuracy_none.sum(), actual)
 
     def test_sum_hundred(self):
         binary_accuracy = BinaryAccuracy(reduction='sum')
@@ -172,12 +174,12 @@ class BinaryAccuracyTest(TestCase):
         binary_accuracy = BinaryAccuracy(reduction='none')
         actual = binary_accuracy(self.predictions, self.targets)
         self.assertEqual(self.targets.shape, actual.shape)
-        self.assertTrue(torch.all(100. * (self.label_predictions == self.targets).float() == actual))
+        self.assertTrue(torch.all(self.binary_accuracy_none == actual))
 
     def test_functional_none(self):
         actual = bin_acc(self.predictions, self.targets, reduction='none')
         self.assertEqual(self.targets.shape, actual.shape)
-        self.assertTrue(torch.all(100. * (self.label_predictions == self.targets).float() == actual))
+        self.assertTrue(torch.all(self.binary_accuracy_none == actual))
 
     def test_none_hundred(self):
         binary_accuracy = BinaryAccuracy(reduction='none')
@@ -206,10 +208,131 @@ class BinaryAccuracyTest(TestCase):
         binary_accuracy.cuda()
         actual = binary_accuracy(self.predictions.cuda(), self.targets.cuda())
         self.assertEqual((), actual.shape)
-        np.testing.assert_almost_equal(self.binary_accuracy, actual.cpu())
+        np.testing.assert_almost_equal(self.binary_accuracy, actual.cpu(), decimal=5)
 
     @skipIf(not torch.cuda.is_available(), "no gpu available")
     def test_functional_on_gpu(self):
         actual = bin_acc(self.predictions.cuda(), self.targets.cuda())
         self.assertEqual((), actual.shape)
-        np.testing.assert_almost_equal(self.binary_accuracy, actual.cpu())
+        np.testing.assert_almost_equal(self.binary_accuracy, actual.cpu(), decimal=5)
+
+
+class TopKAccuracyTest(TestCase):
+
+    def setUp(self):
+        self.predictions = torch.Tensor([[0.35, 0.25, 0.1, 0.1, 0.2], [0.1, 0.7, 0.0, 0.2, 0.0],
+                                         [0.0, 0.7, 0.1, 0.2, 0.0], [0.1, 0.5, 0.0, 0.3, 0.0],
+                                         [0.0, 0.3, 0.1, 0.7, 0.0], [0.1, 0.6, 0.0, 0.3, 0.0]])
+        self.top_3_label_predictions = torch.Tensor([[0, 1, 4], [1, 3, 0], [1, 3, 0], [1, 3, 0], [3, 1, 2], [1, 3, 0]])
+        self.targets = torch.Tensor([0, 4, 1, 2, 3, 0])
+        self.top_k_acc_none = (self.top_3_label_predictions == self.targets.unsqueeze(1)).any(1).float() * 100
+        self.top_k_acc = self.top_k_acc_none.mean()
+
+    def test_standard(self):
+        top_k_acc = TopKAccuracy(3)
+        actual = top_k_acc(self.predictions, self.targets)
+        self.assertEqual((), actual.shape)
+        np.testing.assert_almost_equal(self.top_k_acc, actual, decimal=5)
+
+    def test_functional(self):
+        actual = topk(self.predictions, self.targets, 3)
+        self.assertEqual((), actual.shape)
+        np.testing.assert_almost_equal(self.top_k_acc, actual, decimal=5)
+
+    def test_hundred(self):
+        top_k_acc = TopKAccuracy(3)
+        actual = top_k_acc(self.predictions, self.top_3_label_predictions[:, 0])
+        self.assertEqual((), actual.shape)
+        np.testing.assert_almost_equal(100., actual)
+
+    def test_sum(self):
+        top_k_acc = TopKAccuracy(3, reduction='sum')
+        actual = top_k_acc(self.predictions, self.targets)
+        self.assertEqual((), actual.shape)
+        np.testing.assert_almost_equal(self.top_k_acc * len(self.predictions), actual, decimal=0)
+
+    def test_functional_sum(self):
+        actual = topk(self.predictions, self.targets, 3, reduction='sum')
+        self.assertEqual((), actual.shape)
+        np.testing.assert_almost_equal(self.top_k_acc * len(self.predictions), actual, decimal=0)
+
+    def test_sum_hundred(self):
+        top_k_acc = TopKAccuracy(3, reduction='sum')
+        actual = top_k_acc(self.predictions, self.top_3_label_predictions[:, 0])
+        self.assertEqual((), actual.shape)
+        np.testing.assert_almost_equal(100. * len(self.predictions), actual, decimal=0)
+
+    def test_none(self):
+        top_k_acc = TopKAccuracy(3, reduction='none')
+        actual = top_k_acc(self.predictions, self.targets)
+        self.assertEqual(self.targets.shape, actual.shape)
+        self.assertTrue(torch.all(self.top_k_acc_none == actual))
+
+    def test_functional_none(self):
+        actual = topk(self.predictions, self.targets, 3, reduction='none')
+        self.assertEqual(self.targets.shape, actual.shape)
+        self.assertTrue(torch.all(self.top_k_acc_none == actual))
+
+    def test_none_hundred(self):
+        top_k_acc = TopKAccuracy(3, reduction='none')
+        actual = top_k_acc(self.predictions, self.top_3_label_predictions[:, 0])
+        self.assertEqual(self.targets.shape, actual.shape)
+        self.assertTrue(torch.all(100. * torch.ones_like(self.targets).float() == actual))
+
+    @skipIf(not torch.cuda.is_available(), "no gpu available")
+    def test_on_gpu(self):
+        top_k_acc = TopKAccuracy(3)
+        top_k_acc.cuda()
+        actual = top_k_acc(self.predictions.cuda(), self.targets.cuda())
+        self.assertEqual((), actual.shape)
+        np.testing.assert_almost_equal(self.top_k_acc, actual.cpu(), decimal=5)
+
+    @skipIf(not torch.cuda.is_available(), "no gpu available")
+    def test_functional_on_gpu(self):
+        actual = topk(self.predictions.cuda(), self.targets.cuda(), 3)
+        self.assertEqual((), actual.shape)
+        np.testing.assert_almost_equal(self.top_k_acc, actual.cpu(), decimal=5)
+
+
+class IgnoreIndexTopKAccuracyTest(TestCase):
+
+    def setUp(self):
+        self.predictions = torch.Tensor([[0.35, 0.25, 0.1, 0.1, 0.2], [0.1, 0.7, 0.0, 0.2, 0.0],
+                                         [0.0, 0.7, 0.1, 0.2, 0.0], [0.1, 0.5, 0.0, 0.3, 0.0],
+                                         [0.0, 0.3, 0.1, 0.7, 0.0], [0.1, 0.6, 0.0, 0.3, 0.0]])
+        self.top_3_label_predictions = torch.Tensor([[0, 1, 4], [1, 3, 0], [1, 3, 0], [1, 3, 0], [3, 1, 2], [1, 3, 0]])
+        self.targets = torch.Tensor([-100, 4, 1, -100, 3, 0])
+        self.top_k_acc = 75.
+
+    def test_standard(self):
+        top_k_acc = TopKAccuracy(3)
+        actual = top_k_acc(self.predictions, self.targets)
+        self.assertEqual((), actual.shape)
+        np.testing.assert_almost_equal(self.top_k_acc, actual)
+
+    def test_functional_standard(self):
+        actual = topk(self.predictions, self.targets, 3)
+        self.assertEqual((), actual.shape)
+        np.testing.assert_almost_equal(self.top_k_acc, actual)
+
+    def test_ignore_index_with_different_value(self):
+        top_k_acc = TopKAccuracy(3, ignore_index=-1)
+        actual = top_k_acc(self.predictions, self.targets)
+        self.assertEqual((), actual.shape)
+        self.assertAlmostEqual(50., float(actual), places=5)
+
+    def test_functional_ignore_index_with_different_value(self):
+        actual = topk(self.predictions, self.targets, 3, ignore_index=-1)
+        self.assertEqual((), actual.shape)
+        self.assertAlmostEqual(50., float(actual), places=5)
+
+    def test_ignore_index_with_valid_index(self):
+        top_k_acc = TopKAccuracy(3, ignore_index=1)
+        actual = top_k_acc(self.predictions, self.targets)
+        self.assertEqual((), actual.shape)
+        np.testing.assert_almost_equal(40., actual)
+
+    def test_functional_ignore_index_with_valid_index(self):
+        actual = topk(self.predictions, self.targets, 3, ignore_index=1)
+        self.assertEqual((), actual.shape)
+        np.testing.assert_almost_equal(40., actual)
