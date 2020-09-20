@@ -75,16 +75,23 @@ purpose.
 LR Schedulers
 -------------
 
-.. automodule:: poutyne.lr_scheduler
-    :members:
-    :exclude-members: ReduceLROnPlateau
+Poutyne's callbacks for learning rate schedulers are just wrappers around `PyTorch's learning rate
+schedulers <http://pytorch.org/docs/master/optim.html#how-to-adjust-learning-rate>`__ and thus have
+the same arguments except for the optimizer that has to be omitted.
 
+.. autoclass:: LambdaLR
+.. autoclass:: MultiplicativeLR
+.. autoclass:: StepLR
+.. autoclass:: MultiStepLR
+.. autoclass:: ExponentialLR
+.. autoclass:: CosineAnnealingLR
+.. autoclass:: CyclicLR
+.. autoclass:: OneCycleLR
+.. autoclass:: CosineAnnealingWarmRestarts
 .. autoclass:: ReduceLROnPlateau
 
 Policies
 --------
-
-.. automodule:: poutyne.policies
 
 .. autoclass:: Phase
 
