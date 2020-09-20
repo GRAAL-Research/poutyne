@@ -648,8 +648,9 @@ class Experiment:
         Computes and returns the loss and the metrics of the attribute model on a given test examples
         generator.
 
-        If the Experiment has logging enabled (i.e. self.logging is True), test and validation statistics
-        are saved in a specific test output .tsv file.
+        If the Experiment has logging enabled (i.e. self.logging is True), a checkpoint (the best one by default)
+        is loaded and test and validation statistics are saved in a specific test output .tsv file. Otherwise, the
+        current weights of the network is used for testing and statistics are only shown in the standard output.
 
         Args:
             test_generator: Generator-like object for the test set. See :func:`~Model.fit_generator()` for
@@ -662,13 +663,13 @@ class Experiment:
             checkpoint (Union[str, int]): Which model checkpoint weights to load for the test evaluation.
                 If 'best', will load the best weights according to ``monitor_metric`` and ``monitor_mode``.
                 If 'last', will load the last model checkpoint. If int, will load the checkpoint of the
-                specified epoch.
+                specified epoch. This argument has no effect when logging is disabled.
                 (Default value = 'best')
             seed (int, optional): Seed used to make the sampling deterministic.
                 (Default value = 42)
 
         If the Experiment has logging enabled (i.e. self.logging is True), one callback will be automatically
-        included to saved the test metrics. Moreover, a :class:`~callbacks.AtomicCSVLogger` will save the test
+        included to save the test metrics. Moreover, a :class:`~callbacks.AtomicCSVLogger` will save the test
         metrics in an output .tsv file.
 
         Returns:
@@ -681,7 +682,8 @@ class Experiment:
         # Copy callback list.
         callbacks = list(callbacks)
 
-        best_epoch_stats = self.load_checkpoint(checkpoint)
+        if self.logging:
+            best_epoch_stats = self.load_checkpoint(checkpoint)
 
         if len(self.model.metrics_names) > 0:
             test_loss, test_metrics = self.model.evaluate_generator(test_generator, steps=steps, callbacks=callbacks)
