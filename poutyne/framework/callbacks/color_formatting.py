@@ -167,30 +167,28 @@ class ColorProgress:
         sys.stdout.flush()
 
     def set_progress_bar(self, number_steps_per_epoch):
-        self.steps_progress_bar = ProgressBar(number_steps_per_epoch,
-                                              bar_format="%s{percentage} |%s{bar}%s|" %
-                                              (self.text_color, self.progress_bar_color, self.text_color))
+        bar_format = f"{self.text_color}{{percentage}} |{self.progress_bar_color}{{bar}}{self.text_color}|"
+        self.steps_progress_bar = ProgressBar(number_steps_per_epoch, bar_format=bar_format)
         self.progress_bar = True
 
     def _set_epoch_formatted_text(self, epoch_number: int, epochs: int) -> None:
-        self.epoch_formatted_text = "\r" + self.text_color + "Epoch: " + self.ratio_color + "%d/%d " % (epoch_number,
-                                                                                                        epochs)
+        self.epoch_formatted_text = f"\r{self.text_color}Epoch: {self.ratio_color}{epoch_number:d}/{epochs:d} "
 
     def _get_formatted_epoch_total_time(self, epoch_total_time: float) -> str:
-        return self.time_color + "%.2fs " % epoch_total_time
+        return f"{self.time_color}{epoch_total_time:.2f}s "
 
     def _get_formatted_time(self, time: float, steps) -> str:
         if steps is None:
-            formatted_time = self.time_color + "%.2fs/step " % time
+            formatted_time = f"{self.time_color}{time:.2f}s/step "
         else:
-            formatted_time = self.text_color + "ETA: " + self.time_color + "%.2fs " % time
+            formatted_time = f"{self.text_color}ETA: {self.time_color}{time:.2f}s "
         return formatted_time
 
     def _get_formatted_step(self, batch_number: int, steps: Union[int, None]) -> str:
         if steps is None:
-            formatted_step = self.text_color + "Step: " + self.ratio_color + "%d " % batch_number
+            formatted_step = f"{self.text_color}Step: {self.ratio_color}{batch_number:d} "
         else:
-            formatted_step = self.text_color + "Step: " + self.ratio_color + "%d/%d " % (batch_number, steps)
+            formatted_step = f"{self.text_color}Step: {self.ratio_color}{batch_number:d}/{steps:d} "
         return formatted_step
 
     def _get_formatted_metrics(self, metrics_str: str) -> str:
