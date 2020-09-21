@@ -2,7 +2,7 @@
 This script can be simply ran with:
 python basic_random_classification_with_experiment.py
 
-Look in ./expt/my_classification_network for the checkpoints and logging.
+Look in ./saves/my_classification_network for the checkpoints and logging.
 """
 
 # Import the Poutyne Model
@@ -44,8 +44,8 @@ train_loader = DataLoader(TensorDataset(train_x, train_y), batch_size=32)
 valid_loader = DataLoader(TensorDataset(valid_x, valid_y), batch_size=32)
 test_loader = DataLoader(TensorDataset(test_x, test_y), batch_size=32)
 
-# Everything is saved in ./expt/my_classification_network
-expt = Experiment('./expt/my_classification_network', network, device=device, optimizer='sgd', task='classif')
+# Everything is saved in ./saves/my_classification_network
+expt = Experiment('./saves/my_classification_network', network, device=device, optimizer='sgd', task='classif')
 
 expt.train(train_loader, valid_loader, epochs=5)
 

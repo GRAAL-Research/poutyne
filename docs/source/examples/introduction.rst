@@ -72,8 +72,8 @@ The following loads the MNIST dataset and creates the PyTorch DataLoaders that s
 
 .. code-block:: python
 
-    full_train_dataset = MNIST('./mnist/', train=True, download=True, transform=transforms.ToTensor())
-    test_dataset = MNIST('./mnist/', train=False, download=True, transform=transforms.ToTensor())
+    full_train_dataset = MNIST('./datasets/', train=True, download=True, transform=transforms.ToTensor())
+    test_dataset = MNIST('./datasets/', train=False, download=True, transform=transforms.ToTensor())
 
     num_data = len(full_train_dataset)
     indices = list(range(num_data))
@@ -481,15 +481,23 @@ One nice feature of Poutyne is :class:`callbacks <poutyne.Callback>`. Callbacks 
         """
         print(pytorch_network)
 
+        # We are saving everything into ./saves/{name}.
+        save_path = os.path.join('saves', name)
+
+        # Creating saving directory if necessary.
+        os.makedirs(save_path, exist_ok=True)
+
         callbacks = [
             # Save the latest weights to be able to continue the optimization at the end for more epochs.
-            ModelCheckpoint(name + '_last_epoch.ckpt', temporary_filename='last_epoch.ckpt.tmp'),
+            ModelCheckpoint(os.path.join(save_path, 'last_epoch.ckpt'), temporary_filename='last_epoch.ckpt.tmp'),
 
             # Save the weights in a new file when the current model is better than all previous models.
-            ModelCheckpoint(name + '_best_epoch_{epoch}.ckpt', monitor='val_acc', mode='max', save_best_only=True, restore_best=True, verbose=True, temporary_filename='best_epoch.ckpt.tmp'),
+            ModelCheckpoint(os.path.join(save_path, 'best_epoch_{epoch}.ckpt'), monitor='val_acc', mode='max',
+                            save_best_only=True, restore_best=True, verbose=True,
+                            temporary_filename=os.path.join(save_path, 'best_epoch.ckpt.tmp')),
 
             # Save the losses and accuracies for each epoch in a TSV.
-            CSVLogger(name + '_log.tsv', separator='\t'),
+            CSVLogger(os.path.join(save_path, 'log.tsv'), separator='\t'),
         ]
 
         optimizer = optim.SGD(pytorch_network.parameters(), lr=learning_rate)
@@ -535,7 +543,7 @@ The following code uses Poutyne's :class:`~poutyne.Experiment` class to train a 
 
 .. code-block:: python
 
-    def experiment_train(pytorch_network, working_directory, epochs=5):
+    def experiment_train(pytorch_network, name, epochs=5):
         """
         This function creates a Poutyne Experiment, trains the input module
         on the train loader and then tests its performance on the test loader.
@@ -549,8 +557,13 @@ The following code uses Poutyne's :class:`~poutyne.Experiment` class to train a 
         """
         print(pytorch_network)
 
+        optimizer = optim.SGD(pytorch_network.parameters(), lr=learning_rate)
+
+        # Everything is going to be saved in ./saves/{name}.
+        save_path = os.path.join('saves', name)
+
         # Poutyne Experiment
-        expt = Experiment(working_directory, pytorch_network, device=device, optimizer='sgd', task='classif')
+        expt = Experiment(save_path, pytorch_network, device=device, optimizer=optimizer, task='classif')
 
         # Train
         expt.train(train_loader, valid_loader, epochs=epochs)
@@ -563,11 +576,11 @@ Let's train the convolutional network with Experiment for 5 epochs. Everything i
 .. code-block:: python
 
     conv_net = create_convolutional_network()
-    experiment_train(conv_net, './conv_net_experiment')
+    experiment_train(conv_net, 'conv_net_experiment')
 
 Let's resume training for 5 more epochs (10 epochs total).
 
 .. code-block:: python
 
     conv_net = create_convolutional_network()
-    experiment_train(conv_net, './conv_net_experiment', epochs=10)
+    experiment_train(conv_net, 'conv_net_experiment', epochs=10)

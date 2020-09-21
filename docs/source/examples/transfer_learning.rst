@@ -43,10 +43,11 @@ Also, we need to set Pythons's, NumPy's and PyTorch's seeds by using Poutyne fun
 .. code-block:: python
 
     def download_and_extract_dataset(path):
-        tgz_filename = "images.tgz"
+        os.makedirs(path, exist_ok=True)
+        tgz_filename = os.path.join(path, "images.tgz")
+
         print("Downloading dataset...")
         urllib.request.urlretrieve("https://graal.ift.ulaval.ca/public/CUB200.tgz", tgz_filename)
-        os.makedirs(path, exist_ok=True)
         print("Extracting archive...")
         archive = tarfile.open(tgz_filename)
         archive.extractall(path)
@@ -90,7 +91,7 @@ We do the split train/valid/test.
 
 .. code-block:: python
 
-    base_path = './CUB200'
+    base_path = './datasets/CUB200'
     dataset_path = os.path.join(base_path, 'images')
     train_path = os.path.join(base_path, 'train')
     valid_path = os.path.join(base_path, 'valid')
@@ -160,16 +161,22 @@ We define callbacks for saving last epoch, best epoch and logging the results.
 
 .. code-block:: python
 
+    # We are saving everything into ./saves/cub200.
+    save_base_dir = 'saves'
+    save_path = os.path.join(save_base_dir, 'cub200')
+    os.makedirs(save_path, exist_ok=True)
+
     callbacks = [
         # Save the latest weights to be able to resume the optimization at the end for more epochs.
-        ModelCheckpoint('last_epoch.ckpt', temporary_filename='last_epoch.ckpt.tmp'),
+        ModelCheckpoint(os.path.join(save_path, 'last_epoch.ckpt'), temporary_filename='last_epoch.ckpt.tmp'),
 
         # Save the weights in a new file when the current model is better than all previous models.
-        ModelCheckpoint('best_epoch_{epoch}.ckpt', monitor='val_acc', mode='max', save_best_only=True,
-                        restore_best=True, verbose=True, temporary_filename='best_epoch.ckpt.tmp'),
+        ModelCheckpoint(os.path.join(save_path, 'best_epoch_{epoch}.ckpt'), monitor='val_acc', mode='max',
+                        save_best_only=True, restore_best=True, verbose=True,
+                        temporary_filename=os.path.join(save_path, 'best_epoch.ckpt.tmp')),
 
         # Save the losses and accuracies for each epoch in a TSV.
-        CSVLogger('log.tsv', separator='\t'),
+        CSVLogger(os.path.join(save_path, 'log.tsv'), separator='\t'),
     ]
 
 
@@ -193,7 +200,7 @@ Finally, we start the training and output its final test loss, accuracy, and mic
 
 .. code-block:: python
 
-    logs = pd.read_csv('log.tsv', sep='\t')
+    logs = pd.read_csv(os.path.join(save_path, 'log.tsv'), sep='\t')
     print(logs)
 
     best_epoch_idx = logs['val_acc'].idxmax()
@@ -237,7 +244,7 @@ Since we have created checkpoints using callbacks, we can restore the best model
 
     model.to(device)
 
-    model.load_weights('best_epoch_{epoch}.ckpt'.format(epoch=best_epoch))
+    model.load_weights(os.path.join(save_path, 'best_epoch_{epoch}.ckpt').format(epoch=best_epoch))
 
     test_loss, (test_acc, test_f1) = model.evaluate_generator(test_loader)
     print('Test:\n\tLoss: {}\n\tAccuracy: {}\n\tF1-score: {}'.format(test_loss, test_acc, test_f1))
@@ -252,10 +259,13 @@ We can also use the :class:`~poutyne.Experiment` class to train our network. Thi
         resnet18.fc = nn.Linear(resnet18.fc.in_features, num_classes)
         freeze_weights(resnet18)
 
+        # Saves everything into ./saves/cub200_resnet18_experiment
+        save_path = os.path.join(save_base_dir, 'cub200_resnet18_experiment')
+
         optimizer = optim.SGD(resnet18.fc.parameters(), lr=learning_rate, weight_decay=0.001)
 
         # Poutyne Experiment
-        exp = Experiment('./cub200_resnet18_experiment', resnet18, device=device, optimizer=optimizer, task='classif')
+        exp = Experiment(save_path, resnet18, device=device, optimizer=optimizer, task='classif')
 
         # Train
         exp.train(train_loader, valid_loader, epochs=epochs)

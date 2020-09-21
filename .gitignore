@@ -121,9 +121,5 @@ XDG_*
 *.bbl
 *.blg
 
-#bin file
-*.bin
-*.bin.gz
-
 # Ignore auto-generated Python version file
 poutyne/version.py

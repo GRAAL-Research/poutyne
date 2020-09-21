@@ -1,8 +1,4 @@
-images.tgz
-CUB200
-mnist
-*.tsv
-*.ckpt
-data
-conv_net_experiment
-cub200_resnet18_experiment
+datasets
+saves
+cc.fr.300.bin
+cc.fr.300.bin.gz

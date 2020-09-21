@@ -56,7 +56,7 @@ Load the data
 
 .. code-block:: python
 
-    root = "data"
+    root = "datasets"
     train_ds = datasets.CIFAR10(root, train=True, transform=train_transform, download=True)
     val_ds = datasets.CIFAR10(root, train=False, transform=val_transform, download=True)
 
@@ -66,13 +66,13 @@ Load the data
         train_ds,
         batch_size=batch_size,
         shuffle=True,
-        num_workers=8,
+        num_workers=8
     )
     val_dl = DataLoader(
         val_ds,
         batch_size=batch_size,
         shuffle=False,
-        num_workers=8,
+        num_workers=8
     )
 
 
@@ -95,7 +95,7 @@ Training without the ``policies`` module
 
 .. code-block:: python
 
-    pytorch_network = get_module().to(device)
+    pytorch_network = get_module()
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.SGD(pytorch_network.parameters(), lr=0.01)
 
@@ -124,7 +124,7 @@ Training with the ``policies`` module
 
 .. code-block:: python
 
-    pytorch_network = get_module().to(device)
+    pytorch_network = get_module()
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.SGD(pytorch_network.parameters(), lr=0.01)
 

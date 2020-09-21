@@ -115,18 +115,18 @@ Now let's download our dataset; it's already split into a train, valid and test 
 
         open(os.path.join(saving_dir, f"{data_type}.p"), 'wb').write(r.content)
 
-    download_data('./data/', "train")
-    download_data('./data/', "valid")
-    download_data('./data/', "test")
+    download_data('./datasets/addresses/', "train")
+    download_data('./datasets/addresses/', "valid")
+    download_data('./datasets/addresses/', "test")
 
 
 Now let's load in memory the data.
 
 .. code-block:: python
 
-    train_data = pickle.load(open("./data/train.p", "rb"))  # 80,000 examples
-    valid_data = pickle.load(open("./data/valid.p", "rb"))  # 20,000 examples
-    test_data = pickle.load(open("./data/test.p", "rb"))  # 30,000 examples
+    train_data = pickle.load(open("./datasets/addresses/train.p", "rb"))  # 80,000 examples
+    valid_data = pickle.load(open("./datasets/addresses/valid.p", "rb"))  # 20,000 examples
+    test_data = pickle.load(open("./datasets/addresses/test.p", "rb"))  # 30,000 examples
 
 If we take a look at the training dataset, it's a list of ``80,000`` tuples where the first element is the full address, and the second element is a list of the tag (the ground truth).
 
@@ -313,18 +313,22 @@ One nice feature of Poutyne is :class:`callbacks <poutyne.Callback>`. Callbacks 
 
 .. code-block:: python
 
-    name_of_network = "lstm_unidirectional"
+    # Saves everything into saves/lstm_unidirectional
+    save_path = "saves/lstm_unidirectional"
+    os.makedirs(save_path, exist_ok=True)
 
     callbacks = [
-            # Save the latest weights to be able to continue the optimization at the end for more epochs.
-            ModelCheckpoint(name_of_network + '_last_epoch.ckpt', temporary_filename='last_epoch.ckpt.tmp'),
+        # Save the latest weights to be able to continue the optimization at the end for more epochs.
+        ModelCheckpoint(os.path.join(save_path, 'last_epoch.ckpt'), temporary_filename='last_epoch.ckpt.tmp'),
 
-            # Save the weights in a new file when the current model is better than all previous models.
-            ModelCheckpoint(name_of_network + '_best_epoch_{epoch}.ckpt', monitor='val_accuracy', mode='max', save_best_only=True, restore_best=True, verbose=True, temporary_filename='best_epoch.ckpt.tmp'),
+        # Save the weights in a new file when the current model is better than all previous models.
+        ModelCheckpoint(os.path.join(save_path, 'best_epoch_{epoch}.ckpt'), monitor='val_acc', mode='max',
+                        save_best_only=True, restore_best=True, verbose=True,
+                        temporary_filename=os.path.join(save_path, 'best_epoch.ckpt.tmp')),
 
-            # Save the losses and accuracies for each epoch in a TSV.
-            CSVLogger(name_of_network + '_log.tsv', separator='\t'),
-        ]
+        # Save the losses and accuracies for each epoch in a TSV.
+        CSVLogger(os.path.join(save_path, 'log.tsv'), separator='\t'),
+    ]
 
 .. _making_your_own_callback:
 
