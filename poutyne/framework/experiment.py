@@ -592,8 +592,8 @@ class Experiment:
                 If 'best', will load the best weights according to ``monitor_metric`` and ``monitor_mode``.
                 If 'last', will load the last model checkpoint. If int, will load the checkpoint of the
                 specified epoch.
-            verbose (bool, optional): Whether or not to print the best epoch number and stats when
-                checkpoint is 'best'.
+            verbose (bool, optional): Whether or not to print the checkpoint filename, and the best epoch
+                number and stats when checkpoint is 'best'.
                 (Default value = False)
 
         Returns:
@@ -603,21 +603,24 @@ class Experiment:
         best_epoch_stats = None
 
         if isinstance(checkpoint, int):
-            self._load_epoch_checkpoint(checkpoint)
+            self._load_epoch_checkpoint(checkpoint, verbose=verbose)
         elif checkpoint == 'best':
             best_epoch_stats = self._load_best_checkpoint(verbose=verbose)
         elif checkpoint == 'last':
-            self._load_last_checkpoint()
+            self._load_last_checkpoint(verbose=verbose)
         else:
-            raise ValueError("checkpoint argument must be either 'best', 'last' or int. Found : {}".format(checkpoint))
+            raise ValueError(f"checkpoint argument must be either 'best', 'last' or int. Found : {checkpoint}")
 
         return best_epoch_stats
 
-    def _load_epoch_checkpoint(self, epoch: int) -> None:
+    def _load_epoch_checkpoint(self, epoch: int, *, verbose: bool = False) -> None:
         ckpt_filename = self.best_checkpoint_filename.format(epoch=epoch)
 
+        if verbose:
+            print(f"Loading checkpoint {ckpt_filename}")
+
         if not os.path.isfile(ckpt_filename):
-            raise ValueError("No checkpoint found for epoch {}".format(epoch))
+            raise ValueError(f"No checkpoint found for epoch {epoch}")
 
         self.model.load_weights(ckpt_filename)
 
@@ -628,13 +631,16 @@ class Experiment:
         if verbose:
             metrics_str = ', '.join('%s: %g' % (metric_name, best_epoch_stats[metric_name].item())
                                     for metric_name in best_epoch_stats.columns[2:])
-            print("Found best checkpoint at epoch: {}".format(best_epoch))
+            print(f"Found best checkpoint at epoch: {best_epoch}")
             print(metrics_str)
 
-        self._load_epoch_checkpoint(best_epoch)
+        self._load_epoch_checkpoint(best_epoch, verbose=verbose)
         return best_epoch_stats
 
-    def _load_last_checkpoint(self) -> None:
+    def _load_last_checkpoint(self, *, verbose: bool = False) -> None:
+        if verbose:
+            print(f"Loading checkpoint {self.model_checkpoint_filename}")
+
         self.model.load_weights(self.model_checkpoint_filename)
 
     def test(self,
