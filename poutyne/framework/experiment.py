@@ -689,7 +689,7 @@ class Experiment:
         callbacks = list(callbacks)
 
         if self.logging:
-            best_epoch_stats = self.load_checkpoint(checkpoint)
+            best_epoch_stats = self.load_checkpoint(checkpoint, verbose=True)
 
         if len(self.model.metrics_names) > 0:
             test_loss, test_metrics = self.model.evaluate_generator(test_generator, steps=steps, callbacks=callbacks)
@@ -704,8 +704,8 @@ class Experiment:
         test_metrics_values = np.concatenate(([test_loss], test_metrics))
 
         test_metrics_dict = dict(zip(test_metrics_names, test_metrics_values))
-        test_metrics_str = ', '.join('%s: %g' % (col, val) for col, val in test_metrics_dict.items())
-        print("On best model: %s" % test_metrics_str)
+        test_metrics_str = ''.join('\n\t%s: %g' % (col, val) for col, val in test_metrics_dict.items())
+        print("On best model:%s" % test_metrics_str)
 
         if self.logging:
             test_stats = pd.DataFrame([test_metrics_values], columns=test_metrics_names)
