@@ -67,7 +67,7 @@ def main():
         packages=packages,
         install_requires=['numpy', 'torch'],
         python_requires='>=3.6.1',
-        description='A Keras-like framework and utilities for PyTorch.',
+        description='A simplified framework and utilities for PyTorch.',
         long_description=readme,
         long_description_content_type='text/markdown',
         extras_require={"colorama": "colorama>=0.4.3"}

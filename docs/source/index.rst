@@ -6,7 +6,7 @@
 :github_url: https://github.com/GRAAL-Research/poutyne
 
 .. meta::
-  :description: Poutyne is a Keras-like framework for PyTorch and handles much of the boilerplating code needed to train neural networks.
+  :description: Poutyne is a simplified framework for PyTorch and handles much of the boilerplating code needed to train neural networks.
   :keywords: poutyne, poutine, deep learning, pytorch, neural network, keras, machine learning, data science, python
   :author: Frédérik Paradis
   :property="og:image": https://poutyne.org/_static/logos/poutyne-notext.png
@@ -14,7 +14,7 @@
 Here is Poutyne
 ===============
 
-Poutyne is a Keras-like framework for `PyTorch <https://pytorch.org/>`_ and handles much of the boilerplating code needed to train neural networks.
+Poutyne is a simplified framework for `PyTorch <https://pytorch.org/>`_ and handles much of the boilerplating code needed to train neural networks.
 
 Use Poutyne to:
 
@@ -28,9 +28,9 @@ Cite
 .. code-block:: bib
 
   @misc{poutyne,
-      author = {Paradis, Fr{\'e}d{\'e}rik},
-      title  = {{Poutyne: A Keras-like framework for PyTorch}},
-      year   = {2018},
+      author = {Paradis, Fr{\'e}d{\'e}rik and Beauchemin, David and Godbout, Mathieu and Alain, Mathieu and Garneau, Nicolas and Otte, Stefan and Tremblay, Alexis and B{\'e}langer, Marc-Antoine and Laviolette, Fran{\c{c}}ois},
+      title  = {{Poutyne: A Simplified Framework for Deep Learning}},
+      year   = {2020},
       note   = {\url{https://poutyne.org}}
   }
 
@@ -103,8 +103,7 @@ You can now use Poutyne's model to train your network easily:
   )
 
 
-This is really similar to the `model.compile <https://keras.io/models/model/#compile>`_ and `model.fit <https://keras.io/models/model/#fit>`_ functions as in `Keras <https://keras.io/>`_.
-
+Since Poutyne is inspired by `Keras <https://keras.io/>`_, one might have notice that this is really similar to some of its `functions <https://keras.io/models/model/>`_.
 
 You can evaluate the performances of your network using the ``evaluate`` method of Poutyne's model:
 
@@ -142,9 +141,6 @@ One of the strengths Poutyne are :ref:`callbacks <callbacks>`. They allow you to
   expt.test(test_loader)
 
 `See the complete code here. <https://github.com/GRAAL-Research/poutyne/blob/master/examples/basic_random_classification_with_experiment.py>`__ Also, `see this <https://github.com/GRAAL-Research/poutyne/blob/master/examples/basic_random_regression_with_experiment.py>`__ for an example for regression that again also uses :ref:`epoch metrics <epoch_metrics>`.
-
-
-As you can see, Poutyne is inspired a lot by the friendliness of `Keras <https://keras.io/>`_.
 
 
 Installation
