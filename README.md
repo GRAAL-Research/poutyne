@@ -1,7 +1,7 @@
 ![Poutyne Logo](https://raw.githubusercontent.com/GRAAL-Research/poutyne/master/docs/source/_static/logos/poutyne-dark.png)
 
 [![License: LGPL v3](https://img.shields.io/badge/License-LGPL%20v3-blue.svg)](http://www.gnu.org/licenses/lgpl-3.0)
-[![Build Status](https://travis-ci.org/GRAAL-Research/poutyne.svg?branch=master)](https://travis-ci.org/GRAAL-Research/poutyne)
+[![Build Status](https://travis-ci.com/GRAAL-Research/poutyne.svg?branch=master)](https://travis-ci.com/GRAAL-Research/poutyne)
 
 ## Here is Poutyne.
 
