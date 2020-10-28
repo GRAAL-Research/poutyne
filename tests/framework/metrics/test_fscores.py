@@ -103,7 +103,6 @@ class FBetaTest(TestCase):
         numpy.testing.assert_almost_equal(fbeta._true_sum.tolist(), [2, 1, 0, 0, 1])
         numpy.testing.assert_almost_equal(fbeta._true_positive_sum.tolist(), [1, 1, 0, 0, 0])
 
-
     def test_fbeta_multiclass_macro_average_metric(self):
         precision = self._compute(metric='precision', average='macro')
         recall = self._compute(metric='recall', average='macro')
