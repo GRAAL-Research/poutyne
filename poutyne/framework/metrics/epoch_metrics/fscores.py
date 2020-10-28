@@ -160,16 +160,18 @@ class FBeta(EpochMetric):
                 ground truths and the second being a mask.
         """
 
-        mask = True
+        mask = 1
         if isinstance(y_true, tuple):
             y_true, mask = y_true
-            mask = mask.bool()
+            mask = mask.byte()
 
         if self.ignore_index is not None:
-            mask *= y_true != self.ignore_index
+            mask *= (y_true != self.ignore_index).byte()
 
-        if mask is True:
+        if not torch.is_tensor(mask):
             mask = torch.ones_like(y_true, dtype=torch.bool)
+        else:
+            mask = mask.bool()
 
         # Calculate true_positive_sum, true_negative_sum, pred_sum, true_sum
         num_classes = y_pred.size(1)
