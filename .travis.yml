@@ -25,7 +25,7 @@ script:
 deploy:
   target-branch: gh-pages
   github_token: "$GITHUB_TOKEN"
-  cleanup: false
+  skip-cleanup: true
   local-dir: "./docs/_build/html/"
   provider: pages
   on:
