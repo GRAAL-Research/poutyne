@@ -81,6 +81,29 @@ class FBetaTest(TestCase):
         numpy.testing.assert_almost_equal(fbeta._true_sum.tolist(), [2, 1, 0, 1, 1])
         numpy.testing.assert_almost_equal(fbeta._true_positive_sum.tolist(), [1, 1, 0, 1, 0])
 
+    def test_fbeta_multiclass_with_ignore_index(self):
+        targets = self.targets.clone()
+        targets[-1] = -100
+        fbeta = FBeta()
+        fbeta(self.predictions, targets)
+
+        numpy.testing.assert_almost_equal(fbeta._pred_sum.tolist(), [1, 3, 0, 1, 0])
+        numpy.testing.assert_almost_equal(fbeta._true_sum.tolist(), [2, 1, 0, 1, 1])
+        numpy.testing.assert_almost_equal(fbeta._true_positive_sum.tolist(), [1, 1, 0, 1, 0])
+
+    def test_fbeta_multiclass_with_mask_and_ignore_index(self):
+        targets = self.targets.clone()
+        targets[-1] = -100
+        mask = torch.Tensor([1, 1, 1, 1, 0, 1])
+
+        fbeta = FBeta()
+        fbeta(self.predictions, (targets, mask))
+
+        numpy.testing.assert_almost_equal(fbeta._pred_sum.tolist(), [1, 3, 0, 0, 0])
+        numpy.testing.assert_almost_equal(fbeta._true_sum.tolist(), [2, 1, 0, 0, 1])
+        numpy.testing.assert_almost_equal(fbeta._true_positive_sum.tolist(), [1, 1, 0, 0, 0])
+
+
     def test_fbeta_multiclass_macro_average_metric(self):
         precision = self._compute(metric='precision', average='macro')
         recall = self._compute(metric='recall', average='macro')
