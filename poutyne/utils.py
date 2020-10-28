@@ -128,6 +128,7 @@ class TensorDataset(Dataset):
     """
 
     def __init__(self, *tensors):
+        super().__init__()
         self.tensors = tensors
 
         def _rabbit_hole(obj):
