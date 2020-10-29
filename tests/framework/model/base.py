@@ -57,7 +57,7 @@ class ModelFittingTestCase(TestCase):
                 call_list.append(call.on_train_batch_begin(step, {}))
                 call_list.append(call.on_backward_end(step))
                 call_list.append(call.on_train_batch_end(step, {'batch': step, 'size': ANY, **train_batch_dict}))
-            call_list.append(call.on_epoch_end(epoch, {'epoch': epoch, **log_dict}))
+            call_list.append(call.on_epoch_end(epoch, logs[epoch - 1]))
         call_list.append(call.on_train_end({}))
 
         method_calls = self.mock_callback.method_calls

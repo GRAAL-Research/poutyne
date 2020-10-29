@@ -4,17 +4,24 @@ import sys
 import warnings
 from collections import OrderedDict
 from math import ceil
+from tempfile import TemporaryDirectory
 from unittest import skipIf, main
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, ANY
 
 import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, random_split, Dataset
 
 from poutyne import Model, warning_settings, EpochMetric, TensorDataset
 from .base import ModelFittingTestCase
+
+try:
+    from torchvision.datasets import MNIST
+    from torchvision.transforms import ToTensor
+except ImportError:
+    MNIST = None
 
 try:
     import colorama as color
@@ -1099,6 +1106,115 @@ class ModelTest(ModelFittingTestCase):
             inf_batch_size = self.model.get_batch_size([1, 2, 3], [4, 5, 6])
             self.assertEqual(inf_batch_size, 1)
             self.assertEqual(len(w), 0)
+
+
+@skipIf(MNIST is None, "Unable to import MNIST")
+class ModelDatasetMethodsTest(ModelFittingTestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        cls.temp_dir_obj = TemporaryDirectory()
+        cls.train_dataset = MNIST(cls.temp_dir_obj.name, train=True, download=True, transform=ToTensor())
+        cls.test_dataset = MNIST(cls.temp_dir_obj.name, train=True, download=True, transform=ToTensor())
+        cls.train_sub_dataset, cls.valid_sub_dataset = random_split(cls.train_dataset, [50_000, 10_000],
+                                                                    generator=torch.Generator().manual_seed(42))
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.temp_dir_obj.cleanup()
+
+    def setUp(self):
+        super().setUp()
+        torch.manual_seed(42)
+        self.pytorch_network = nn.Sequential(nn.Flatten(), nn.Linear(28 * 28, 10))
+        self.batch_metrics = ['accuracy']
+        self.batch_metrics_names = ['acc']
+        self.batch_metrics_values = [ANY]
+        self.epoch_metrics = ['f1']
+        self.epoch_metrics_names = ['fscore_micro']
+        self.epoch_metrics_values = [ANY]
+        self.model = Model(self.pytorch_network,
+                           'sgd',
+                           'cross_entropy',
+                           batch_metrics=self.batch_metrics,
+                           epoch_metrics=self.epoch_metrics)
+
+    def test_fitting_mnist(self):
+        logs = self.model.fit_dataset(self.train_sub_dataset,
+                                      self.valid_sub_dataset,
+                                      epochs=ModelTest.epochs,
+                                      steps_per_epoch=ModelTest.steps_per_epoch,
+                                      validation_steps=ModelTest.steps_per_epoch,
+                                      callbacks=[self.mock_callback])
+        params = {'epochs': ModelTest.epochs, 'steps': ModelTest.steps_per_epoch}
+        self._test_callbacks_train(params, logs)
+
+    def test_fitting_mnist_without_valid(self):
+        logs = self.model.fit_dataset(self.train_dataset,
+                                      epochs=ModelTest.epochs,
+                                      steps_per_epoch=ModelTest.steps_per_epoch,
+                                      validation_steps=ModelTest.steps_per_epoch,
+                                      callbacks=[self.mock_callback])
+        params = {'epochs': ModelTest.epochs, 'steps': ModelTest.steps_per_epoch}
+        self._test_callbacks_train(params, logs, has_valid=False)
+
+    def test_evaluate_dataset(self):
+        num_steps = 10
+        loss, metrics, pred_y = self.model.evaluate_dataset(self.test_dataset,
+                                                            batch_size=ModelTest.batch_size,
+                                                            steps=num_steps,
+                                                            return_pred=True)
+        self.assertEqual(type(loss), float)
+        self.assertEqual(type(metrics), np.ndarray)
+        self.assertEqual(metrics.tolist(), self.batch_metrics_values + self.epoch_metrics_values)
+        self.assertEqual(type(pred_y), np.ndarray)
+        self.assertEqual(pred_y.shape, (num_steps * ModelTest.batch_size, 10))
+
+    def test_evaluate_dataset_with_callback(self):
+        num_steps = 10
+        result_log = self.model.evaluate_dataset(self.test_dataset,
+                                                 batch_size=ModelTest.batch_size,
+                                                 steps=num_steps,
+                                                 return_pred=True,
+                                                 callbacks=[self.mock_callback])
+
+        params = {'batch': ModelTest.epochs}
+        self._test_callbacks_test(params, result_log)
+
+    def test_evaluate_dataset_with_ground_truth(self):
+        num_steps = 10
+        loss, metrics, pred_y, true_y = self.model.evaluate_dataset(self.test_dataset,
+                                                                    batch_size=ModelTest.batch_size,
+                                                                    steps=num_steps,
+                                                                    return_pred=True,
+                                                                    return_ground_truth=True)
+        self.assertEqual(type(loss), float)
+        self.assertEqual(type(metrics), np.ndarray)
+        self.assertEqual(metrics.tolist(), self.batch_metrics_values + self.epoch_metrics_values)
+        self.assertEqual(type(pred_y), np.ndarray)
+        self.assertEqual(type(true_y), np.ndarray)
+        self.assertEqual(pred_y.shape, (num_steps * ModelTest.batch_size, 10))
+        self.assertEqual(true_y.shape, (num_steps * ModelTest.batch_size, ))
+
+    def test_predict_dataset(self):
+
+        class PredictDataset(Dataset):
+
+            def __init__(self, dataset):
+                self.dataset = dataset
+
+            def __getitem__(self, index):
+                return self.dataset[index][0]
+
+            def __len__(self):
+                return len(self.dataset)
+
+        num_steps = 10
+        pred_y = self.model.predict_dataset(PredictDataset(self.test_dataset),
+                                            batch_size=ModelTest.batch_size,
+                                            steps=num_steps)
+        self.assertEqual(type(pred_y), np.ndarray)
+        self.assertEqual(pred_y.shape, (num_steps * ModelTest.batch_size, 10))
 
 
 if __name__ == '__main__':
