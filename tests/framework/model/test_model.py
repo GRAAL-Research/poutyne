@@ -1115,7 +1115,7 @@ class ModelDatasetMethodsTest(ModelFittingTestCase):
     def setUpClass(cls):
         cls.temp_dir_obj = TemporaryDirectory()
         cls.train_dataset = MNIST(cls.temp_dir_obj.name, train=True, download=True, transform=ToTensor())
-        cls.test_dataset = MNIST(cls.temp_dir_obj.name, train=True, download=True, transform=ToTensor())
+        cls.test_dataset = MNIST(cls.temp_dir_obj.name, train=False, download=True, transform=ToTensor())
         cls.train_sub_dataset, cls.valid_sub_dataset = random_split(cls.train_dataset, [50_000, 10_000],
                                                                     generator=torch.Generator().manual_seed(42))
 
