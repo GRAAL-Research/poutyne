@@ -583,38 +583,27 @@ class Model:
         generator = self._dataloader_from_data(x, batch_size=batch_size)
         return self.predict_generator(generator, concatenate_returns=True)
 
-    def predict_generator(self, generator, *, steps=None, concatenate_returns=None):
+    def predict_generator(self, generator, *, steps=None, concatenate_returns=True):
         """
         Returns the predictions of the network given batches of samples ``x``, where the tensors are
         converted into Numpy arrays.
 
-        generator: Generator-like object for the dataset. The generator must yield a batch of
-            samples. See the :func:`fit_generator()` method for details on the types of generators
-            supported. This should only yield input data ``x`` and not the target ``y``.
-        steps (int, optional): Number of iterations done on ``generator``.
-            (Defaults the number of steps needed to see the entire dataset)
-        concatenate_returns (bool, optional): Whether to concatenate the predictions
-            or the ground truths when returning them. Currently defaults to False but
-            will default to True in the next version. A warning is raised if not set in
-            the current version but the warning will be removed in the version. Disabling
-            the warning as instructed in it switches to the new behavior when
-            ``concatenate_returns`` is not set.
+        Args:
+            generator: Generator-like object for the dataset. The generator must yield a batch of
+                samples. See the :func:`fit_generator()` method for details on the types of generators
+                supported. This should only yield input data ``x`` and NOT the target ``y``.
+            steps (int, optional): Number of iterations done on ``generator``.
+                (Defaults the number of steps needed to see the entire dataset)
+            concatenate_returns (bool, optional): Whether to concatenate the predictions
+                or the ground truths when returning them. (Default value = True)
 
         Returns:
-            List of the predictions of each batch with tensors converted into Numpy arrays.
+            Depends on the value of ``concatenate_returns``. By default, (``concatenate_returns`` is true),
+            the data structures (tensor, tuple, list, dict) returned as predictions for the batches are
+            merged together. In the merge, the tensors are converted into Numpy arrays and are then
+            concatenated together. If ``concatenate_returns`` is false, then a list of the predictions
+            for the batches is returned with tensors converted into Numpy arrays.
         """
-        if concatenate_returns is None and warning_settings['concatenate_returns'] == 'warn':
-            warnings.warn("In the next version of Poutyne, the argument 'concatenate_returns' "
-                          "of 'predict_generator' will default to True. To avoid this warning, "
-                          "set 'concatenate_returns' to an appropriate boolean value in the "
-                          "keyword arguments or get the new behavior by disabling this warning with\n"
-                          "from poutyne import warning_settings\n"
-                          "warning_settings['concatenate_returns'] = 'ignore'\n"
-                          "This warning will be removed in the next version.")
-            concatenate_returns = False
-        elif concatenate_returns is None:
-            concatenate_returns = True
-
         if steps is None and hasattr(generator, '__len__'):
             steps = len(generator)
         pred_y = []
@@ -693,7 +682,7 @@ class Model:
                            steps=None,
                            return_pred=False,
                            return_ground_truth=False,
-                           concatenate_returns=None,
+                           concatenate_returns=True,
                            callbacks=None):
         # pylint: disable=too-many-locals
         """
@@ -710,11 +699,7 @@ class Model:
             return_ground_truth (bool, optional): Whether to return the ground truths.
                 (Default value = False)
             concatenate_returns (bool, optional): Whether to concatenate the predictions
-                or the ground truths when returning them. Currently defaults to False but
-                will default to True in the next version. A warning is raised if not set in
-                the current version but the warning will be removed in the version. Disabling
-                the warning as instructed in it switches to the new behavior when
-                ``concatenate_returns`` is not set.
+                or the ground truths when returning them. (Default value = True)
             callbacks (List[~poutyne.Callback]): List of callbacks that will be called during
                 testing. (Default value = None)
 
@@ -729,11 +714,11 @@ class Model:
             omitted. The first elements of ``metrics`` are the batch metrics and are
             followed by the epoch metrics.
 
-            If ``return_pred`` is True, ``pred_y`` is the list of the predictions
-            of each batch with tensors converted into Numpy arrays. It is otherwise ommited.
+            If ``return_pred`` is True, ``pred_y`` is the predictions returned as in
+            the :func:`predict_generator()` method. It is otherwise ommited.
 
-            If ``return_ground_truth`` is True, ``true_y`` is the list of the ground truths
-            of each batch with tensors converted into Numpy arrays. It is otherwise ommited.
+            If ``return_ground_truth`` is True, ``true_y`` is the ground truths returned
+            as in the :func:`predict_generator()` method. It is otherwise ommited.
         Example:
             With no metrics:
 
@@ -787,19 +772,6 @@ class Model:
                     test_generator, return_pred=True, return_ground_truth=True
                 )
         """
-        if (return_pred or return_ground_truth) \
-                and concatenate_returns is None and warning_settings['concatenate_returns'] == 'warn':
-            warnings.warn("In the next version of Poutyne, the argument 'concatenate_returns' "
-                          "of 'evaluate_generator' will default to True. To avoid this warning, "
-                          "set 'concatenate_returns' to an appropriate boolean value in the "
-                          "keyword arguments or get the new behavior by disabling this warning with\n"
-                          "from poutyne import warning_settings\n"
-                          "warning_settings['concatenate_returns'] = 'ignore'\n"
-                          "This warning will be removed in the next version.")
-            concatenate_returns = False
-        elif concatenate_returns is None:
-            concatenate_returns = True
-
         callbacks = [] if callbacks is None else callbacks
 
         callback_list = CallbackList(callbacks)
