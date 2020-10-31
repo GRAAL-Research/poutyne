@@ -1201,6 +1201,7 @@ class ModelDatasetMethodsTest(ModelFittingTestCase):
         class PredictDataset(Dataset):
 
             def __init__(self, dataset):
+                super().__init__()
                 self.dataset = dataset
 
             def __getitem__(self, index):
