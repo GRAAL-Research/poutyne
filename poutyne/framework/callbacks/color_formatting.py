@@ -42,11 +42,11 @@ except ImportError:
     Style = EmptyStringAttrClass()
 
 default_color_settings = {
-    "text_color": 'LIGHTYELLOW_EX',
-    "ratio_color": "LIGHTBLUE_EX",
-    "metric_value_color": "LIGHTCYAN_EX",
+    "text_color": 'MAGENTA',
+    "ratio_color": "CYAN",
+    "metric_value_color": "LIGHTBLUE_EX",
     "time_color": "GREEN",
-    "progress_bar_color": "LIGHTGREEN_EX"
+    "progress_bar_color": "MAGENTA"
 }
 
 

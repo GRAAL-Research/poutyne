@@ -401,9 +401,9 @@ Coloring
 Also, Poutyne use by default a coloring template of the training step when the package ``colorama`` is installed.
 One could either remove the coloring (``progress_options=dict(coloring=False)``) or set a different coloring template using the fields:
 ``text_color``, ``ratio_color``, ``metric_value_color``, ``time_color`` and ``progress_bar_color``.
-If a field is not specified, the default colour will be used.
+If a field is not specified, the default color will be used. `See available colors in colorama's source code <https://github.com/tartley/colorama/blob/9946cfb/colorama/ansi.py#L49>`__.
 
-Here an example where we set the ``text_color`` to MAGENTA and the ``ratio_color`` to BLUE.
+Here an example where we set the ``text_color`` to RED and the ``progress_bar_color`` to LIGHTGREEN_EX.
 
 .. code-block:: python
 
@@ -411,8 +411,7 @@ Here an example where we set the ``text_color`` to MAGENTA and the ``ratio_color
                         valid_loader,
                         epochs=1,
                         callbacks=callbacks,
-                        progress_options=dict(coloring={"text_color": "MAGENTA", "ratio_color":"BLUE"}))
-
+                        progress_options=dict(coloring={"text_color": "RED", "progress_bar_color": "LIGHTGREEN_EX"}))
 
 Epoch metrics
 =============

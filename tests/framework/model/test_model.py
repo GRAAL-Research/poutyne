@@ -224,7 +224,7 @@ class ModelTest(ModelFittingTestCase):
                                      validation_steps=ModelTest.steps_per_epoch,
                                      callbacks=[self.mock_callback])
 
-        self.assertStdoutContains(["[94m", "[93m", "[96m"])
+        self.assertStdoutContains(["[32m", "[35m", "[36m", "[94m"])
 
     @skipIf(color is None, "Unable to import colorama")
     def test_fitting_with_user_coloring(self):
@@ -274,7 +274,7 @@ class ModelTest(ModelFittingTestCase):
                                          "ratio_color": "BLACK"
                                      }))
 
-        self.assertStdoutContains(["[30m", "[32m", "[96m"])
+        self.assertStdoutContains(["[30m", "[32m", "[35m", "[94m"])
 
     def test_fitting_with_user_coloring_invalid(self):
         train_generator = some_data_tensor_generator(ModelTest.batch_size)
@@ -310,7 +310,7 @@ class ModelTest(ModelFittingTestCase):
                                      callbacks=[self.mock_callback],
                                      progress_options=dict(coloring=False))
 
-        self.assertStdoutNotContains(["[94m", "[93m", "[96m"])
+        self.assertStdoutNotContains(["[32m", "[35m", "[36m", "[94m"])
 
     @skipIf(color is None, "Unable to import colorama")
     def test_fitting_with_progress_bar_default_color(self):
@@ -330,7 +330,7 @@ class ModelTest(ModelFittingTestCase):
                                      callbacks=[self.mock_callback],
                                      progress_options=dict(coloring=True, progress_bar=True))
 
-        self.assertStdoutContains(["%", "[94m", "[93m", "[96m", "\u2588"])
+        self.assertStdoutContains(["%", "[32m", "[35m", "[36m", "[94m", "\u2588"])
 
     @skipIf(color is None, "Unable to import colorama")
     def test_fitting_with_progress_bar_user_color(self):
@@ -377,7 +377,7 @@ class ModelTest(ModelFittingTestCase):
                                      progress_options=dict(coloring=False, progress_bar=True))
 
         self.assertStdoutContains(["%", "\u2588"])
-        self.assertStdoutNotContains(["[94m", "[93m", "[96m"])
+        self.assertStdoutNotContains(["[32m", "[35m", "[36m", "[94m"])
 
     def test_fitting_with_no_progress_bar(self):
         train_generator = some_data_tensor_generator(ModelTest.batch_size)
@@ -397,7 +397,7 @@ class ModelTest(ModelFittingTestCase):
                                      progress_options=dict(coloring=False, progress_bar=False))
 
         self.assertStdoutNotContains(["%", "\u2588"])
-        self.assertStdoutNotContains(["[94m", "[93m", "[96m"])
+        self.assertStdoutNotContains(["[32m", "[35m", "[36m", "[94m"])
 
     def test_progress_bar_with_step_is_none(self):
         train_generator = SomeDataGeneratorUsingStopIteration(ModelTest.batch_size, 10)
@@ -414,7 +414,7 @@ class ModelTest(ModelFittingTestCase):
                                      progress_options=dict(coloring=False, progress_bar=True))
 
         self.assertStdoutContains(["s/step"])
-        self.assertStdoutNotContains(["[94m", "[93m", "[96m", "\u2588", "%"])
+        self.assertStdoutNotContains(["[32m", "[35m", "[36m", "[94m", "\u2588", "%"])
 
     def test_fitting_without_valid_generator(self):
         train_generator = some_data_tensor_generator(ModelTest.batch_size)
