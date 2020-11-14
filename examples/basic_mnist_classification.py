@@ -31,5 +31,6 @@ model.fit_dataset(
     train_dataset,
     valid_dataset,
     epochs=5,
-    batch_size=32
+    batch_size=32,
+    num_workers=2
 )

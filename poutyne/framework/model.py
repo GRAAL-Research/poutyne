@@ -312,10 +312,12 @@ class Model:
                     verbose=True,
                     progress_options=None,
                     callbacks=None,
+                    num_workers=0,
+                    collate_fn=None,
                     dataloader_kwargs=None):
-        # pylint: disable=line-too-long
+        # pylint: disable=line-too-long,too-many-locals
         """
-        Trains the network on a dataset. This method creates generators and calls the
+        Trains the network on a dataset. This method creates dataloaders and calls the
         :func:`~Model.fit_generator()` method.
 
         Args:
@@ -347,12 +349,20 @@ class Model:
             callbacks (List[~poutyne.Callback]): List of callbacks that will be called
                 during training.
                 (Default value = None)
+            num_workers (int, optional): how many subprocesses to use for data loading.
+                ``0`` means that the data will be loaded in the main process.
+                (Default value = 0)
+            collate_fn (callable, optional): merges a list of samples to form a mini-batch of Tensor(s).
+                Used when using batched loading from a map-style dataset.
             dataloader_kwargs (dict, optional): Keyword arguments to pass to the PyTorch dataloaders created
                 internally. By default, ``shuffle=True`` is passed for the training dataloader but this can be
                 overriden by using this argument.
 
         Returns:
             List of dict containing the history of each epoch.
+
+        See:
+            :class:`~torch.utils.data.DataLoader` for details on ``batch_size``, ``num_workers`` and ``collate_fn``.
 
         Example:
             .. code-block:: python
@@ -375,7 +385,12 @@ class Model:
         """
         if dataloader_kwargs is None:
             dataloader_kwargs = {}
-        dataloader_kwargs = {'batch_size': batch_size, **dataloader_kwargs}
+        dataloader_kwargs = {
+            'batch_size': batch_size,
+            'num_workers': num_workers,
+            'collate_fn': collate_fn,
+            **dataloader_kwargs
+        }
 
         train_generator = DataLoader(training_dataset, **{'shuffle': True, **dataloader_kwargs})
         valid_generator = None
@@ -691,7 +706,15 @@ class Model:
         generator = self._dataloader_from_data(x, dataloader_kwargs)
         return self.predict_generator(generator, concatenate_returns=True)
 
-    def predict_dataset(self, dataset, *, batch_size=32, steps=None, concatenate_returns=True, dataloader_kwargs=None):
+    def predict_dataset(self,
+                        dataset,
+                        *,
+                        batch_size=32,
+                        steps=None,
+                        concatenate_returns=True,
+                        num_workers=0,
+                        collate_fn=None,
+                        dataloader_kwargs=None):
         """
         Returns the predictions of the network given a dataset ``x``, where the tensors are
         converted into Numpy arrays.
@@ -705,15 +728,29 @@ class Model:
             concatenate_returns (bool, optional): Whether to concatenate the predictions
                 or the ground truths when returning them. See :func:`predict_generator()`
                 for details. (Default value = True)
+            num_workers (int, optional): how many subprocesses to use for data loading.
+                ``0`` means that the data will be loaded in the main process.
+                (Default value = 0)
+            collate_fn (callable, optional): merges a list of samples to form a mini-batch of Tensor(s).
+                Used when using batched loading from a map-style dataset.
             dataloader_kwargs (dict, optional): Keyword arguments to pass to the PyTorch dataloaders created
                 internally.
 
         Returns:
             Numpy arrays of the predictions.
+
+        See:
+            :class:`~torch.utils.data.DataLoader` for details on ``batch_size``, ``num_workers`` and ``collate_fn``.
         """
         if dataloader_kwargs is None:
             dataloader_kwargs = {}
-        dataloader_kwargs = {'batch_size': batch_size, **dataloader_kwargs}
+        dataloader_kwargs = {
+            'batch_size': batch_size,
+            'num_workers': num_workers,
+            'collate_fn': collate_fn,
+            **dataloader_kwargs
+        }
+
         generator = DataLoader(dataset, **dataloader_kwargs)
         return self.predict_generator(generator, steps=steps, concatenate_returns=concatenate_returns)
 
@@ -820,6 +857,8 @@ class Model:
                          return_ground_truth=False,
                          concatenate_returns=True,
                          callbacks=None,
+                         num_workers=0,
+                         collate_fn=None,
                          dataloader_kwargs=None):
         """
         Computes the loss and the metrics of the network on batches of samples and optionally
@@ -839,6 +878,11 @@ class Model:
                 or the ground truths when returning them. (Default value = True)
             callbacks (List[~poutyne.Callback]): List of callbacks that will be called during
                 testing. (Default value = None)
+            num_workers (int, optional): how many subprocesses to use for data loading.
+                ``0`` means that the data will be loaded in the main process.
+                (Default value = 0)
+            collate_fn (callable, optional): merges a list of samples to form a mini-batch of Tensor(s).
+                Used when using batched loading from a map-style dataset.
             dataloader_kwargs (dict, optional): Keyword arguments to pass to the PyTorch dataloaders created
                 internally.
 
@@ -856,10 +900,18 @@ class Model:
             If ``return_pred`` is True, ``pred_y`` is the list of the predictions
             of each batch with tensors converted into Numpy arrays. It is otherwise omitted.
 
+        See:
+            :class:`~torch.utils.data.DataLoader` for details on ``batch_size``, ``num_workers`` and ``collate_fn``.
         """
         if dataloader_kwargs is None:
             dataloader_kwargs = {}
-        dataloader_kwargs = {'batch_size': batch_size, **dataloader_kwargs}
+        dataloader_kwargs = {
+            'batch_size': batch_size,
+            'num_workers': num_workers,
+            'collate_fn': collate_fn,
+            **dataloader_kwargs
+        }
+
         generator = DataLoader(dataset, **dataloader_kwargs)
         return self.evaluate_generator(generator,
                                        steps=steps,
