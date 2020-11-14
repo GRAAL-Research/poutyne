@@ -51,20 +51,17 @@ from .callbacks import Callback
 
 class PeriodicSaveCallback(Callback):
     """
-    The source code of this class is under the MIT License and was copied from the Keras project,
-    and has been modified.
-
-    Write a file after every epoch. `filename` can contain named formatting options, which will be
-    filled the value of `epoch` and keys in `logs` (passed in `on_epoch_end`). For example: if
-    `filename` is `weights.{epoch:02d}-{val_loss:.2f}.txt`, then `save_file()` will be called with a
-    file descriptor for a file with the epoch number and the validation loss in the filename.
+    Write a file (or checkpoint) after every epoch. `filename` can contain named formatting options,
+    which will be filled the value of `epoch` and keys in `logs` (passed in `on_epoch_end`). For
+    example: if `filename` is `weights.{epoch:02d}-{val_loss:.2f}.txt`, then `save_file()` will be
+    called with a file descriptor for a file with the epoch number and the validation loss in the
+    filename.
 
     By default, the file is written atomically to the specified filename so that the training can
     be killed and restarted later using the same filename for periodic file saving. To do so, a
-    temporary file is created using the system's `tmp` directory and then is moved to the final
-    destination after the checkpoint is made. Sometimes, this move is not possible on some systems.
-    To address this problem, it is possible to specify the destination of the temporary file using
-    the ``temporary_filename`` argument.
+    temporary file is created with the name of `filename + '.tmp'` and is then moved to the final
+    destination after the checkpoint is done. The ``temporary_filename`` argument allows to change the
+    path of this temporary file.
 
     Args:
         filename (str): Path to save the model file.

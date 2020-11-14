@@ -180,18 +180,12 @@ class Experiment:
 
     """
     BEST_CHECKPOINT_FILENAME = 'checkpoint_epoch_{epoch}.ckpt'
-    BEST_CHECKPOINT_TMP_FILENAME = 'checkpoint_epoch.tmp.ckpt'
     MODEL_CHECKPOINT_FILENAME = 'checkpoint.ckpt'
-    MODEL_CHECKPOINT_TMP_FILENAME = 'checkpoint.tmp.ckpt'
     OPTIMIZER_CHECKPOINT_FILENAME = 'checkpoint.optim'
-    OPTIMIZER_CHECKPOINT_TMP_FILENAME = 'checkpoint.tmp.optim'
     LOG_FILENAME = 'log.tsv'
-    LOG_TMP_FILENAME = 'log.tmp.tsv'
     TENSORBOARD_DIRECTORY = 'tensorboard'
     EPOCH_FILENAME = 'last.epoch'
-    EPOCH_TMP_FILENAME = 'last.tmp.epoch'
     LR_SCHEDULER_FILENAME = 'lr_sched_%d.lrsched'
-    LR_SCHEDULER_TMP_FILENAME = 'lr_sched_%d.tmp.lrsched'
     TEST_LOG_FILENAME = 'test_log.tsv'
 
     def __init__(self,
@@ -226,18 +220,12 @@ class Experiment:
             self.model.to(device)
 
         self.best_checkpoint_filename = self.get_path(Experiment.BEST_CHECKPOINT_FILENAME)
-        self.best_checkpoint_tmp_filename = self.get_path(Experiment.BEST_CHECKPOINT_TMP_FILENAME)
         self.model_checkpoint_filename = self.get_path(Experiment.MODEL_CHECKPOINT_FILENAME)
-        self.model_checkpoint_tmp_filename = self.get_path(Experiment.MODEL_CHECKPOINT_TMP_FILENAME)
         self.optimizer_checkpoint_filename = self.get_path(Experiment.OPTIMIZER_CHECKPOINT_FILENAME)
-        self.optimizer_checkpoint_tmp_filename = self.get_path(Experiment.OPTIMIZER_CHECKPOINT_TMP_FILENAME)
         self.log_filename = self.get_path(Experiment.LOG_FILENAME)
-        self.log_tmp_filename = self.get_path(Experiment.LOG_TMP_FILENAME)
         self.tensorboard_directory = self.get_path(Experiment.TENSORBOARD_DIRECTORY)
         self.epoch_filename = self.get_path(Experiment.EPOCH_FILENAME)
-        self.epoch_tmp_filename = self.get_path(Experiment.EPOCH_TMP_FILENAME)
         self.lr_scheduler_filename = self.get_path(Experiment.LR_SCHEDULER_FILENAME)
-        self.lr_scheduler_tmp_filename = self.get_path(Experiment.LR_SCHEDULER_TMP_FILENAME)
         self.test_log_filename = self.get_path(Experiment.TEST_LOG_FILENAME)
 
     def get_path(self, *paths: str) -> str:
@@ -389,8 +377,7 @@ class Experiment:
                                           keep_only_last_best=keep_only_last_best,
                                           save_best_only=not save_every_epoch,
                                           restore_best=not save_every_epoch,
-                                          verbose=not save_every_epoch,
-                                          temporary_filename=self.best_checkpoint_tmp_filename)
+                                          verbose=not save_every_epoch)
         callbacks.append(best_checkpoint)
 
         if save_every_epoch:
@@ -433,10 +420,7 @@ class Experiment:
         if self.logging:
             for i, lr_scheduler in enumerate(lr_schedulers):
                 filename = self.lr_scheduler_filename % i
-                tmp_filename = self.lr_scheduler_tmp_filename % i
-                callbacks += [
-                    LRSchedulerCheckpoint(lr_scheduler, filename, verbose=False, temporary_filename=tmp_filename)
-                ]
+                callbacks += [LRSchedulerCheckpoint(lr_scheduler, filename, verbose=False)]
         else:
             callbacks += lr_schedulers
             callbacks += [BestModelRestore(monitor=self.monitor_metric, mode=self.monitor_mode, verbose=True)]
@@ -531,32 +515,16 @@ class Experiment:
             # Restarting optimization if needed.
             initial_epoch = self._load_epoch_state(lr_schedulers)
 
-            expt_callbacks += [
-                AtomicCSVLogger(self.log_filename,
-                                separator='\t',
-                                append=initial_epoch != 1,
-                                temporary_filename=self.log_tmp_filename)
-            ]
+            expt_callbacks += [AtomicCSVLogger(self.log_filename, separator='\t', append=initial_epoch != 1)]
 
             expt_callbacks += self._init_model_restoring_callbacks(initial_epoch, keep_only_last_best, save_every_epoch)
-            expt_callbacks += [
-                ModelCheckpoint(self.model_checkpoint_filename,
-                                verbose=False,
-                                temporary_filename=self.model_checkpoint_tmp_filename)
-            ]
-            expt_callbacks += [
-                OptimizerCheckpoint(self.optimizer_checkpoint_filename,
-                                    verbose=False,
-                                    temporary_filename=self.optimizer_checkpoint_tmp_filename)
-            ]
+            expt_callbacks += [ModelCheckpoint(self.model_checkpoint_filename, verbose=False)]
+            expt_callbacks += [OptimizerCheckpoint(self.optimizer_checkpoint_filename, verbose=False)]
 
             # We save the last epoch number after the end of the epoch so that the
             # _load_epoch_state() knows which epoch to restart the optimization.
             expt_callbacks += [
-                PeriodicSaveLambda(lambda fd, epoch, logs: print(epoch, file=fd),
-                                   self.epoch_filename,
-                                   temporary_filename=self.epoch_tmp_filename,
-                                   open_mode='w')
+                PeriodicSaveLambda(lambda fd, epoch, logs: print(epoch, file=fd), self.epoch_filename, open_mode='w')
             ]
 
             tensorboard_writer, cb_list = self._init_tensorboard_callbacks(disable_tensorboard)

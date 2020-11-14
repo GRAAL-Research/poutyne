@@ -168,12 +168,11 @@ We define callbacks for saving last epoch, best epoch and logging the results.
 
     callbacks = [
         # Save the latest weights to be able to resume the optimization at the end for more epochs.
-        ModelCheckpoint(os.path.join(save_path, 'last_epoch.ckpt'), temporary_filename='last_epoch.ckpt.tmp'),
+        ModelCheckpoint(os.path.join(save_path, 'last_epoch.ckpt')),
 
         # Save the weights in a new file when the current model is better than all previous models.
         ModelCheckpoint(os.path.join(save_path, 'best_epoch_{epoch}.ckpt'), monitor='val_acc', mode='max',
-                        save_best_only=True, restore_best=True, verbose=True,
-                        temporary_filename=os.path.join(save_path, 'best_epoch.ckpt.tmp')),
+                        save_best_only=True, restore_best=True, verbose=True),
 
         # Save the losses and accuracies for each epoch in a TSV.
         CSVLogger(os.path.join(save_path, 'log.tsv'), separator='\t'),
