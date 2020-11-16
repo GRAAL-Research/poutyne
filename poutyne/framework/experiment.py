@@ -617,7 +617,8 @@ class Experiment:
              callbacks: Union[List, None] = None,
              steps: Union[int, None] = None,
              checkpoint: Union[str, int] = 'best',
-             seed: int = 42) -> Dict:
+             seed: int = 42,
+             progress_options: Union[dict, None] = None) -> Dict:
         """
         Computes and returns the loss and the metrics of the attribute model on a given test examples
         generator.
@@ -660,7 +661,10 @@ class Experiment:
             best_epoch_stats = self.load_checkpoint(checkpoint, verbose=True)
 
         if len(self.model.metrics_names) > 0:
-            test_loss, test_metrics = self.model.evaluate_generator(test_generator, steps=steps, callbacks=callbacks)
+            test_loss, test_metrics = self.model.evaluate_generator(test_generator,
+                                                                    steps=steps,
+                                                                    callbacks=callbacks,
+                                                                    progress_options=progress_options)
             if not isinstance(test_metrics, np.ndarray):
                 test_metrics = np.array([test_metrics])
         else:

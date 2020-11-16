@@ -125,21 +125,24 @@ class ColorProgress:
         """
         update = self.epoch_formatted_text
 
-        if self.progress_bar:
-            update += self._get_formatted_step(batch_number, steps)
+        update = self._batch_update(update, remaining_time, batch_number, metrics_str, steps)
 
-            self.steps_progress_bar.update()
+        sys.stdout.write(update)
+        sys.stdout.flush()
 
-            update += str(self.steps_progress_bar) + self._get_formatted_time(remaining_time, steps)
-        else:
-            update += self._get_formatted_time(remaining_time, steps) + self._get_formatted_step(batch_number, steps)
+    def on_test_batch_end(self,
+                          remaining_time: float,
+                          batch_number: int,
+                          metrics_str: str,
+                          steps: Union[int, None] = None) -> None:
+        # pylint: disable=too-many-arguments
+        """
+        Format on train batch end for a steps the epoch ratio (so far / to do), the total time for the epoch, the steps
+        done and the metrics name and values.
+        """
+        update = "\r"
 
-        update += self._get_formatted_metrics(metrics_str)
-
-        if self.style_reset and not jupyter:
-            # We skip it for Jupyter since the color token appear and otherwise the
-            # traceback will be colored using a shell or else.
-            update += Style.RESET_ALL
+        update = self._batch_update(update, remaining_time, batch_number, metrics_str, steps)
 
         sys.stdout.write(update)
         sys.stdout.flush()
@@ -200,3 +203,28 @@ class ColorProgress:
             formatted_metrics += self.text_color + name + ":" + self.metric_value_color + value
 
         return formatted_metrics
+
+    def _batch_update(self,
+                      update,
+                      remaining_time: float,
+                      batch_number: int,
+                      metrics_str: str,
+                      steps: Union[int, None] = None) -> str:
+        # pylint: disable=too-many-arguments
+        if self.progress_bar:
+            update += self._get_formatted_step(batch_number, steps)
+
+            self.steps_progress_bar.update()
+
+            update += str(self.steps_progress_bar) + self._get_formatted_time(remaining_time, steps)
+        else:
+            update += self._get_formatted_time(remaining_time, steps) + self._get_formatted_step(batch_number, steps)
+
+        update += self._get_formatted_metrics(metrics_str)
+
+        if self.style_reset and not jupyter:
+            # We skip it for Jupyter since the color token appear and otherwise the
+            # traceback will be colored using a shell or else.
+            update += Style.RESET_ALL
+
+        return update

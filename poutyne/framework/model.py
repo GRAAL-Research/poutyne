@@ -3,7 +3,7 @@ import contextlib
 import numbers
 import warnings
 from collections import defaultdict
-from typing import Iterable, Mapping, List
+from typing import Iterable, Mapping, List, Union
 
 import numpy as np
 import torch
@@ -927,6 +927,8 @@ class Model:
                            return_pred=False,
                            return_ground_truth=False,
                            concatenate_returns=True,
+                           verbose=True,
+                           progress_options: Union[dict, None] = None,
                            callbacks=None):
         # pylint: disable=too-many-locals
         """
@@ -1016,14 +1018,16 @@ class Model:
                     test_generator, return_pred=True, return_ground_truth=True
                 )
         """
+        if verbose:
+            progress_options = {} if progress_options is None else progress_options
+            callbacks = [ProgressionCallback(**progress_options)] + callbacks
         callback_list = CallbackList(callbacks)
         callback_list.set_model(self)
-
-        callback_list.on_test_begin({})
 
         if steps is None:
             steps = len(generator)
         step_iterator = StepIterator(generator, steps, self.batch_metrics_names, callback_list, mode="test")
+
         loss, batch_metrics, pred_y, true_y = self._validate(step_iterator,
                                                              return_pred=return_pred,
                                                              return_ground_truth=return_ground_truth)
