@@ -58,30 +58,6 @@ class ProgressionCallback(Callback):
             self.color_progress.on_epoch_end(epoch_total_time, self.last_step, metrics_str)
 
     def on_train_batch_end(self, batch_number: int, logs: Dict) -> None:
-        self._batch_end(batch_number, logs)
-
-    def on_test_begin(self, logs: Dict) -> None:
-        self.step_times_weighted_sum = 0.
-
-        self.metrics = ['loss'] + self.model.metrics_names
-        self.steps = self.params['steps']
-
-        if self.progress_bar and self.steps is not None:
-            self.color_progress.set_progress_bar(self.steps)
-
-    def on_test_batch_end(self, batch_number: int, logs: Dict) -> None:
-        self._batch_end(batch_number, logs)
-
-    def on_test_end(self, logs: Dict) -> None:
-        print("")  # To clean the sys.stdout end
-
-    def _get_metrics_string(self, logs: Dict):
-        train_metrics_str_gen = ('{}: {:f}'.format(k, logs[k]) for k in self.metrics if logs.get(k) is not None)
-        val_metrics_str_gen = ('{}: {:f}'.format('val_' + k, logs['val_' + k]) for k in self.metrics
-                               if logs.get('val_' + k) is not None)
-        return ', '.join(itertools.chain(train_metrics_str_gen, val_metrics_str_gen))
-
-    def _batch_end(self, batch_number: int, logs: Dict) -> None:
         if self.equal_weights:
             self.step_times_weighted_sum += logs['time']
             step_times_rate = self.step_times_weighted_sum / batch_number
@@ -98,3 +74,39 @@ class ProgressionCallback(Callback):
         else:
             self.color_progress.on_train_batch_end(step_times_rate, batch_number, metrics_str)
             self.last_step = batch_number
+
+    def on_test_begin(self, logs: Dict) -> None:
+        self.step_times_weighted_sum = 0.
+
+        self.metrics = ['loss'] + self.model.metrics_names
+        self.steps = self.params['steps']
+
+        if self.progress_bar and self.steps is not None:
+            self.color_progress.set_progress_bar(self.steps)
+
+    def on_test_batch_end(self, batch_number: int, logs: Dict) -> None:
+        if self.equal_weights:
+            self.step_times_weighted_sum += logs['time']
+            step_times_rate = self.step_times_weighted_sum / batch_number
+        else:
+            self.step_times_weighted_sum += batch_number * logs['time']
+            normalizing_factor = (batch_number * (batch_number + 1)) / 2
+            step_times_rate = self.step_times_weighted_sum / normalizing_factor
+
+        metrics_str = self._get_metrics_string(logs)
+
+        if self.steps is not None:
+            remaining_time = step_times_rate * (self.steps - batch_number)
+            self.color_progress.on_test_batch_end(remaining_time, batch_number, metrics_str, self.steps)
+        else:
+            self.color_progress.on_test_batch_end(step_times_rate, batch_number, metrics_str)
+            self.last_step = batch_number
+
+    def on_test_end(self, logs: Dict) -> None:
+        print("")  # To clean the sys.stdout end
+
+    def _get_metrics_string(self, logs: Dict):
+        train_metrics_str_gen = ('{}: {:f}'.format(k, logs[k]) for k in self.metrics if logs.get(k) is not None)
+        val_metrics_str_gen = ('{}: {:f}'.format('val_' + k, logs['val_' + k]) for k in self.metrics
+                               if logs.get('val_' + k) is not None)
+        return ', '.join(itertools.chain(train_metrics_str_gen, val_metrics_str_gen))
