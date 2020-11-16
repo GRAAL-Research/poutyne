@@ -32,8 +32,8 @@ network = nn.Sequential(
 
 # Train
 model = Model(network, 'sgd', 'binary_cross_entropy_with_logits',
-              batch_metrics=['binary_accuracy'])
-model.to(device)
+              batch_metrics=['binary_accuracy'],
+              device=device)
 model.fit(
     train_x, train_y,
     validation_data=(valid_x, valid_y),

@@ -215,9 +215,12 @@ class Experiment:
         epoch_metrics = self._get_epoch_metrics(epoch_metrics, network, task)
         self._set_monitor(monitor_metric, monitor_mode, task)
 
-        self.model = Model(network, optimizer, loss_function, batch_metrics=batch_metrics, epoch_metrics=epoch_metrics)
-        if device is not None:
-            self.model.to(device)
+        self.model = Model(network,
+                           optimizer,
+                           loss_function,
+                           batch_metrics=batch_metrics,
+                           epoch_metrics=epoch_metrics,
+                           device=device)
 
         self.best_checkpoint_filename = self.get_path(Experiment.BEST_CHECKPOINT_FILENAME)
         self.model_checkpoint_filename = self.get_path(Experiment.MODEL_CHECKPOINT_FILENAME)

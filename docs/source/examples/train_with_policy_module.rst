@@ -104,8 +104,8 @@ Training without the ``policies`` module
         optimizer,
         criterion,
         batch_metrics=["acc"],
+        device=device,
     )
-    model = model.to(device)
 
     history = model.fit_generator(
         train_dl,
@@ -133,8 +133,8 @@ Training with the ``policies`` module
         optimizer,
         criterion,
         batch_metrics=["acc"],
+        device=device,
     )
-    model = model.to(device)
 
     policy = OptimizerPolicy(
         one_cycle_phases(epochs * steps_per_epoch, lr=(0.01, 0.1, 0.008)),

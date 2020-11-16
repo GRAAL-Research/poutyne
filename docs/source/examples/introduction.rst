@@ -435,11 +435,8 @@ That is, only 8 lines of code with a better output.
         optimizer = optim.SGD(pytorch_network.parameters(), lr=learning_rate)
         loss_function = nn.CrossEntropyLoss()
 
-        # Poutyne Model
-        model = Model(pytorch_network, optimizer, loss_function, batch_metrics=['accuracy'])
-
-        # Send model on GPU
-        model.to(device)
+        # Poutyne Model on GPU
+        model = Model(pytorch_network, optimizer, loss_function, batch_metrics=['accuracy'], device=device)
 
         # Train
         model.fit_generator(train_loader, valid_loader, epochs=num_epochs)
@@ -502,8 +499,7 @@ One nice feature of Poutyne is :class:`callbacks <poutyne.Callback>`. Callbacks 
         optimizer = optim.SGD(pytorch_network.parameters(), lr=learning_rate)
         loss_function = nn.CrossEntropyLoss()
 
-        model = Model(pytorch_network, optimizer, loss_function, batch_metrics=['accuracy'])
-        model.to(device)
+        model = Model(pytorch_network, optimizer, loss_function, batch_metrics=['accuracy'], device=device)
         model.fit_generator(train_loader, valid_loader, epochs=num_epochs, callbacks=callbacks)
 
         test_loss, test_acc = model.evaluate_generator(test_loader)
