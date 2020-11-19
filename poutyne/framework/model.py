@@ -1018,6 +1018,8 @@ class Model:
                     test_generator, return_pred=True, return_ground_truth=True
                 )
         """
+        callbacks = [] if callbacks is None else callbacks
+
         if verbose:
             progress_options = {} if progress_options is None else progress_options
             callbacks = [ProgressionCallback(**progress_options)] + callbacks

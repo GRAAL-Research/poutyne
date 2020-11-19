@@ -72,16 +72,17 @@ class ModelFittingTestCase(TestCase):
 
         call_list = []
         call_list.append(call.on_test_begin({}))
-        for batch in range(1, params['batch'] + 1):
+        for batch in range(1, params['steps'] + 1):
             call_list.append(call.on_test_batch_begin(batch, {}))
             call_list.append(call.on_test_batch_end(batch, {'batch': batch, 'size': ANY, **test_batch_dict}))
         call_list.append(call.on_test_end(result_log))
 
         method_calls = self.mock_callback.method_calls
-        self.assertEqual(call.set_model(self.model), method_calls[0])  # skip set_model
+        self.assertEqual(call.set_model(self.model), method_calls[0])  # skip set_model and set param call
+        self.assertEqual(call.set_params(params), method_calls[1])
 
-        self.assertEqual(len(method_calls), len(call_list) + 1)  # for set_model
-        self.assertEqual(method_calls[1:], call_list)
+        self.assertEqual(len(method_calls), len(call_list) + 2)  # for set_model and set param
+        self.assertEqual(method_calls[2:], call_list)
 
     def _test_size_and_type_for_generator(self, pred_y, expected_size):
         if isinstance(pred_y, (list, tuple)):
