@@ -563,8 +563,8 @@ class Experiment:
                 - If 'best', will load the best weights according to ``monitor_metric`` and ``monitor_mode``.
                 - If 'last', will load the last model checkpoint.
                 - If int, will load the checkpoint of the specified epoch.
-                - If a path (str), will load the model pickled state_dict weights (e.g.
-                    torch.save(a_pytorch_network.state_dict(), "./a_path.p")).
+                - If a path (str), will load the model pickled state_dict weights (for instance, saved as
+                    `torch.save(a_pytorch_network.state_dict(), "./a_path.p")`).
             verbose (bool, optional): Whether or not to print the checkpoint filename, and the best epoch
                 number and stats when checkpoint is 'best'.
                 (Default value = False)
