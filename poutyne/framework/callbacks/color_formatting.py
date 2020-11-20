@@ -125,7 +125,7 @@ class ColorProgress:
         """
         update = self.epoch_formatted_text
 
-        update = self._batch_update(update, remaining_time, batch_number, metrics_str, steps)
+        update += self._batch_update(remaining_time, batch_number, metrics_str, steps)
 
         sys.stdout.write(update)
         sys.stdout.flush()
@@ -140,9 +140,8 @@ class ColorProgress:
         Format on test batch end for a steps the epoch ratio (so far / to do), the total time, the steps
         done and the metrics name and values.
         """
-        update = "\r"
 
-        update = self._batch_update(update, remaining_time, batch_number, metrics_str, steps)
+        update = "\r" + self._batch_update(remaining_time, batch_number, metrics_str, steps)
 
         sys.stdout.write(update)
         sys.stdout.flush()
@@ -205,12 +204,12 @@ class ColorProgress:
         return formatted_metrics
 
     def _batch_update(self,
-                      update,
                       remaining_time: float,
                       batch_number: int,
                       metrics_str: str,
                       steps: Union[int, None] = None) -> str:
         # pylint: disable=too-many-arguments
+        update = ""
         if self.progress_bar:
             update += self._get_formatted_step(batch_number, steps)
 
