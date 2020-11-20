@@ -58,13 +58,7 @@ class ProgressionCallback(Callback):
             self.color_progress.on_epoch_end(epoch_total_time, self.last_step, metrics_str)
 
     def on_train_batch_end(self, batch_number: int, logs: Dict) -> None:
-        if self.equal_weights:
-            self.step_times_weighted_sum += logs['time']
-            step_times_rate = self.step_times_weighted_sum / batch_number
-        else:
-            self.step_times_weighted_sum += batch_number * logs['time']
-            normalizing_factor = (batch_number * (batch_number + 1)) / 2
-            step_times_rate = self.step_times_weighted_sum / normalizing_factor
+        step_times_rate = self._compute_step_times_rate(batch_number, logs)
 
         metrics_str = self._get_metrics_string(logs)
 
@@ -85,13 +79,7 @@ class ProgressionCallback(Callback):
             self.color_progress.set_progress_bar(self.steps)
 
     def on_test_batch_end(self, batch_number: int, logs: Dict) -> None:
-        if self.equal_weights:
-            self.step_times_weighted_sum += logs['time']
-            step_times_rate = self.step_times_weighted_sum / batch_number
-        else:
-            self.step_times_weighted_sum += batch_number * logs['time']
-            normalizing_factor = (batch_number * (batch_number + 1)) / 2
-            step_times_rate = self.step_times_weighted_sum / normalizing_factor
+        step_times_rate = self._compute_step_times_rate(batch_number, logs)
 
         metrics_str = self._get_metrics_string(logs)
 
@@ -110,3 +98,13 @@ class ProgressionCallback(Callback):
         val_metrics_str_gen = ('{}: {:f}'.format('val_' + k, logs['val_' + k]) for k in self.metrics
                                if logs.get('val_' + k) is not None)
         return ', '.join(itertools.chain(train_metrics_str_gen, val_metrics_str_gen))
+
+    def _compute_step_times_rate(self, batch_number: int, logs: Dict):
+        if self.equal_weights:
+            self.step_times_weighted_sum += logs['time']
+            step_times_rate = self.step_times_weighted_sum / batch_number
+        else:
+            self.step_times_weighted_sum += batch_number * logs['time']
+            normalizing_factor = (batch_number * (batch_number + 1)) / 2
+            step_times_rate = self.step_times_weighted_sum / normalizing_factor
+        return step_times_rate
