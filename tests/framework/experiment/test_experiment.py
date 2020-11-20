@@ -11,6 +11,13 @@ ckpt_1_path = os.path.join(test_checkpoints_path, "checkpoint_epoch_1.ckpt")
 ckpt_last_path = os.path.join(test_checkpoints_path, "checkpoint.ckpt")
 
 
+def some_data_tensor_generator(batch_size):
+    for i in range(100):
+        x = torch.rand(batch_size, 1)
+        y = torch.rand(batch_size, 1)
+        yield x, y
+
+
 class ExperimentTest(TestCase):
 
     def setUp(self):
@@ -24,6 +31,9 @@ class ExperimentTest(TestCase):
                                           loss_function=self.loss_function,
                                           monitor_metric="loss",
                                           monitor_mode="max")
+
+        train_generator = some_data_tensor_generator(2)
+        self.test_experiment.train(train_generator, epochs=1)
 
     def test_load_checkpoint_with_int(self):
         self.test_experiment.load_checkpoint(1)
@@ -43,6 +53,7 @@ class ExperimentTest(TestCase):
 
     def test_load_checkpoint_path_state_dict(self):
         cpkt_path = os.path.join(test_checkpoints_path, "test_model_weights_state_dict.p")
+        torch.save(torch.load(ckpt_1_path, map_location="cpu"), cpkt_path)  # change the ckpt path
         self.test_experiment.load_checkpoint(cpkt_path)
 
         self.assertEqual(self.test_experiment.model.network.state_dict(), torch.load(cpkt_path, map_location="cpu"))
