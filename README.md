@@ -82,8 +82,8 @@ You can now use Poutyne's model to train your network easily:
 
 ```python
 model = Model(network, 'sgd', 'cross_entropy',
-              batch_metrics=['accuracy'], epoch_metrics=['f1'])
-model.to(device)
+              batch_metrics=['accuracy'], epoch_metrics=['f1'],
+              device=device)
 model.fit(
     train_x, train_y,
     validation_data=(valid_x, valid_y),

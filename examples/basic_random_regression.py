@@ -33,8 +33,9 @@ network = nn.Sequential(
 
 # Train
 model = Model(network, 'sgd', 'mse',
-              batch_metrics=['l1'], epoch_metrics=[SKLearnMetrics(r2_score)])
-model.to(device)
+              batch_metrics=['l1'],
+              epoch_metrics=[SKLearnMetrics(r2_score)],
+              device=device)
 model.fit(
     train_x, train_y,
     validation_data=(valid_x, valid_y),

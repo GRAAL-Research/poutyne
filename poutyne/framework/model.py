@@ -44,6 +44,8 @@ class Model:
         epoch_metrics (list): List of functions with the same signature as
             :class:`~poutyne.EpochMetric`
             (Default value = None)
+        device (Union[torch.torch.device, List[torch.torch.device]]): The device to which the network is
+            sent or the list of device to which the network is sent. See :func:`~Model.to()` for details.
 
     Note:
         The name of each batch and epoch metric can be change by passing a tuple ``(name, metric)`` instead
@@ -152,7 +154,7 @@ class Model:
 
     """
 
-    def __init__(self, network, optimizer, loss_function, *, batch_metrics=None, epoch_metrics=None):
+    def __init__(self, network, optimizer, loss_function, *, batch_metrics=None, epoch_metrics=None, device=None):
         batch_metrics = [] if batch_metrics is None else batch_metrics
         epoch_metrics = [] if epoch_metrics is None else epoch_metrics
 
@@ -164,6 +166,9 @@ class Model:
 
         self.device = None
         self.other_device = None
+
+        if device is not None:
+            self.to(device)
 
     def _set_metrics_attributes(self, batch_metrics, epoch_metrics):
         batch_metrics = list(map(get_loss_or_metric, batch_metrics))
@@ -1431,7 +1436,6 @@ class Model:
         using either a list of devices or "all" to take all the available devices. In both cases,
         the training loop will use the `~torch.nn.parallel.data_parallel()` function for single
         node multi GPUs parallel process and the main device is the first device.
-
 
         Note:
             PyTorch optimizers assume that the parameters have been transferred to the right device
