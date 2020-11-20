@@ -70,7 +70,9 @@ def main():
         description='A simplified framework and utilities for PyTorch.',
         long_description=readme,
         long_description_content_type='text/markdown',
-        extras_require={"colorama": "colorama>=0.4.3"}
+        extras_require={"colorama": "colorama>=0.4.3", "scikit-learn": "scikit-learn>=0.23.2",
+                        "tensorboard": "tensorboard>=2.4.0", "tensorboardX": "tensorboardX>=2.1",
+                        "torchvision": "torchvision>=0.8.1"}
     )
 
 
