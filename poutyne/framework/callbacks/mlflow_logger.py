@@ -11,6 +11,20 @@ All rights reserved.
 
 Each contributor holds copyright over their respective contributions. The project versioning (Git)
 records all such contribution source information.
+
+----------
+The source code of the function _get_git_commit was inspired from the MLflow project
+(https://github.com/mlflow/mlflow/blob/7fde53e497c50b4eb4da1e9988710695b8c2e093/mlflow/tracking/context/git_context.py#L11),
+and has been modified. All modifications made from the original source code are under the LGPLv3 license.
+
+COPYRIGHT
+
+All contributions by MLflow:
+Copyright (c) 2020, ymym3412.
+All rights reserved.
+
+Each contributor holds copyright over their respective contributions. The project versioning (Git)
+records all such contribution source information.
 """
 import os
 import warnings
@@ -87,8 +101,8 @@ class MLFlowLogger(Logger):
 
         self._log_git_version()
 
-    def log_config_params(self,
-                          config_params: Union[Dict, omega.omegaconf.DictConfig, omega.omegaconf.ListConfig]) -> None:
+    def log_config_params(self, config_params: Union[Dict, omega.omegaconf.DictConfig,
+                                                     omega.omegaconf.ListConfig]) -> None:
         """
         Args:
             config_params (Union[Dict, ~omegaconf.dictconfig.DictConfig, ~omegaconf.listconfig.ListConfig]):
@@ -122,8 +136,8 @@ class MLFlowLogger(Logger):
         """
         self.ml_flow_client.log_metric(run_id=self.run_id, key=metric_name, value=value, step=step)
 
-    def _log_config_write(self, parent_name: str,
-                          element: Union[Dict, omega.omegaconf.DictConfig, omega.omegaconf.ListConfig]) -> None:
+    def _log_config_write(self, parent_name: str, element: Union[Dict, omega.omegaconf.DictConfig,
+                                                                 omega.omegaconf.ListConfig]) -> None:
         """
         Log the config parameters when it's a list of dictionary or a dictionary of dictionary.
         """
@@ -131,7 +145,7 @@ class MLFlowLogger(Logger):
             raise ImportError("Omegaconf needs to be installed to log this type of dictionary.")
         if isinstance(element, omega.omegaconf.DictConfig):
             for key, value in element.items():
-                if isinstance(value, omega.omegaconf.DictConfig) or isinstance(value, omega.omegaconf.ListConfig):
+                if isinstance(value, (omega.omegaconf.DictConfig, omega.omegaconf.ListConfig)):
                     self._log_config_write("{}.{}".format(parent_name, key), value)
                 else:
                     self.log_param("{}.{}".format(parent_name, key), value)
@@ -223,22 +237,6 @@ class MLFlowLogger(Logger):
         return test_metrics_dict
 
 
-"""
-The source code of the function _get_git_commit was inspired from the MLflow project
-(https://github.com/mlflow/mlflow/blob/7fde53e497c50b4eb4da1e9988710695b8c2e093/mlflow/tracking/context/git_context.py#L11), 
-and has been modified. All modifications made from the original source code are under the LGPLv3 license.
-
-COPYRIGHT
-
-All contributions by MLflow:
-Copyright (c) 2020, ymym3412.
-All rights reserved.
-
-Each contributor holds copyright over their respective contributions. The project versioning (Git)
-records all such contribution source information.
-"""
-
-
 def _get_git_commit(path):
     """
     Function to get the git commit from a path.
@@ -255,5 +253,5 @@ def _get_git_commit(path):
         commit = repo.head.commit.hexsha
         return commit
     except (git.InvalidGitRepositoryError, git.GitCommandNotFound, ValueError, git.NoSuchPathError) as e:
-        warnings.warn("Failed to grab the git repository so Git SHA is not available. Error: %s".format(e))
+        warnings.warn(f"Failed to grab the git repository so Git SHA is not available. Error: {e}")
         return None
