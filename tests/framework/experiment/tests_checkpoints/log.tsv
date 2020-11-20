@@ -1,0 +1,2 @@
+epoch	time	lr	loss	acc	val_loss	val_acc
+1	0.09944655501749367	0.001	0.24886664584686513	0.0		

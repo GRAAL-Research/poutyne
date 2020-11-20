@@ -560,9 +560,11 @@ class Experiment:
 
         Args:
             checkpoint (Union[int, str]): Which checkpoint to load the model's weights form.
-                If 'best', will load the best weights according to ``monitor_metric`` and ``monitor_mode``.
-                If 'last', will load the last model checkpoint. If int, will load the checkpoint of the
-                specified epoch.
+                - If 'best', will load the best weights according to ``monitor_metric`` and ``monitor_mode``.
+                - If 'last', will load the last model checkpoint.
+                - If int, will load the checkpoint of the specified epoch.
+                - If a path (str), will load the model pickled state_dict weights (e.g.
+                    torch.save(a_pytorch_network.state_dict(), "./a_path.p")).
             verbose (bool, optional): Whether or not to print the checkpoint filename, and the best epoch
                 number and stats when checkpoint is 'best'.
                 (Default value = False)
@@ -579,6 +581,8 @@ class Experiment:
             best_epoch_stats = self._load_best_checkpoint(verbose=verbose)
         elif checkpoint == 'last':
             self._load_last_checkpoint(verbose=verbose)
+        elif isinstance(checkpoint, str):
+            self._load_path_checkpoint(path=checkpoint, verbose=verbose)
         else:
             raise ValueError(f"checkpoint argument must be either 'best', 'last' or int. Found : {checkpoint}")
 
@@ -613,6 +617,12 @@ class Experiment:
             print(f"Loading checkpoint {self.model_checkpoint_filename}")
 
         self.model.load_weights(self.model_checkpoint_filename)
+
+    def _load_path_checkpoint(self, path, verbose: bool = False) -> None:
+        if verbose:
+            print(f"Loading checkpoint {path}")
+
+        self.model.load_weights(path)
 
     def test(self,
              test_generator,
