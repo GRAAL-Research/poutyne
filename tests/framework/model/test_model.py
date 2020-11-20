@@ -1336,7 +1336,7 @@ class ModelDatasetMethodsTest(ModelFittingTestCase):
                                                  return_pred=True,
                                                  callbacks=[self.mock_callback])
 
-        params = {'batch': ModelTest.epochs}
+        params = {'steps': ModelTest.epochs}
         self._test_callbacks_test(params, result_log)
 
     def test_evaluate_dataset_with_ground_truth(self):
