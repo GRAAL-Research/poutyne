@@ -64,8 +64,6 @@ class MLFlowLogger(Logger):
         experiment_name (str): The name of the experiment. Name must be unique and are case sensitive.
         saving_directory (str): Either the URI tracking path (for server tracking) of the absolute path to the directory
             to save the files. For example: /home/<user>/mlflow-server (local directory) or ...
-        working_directory (Union[str, None]): The working directory path to track the git commit on. By default the
-            value is None meaning that we use the working directory.
         batch_granularity (bool): Whether to also output the result of each batch in addition to the epochs.
             (Default value = False)
 
@@ -88,12 +86,11 @@ class MLFlowLogger(Logger):
     def __init__(self,
                  experiment_name: str,
                  saving_directory: str,
-                 working_directory: Union[str, None] = None,
                  batch_granularity: bool = False) -> None:
         super().__init__(batch_granularity=batch_granularity)
         self.tracking = saving_directory
 
-        self.working_directory = os.getcwd() if working_directory is None else working_directory
+        self.working_directory = os.getcwd()
 
         self.ml_flow_client = MlflowClient(tracking_uri=self.tracking, registry_uri=self.working_directory)
 
