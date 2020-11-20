@@ -17,11 +17,24 @@ import warnings
 from typing import Dict, Union
 
 import numpy as np
-from mlflow import pytorch, log_params, end_run, active_run, start_run, set_tracking_uri
-from mlflow.exceptions import MlflowException
-from mlflow.tracking import MlflowClient
-from omegaconf.dictconfig import DictConfig
-from omegaconf.listconfig import ListConfig
+
+try:
+    from mlflow import pytorch, log_params, end_run, active_run, start_run, set_tracking_uri
+    from mlflow.exceptions import MlflowException
+    from mlflow.tracking import MlflowClient
+except ImportError:
+    raise ImportError("Mlflow needs to be installed to use this callback.")
+
+try:
+    import omegaconf as omega
+except ImportError:
+    omega = None
+
+try:
+    import git
+except ImportError:
+    git = None
+
 from poutyne.framework import Logger
 
 warnings.filterwarnings("ignore")
@@ -74,7 +87,8 @@ class MLFlowLogger(Logger):
 
         self._log_git_version()
 
-    def log_config_params(self, config_params: Union[Dict, DictConfig, ListConfig]) -> None:
+    def log_config_params(self,
+                          config_params: Union[Dict, omega.omegaconf.DictConfig, omega.omegaconf.ListConfig]) -> None:
         """
         Args:
             config_params (Union[Dict, ~omegaconf.dictconfig.DictConfig, ~omegaconf.listconfig.ListConfig]):
@@ -108,17 +122,20 @@ class MLFlowLogger(Logger):
         """
         self.ml_flow_client.log_metric(run_id=self.run_id, key=metric_name, value=value, step=step)
 
-    def _log_config_write(self, parent_name: str, element: Union[Dict, ListConfig]) -> None:
+    def _log_config_write(self, parent_name: str,
+                          element: Union[Dict, omega.omegaconf.DictConfig, omega.omegaconf.ListConfig]) -> None:
         """
         Log the config parameters when it's a list of dictionary or a dictionary of dictionary.
         """
-        if isinstance(element, DictConfig):
+        if omega is None:
+            raise ImportError("Omegaconf needs to be installed to log this type of dictionary.")
+        if isinstance(element, omega.omegaconf.DictConfig):
             for key, value in element.items():
-                if isinstance(value, DictConfig) or isinstance(value, ListConfig):
+                if isinstance(value, omega.omegaconf.DictConfig) or isinstance(value, omega.omegaconf.ListConfig):
                     self._log_config_write("{}.{}".format(parent_name, key), value)
                 else:
                     self.log_param("{}.{}".format(parent_name, key), value)
-        elif isinstance(element, ListConfig):
+        elif isinstance(element, omega.omegaconf.ListConfig):
             for idx, value in enumerate(element):
                 self.log_param("{}.{}".format(parent_name, idx), value)
 
@@ -226,13 +243,11 @@ def _get_git_commit(path):
     """
     Function to get the git commit from a path.
     """
-    try:
-        import git
-    except ImportError as e:
-        warnings.warn(
-            "Failed to import Git (the Git executable is probably not on your PATH),"
-            " so Git SHA is not available. Error: %s".format(e))
+    if git is None:
+        warnings.warn("Failed to import Git (the Git executable is probably not on your PATH),"
+                      " so Git SHA is not available.")
         return None
+
     try:
         if os.path.isfile(path):
             path = os.path.dirname(path)
@@ -240,6 +255,5 @@ def _get_git_commit(path):
         commit = repo.head.commit.hexsha
         return commit
     except (git.InvalidGitRepositoryError, git.GitCommandNotFound, ValueError, git.NoSuchPathError) as e:
-        warnings.warn(
-            "Failed to grab the git repository so Git SHA is not available. Error: %s".format(e))
+        warnings.warn("Failed to grab the git repository so Git SHA is not available. Error: %s".format(e))
         return None
