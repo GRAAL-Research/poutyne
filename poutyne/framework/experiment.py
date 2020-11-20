@@ -571,6 +571,8 @@ class Experiment:
 
         Returns:
             If checkpoint is 'best', will return the best epoch stats, as per :func:`~get_best_epoch_stats()`,
+            if checkpoint is 'last', will return the last epoch stats, if checkpoint is a int, will return the
+            epoch number stats, if a path, will return the stats of that specific checkpoint.
             else None.
         """
         best_epoch_stats = None
@@ -648,10 +650,12 @@ class Experiment:
             steps (int, optional): Number of iterations done on ``generator``.
                 (Defaults the number of steps needed to see the entire dataset)
             checkpoint (Union[str, int]): Which model checkpoint weights to load for the test evaluation.
-                If 'best', will load the best weights according to ``monitor_metric`` and ``monitor_mode``.
-                If 'last', will load the last model checkpoint. If int, will load the checkpoint of the
-                specified epoch. This argument has no effect when logging is disabled.
-                (Default value = 'best')
+                - If 'best', will load the best weights according to ``monitor_metric`` and ``monitor_mode``.
+                - If 'last', will load the last model checkpoint.
+                - If int, will load the checkpoint of the specified epoch.
+                - If a path (str), will load the model pickled state_dict weights (e.g.
+                    torch.save(a_pytorch_network.state_dict(), "./a_path.p")).
+                This argument has no effect when logging is disabled. (Default value = 'best')
             seed (int, optional): Seed used to make the sampling deterministic.
                 (Default value = 42)
 
