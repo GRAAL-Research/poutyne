@@ -103,7 +103,7 @@ class MultiIOModel(nn.Module):
     """Model to test multiple inputs/outputs"""
 
     def __init__(self, num_input=2, num_output=2):
-        super(MultiIOModel, self).__init__()
+        super().__init__()
         inputs = []
         for _ in range(num_input):
             inputs.append(nn.Linear(1, 1))

@@ -16,7 +16,7 @@ class DictIOModel(nn.Module):
     """Model to test multiple dict input/output"""
 
     def __init__(self, input_keys, output_keys):
-        super(DictIOModel, self).__init__()
+        super().__init__()
         assert len(input_keys) == len(output_keys)
         inputs = {k: nn.Linear(1, 1) for k in input_keys}
         self.inputs = nn.ModuleDict(inputs)

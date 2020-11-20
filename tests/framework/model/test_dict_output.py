@@ -13,7 +13,7 @@ class DictOutputModel(nn.Module):
     """Model to test multiple dictionnary output"""
 
     def __init__(self):
-        super(DictOutputModel, self).__init__()
+        super().__init__()
         self.input = nn.Linear(1, 1)
         self.output1 = nn.Linear(1, 1)
         self.output2 = nn.Linear(1, 1)
