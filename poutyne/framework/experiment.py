@@ -583,10 +583,8 @@ class Experiment:
             best_epoch_stats = self._load_best_checkpoint(verbose=verbose)
         elif checkpoint == 'last':
             self._load_last_checkpoint(verbose=verbose)
-        elif isinstance(checkpoint, str):
-            self._load_path_checkpoint(path=checkpoint, verbose=verbose)
         else:
-            raise ValueError(f"checkpoint argument must be either 'best', 'last' or int. Found : {checkpoint}")
+            self._load_path_checkpoint(path=checkpoint, verbose=verbose)
 
         return best_epoch_stats
 
