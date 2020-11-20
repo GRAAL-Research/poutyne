@@ -77,7 +77,7 @@ class EarlyStopping(Callback):
                  patience: int = 0,
                  verbose: bool = False,
                  mode: str = 'min'):
-        super(EarlyStopping, self).__init__()
+        super().__init__()
 
         self.monitor = monitor
         self.patience = patience
