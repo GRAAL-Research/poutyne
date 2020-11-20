@@ -44,9 +44,6 @@ class StepIterator:
             self.on_batch_begin = callback.on_test_batch_begin
             self.on_batch_end = callback.on_test_batch_end
 
-            callback.set_params({'steps': steps_per_epoch})
-            callback.on_test_begin({})
-
         self.losses_sum = 0.
         self.metrics_sum = np.zeros(len(self.batch_metrics_names))
         self.sizes_sum = 0.

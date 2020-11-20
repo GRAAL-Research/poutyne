@@ -1058,11 +1058,16 @@ class Model:
         if verbose:
             progress_options = {} if progress_options is None else progress_options
             callbacks = [ProgressionCallback(**progress_options)] + callbacks
-        callback_list = CallbackList(callbacks)
-        callback_list.set_model(self)
 
         if steps is None:
             steps = len(generator)
+
+        callback_list = CallbackList(callbacks)
+        callback_list.set_model(self)
+
+        callback_list.set_params({'steps': steps})
+        callback_list.on_test_begin({})
+
         step_iterator = StepIterator(generator, steps, self.batch_metrics_names, callback_list, mode="test")
 
         loss, batch_metrics, pred_y, true_y = self._validate(step_iterator,
