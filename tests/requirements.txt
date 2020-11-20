@@ -3,3 +3,4 @@ tensorboard
 tensorboardX
 colorama
 torchvision
+pandas
