@@ -1,3 +1,4 @@
+# pylint: disable=line-too-long
 """
 The source code of this file was inspired from the Hydra-MLflow-experiment-management
 (https://github.com/ymym3412/Hydra-MLflow-experiment-management/tree/master), and has been modified. All modifications
