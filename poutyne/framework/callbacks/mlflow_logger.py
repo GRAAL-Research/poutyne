@@ -83,10 +83,7 @@ class MLFlowLogger(Logger):
             mlflow_logger.log_model()
     """
 
-    def __init__(self,
-                 experiment_name: str,
-                 saving_directory: str,
-                 batch_granularity: bool = False) -> None:
+    def __init__(self, experiment_name: str, saving_directory: str, batch_granularity: bool = False) -> None:
         super().__init__(batch_granularity=batch_granularity)
         self.tracking = saving_directory
 
