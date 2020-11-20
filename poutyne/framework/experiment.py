@@ -440,6 +440,7 @@ class Experiment:
               validation_steps: Union[int, None] = None,
               batches_per_step: int = 1,
               seed: int = 42,
+              verbose: bool = True,
               progress_options: Union[dict, None] = None) -> List[Dict]:
         # pylint: disable=too-many-locals
         """
@@ -493,9 +494,11 @@ class Experiment:
                 (Default value = 1)
             seed (int, optional): Seed used to make the sampling deterministic.
                 (Default value = 42)
+            verbose (bool): Whether to display the progress of the training.
+                (Default value = True)
             progress_options (dict, optional): Keyword arguments to pass to the default progression callback used
                 in Poutyne (See :class:`~poutyne.ProgressionCallback` for the available arguments).
-                (Default value = None)
+                (Default value = None, meaning default color setting and progress bar)
 
         Returns:
             List of dict containing the history of each epoch.
@@ -546,6 +549,7 @@ class Experiment:
                                             batches_per_step=batches_per_step,
                                             initial_epoch=initial_epoch,
                                             callbacks=expt_callbacks,
+                                            verbose=verbose,
                                             progress_options=progress_options)
         finally:
             if tensorboard_writer is not None:
@@ -618,7 +622,9 @@ class Experiment:
              steps: Union[int, None] = None,
              checkpoint: Union[str, int] = 'best',
              seed: int = 42,
+             verbose: bool = True,
              progress_options: Union[dict, None] = None) -> Dict:
+        # pylint: disable=too-many-locals
         """
         Computes and returns the loss and the metrics of the attribute model on a given test examples
         generator.
@@ -642,6 +648,11 @@ class Experiment:
                 (Default value = 'best')
             seed (int, optional): Seed used to make the sampling deterministic.
                 (Default value = 42)
+            verbose (bool): Whether to display the progress of the training.
+                (Default value = True)
+            progress_options (dict, optional): Keyword arguments to pass to the default progression callback used
+                in Poutyne (See :class:`~poutyne.ProgressionCallback` for the available arguments).
+                (Default value = None, meaning default color setting and progress bar)
 
         If the Experiment has logging enabled (i.e. self.logging is True), one callback will be automatically
         included to save the test metrics. Moreover, a :class:`~callbacks.AtomicCSVLogger` will save the test
@@ -664,11 +675,16 @@ class Experiment:
             test_loss, test_metrics = self.model.evaluate_generator(test_generator,
                                                                     steps=steps,
                                                                     callbacks=callbacks,
+                                                                    verbose=verbose,
                                                                     progress_options=progress_options)
             if not isinstance(test_metrics, np.ndarray):
                 test_metrics = np.array([test_metrics])
         else:
-            test_loss = self.model.evaluate_generator(test_generator, steps=steps, callbacks=callbacks)
+            test_loss = self.model.evaluate_generator(test_generator,
+                                                      steps=steps,
+                                                      callbacks=callbacks,
+                                                      verbose=verbose,
+                                                      progress_options=progress_options)
             test_metrics = np.array([])
 
         test_metrics_names = ['test_loss'] + \

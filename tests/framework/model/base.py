@@ -1,6 +1,8 @@
 # abstract-method because nn.Module has the abstract method _forward_unimplemented
 # pylint: disable=too-many-locals,abstract-method
+import io
 import os
+import sys
 from unittest import TestCase
 from unittest.mock import MagicMock, call, ANY
 
@@ -98,6 +100,11 @@ class ModelFittingTestCase(TestCase):
     def _test_device(self, device):
         for p in self.pytorch_network.parameters():
             self.assertEqual(p.device, device)
+
+    def _capture_output(self):
+        self.test_out = io.StringIO()
+        self.original_output = sys.stdout
+        sys.stdout = self.test_out
 
 
 class MultiIOModel(nn.Module):

@@ -462,11 +462,11 @@ class Model:
             initial_epoch (int, optional): Epoch at which to start training (useful for resuming a previous
                 training run).
                 (Default value = 1)
-            verbose (bool, optional): Whether to display the progress of the training.
+            verbose (bool): Whether to display the progress of the training.
                 (Default value = True)
             progress_options (dict, optional): Keyword arguments to pass to the default progression callback used
                 in Poutyne (See :class:`~poutyne.ProgressionCallback` for the available arguments).
-                (Default value = None)
+                (Default value = None, meaning default color setting and progress bar)
             callbacks (List[~poutyne.Callback]): List of callbacks that will be called during
                 training. (Default value = None)
 
@@ -800,7 +800,16 @@ class Model:
             x = self.preprocess_input(x)
             return torch_to_numpy(self.network(*x))
 
-    def evaluate(self, x, y, *, batch_size=32, return_pred=False, callbacks=None, **dataloader_kwargs):
+    def evaluate(self,
+                 x,
+                 y,
+                 *,
+                 batch_size=32,
+                 return_pred=False,
+                 callbacks=None,
+                 verbose=True,
+                 progress_options: Union[dict, None] = None,
+                 **dataloader_kwargs):
         """
         Computes the loss and the metrics of the network on batches of samples and optionally
         returns the predictions.
@@ -821,6 +830,11 @@ class Model:
                 testing. (Default value = None)
             dataloader_kwargs (dict, optional): Keyword arguments to pass to the PyTorch dataloaders created
                 internally.
+            verbose (bool): Whether to display the progress of the training.
+                (Default value = True)
+            progress_options (dict, optional): Keyword arguments to pass to the default progression callback used
+                in Poutyne (See :class:`~poutyne.ProgressionCallback` for the available arguments).
+                (Default value = None, meaning default color setting and progress bar)
 
         Returns:
             Tuple ``(loss, metrics, pred_y)`` where specific elements are omitted if not
@@ -846,7 +860,9 @@ class Model:
                                        steps=len(generator),
                                        return_pred=return_pred,
                                        concatenate_returns=True,
-                                       callbacks=callbacks)
+                                       callbacks=callbacks,
+                                       verbose=verbose,
+                                       progress_options=progress_options)
 
     def evaluate_dataset(self,
                          dataset,
@@ -859,7 +875,9 @@ class Model:
                          callbacks=None,
                          num_workers=0,
                          collate_fn=None,
-                         dataloader_kwargs=None):
+                         dataloader_kwargs=None,
+                         verbose=True,
+                         progress_options: Union[dict, None] = None):
         """
         Computes the loss and the metrics of the network on batches of samples and optionally
         returns the predictions.
@@ -885,6 +903,11 @@ class Model:
                 Used when using batched loading from a map-style dataset.
             dataloader_kwargs (dict, optional): Keyword arguments to pass to the PyTorch dataloaders created
                 internally.
+            verbose (bool): Whether to display the progress of the training.
+                (Default value = True)
+            progress_options (dict, optional): Keyword arguments to pass to the default progression callback used
+                in Poutyne (See :class:`~poutyne.ProgressionCallback` for the available arguments).
+                (Default value = None, meaning default color setting and progress bar)
 
         Returns:
             Tuple ``(loss, metrics, pred_y)`` where specific elements are omitted if not
@@ -918,7 +941,9 @@ class Model:
                                        return_pred=return_pred,
                                        return_ground_truth=return_ground_truth,
                                        concatenate_returns=concatenate_returns,
-                                       callbacks=callbacks)
+                                       callbacks=callbacks,
+                                       verbose=verbose,
+                                       progress_options=progress_options)
 
     def evaluate_generator(self,
                            generator,
@@ -946,6 +971,11 @@ class Model:
                 (Default value = False)
             concatenate_returns (bool, optional): Whether to concatenate the predictions
                 or the ground truths when returning them. (Default value = True)
+            verbose (bool): Whether to display the progress of the training.
+                (Default value = True)
+            progress_options (dict, optional): Keyword arguments to pass to the default progression callback used
+                in Poutyne (See :class:`~poutyne.ProgressionCallback` for the available arguments).
+                (Default value = None, meaning default color setting and progress bar)
             callbacks (List[~poutyne.Callback]): List of callbacks that will be called during
                 testing. (Default value = None)
 
