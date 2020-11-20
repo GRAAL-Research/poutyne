@@ -651,8 +651,8 @@ class Experiment:
                 - If 'best', will load the best weights according to ``monitor_metric`` and ``monitor_mode``.
                 - If 'last', will load the last model checkpoint.
                 - If int, will load the checkpoint of the specified epoch.
-                - If a path (str), will load the model pickled state_dict weights (e.g.
-                    torch.save(a_pytorch_network.state_dict(), "./a_path.p")).
+                - If a path (str), will load the model pickled state_dict weights (for instance, saved as
+                    `torch.save(a_pytorch_network.state_dict(), "./a_path.p")`).
                 This argument has no effect when logging is disabled. (Default value = 'best')
             seed (int, optional): Seed used to make the sampling deterministic.
                 (Default value = 42)
