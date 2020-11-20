@@ -637,7 +637,7 @@ class Model:
         else:
             x = self._process_input(x)
 
-        x = x if isinstance(x, (tuple, list)) else (x, )
+        x = x if isinstance(x, (tuple, list)) else (x,)
 
         return (x, y) if y is not None else x
 
@@ -674,15 +674,15 @@ class Model:
 
     def _format_return(self, loss, metrics, pred_y, return_pred, true_y=None, return_ground_truth=False):
         # pylint: disable=too-many-arguments
-        ret = (loss, )
+        ret = (loss,)
 
-        ret += tuple(metrics.tolist()) if len(metrics) <= 1 else (metrics, )
+        ret += tuple(metrics.tolist()) if len(metrics) <= 1 else (metrics,)
 
         if return_pred:
-            ret += (pred_y, )
+            ret += (pred_y,)
 
         if return_ground_truth:
-            ret += (true_y, )
+            ret += (true_y,)
 
         return ret[0] if len(ret) == 1 else ret
 
@@ -707,7 +707,7 @@ class Model:
             dataloader_kwargs = {}
         dataloader_kwargs = {'batch_size': batch_size, **dataloader_kwargs}
 
-        x = x if isinstance(x, (tuple, list)) else (x, )
+        x = x if isinstance(x, (tuple, list)) else (x,)
         generator = self._dataloader_from_data(x, dataloader_kwargs)
         return self.predict_generator(generator, concatenate_returns=True)
 
@@ -814,7 +814,7 @@ class Model:
                  callbacks=None,
                  verbose=True,
                  progress_options: Union[dict, None] = None,
-                 **dataloader_kwargs):
+                 dataloader_kwargs=None):
         """
         Computes the loss and the metrics of the network on batches of samples and optionally
         returns the predictions.
