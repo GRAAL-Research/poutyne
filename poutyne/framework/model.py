@@ -976,7 +976,7 @@ class Model:
                 (Default value = False)
             concatenate_returns (bool, optional): Whether to concatenate the predictions
                 or the ground truths when returning them. (Default value = True)
-            verbose (bool): Whether to display the progress of the training.
+            verbose (bool): Whether to display the progress of the evaluation.
                 (Default value = True)
             progress_options (dict, optional): Keyword arguments to pass to the default progression callback used
                 in Poutyne (See :class:`~poutyne.ProgressionCallback` for the available arguments).
