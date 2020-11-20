@@ -12,7 +12,7 @@ ckpt_last_path = os.path.join(test_checkpoints_path, "checkpoint.ckpt")
 
 
 def some_data_tensor_generator(batch_size):
-    for i in range(100):
+    for _ in range(100):
         x = torch.rand(batch_size, 1)
         y = torch.rand(batch_size, 1)
         yield x, y
