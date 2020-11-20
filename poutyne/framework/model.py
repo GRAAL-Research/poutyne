@@ -805,7 +805,7 @@ class Model:
             x = self.preprocess_input(x)
             return torch_to_numpy(self.network(*x))
 
-    def evaluate(self, x, y, *, batch_size=32, return_pred=False, callbacks=None, **dataloader_kwargs):
+    def evaluate(self, x, y, *, batch_size=32, return_pred=False, callbacks=None, dataloader_kwargs=None):
         """
         Computes the loss and the metrics of the network on batches of samples and optionally
         returns the predictions.
