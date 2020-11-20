@@ -137,7 +137,7 @@ class ColorProgress:
                           steps: Union[int, None] = None) -> None:
         # pylint: disable=too-many-arguments
         """
-        Format on train batch end for a steps the epoch ratio (so far / to do), the total time for the epoch, the steps
+        Format on test batch end for a steps the epoch ratio (so far / to do), the total time, the steps
         done and the metrics name and values.
         """
         update = "\r"
