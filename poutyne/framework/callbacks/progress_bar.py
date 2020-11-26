@@ -16,11 +16,11 @@ class ProgressBar:
         total_steps (int): The total steps to do.
         bar_format (str): The format of the bar.
         bar_character (str): The bar character.
-        bar_len (int): The size of the bar.
+        bar_length (int): The size of the bar.
         actual_steps (int): Number of steps done so far.
     """
 
-    def __init__(self, steps: int, bar_format: Union[str, None] = None, bar_character: str = "\u2588") -> None:
+    def __init__(self, steps: int, bar_length: int = 20, bar_format: Union[str, None] = None, bar_character: str = "\u2588") -> None:
         self.total_steps = steps
 
         if bar_format is not None:
@@ -29,7 +29,7 @@ class ProgressBar:
             self.bar_format = "{percentage} |{bar}"
 
         self.bar_character = bar_character
-        self.bar_len = 20
+        self.bar_length = bar_length
 
         self.actual_steps = 0
 
@@ -59,7 +59,7 @@ class ProgressBar:
         return self.bar_format.format(percentage=percentage, bar=progress_bar)
 
     def progress_bar_formatting(self) -> str:
-        bar_len_complete = int(math.floor(self.actual_steps / self.total_steps * self.bar_len)) * self.bar_character
-        bar_len_incomplete = (self.bar_len - len(bar_len_complete)) * " "
-        progress_bar = bar_len_complete + bar_len_incomplete
+        bar_length_complete = int(math.floor(self.actual_steps / self.total_steps * self.bar_length)) * self.bar_character
+        bar_length_incomplete = (self.bar_length - len(bar_length_complete)) * " "
+        progress_bar = bar_length_complete + bar_length_incomplete
         return progress_bar
