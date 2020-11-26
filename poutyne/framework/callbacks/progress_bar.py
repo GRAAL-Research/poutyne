@@ -56,7 +56,7 @@ class ProgressBar:
         """
         To format the progress bar for an output.
         """
-        percentage = f"{self.actual_steps / self.total_steps * 100:.2f}%"
+        percentage = f"{self.actual_steps / self.total_steps * 100:6.2f}%"
 
         progress_bar = self.progress_bar_formatting()
 
