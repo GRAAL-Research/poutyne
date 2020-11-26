@@ -29,7 +29,7 @@ class ProgressBar:
             self.bar_format = "{percentage} |{bar}"
 
         self.bar_character = bar_character
-        self.bar_len = 25
+        self.bar_len = 20
 
         self.actual_steps = 0
 
