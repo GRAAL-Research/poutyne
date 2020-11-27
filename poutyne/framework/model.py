@@ -305,8 +305,8 @@ class Model:
         return generator
 
     def fit_dataset(self,
-                    training_dataset,
-                    validation_dataset=None,
+                    train_dataset,
+                    valid_dataset=None,
                     *,
                     batch_size=32,
                     epochs=1000,
@@ -326,8 +326,8 @@ class Model:
         :func:`~Model.fit_generator()` method.
 
         Args:
-            training_dataset (~torch.utils.data.Dataset): Training dataset.
-            validation_dataset (~torch.utils.data.Dataset): Validation dataset.
+            train_dataset (~torch.utils.data.Dataset): Training dataset.
+            valid_dataset (~torch.utils.data.Dataset): Validation dataset.
             batch_size (int): Number of samples given to the network at one time.
                 (Default value = 32)
             epochs (int): Number of times the entire training dataset is seen.
@@ -373,8 +373,8 @@ class Model:
             .. code-block:: python
 
                 model = Model(pytorch_network, optimizer, loss_function)
-                history = model.fit(training_dataset,
-                                    validation_dataset,
+                history = model.fit(train_dataset,
+                                    valid_dataset,
                                     epochs=num_epochs,
                                     batch_size=batch_size,
                                     verbose=False)
@@ -397,10 +397,10 @@ class Model:
             **dataloader_kwargs
         }
 
-        train_generator = DataLoader(training_dataset, **{'shuffle': True, **dataloader_kwargs})
+        train_generator = DataLoader(train_dataset, **{'shuffle': True, **dataloader_kwargs})
         valid_generator = None
-        if validation_dataset is not None:
-            valid_generator = DataLoader(validation_dataset, **dataloader_kwargs)
+        if valid_dataset is not None:
+            valid_generator = DataLoader(valid_dataset, **dataloader_kwargs)
 
         return self.fit_generator(train_generator,
                                   valid_generator=valid_generator,
