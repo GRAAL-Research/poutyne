@@ -27,9 +27,11 @@ class Model:
 
     Args:
         network (torch.nn.Module): A PyTorch network.
-        optimizer (Union[torch.optim.Optimizer, str]): If torch.optim.Optimier, an initialized PyTorch.
-            If str, should be the optimizer's name in Pytorch (i.e. 'Adam' for torch.optim.Adam).
-            (Default value = 'sgd')
+        optimizer (Union[torch.optim.Optimizer, str, dict]): If torch.optim.Optimier, an initialized PyTorch.
+            If str, should be the name of the optimizer in Pytorch (i.e. 'Adam' for torch.optim.Adam).
+            If dict, should contain a key ``'optim'`` with the value be the name of the optimizer; other
+            entries are passed to the optimizer as keyword arguments.
+            (Default value = None)
         loss_function(Union[Callable, str]) It can be any PyTorch loss layer or custom loss function. It
             can also be a string with the same name as a PyTorch loss function (either the functional or
             object name). The loss function must have the signature ``loss_function(input, target)`` where
