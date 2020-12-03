@@ -216,6 +216,12 @@ class Model:
         Trains the network on a dataset. This method creates generators and calls
         the :func:`~Model.fit_generator()` method.
 
+        .. warning:: With **Jupyter Notebooks in Firefox**, if ``colorama`` is installed and colors are enabled (as it
+            is by default), a great number of epochs and steps per epoch can cause a spike in memory usage in Firefox.
+            The problem does not occur in Google Chrome/Chromium. To avoid this problem, you can disable the colors by
+            passing ``progress_options={'coloring': False}``. See
+            `this Github issue for details <https://github.com/jupyter/notebook/issues/5897>`__.
+
         Args:
             x (Union[~torch.Tensor, ~numpy.ndarray] or Union[tuple, list] of Union[~torch.Tensor, ~numpy.ndarray]):
                 Training dataset. Union[Tensor, ndarray] if the model has a single input.
@@ -327,6 +333,12 @@ class Model:
         Trains the network on a dataset. This method creates dataloaders and calls the
         :func:`~Model.fit_generator()` method.
 
+        .. warning:: With **Jupyter Notebooks in Firefox**, if ``colorama`` is installed and colors are enabled (as it
+            is by default), a great number of epochs and steps per epoch can cause a spike in memory usage in Firefox.
+            The problem does not occur in Google Chrome/Chromium. To avoid this problem, you can disable the colors by
+            passing ``progress_options={'coloring': False}``. See
+            `this Github issue for details <https://github.com/jupyter/notebook/issues/5897>`__.
+
         Args:
             train_dataset (~torch.utils.data.Dataset): Training dataset.
             valid_dataset (~torch.utils.data.Dataset): Validation dataset.
@@ -430,6 +442,12 @@ class Model:
         # pylint: disable=line-too-long
         """
         Trains the network on a dataset using a generator.
+
+        .. warning:: With **Jupyter Notebooks in Firefox**, if ``colorama`` is installed and colors are enabled (as it
+            is by default), a great number of epochs and steps per epoch can cause a spike in memory usage in Firefox.
+            The problem does not occur in Google Chrome/Chromium. To avoid this problem, you can disable the colors by
+            passing ``progress_options={'coloring': False}``. See
+            `this Github issue for details <https://github.com/jupyter/notebook/issues/5897>`__.
 
         Args:
             train_generator: Generator-like object for the training dataset. The generator must
