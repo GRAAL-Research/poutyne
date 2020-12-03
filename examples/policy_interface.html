@@ -1,0 +1,395 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Interface of policy &mdash; Poutyne 1.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Train CIFAR with the policy module" href="train_with_policy_module.html" />
+    <link rel="prev" title="Tips and Tricks" href="tips_and_tricks.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html">
+          
+
+          
+            
+            <img src="../_static/poutyne-light.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../model.html">Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../experiment.html">Experiment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../metrics.html">Metrics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../callbacks.html">Callbacks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../layers.html">Layers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../utils.html">Utils</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Examples</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction to PyTorch and Poutyne</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tips_and_tricks.html">Tips and Tricks</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Interface of <code class="docutils literal notranslate"><span class="pre">policy</span></code></a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#about-policy">About <code class="docutils literal notranslate"><span class="pre">policy</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#parameter-spaces-and-phases">Parameter Spaces and Phases</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#visualize-different-phases">Visualize Different Phases</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#visualize-multiple-parameters-in-one-phase">Visualize Multiple Parameters in One Phase</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#build-complex-policies-from-basic-phases">Build Complex Policies From Basic Phases</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#use-already-defined-complex-policies">Use Already Defined Complex Policies</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="train_with_policy_module.html">Train CIFAR with the <code class="docutils literal notranslate"><span class="pre">policy</span></code> module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="transfer_learning.html">Transfer learning example</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Poutyne</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>Interface of <code class="docutils literal notranslate"><span class="pre">policy</span></code></li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/examples/policy_interface.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="interface-of-policy">
+<h1>Interface of <code class="docutils literal notranslate"><span class="pre">policy</span></code><a class="headerlink" href="#interface-of-policy" title="Permalink to this headline">¶</a></h1>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<ul class="simple">
+<li><p>See the notebook <a class="reference external" href="https://github.com/GRAAL-Research/poutyne/blob/master/examples/policy_interface.ipynb">here</a></p></li>
+<li><p>Run in <a class="reference external" href="https://colab.research.google.com/github/GRAAL-Research/poutyne/blob/master/examples/policy_interface.ipynb">Google Colab</a></p></li>
+</ul>
+</div>
+<div class="section" id="about-policy">
+<h2>About <code class="docutils literal notranslate"><span class="pre">policy</span></code><a class="headerlink" href="#about-policy" title="Permalink to this headline">¶</a></h2>
+<p>Policies give you fine-grained control over the training process.
+This example demonstrates how policies work and how you can create your own policies.</p>
+<div class="section" id="parameter-spaces-and-phases">
+<h3>Parameter Spaces and Phases<a class="headerlink" href="#parameter-spaces-and-phases" title="Permalink to this headline">¶</a></h3>
+<p>Parameter spaces like <a class="reference internal" href="../callbacks.html#poutyne.linspace" title="poutyne.linspace"><code class="xref py py-class docutils literal notranslate"><span class="pre">linspace</span></code></a> and <code class="xref py py-class docutils literal notranslate"><span class="pre">cosinespace</span></code> are the basic building blocks.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">poutyne</span> <span class="kn">import</span> <span class="n">linspace</span><span class="p">,</span> <span class="n">cosinespace</span>
+</pre></div>
+</div>
+<p>You can define the space and iterate over them:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">space</span> <span class="o">=</span> <span class="n">linspace</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">space</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="../_images/lin_space.png" src="../_images/lin_space.png" />
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">space</span> <span class="o">=</span> <span class="n">cosinespace</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">space</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="../_images/cosine_space.png" src="../_images/cosine_space.png" />
+<p>You can use the space and create a phase with them:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">poutyne</span> <span class="kn">import</span> <span class="n">Phase</span>
+
+<span class="n">phase</span> <span class="o">=</span> <span class="n">Phase</span><span class="p">(</span><span class="n">lr</span><span class="o">=</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+
+<span class="c1"># and iterate</span>
+<span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">phase</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="../_images/phase.png" src="../_images/phase.png" />
+<p>You can also visualize your phase:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="n">phase</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="s2">&quot;lr&quot;</span><span class="p">);</span>
+</pre></div>
+</div>
+<img alt="../_images/phase_viz.png" src="../_images/phase_viz.png" />
+<p>Phases can have multiple parameters:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">phase</span> <span class="o">=</span> <span class="n">Phase</span><span class="p">(</span>
+    <span class="n">lr</span><span class="o">=</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span>
+    <span class="n">momentum</span><span class="o">=</span><span class="n">cosinespace</span><span class="p">(</span><span class="o">.</span><span class="mi">99</span><span class="p">,</span> <span class="o">.</span><span class="mi">9</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span>
+<span class="p">)</span>
+
+<span class="n">phase</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="s2">&quot;lr&quot;</span><span class="p">);</span>
+<span class="n">phase</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="s2">&quot;momentum&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="../_images/phase_multiple_viz.png" src="../_images/phase_multiple_viz.png" />
+</div>
+<div class="section" id="visualize-different-phases">
+<h3>Visualize Different Phases<a class="headerlink" href="#visualize-different-phases" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">steps</span> <span class="o">=</span> <span class="mi">100</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
+<span class="c1"># Constant value</span>
+<span class="n">Phase</span><span class="p">(</span><span class="n">lr</span><span class="o">=</span><span class="n">linspace</span><span class="p">(</span><span class="o">.</span><span class="mi">7</span><span class="p">,</span> <span class="o">.</span><span class="mi">7</span><span class="p">,</span> <span class="n">steps</span><span class="p">))</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">)</span>
+<span class="c1"># Linear</span>
+<span class="n">Phase</span><span class="p">(</span><span class="n">lr</span><span class="o">=</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">steps</span><span class="p">))</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">)</span>
+<span class="c1"># Cosine</span>
+<span class="n">Phase</span><span class="p">(</span><span class="n">lr</span><span class="o">=</span><span class="n">cosinespace</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">steps</span><span class="p">))</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">);</span>
+</pre></div>
+</div>
+<img alt="../_images/phase_multiple_phase.png" src="../_images/phase_multiple_phase.png" />
+</div>
+<div class="section" id="visualize-multiple-parameters-in-one-phase">
+<h3>Visualize Multiple Parameters in One Phase<a class="headerlink" href="#visualize-multiple-parameters-in-one-phase" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">steps</span> <span class="o">=</span> <span class="mi">100</span>
+<span class="n">phase</span> <span class="o">=</span> <span class="n">Phase</span><span class="p">(</span><span class="n">lr</span><span class="o">=</span><span class="n">linspace</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">steps</span><span class="p">),</span> <span class="n">momentum</span><span class="o">=</span><span class="n">cosinespace</span><span class="p">(</span><span class="o">.</span><span class="mi">8</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">steps</span><span class="p">))</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+<span class="n">phase</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="s2">&quot;lr&quot;</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="n">phase</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="s2">&quot;momentum&quot;</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]);</span>
+</pre></div>
+</div>
+<img alt="../_images/phase_multiple_parameters.png" src="../_images/phase_multiple_parameters.png" />
+</div>
+</div>
+<div class="section" id="build-complex-policies-from-basic-phases">
+<h2>Build Complex Policies From Basic Phases<a class="headerlink" href="#build-complex-policies-from-basic-phases" title="Permalink to this headline">¶</a></h2>
+<p>You can build complex optimizer policies by chaining phases together:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">poutyne</span> <span class="kn">import</span> <span class="n">OptimizerPolicy</span>
+
+<span class="n">policy</span> <span class="o">=</span> <span class="n">OptimizerPolicy</span><span class="p">([</span>
+    <span class="n">Phase</span><span class="p">(</span><span class="n">lr</span><span class="o">=</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">100</span><span class="p">)),</span>
+    <span class="n">Phase</span><span class="p">(</span><span class="n">lr</span><span class="o">=</span><span class="n">cosinespace</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">200</span><span class="p">)),</span>
+    <span class="n">Phase</span><span class="p">(</span><span class="n">lr</span><span class="o">=</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="o">.</span><span class="mi">5</span><span class="p">,</span> <span class="mi">100</span><span class="p">)),</span>
+    <span class="n">Phase</span><span class="p">(</span><span class="n">lr</span><span class="o">=</span><span class="n">linspace</span><span class="p">(</span><span class="o">.</span><span class="mi">5</span><span class="p">,</span> <span class="o">.</span><span class="mi">1</span><span class="p">,</span> <span class="mi">300</span><span class="p">)),</span>
+<span class="p">])</span>
+
+<span class="n">policy</span><span class="o">.</span><span class="n">plot</span><span class="p">();</span>
+</pre></div>
+</div>
+<img alt="../_images/phase_chaining.png" src="../_images/phase_chaining.png" />
+<div class="section" id="use-already-defined-complex-policies">
+<h3>Use Already Defined Complex Policies<a class="headerlink" href="#use-already-defined-complex-policies" title="Permalink to this headline">¶</a></h3>
+<p>It’s easy to build your own policies, but Poutyne contains some pre-defined phases.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">poutyne</span> <span class="kn">import</span> <span class="n">sgdr_phases</span>
+
+<span class="c1"># build them manually</span>
+<span class="n">policy</span> <span class="o">=</span> <span class="n">OptimizerPolicy</span><span class="p">([</span>
+    <span class="n">Phase</span><span class="p">(</span><span class="n">lr</span><span class="o">=</span><span class="n">cosinespace</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">200</span><span class="p">)),</span>
+    <span class="n">Phase</span><span class="p">(</span><span class="n">lr</span><span class="o">=</span><span class="n">cosinespace</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">400</span><span class="p">)),</span>
+    <span class="n">Phase</span><span class="p">(</span><span class="n">lr</span><span class="o">=</span><span class="n">cosinespace</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">800</span><span class="p">)),</span>
+<span class="p">])</span>
+<span class="n">policy</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
+
+<span class="c1"># or use the pre-defined one</span>
+<span class="n">policy</span> <span class="o">=</span> <span class="n">OptimizerPolicy</span><span class="p">(</span><span class="n">sgdr_phases</span><span class="p">(</span><span class="n">base_cycle_length</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="n">cycles</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">cycle_mult</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
+<span class="n">policy</span><span class="o">.</span><span class="n">plot</span><span class="p">();</span>
+</pre></div>
+</div>
+<img alt="../_images/phase_preset.png" src="../_images/phase_preset.png" />
+<p>Pre-defined ones are just a list phases:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">sgdr_phases</span><span class="p">(</span><span class="n">base_cycle_length</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="n">cycles</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">cycle_mult</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="../_images/list_phase_preset.png" src="../_images/list_phase_preset.png" />
+<p>Here is the one-cycle policy:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">poutyne</span> <span class="kn">import</span> <span class="n">one_cycle_phases</span>
+
+<span class="n">tp</span> <span class="o">=</span> <span class="n">OptimizerPolicy</span><span class="p">(</span><span class="n">one_cycle_phases</span><span class="p">(</span><span class="n">steps</span><span class="o">=</span><span class="mi">500</span><span class="p">))</span>
+<span class="n">tp</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="s2">&quot;lr&quot;</span><span class="p">)</span>
+<span class="n">tp</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="s2">&quot;momentum&quot;</span><span class="p">);</span>
+</pre></div>
+</div>
+<img alt="../_images/phase_cycle.png" src="../_images/phase_cycle.png" />
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="train_with_policy_module.html" class="btn btn-neutral float-right" title="Train CIFAR with the policy module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="tips_and_tricks.html" class="btn btn-neutral float-left" title="Tips and Tricks" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2018-2020, Frédérik Paradis
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+  
+ 
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-177874682-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-177874682-1');
+</script>
+
+
+</body>
+</html>

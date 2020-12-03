@@ -1,0 +1,564 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Experiment &mdash; Poutyne 1.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Metrics" href="metrics.html" />
+    <link rel="prev" title="Model" href="model.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html">
+          
+
+          
+            
+            <img src="_static/poutyne-light.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">API</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="model.html">Model</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Experiment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="metrics.html">Metrics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="callbacks.html">Callbacks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="layers.html">Layers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html">Utils</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Examples</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="examples/introduction.html">Introduction to PyTorch and Poutyne</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples/tips_and_tricks.html">Tips and Tricks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples/policy_interface.html">Interface of <code class="docutils literal notranslate"><span class="pre">policy</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples/train_with_policy_module.html">Train CIFAR with the <code class="docutils literal notranslate"><span class="pre">policy</span></code> module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples/transfer_learning.html">Transfer learning example</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Poutyne</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>Experiment</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/experiment.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="experiment">
+<h1>Experiment<a class="headerlink" href="#experiment" title="Permalink to this headline">¶</a></h1>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>This class is still in Beta phase. It may well be considerably modified in near future.</p>
+</div>
+<dl class="py class">
+<dt id="poutyne.Experiment">
+<em class="property">class </em><code class="sig-prename descclassname">poutyne.</code><code class="sig-name descname">Experiment</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">directory</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)">str</a></span></em>, <em class="sig-param"><span class="n">network</span><span class="p">:</span> <span class="n">torch.nn.modules.module.Module</span></em>, <em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">device</span><span class="p">:</span> <span class="n">Union<span class="p">[</span>torch.device<span class="p">, </span>List<span class="p">[</span>torch.device<span class="p">]</span><span class="p">, </span>List<span class="p">[</span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)">str</a><span class="p">]</span><span class="p">, </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)">None</a><span class="p">, </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)">str</a><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">logging</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)">bool</a></span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">optimizer</span><span class="p">:</span> <span class="n">Union<span class="p">[</span>torch.optim.optimizer.Optimizer<span class="p">, </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)">str</a><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">'sgd'</span></em>, <em class="sig-param"><span class="n">loss_function</span><span class="p">:</span> <span class="n">Union<span class="p">[</span>Callable<span class="p">, </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)">str</a><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">batch_metrics</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>List<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">epoch_metrics</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>List<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">monitor_metric</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)">str</a><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">monitor_mode</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)">str</a><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">task</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)">str</a><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poutyne/framework/experiment.html#Experiment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#poutyne.Experiment" title="Permalink to this definition">¶</a></dt>
+<dd><p>The Experiment class provides a straightforward experimentation tool for efficient and entirely
+customizable finetuning of the whole neural network training procedure with PyTorch. The
+<code class="docutils literal notranslate"><span class="pre">Experiment</span></code> object takes care of the training and testing processes while also managing to
+keep traces of all pertinent information via the automatic logging option.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>directory</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – Path to the experiment’s working directory. Will be used for the automatic logging.</p></li>
+<li><p><strong>network</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="(in PyTorch vmaster (1.7.0a0+0bc39c0 ))"><em>torch.nn.Module</em></a>) – A PyTorch network.</p></li>
+<li><p><strong>device</strong> (<em>Union</em><em>[</em><em>torch.device</em><em>, </em><em>List</em><em>[</em><em>torch.device</em><em>]</em><em>, </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a><em>]</em>) – The device to which the model is sent
+or for multi-GPUs, the list of devices to which the model is to be sent. When using a string for a multiple
+GPUs the option is “all”, for take them all, by default the current device is use as the main one.
+If None, the model will be kept on its current device.
+(Default value = None)</p></li>
+<li><p><strong>logging</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><em>bool</em></a>) – Whether or not to log the experiment’s progress. If true, various logging
+callbacks will be inserted to output training and testing stats as well as to automatically
+save model checkpoints, for example. See <a class="reference internal" href="#poutyne.Experiment.train" title="poutyne.Experiment.train"><code class="xref py py-func docutils literal notranslate"><span class="pre">train()</span></code></a> and <a class="reference internal" href="#poutyne.Experiment.test" title="poutyne.Experiment.test"><code class="xref py py-func docutils literal notranslate"><span class="pre">test()</span></code></a>
+for more details.
+(Default value = True)</p></li>
+<li><p><strong>optimizer</strong> (<em>Union</em><em>[</em><a class="reference external" href="https://pytorch.org/docs/stable/optim.html#torch.optim.Optimizer" title="(in PyTorch vmaster (1.7.0a0+0bc39c0 ))"><em>torch.optim.Optimizer</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em>]</em>) – If Pytorch Optimizer, must already be initialized.
+If str, should be the optimizer’s name in Pytorch (i.e. ‘Adam’ for torch.optim.Adam).
+(Default value = ‘sgd’)</p></li>
+<li><p><strong>loss_function</strong> (<em>Union</em><em>[</em><em>Callable</em><em>, </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em>]</em><em>, </em><em>optional</em>) – loss layer or custom loss function. It can also be a string with the same name as a PyTorch
+loss function (either the functional or object name). The loss function must have the signature
+<code class="docutils literal notranslate"><span class="pre">loss_function(input,</span> <span class="pre">target)</span></code> where <code class="docutils literal notranslate"><span class="pre">input</span></code> is the prediction of the network and <code class="docutils literal notranslate"><span class="pre">target</span></code>
+is the ground truth. If <code class="docutils literal notranslate"><span class="pre">None</span></code>, will default to, in priority order, either the model’s own
+loss function or the default loss function associated with the <code class="docutils literal notranslate"><span class="pre">task</span></code>.
+(Default value = None)</p></li>
+<li><p><strong>batch_metrics</strong> (<em>List</em><em>, </em><em>optional</em>) – List of functions with the same signature as the loss function. Each metric
+can be any PyTorch loss function. It can also be a string with the same name as a PyTorch
+loss function (either the functional or object name). ‘accuracy’ (or just ‘acc’) is also a
+valid metric. Each metric function is called on each batch of the optimization and on the
+validation batches at the end of the epoch.
+(Default value = None)</p></li>
+<li><p><strong>epoch_metrics</strong> (<em>List</em><em>, </em><em>optional</em>) – List of functions with the same signature as
+<a class="reference internal" href="metrics.html#poutyne.EpochMetric" title="poutyne.EpochMetric"><code class="xref py py-class docutils literal notranslate"><span class="pre">EpochMetric</span></code></a>
+(Default value = None)</p></li>
+<li><p><strong>monitor_metric</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em>, </em><em>optional</em>) – <p>Which metric to consider for best model performance calculation. Should be in
+the format ‘{metric_name}’ or ‘val_{metric_name}’ (i.e. ‘val_loss’). If None, will follow the value
+suggested by <code class="docutils literal notranslate"><span class="pre">task</span></code> or default to ‘val_loss’.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>If you do not plan on using a validation set, you must set the monitor metric to another
+value.</p>
+</div>
+</p></li>
+<li><p><strong>monitor_mode</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em>, </em><em>optional</em>) – Which mode, either ‘min’ or ‘max’, should be used when considering the
+<code class="docutils literal notranslate"><span class="pre">monitor_metric</span></code> value. If None, will follow the value suggested by <code class="docutils literal notranslate"><span class="pre">task</span></code> or default to ‘min’.</p></li>
+<li><p><strong>task</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em>, </em><em>optional</em>) – Any str beginning with either ‘classif’ or ‘reg’. Specifying a <code class="docutils literal notranslate"><span class="pre">task</span></code>
+can assign default values to the <code class="docutils literal notranslate"><span class="pre">loss_function</span></code>, <code class="docutils literal notranslate"><span class="pre">batch_metrics</span></code>, <code class="docutils literal notranslate"><span class="pre">monitor_mode</span></code> and
+<code class="docutils literal notranslate"><span class="pre">monitor_mode</span></code>. For <code class="docutils literal notranslate"><span class="pre">task</span></code> that begins with ‘reg’, the only default value is the loss function
+that is the mean squared error. When beginning with ‘classif’, the default loss function is the
+cross-entropy loss, the default batch metrics will be the accuracy, the default epoch metrics will be
+the F1 score and the default monitoring will be set on ‘val_acc’ with a ‘max’ mode.
+(Default value = None)</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<p>Using a PyTorch DataLoader, on classification task with SGD optimizer:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="kn">import</span> <span class="n">DataLoader</span><span class="p">,</span> <span class="n">TensorDataset</span>
+<span class="kn">from</span> <span class="nn">poutyne</span> <span class="kn">import</span> <span class="n">Experiment</span>
+
+<span class="n">num_features</span> <span class="o">=</span> <span class="mi">20</span>
+<span class="n">num_classes</span> <span class="o">=</span> <span class="mi">5</span>
+
+<span class="c1"># Our training dataset with 800 samples.</span>
+<span class="n">num_train_samples</span> <span class="o">=</span> <span class="mi">800</span>
+<span class="n">train_x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">num_train_samples</span><span class="p">,</span> <span class="n">num_features</span><span class="p">)</span>
+<span class="n">train_y</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="n">num_classes</span><span class="p">,</span> <span class="p">(</span><span class="n">num_train_samples</span><span class="p">,</span> <span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">long</span><span class="p">)</span>
+<span class="n">train_dataset</span> <span class="o">=</span> <span class="n">TensorDataset</span><span class="p">(</span><span class="n">train_x</span><span class="p">,</span> <span class="n">train_y</span><span class="p">)</span>
+<span class="n">train_generator</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">train_dataset</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">)</span>
+
+<span class="c1"># Our validation dataset with 200 samples.</span>
+<span class="n">num_valid_samples</span> <span class="o">=</span> <span class="mi">200</span>
+<span class="n">valid_x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">num_valid_samples</span><span class="p">,</span> <span class="n">num_features</span><span class="p">)</span>
+<span class="n">valid_y</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="n">num_classes</span><span class="p">,</span> <span class="p">(</span><span class="n">num_valid_samples</span><span class="p">,</span> <span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">long</span><span class="p">)</span>
+<span class="n">valid_dataset</span> <span class="o">=</span> <span class="n">TensorDataset</span><span class="p">(</span><span class="n">valid_x</span><span class="p">,</span> <span class="n">valid_y</span><span class="p">)</span>
+<span class="n">valid_generator</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">valid_dataset</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">)</span>
+
+<span class="c1"># Our network</span>
+<span class="n">pytorch_network</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">num_features</span><span class="p">,</span> <span class="n">num_train_samples</span><span class="p">)</span>
+
+<span class="c1"># Initialization of our experimentation and network training</span>
+<span class="n">exp</span> <span class="o">=</span> <span class="n">Experiment</span><span class="p">(</span><span class="s1">&#39;./simple_example&#39;</span><span class="p">,</span>
+                 <span class="n">pytorch_network</span><span class="p">,</span>
+                 <span class="n">optimizer</span><span class="o">=</span><span class="s1">&#39;sgd&#39;</span><span class="p">,</span>
+                 <span class="n">task</span><span class="o">=</span><span class="s1">&#39;classif&#39;</span><span class="p">)</span>
+<span class="n">exp</span><span class="o">.</span><span class="n">train</span><span class="p">(</span><span class="n">train_generator</span><span class="p">,</span> <span class="n">valid_generator</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The above code will yield an output similar to the below lines. Note the automatic checkpoint saving
+in the experiment directory when the monitored metric improved.</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Epoch 1/5 0.09s Step 25/25: loss: 6.351375, acc: 1.375000, val_loss: 6.236106, val_acc: 5.000000
+Epoch 1: val_acc improved from -inf to 5.00000, saving file to ./simple_example/checkpoint_epoch_1.ckpt
+Epoch 2/5 0.10s Step 25/25: loss: 6.054254, acc: 14.000000, val_loss: 5.944495, val_acc: 19.500000
+Epoch 2: val_acc improved from 5.00000 to 19.50000, saving file to ./simple_example/checkpoint_epoch_2.ckpt
+Epoch 3/5 0.09s Step 25/25: loss: 5.759377, acc: 22.875000, val_loss: 5.655412, val_acc: 21.000000
+Epoch 3: val_acc improved from 19.50000 to 21.00000, saving file to ./simple_example/checkpoint_epoch_3.ckpt
+...
+</pre></div>
+</div>
+<p>Training can now easily be resumed from the best checkpoint:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">exp</span><span class="o">.</span><span class="n">train</span><span class="p">(</span><span class="n">train_generator</span><span class="p">,</span> <span class="n">valid_generator</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Restoring model from ./simple_example/checkpoint_epoch_3.ckpt
+Loading weights from ./simple_example/checkpoint.ckpt and starting at epoch 6.
+Loading optimizer state from ./simple_example/checkpoint.optim and starting at epoch 6.
+Epoch 6/10 0.16s Step 25/25: loss: 4.897135, acc: 22.875000, val_loss: 4.813141, val_acc: 20.500000
+Epoch 7/10 0.10s Step 25/25: loss: 4.621514, acc: 22.625000, val_loss: 4.545359, val_acc: 20.500000
+Epoch 8/10 0.24s Step 25/25: loss: 4.354721, acc: 23.625000, val_loss: 4.287117, val_acc: 20.500000
+...
+</pre></div>
+</div>
+<p>Testing is also very intuitive:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">exp</span><span class="o">.</span><span class="n">test</span><span class="p">(</span><span class="n">test_generator</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Restoring model from ./simple_example/checkpoint_epoch_9.ckpt
+Found best checkpoint at epoch: 9
+lr: 0.01, loss: 4.09892, acc: 23.625, val_loss: 4.04057, val_acc: 21.5
+On best model: test_loss: 4.06664, test_acc: 17.5
+</pre></div>
+</div>
+<p>Finally, all the pertinent metrics specified to the Experiment at each epoch are stored in a specific logging
+file, found here at ‘./simple_example/log.tsv’.</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>epoch       time                lr      loss                    acc     val_loss            val_acc
+1       0.0721172170015052  0.01    6.351375141143799       1.375   6.23610631942749        5.0
+2       0.0298177790245972  0.01    6.054253826141357       14.000  5.94449516296386        19.5
+3       0.0637106419890187  0.01    5.759376544952392       22.875  5.65541223526001        21.0
+...
+</pre></div>
+</div>
+<p>Also, we could use more than one GPU (on a single node) by using the device argument</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span># Initialization of our experimentation and network training
+exp = Experiment(&#39;./simple_example&#39;,
+                 pytorch_network,
+                 optimizer=&#39;sgd&#39;,
+                 task=&#39;classif&#39;,
+                 device=&quot;all&quot;)
+exp.train(train_generator, valid_generator, epochs=5)
+</pre></div>
+</div>
+<dl class="py method">
+<dt id="poutyne.Experiment.get_path">
+<code class="sig-name descname">get_path</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">paths</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)">str</a></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)">str</a><a class="reference internal" href="_modules/poutyne/framework/experiment.html#Experiment.get_path"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#poutyne.Experiment.get_path" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the path inside the experiment directory.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="poutyne.Experiment.get_best_epoch_stats">
+<code class="sig-name descname">get_best_epoch_stats</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; Dict<a class="reference internal" href="_modules/poutyne/framework/experiment.html#Experiment.get_best_epoch_stats"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#poutyne.Experiment.get_best_epoch_stats" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns all computed statistics corresponding to the best epoch according to the
+<code class="docutils literal notranslate"><span class="pre">monitor_metric</span></code> and <code class="docutils literal notranslate"><span class="pre">monitor_mode</span></code> attributes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>dict where each key is a column name in the logging output file
+and values are the ones found at the best epoch.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="poutyne.Experiment.get_saved_epochs">
+<code class="sig-name descname">get_saved_epochs</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/poutyne/framework/experiment.html#Experiment.get_saved_epochs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#poutyne.Experiment.get_saved_epochs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a pandas DataFrame which each row corresponds to an epoch having
+a saved checkpoint.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>pandas DataFrame which each row corresponds to an epoch having a saved
+checkpoint.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="poutyne.Experiment.train">
+<code class="sig-name descname">train</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">train_generator</span></em>, <em class="sig-param"><span class="n">valid_generator</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">callbacks</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>List<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">lr_schedulers</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>List<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">keep_only_last_best</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)">bool</a></span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">save_every_epoch</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)">bool</a></span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">disable_tensorboard</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)">bool</a></span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">epochs</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)">int</a></span> <span class="o">=</span> <span class="default_value">1000</span></em>, <em class="sig-param"><span class="n">steps_per_epoch</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)">int</a><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">validation_steps</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)">int</a><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">batches_per_step</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)">int</a></span> <span class="o">=</span> <span class="default_value">1</span></em>, <em class="sig-param"><span class="n">seed</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)">int</a></span> <span class="o">=</span> <span class="default_value">42</span></em>, <em class="sig-param"><span class="n">progress_options</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.9)">dict</a><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span> &#x2192; List<span class="p">[</span>Dict<span class="p">]</span><a class="reference internal" href="_modules/poutyne/framework/experiment.html#Experiment.train"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#poutyne.Experiment.train" title="Permalink to this definition">¶</a></dt>
+<dd><p>Trains or finetunes the attribute model on a dataset using a generator. If a previous training already occured
+and lasted a total of <cite>n_previous</cite> epochs, then the model’s weights will be set to the last checkpoint and the
+training will be resumed for epochs range (<cite>n_previous</cite>, <cite>epochs</cite>].</p>
+<p>If the Experiment has logging enabled (i.e. self.logging is True), numerous callbacks will be automatically
+included. Notably, two <code class="xref py py-class docutils literal notranslate"><span class="pre">ModelCheckpoint</span></code> objects will take care of saving the last and every
+new best (according to monitor mode) model weights in appropriate checkpoint files.
+<code class="xref py py-class docutils literal notranslate"><span class="pre">OptimizerCheckpoint</span></code> and <code class="xref py py-class docutils literal notranslate"><span class="pre">LRSchedulerCheckpoint</span></code> will also respectively
+handle the saving of the optimizer and LR scheduler’s respective states for future retrieval. Moreover, a
+<code class="xref py py-class docutils literal notranslate"><span class="pre">AtomicCSVLogger</span></code> will save all available epoch statistics in an output .tsv file. Lastly, a
+<code class="xref py py-class docutils literal notranslate"><span class="pre">TensorBoardLogger</span></code> handles automatic TensorBoard logging of various neural network
+statistics.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>With <strong>Jupyter Notebooks in Firefox</strong>, if <code class="docutils literal notranslate"><span class="pre">colorama</span></code> is installed and colors are enabled (as it
+is by default), a great number of epochs and steps per epoch can cause a spike in memory usage in Firefox.
+The problem does not occur in Google Chrome/Chromium. To avoid this problem, you can disable the colors by
+passing <code class="docutils literal notranslate"><span class="pre">progress_options={'coloring':</span> <span class="pre">False}</span></code>. See
+<a class="reference external" href="https://github.com/jupyter/notebook/issues/5897">this Github issue for details</a>.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>train_generator</strong> – Generator-like object for the training set. See <a class="reference internal" href="model.html#poutyne.Model.fit_generator" title="poutyne.Model.fit_generator"><code class="xref py py-func docutils literal notranslate"><span class="pre">fit_generator()</span></code></a>
+for details on the types of generators supported.</p></li>
+<li><p><strong>valid_generator</strong> (<em>optional</em>) – Generator-like object for the validation set. See
+<a class="reference internal" href="model.html#poutyne.Model.fit_generator" title="poutyne.Model.fit_generator"><code class="xref py py-func docutils literal notranslate"><span class="pre">fit_generator()</span></code></a> for details on the types of generators supported.
+(Default value = None)</p></li>
+<li><p><strong>callbacks</strong> (<em>List</em><em>[</em><a class="reference internal" href="callbacks.html#poutyne.Callback" title="poutyne.Callback"><em>Callback</em></a><em>]</em>) – List of callbacks that will be called during
+training. These callbacks are added after those used in this method (see above). This allows to assume
+that they are called after those.
+(Default value = None)</p></li>
+<li><p><strong>lr_schedulers</strong> (<em>List</em><em>[</em><em>_PyTorchLRSchedulerWrapper</em><em>]</em>) – List of
+learning rate schedulers.
+(Default value = None)</p></li>
+<li><p><strong>keep_only_last_best</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><em>bool</em></a>) – Whether only the last saved best checkpoint is kept. Applies only when
+<cite>save_every_epoch</cite> is false.
+(Default value = False)</p></li>
+<li><p><strong>save_every_epoch</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><em>bool</em></a><em>, </em><em>optional</em>) – Whether or not to save the experiment model’s weights after
+every epoch.
+(Default value = False)</p></li>
+<li><p><strong>disable_tensorboard</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><em>bool</em></a><em>, </em><em>optional</em>) – Whether or not to disable the automatic tensorboard logging
+callbacks.
+(Default value = False)</p></li>
+<li><p><strong>epochs</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – Number of times the entire training dataset is seen.
+(Default value = 1000)</p></li>
+<li><p><strong>steps_per_epoch</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a><em>, </em><em>optional</em>) – Number of batch used during one epoch. Obviously, using this
+argument may cause one epoch not to see the entire training dataset or see it multiple times.
+(Defaults the number of steps needed to see the entire
+training dataset)</p></li>
+<li><p><strong>validation_steps</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a><em>, </em><em>optional</em>) – Same as for <code class="docutils literal notranslate"><span class="pre">steps_per_epoch</span></code> but for the validation dataset.
+(Defaults to <code class="docutils literal notranslate"><span class="pre">steps_per_epoch</span></code> if provided or the number of steps needed to see the entire
+validation dataset)</p></li>
+<li><p><strong>batches_per_step</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – Number of batches on which to compute the running loss before
+backpropagating it through the network. Note that the total loss used for backpropagation is
+the mean of the <cite>batches_per_step</cite> batch losses.
+(Default value = 1)</p></li>
+<li><p><strong>seed</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a><em>, </em><em>optional</em>) – Seed used to make the sampling deterministic.
+(Default value = 42)</p></li>
+<li><p><strong>progress_options</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.9)"><em>dict</em></a><em>, </em><em>optional</em>) – Keyword arguments to pass to the default progression callback used
+in Poutyne (See <a class="reference internal" href="callbacks.html#poutyne.ProgressionCallback" title="poutyne.ProgressionCallback"><code class="xref py py-class docutils literal notranslate"><span class="pre">ProgressionCallback</span></code></a> for the available arguments).
+(Default value = None)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>List of dict containing the history of each epoch.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="poutyne.Experiment.load_checkpoint">
+<code class="sig-name descname">load_checkpoint</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">checkpoint</span><span class="p">:</span> <span class="n">Union<span class="p">[</span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)">int</a><span class="p">, </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)">str</a><span class="p">]</span></span></em>, <em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">verbose</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)">bool</a></span> <span class="o">=</span> <span class="default_value">False</span></em><span class="sig-paren">)</span> &#x2192; Optional<span class="p">[</span>Dict<span class="p">]</span><a class="reference internal" href="_modules/poutyne/framework/experiment.html#Experiment.load_checkpoint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#poutyne.Experiment.load_checkpoint" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads the attribute model’s weights with the weights at a given checkpoint epoch.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>checkpoint</strong> (<em>Union</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em>]</em>) – Which checkpoint to load the model’s weights form.
+If ‘best’, will load the best weights according to <code class="docutils literal notranslate"><span class="pre">monitor_metric</span></code> and <code class="docutils literal notranslate"><span class="pre">monitor_mode</span></code>.
+If ‘last’, will load the last model checkpoint. If int, will load the checkpoint of the
+specified epoch.</p></li>
+<li><p><strong>verbose</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><em>bool</em></a><em>, </em><em>optional</em>) – Whether or not to print the checkpoint filename, and the best epoch
+number and stats when checkpoint is ‘best’.
+(Default value = False)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>If checkpoint is ‘best’, will return the best epoch stats, as per <a class="reference internal" href="#poutyne.Experiment.get_best_epoch_stats" title="poutyne.Experiment.get_best_epoch_stats"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_best_epoch_stats()</span></code></a>,
+else None.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="poutyne.Experiment.test">
+<code class="sig-name descname">test</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">test_generator</span></em>, <em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">callbacks</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>List<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">steps</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)">int</a><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">checkpoint</span><span class="p">:</span> <span class="n">Union<span class="p">[</span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)">str</a><span class="p">, </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)">int</a><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">'best'</span></em>, <em class="sig-param"><span class="n">seed</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)">int</a></span> <span class="o">=</span> <span class="default_value">42</span></em><span class="sig-paren">)</span> &#x2192; Dict<a class="reference internal" href="_modules/poutyne/framework/experiment.html#Experiment.test"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#poutyne.Experiment.test" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes and returns the loss and the metrics of the attribute model on a given test examples
+generator.</p>
+<p>If the Experiment has logging enabled (i.e. self.logging is True), a checkpoint (the best one by default)
+is loaded and test and validation statistics are saved in a specific test output .tsv file. Otherwise, the
+current weights of the network is used for testing and statistics are only shown in the standard output.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>test_generator</strong> – Generator-like object for the test set. See <a class="reference internal" href="model.html#poutyne.Model.fit_generator" title="poutyne.Model.fit_generator"><code class="xref py py-func docutils literal notranslate"><span class="pre">fit_generator()</span></code></a> for
+details on the types of generators supported.</p></li>
+<li><p><strong>callbacks</strong> (<em>List</em><em>[</em><a class="reference internal" href="callbacks.html#poutyne.Callback" title="poutyne.Callback"><em>Callback</em></a><em>]</em><em>, </em><em>optional</em>) – List of callbacks that will be called
+during the testing.
+(Default value = None)</p></li>
+<li><p><strong>steps</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a><em>, </em><em>optional</em>) – Number of iterations done on <code class="docutils literal notranslate"><span class="pre">generator</span></code>.
+(Defaults the number of steps needed to see the entire dataset)</p></li>
+<li><p><strong>checkpoint</strong> (<em>Union</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a><em>]</em>) – Which model checkpoint weights to load for the test evaluation.
+If ‘best’, will load the best weights according to <code class="docutils literal notranslate"><span class="pre">monitor_metric</span></code> and <code class="docutils literal notranslate"><span class="pre">monitor_mode</span></code>.
+If ‘last’, will load the last model checkpoint. If int, will load the checkpoint of the
+specified epoch. This argument has no effect when logging is disabled.
+(Default value = ‘best’)</p></li>
+<li><p><strong>seed</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a><em>, </em><em>optional</em>) – Seed used to make the sampling deterministic.
+(Default value = 42)</p></li>
+</ul>
+</dd>
+</dl>
+<p>If the Experiment has logging enabled (i.e. self.logging is True), one callback will be automatically
+included to save the test metrics. Moreover, a <code class="xref py py-class docutils literal notranslate"><span class="pre">AtomicCSVLogger</span></code> will save the test
+metrics in an output .tsv file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>dict sorting of all the test metrics values by their names.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="metrics.html" class="btn btn-neutral float-right" title="Metrics" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="model.html" class="btn btn-neutral float-left" title="Model" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2018-2020, Frédérik Paradis
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+  
+ 
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-177874682-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-177874682-1');
+</script>
+
+
+</body>
+</html>
