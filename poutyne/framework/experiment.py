@@ -456,6 +456,12 @@ class Experiment:
         :class:`~callbacks.TensorBoardLogger` handles automatic TensorBoard logging of various neural network
         statistics.
 
+        .. warning:: With **Jupyter Notebooks in Firefox**, if ``colorama`` is installed and colors are enabled (as it
+            is by default), a great number of epochs and steps per epoch can cause a spike in memory usage in Firefox.
+            The problem does not occur in Google Chrome/Chromium. To avoid this problem, you can disable the colors by
+            passing ``progress_options={'coloring': False}``. See
+            `this Github issue for details <https://github.com/jupyter/notebook/issues/5897>`__.
+
         Args:
             train_generator: Generator-like object for the training set. See :func:`~Model.fit_generator()`
                 for details on the types of generators supported.
