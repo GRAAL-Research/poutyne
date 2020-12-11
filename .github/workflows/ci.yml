@@ -22,11 +22,6 @@ jobs:
         pip install -r docs/requirements.txt
         pip install -r tests/requirements.txt
         pip install -r styling_requirements.txt
-        if [ $GITHUB_REF == "stable" ] && [ $GITHUB_EVENT_NAME == "push" ]; then
-          export POUTYNE_RELEASE_BUILD=1;
-        else
-          export POUTYNE_RELEASE_BUILD=0;
-        fi
         python setup.py develop
     - name: Linting
       run: |
@@ -37,6 +32,25 @@ jobs:
     - name: Test with pytest
       run: |
         pytest tests/
+    - name: Building doc
+      run: |
+        cd docs
+        ./rebuild_html_doc.sh
+        cd ..
+  deploy:
+    needs: build
+    if: github.ref == 'stable' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python 3.8
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+    - name: Install dependencies
+      run: |
+        pip install -r docs/requirements.txt
+        POUTYNE_RELEASE_BUILD=1 python setup.py develop
     - name: Building doc
       run: |
         cd docs
