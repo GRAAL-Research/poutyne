@@ -20,6 +20,7 @@ num_test_samples = 200
 test_x = np.random.randn(num_test_samples, num_features).astype('float32')
 test_y = np.random.randint(2, size=(num_test_samples, 1)).astype('float32')
 
+#adds cuda if available
 cuda_device = 0
 device = torch.device("cuda:%d" % cuda_device if torch.cuda.is_available() else "cpu")
 
