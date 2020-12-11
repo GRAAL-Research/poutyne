@@ -17,9 +17,9 @@ jobs:
         if [ $GITHUB_REF == "refs/heads/stable" ] && \
            [ $GITHUB_EVENT_NAME == "push" ] && \
            [ ${{ matrix.python-version }} == "3.8" ]; then
-          export POUTYNE_RELEASE_BUILD=1;
+          echo "POUTYNE_RELEASE_BUILD=1" >> $GITHUB_ENV
         else
-          export POUTYNE_RELEASE_BUILD=0;
+          echo "POUTYNE_RELEASE_BUILD=0" >> $GITHUB_ENV
         fi
     - uses: actions/checkout@v2
     - name: Set up Python ${{ matrix.python-version }}
