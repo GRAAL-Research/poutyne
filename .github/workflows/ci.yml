@@ -16,7 +16,7 @@ jobs:
         # POUTYNE_RELEASE_BUILD is also used in setup.py
         if [ $GITHUB_REF == "refs/heads/stable" ] && \
            [ $GITHUB_EVENT_NAME == "push" ] && \
-           [ ${{ matrix.python-version }} == "3.8"]; then
+           [ ${{ matrix.python-version }} == "3.8" ]; then
           export POUTYNE_RELEASE_BUILD=1;
         else
           export POUTYNE_RELEASE_BUILD=0;
