@@ -11,6 +11,16 @@ jobs:
         python-version: ['3.6', '3.7', '3.8']
 
     steps:
+    - name: Set deploy environment variable
+      run: |
+        # POUTYNE_RELEASE_BUILD is also used in setup.py
+        if [ $GITHUB_REF == "refs/heads/stable" ] && \
+           [ $GITHUB_EVENT_NAME == "push" ] &&
+           [ ${{ matrix.python-version }} == "3.8"]; then
+          export POUTYNE_RELEASE_BUILD=1;
+        else
+          export POUTYNE_RELEASE_BUILD=0;
+        fi
     - uses: actions/checkout@v2
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v2
@@ -37,26 +47,8 @@ jobs:
         cd docs
         ./rebuild_html_doc.sh
         cd ..
-  deploy:
-    needs: build
-    if: github.ref == 'refs/heads/stable' && github.event_name == 'push'
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v2
-    - name: Set up Python 3.8
-      uses: actions/setup-python@v2
-      with:
-        python-version: 3.8
-    - name: Install dependencies
-      run: |
-        pip install -r docs/requirements.txt
-        POUTYNE_RELEASE_BUILD=1 python setup.py develop
-    - name: Building doc
-      run: |
-        cd docs
-        ./rebuild_html_doc.sh
-        cd ..
     - name: Deploy
+      if: env.POUTYNE_RELEASE_BUILD == '1'
       uses: peaceiris/actions-gh-pages@v3
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
