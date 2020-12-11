@@ -27,6 +27,7 @@ network = nn.Sequential(
 model = Model(network, 'sgd', 'cross_entropy',
               batch_metrics=['accuracy'], epoch_metrics=['f1'])
 model.to(device)
+#change the number of epochs to find the optimum value for your work
 model.fit_dataset(
     train_dataset,
     valid_dataset,
