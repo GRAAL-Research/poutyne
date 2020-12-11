@@ -1,0 +1,44 @@
+name: Poutyne
+
+on: [push, pull_request]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.6', '3.7', '3.8', '3.9']
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt
+        pip install -r docs/requirements.txt
+        pip install -r tests/requirements.txt
+        pip install -r styling_requirements.txt
+        if [ $GITHUB_REF == "stable" ] && [ $GITHUB_EVENT_NAME == "push" ]; then
+          export POUTYNE_RELEASE_BUILD=1;
+        else
+          export POUTYNE_RELEASE_BUILD=0;
+        fi
+        python setup.py develop
+    - name: Linting
+      run: |
+        yapf --diff --recursive poutyne/
+        yapf --diff --recursive tests/
+        pylint poutyne/
+        pylint tests/
+    - name: Test with pytest
+      run: |
+        pytest tests/
+    - name: Building doc
+      run: |
+        cd docs
+        ./rebuild_html_doc.sh
+        cd ..
