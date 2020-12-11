@@ -18,9 +18,6 @@ jobs:
         python-version: ${{ matrix.python-version }}
     - name: Install dependencies
       run: |
-        echo $GITHUB_EVENT_NAME
-        echo $GITHUB_REF
-        env
         pip install -r requirements.txt
         pip install -r docs/requirements.txt
         pip install -r tests/requirements.txt
@@ -42,7 +39,7 @@ jobs:
         cd ..
   deploy:
     needs: build
-    if: github.ref == 'stable' && github.event_name == 'push'
+    if: github.ref == 'refs/heads/stable' && github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
