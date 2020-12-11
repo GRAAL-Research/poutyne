@@ -451,22 +451,22 @@ the callback(s) before the <a class="reference internal" href="#poutyne.Callback
 
 <dl class="py class">
 <dt id="poutyne.ClipNorm">
-<em class="property">class </em><code class="sig-prename descclassname">poutyne.</code><code class="sig-name descname">ClipNorm</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">parameters</span><span class="p">:</span> <span class="n">Union<span class="p">[</span><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.7.0a0+0bc39c0 ))">torch.Tensor</a><span class="p">, </span>Iterable<span class="p">[</span><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.7.0a0+0bc39c0 ))">torch.Tensor</a><span class="p">]</span><span class="p">]</span></span></em>, <em class="sig-param"><span class="n">max_norm</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)">float</a></span></em>, <em class="sig-param"><span class="n">norm_type</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)">float</a></span> <span class="o">=</span> <span class="default_value">2.0</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poutyne/framework/callbacks/clip_grad.html#ClipNorm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#poutyne.ClipNorm" title="Permalink to this definition">¶</a></dt>
-<dd><p>Uses PyTorch’s <a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.utils.clip_grad_norm_.html#torch.nn.utils.clip_grad_norm_" title="(in PyTorch vmaster (1.7.0a0+0bc39c0 ))"><code class="xref py py-func docutils literal notranslate"><span class="pre">clip_grad_norm_()</span></code></a>
+<em class="property">class </em><code class="sig-prename descclassname">poutyne.</code><code class="sig-name descname">ClipNorm</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">parameters</span><span class="p">:</span> <span class="n">Union<span class="p">[</span><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.7.0a0+57bffc3 ))">torch.Tensor</a><span class="p">, </span>Iterable<span class="p">[</span><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.7.0a0+57bffc3 ))">torch.Tensor</a><span class="p">]</span><span class="p">]</span></span></em>, <em class="sig-param"><span class="n">max_norm</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)">float</a></span></em>, <em class="sig-param"><span class="n">norm_type</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)">float</a></span> <span class="o">=</span> <span class="default_value">2.0</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poutyne/framework/callbacks/clip_grad.html#ClipNorm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#poutyne.ClipNorm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Uses PyTorch’s <a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.utils.clip_grad_norm_.html#torch.nn.utils.clip_grad_norm_" title="(in PyTorch vmaster (1.7.0a0+57bffc3 ))"><code class="xref py py-func docutils literal notranslate"><span class="pre">clip_grad_norm_()</span></code></a>
 method to clip gradient.</p>
 <dl class="simple">
-<dt>See:</dt><dd><p><a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.utils.clip_grad_norm_.html#torch.nn.utils.clip_grad_norm_" title="(in PyTorch vmaster (1.7.0a0+0bc39c0 ))"><code class="xref py py-func docutils literal notranslate"><span class="pre">torch.nn.utils.clip_grad_norm_()</span></code></a></p>
+<dt>See:</dt><dd><p><a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.utils.clip_grad_norm_.html#torch.nn.utils.clip_grad_norm_" title="(in PyTorch vmaster (1.7.0a0+57bffc3 ))"><code class="xref py py-func docutils literal notranslate"><span class="pre">torch.nn.utils.clip_grad_norm_()</span></code></a></p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py class">
 <dt id="poutyne.ClipValue">
-<em class="property">class </em><code class="sig-prename descclassname">poutyne.</code><code class="sig-name descname">ClipValue</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">parameters</span><span class="p">:</span> <span class="n">Union<span class="p">[</span><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.7.0a0+0bc39c0 ))">torch.Tensor</a><span class="p">, </span>Iterable<span class="p">[</span><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.7.0a0+0bc39c0 ))">torch.Tensor</a><span class="p">]</span><span class="p">]</span></span></em>, <em class="sig-param"><span class="n">clip_value</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)">float</a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poutyne/framework/callbacks/clip_grad.html#ClipValue"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#poutyne.ClipValue" title="Permalink to this definition">¶</a></dt>
-<dd><p>Uses PyTorch’s <a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.utils.clip_grad_value_.html#torch.nn.utils.clip_grad_value_" title="(in PyTorch vmaster (1.7.0a0+0bc39c0 ))"><code class="xref py py-func docutils literal notranslate"><span class="pre">clip_grad_value_()</span></code></a>
+<em class="property">class </em><code class="sig-prename descclassname">poutyne.</code><code class="sig-name descname">ClipValue</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">parameters</span><span class="p">:</span> <span class="n">Union<span class="p">[</span><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.7.0a0+57bffc3 ))">torch.Tensor</a><span class="p">, </span>Iterable<span class="p">[</span><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.7.0a0+57bffc3 ))">torch.Tensor</a><span class="p">]</span><span class="p">]</span></span></em>, <em class="sig-param"><span class="n">clip_value</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)">float</a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poutyne/framework/callbacks/clip_grad.html#ClipValue"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#poutyne.ClipValue" title="Permalink to this definition">¶</a></dt>
+<dd><p>Uses PyTorch’s <a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.utils.clip_grad_value_.html#torch.nn.utils.clip_grad_value_" title="(in PyTorch vmaster (1.7.0a0+57bffc3 ))"><code class="xref py py-func docutils literal notranslate"><span class="pre">clip_grad_value_()</span></code></a>
 method to clip gradient.</p>
 <dl class="simple">
-<dt>See:</dt><dd><p><a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.utils.clip_grad_value_.html#torch.nn.utils.clip_grad_value_" title="(in PyTorch vmaster (1.7.0a0+0bc39c0 ))"><code class="xref py py-func docutils literal notranslate"><span class="pre">torch.nn.utils.clip_grad_value_()</span></code></a></p>
+<dt>See:</dt><dd><p><a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.utils.clip_grad_value_.html#torch.nn.utils.clip_grad_value_" title="(in PyTorch vmaster (1.7.0a0+57bffc3 ))"><code class="xref py py-func docutils literal notranslate"><span class="pre">torch.nn.utils.clip_grad_value_()</span></code></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -518,7 +518,7 @@ atomically.</p></li>
 <dd><p>Callback that outputs the result of each epoch_number or batch into a Tensorboard experiment folder.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>writer</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/tensorboard.html#torch.utils.tensorboard.writer.SummaryWriter" title="(in PyTorch vmaster (1.7.0a0+0bc39c0 ))"><em>SummaryWriter</em></a>) – The tensorboard writer.</p>
+<dd class="field-odd"><p><strong>writer</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/tensorboard.html#torch.utils.tensorboard.writer.SummaryWriter" title="(in PyTorch vmaster (1.7.0a0+57bffc3 ))"><em>SummaryWriter</em></a>) – The tensorboard writer.</p>
 </dd>
 </dl>
 <p class="rubric">Example</p>
@@ -573,7 +573,7 @@ older step times. Set this to true to have equal weighting instead.</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>writer</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/tensorboard.html#torch.utils.tensorboard.writer.SummaryWriter" title="(in PyTorch vmaster (1.7.0a0+0bc39c0 ))"><em>SummaryWriter</em></a>) – The TensorBoard writer.</p></li>
+<li><p><strong>writer</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/tensorboard.html#torch.utils.tensorboard.writer.SummaryWriter" title="(in PyTorch vmaster (1.7.0a0+57bffc3 ))"><em>SummaryWriter</em></a>) – The TensorBoard writer.</p></li>
 <li><p><strong>keep_bias</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><em>bool</em></a>) – Either or not to log the bias of the network.</p></li>
 </ul>
 </dd>
@@ -728,7 +728,7 @@ the same arguments except for the optimizer that has to be omitted.</p>
 <dt id="poutyne.LambdaLR">
 <em class="property">class </em><code class="sig-prename descclassname">poutyne.</code><code class="sig-name descname">LambdaLR</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#poutyne.LambdaLR" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="simple">
-<dt>See:</dt><dd><p><a class="reference external" href="https://pytorch.org/docs/stable/optim.html#torch.optim.lr_scheduler.LambdaLR" title="(in PyTorch vmaster (1.7.0a0+0bc39c0 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">LambdaLR</span></code></a></p>
+<dt>See:</dt><dd><p><a class="reference external" href="https://pytorch.org/docs/stable/optim.html#torch.optim.lr_scheduler.LambdaLR" title="(in PyTorch vmaster (1.7.0a0+57bffc3 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">LambdaLR</span></code></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -737,7 +737,7 @@ the same arguments except for the optimizer that has to be omitted.</p>
 <dt id="poutyne.MultiplicativeLR">
 <em class="property">class </em><code class="sig-prename descclassname">poutyne.</code><code class="sig-name descname">MultiplicativeLR</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#poutyne.MultiplicativeLR" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="simple">
-<dt>See:</dt><dd><p><a class="reference external" href="https://pytorch.org/docs/stable/optim.html#torch.optim.lr_scheduler.MultiplicativeLR" title="(in PyTorch vmaster (1.7.0a0+0bc39c0 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">MultiplicativeLR</span></code></a></p>
+<dt>See:</dt><dd><p><a class="reference external" href="https://pytorch.org/docs/stable/optim.html#torch.optim.lr_scheduler.MultiplicativeLR" title="(in PyTorch vmaster (1.7.0a0+57bffc3 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">MultiplicativeLR</span></code></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -746,7 +746,7 @@ the same arguments except for the optimizer that has to be omitted.</p>
 <dt id="poutyne.StepLR">
 <em class="property">class </em><code class="sig-prename descclassname">poutyne.</code><code class="sig-name descname">StepLR</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#poutyne.StepLR" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="simple">
-<dt>See:</dt><dd><p><a class="reference external" href="https://pytorch.org/docs/stable/optim.html#torch.optim.lr_scheduler.StepLR" title="(in PyTorch vmaster (1.7.0a0+0bc39c0 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">StepLR</span></code></a></p>
+<dt>See:</dt><dd><p><a class="reference external" href="https://pytorch.org/docs/stable/optim.html#torch.optim.lr_scheduler.StepLR" title="(in PyTorch vmaster (1.7.0a0+57bffc3 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">StepLR</span></code></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -755,7 +755,7 @@ the same arguments except for the optimizer that has to be omitted.</p>
 <dt id="poutyne.MultiStepLR">
 <em class="property">class </em><code class="sig-prename descclassname">poutyne.</code><code class="sig-name descname">MultiStepLR</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#poutyne.MultiStepLR" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="simple">
-<dt>See:</dt><dd><p><a class="reference external" href="https://pytorch.org/docs/stable/optim.html#torch.optim.lr_scheduler.MultiStepLR" title="(in PyTorch vmaster (1.7.0a0+0bc39c0 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">MultiStepLR</span></code></a></p>
+<dt>See:</dt><dd><p><a class="reference external" href="https://pytorch.org/docs/stable/optim.html#torch.optim.lr_scheduler.MultiStepLR" title="(in PyTorch vmaster (1.7.0a0+57bffc3 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">MultiStepLR</span></code></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -764,7 +764,7 @@ the same arguments except for the optimizer that has to be omitted.</p>
 <dt id="poutyne.ExponentialLR">
 <em class="property">class </em><code class="sig-prename descclassname">poutyne.</code><code class="sig-name descname">ExponentialLR</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#poutyne.ExponentialLR" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="simple">
-<dt>See:</dt><dd><p><a class="reference external" href="https://pytorch.org/docs/stable/optim.html#torch.optim.lr_scheduler.ExponentialLR" title="(in PyTorch vmaster (1.7.0a0+0bc39c0 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">ExponentialLR</span></code></a></p>
+<dt>See:</dt><dd><p><a class="reference external" href="https://pytorch.org/docs/stable/optim.html#torch.optim.lr_scheduler.ExponentialLR" title="(in PyTorch vmaster (1.7.0a0+57bffc3 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">ExponentialLR</span></code></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -773,7 +773,7 @@ the same arguments except for the optimizer that has to be omitted.</p>
 <dt id="poutyne.CosineAnnealingLR">
 <em class="property">class </em><code class="sig-prename descclassname">poutyne.</code><code class="sig-name descname">CosineAnnealingLR</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#poutyne.CosineAnnealingLR" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="simple">
-<dt>See:</dt><dd><p><a class="reference external" href="https://pytorch.org/docs/stable/optim.html#torch.optim.lr_scheduler.CosineAnnealingLR" title="(in PyTorch vmaster (1.7.0a0+0bc39c0 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">CosineAnnealingLR</span></code></a></p>
+<dt>See:</dt><dd><p><a class="reference external" href="https://pytorch.org/docs/stable/optim.html#torch.optim.lr_scheduler.CosineAnnealingLR" title="(in PyTorch vmaster (1.7.0a0+57bffc3 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">CosineAnnealingLR</span></code></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -782,7 +782,7 @@ the same arguments except for the optimizer that has to be omitted.</p>
 <dt id="poutyne.CyclicLR">
 <em class="property">class </em><code class="sig-prename descclassname">poutyne.</code><code class="sig-name descname">CyclicLR</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#poutyne.CyclicLR" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="simple">
-<dt>See:</dt><dd><p><a class="reference external" href="https://pytorch.org/docs/stable/optim.html#torch.optim.lr_scheduler.CyclicLR" title="(in PyTorch vmaster (1.7.0a0+0bc39c0 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">CyclicLR</span></code></a></p>
+<dt>See:</dt><dd><p><a class="reference external" href="https://pytorch.org/docs/stable/optim.html#torch.optim.lr_scheduler.CyclicLR" title="(in PyTorch vmaster (1.7.0a0+57bffc3 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">CyclicLR</span></code></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -791,7 +791,7 @@ the same arguments except for the optimizer that has to be omitted.</p>
 <dt id="poutyne.OneCycleLR">
 <em class="property">class </em><code class="sig-prename descclassname">poutyne.</code><code class="sig-name descname">OneCycleLR</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#poutyne.OneCycleLR" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="simple">
-<dt>See:</dt><dd><p><a class="reference external" href="https://pytorch.org/docs/stable/optim.html#torch.optim.lr_scheduler.OneCycleLR" title="(in PyTorch vmaster (1.7.0a0+0bc39c0 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">OneCycleLR</span></code></a></p>
+<dt>See:</dt><dd><p><a class="reference external" href="https://pytorch.org/docs/stable/optim.html#torch.optim.lr_scheduler.OneCycleLR" title="(in PyTorch vmaster (1.7.0a0+57bffc3 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">OneCycleLR</span></code></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -800,7 +800,7 @@ the same arguments except for the optimizer that has to be omitted.</p>
 <dt id="poutyne.CosineAnnealingWarmRestarts">
 <em class="property">class </em><code class="sig-prename descclassname">poutyne.</code><code class="sig-name descname">CosineAnnealingWarmRestarts</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#poutyne.CosineAnnealingWarmRestarts" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="simple">
-<dt>See:</dt><dd><p><a class="reference external" href="https://pytorch.org/docs/stable/optim.html#torch.optim.lr_scheduler.CosineAnnealingWarmRestarts" title="(in PyTorch vmaster (1.7.0a0+0bc39c0 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">CosineAnnealingWarmRestarts</span></code></a></p>
+<dt>See:</dt><dd><p><a class="reference external" href="https://pytorch.org/docs/stable/optim.html#torch.optim.lr_scheduler.CosineAnnealingWarmRestarts" title="(in PyTorch vmaster (1.7.0a0+57bffc3 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">CosineAnnealingWarmRestarts</span></code></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -814,7 +814,7 @@ the same arguments except for the optimizer that has to be omitted.</p>
 </dd>
 </dl>
 <dl class="simple">
-<dt>See:</dt><dd><p><a class="reference external" href="https://pytorch.org/docs/stable/optim.html#torch.optim.lr_scheduler.ReduceLROnPlateau" title="(in PyTorch vmaster (1.7.0a0+0bc39c0 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">ReduceLROnPlateau</span></code></a></p>
+<dt>See:</dt><dd><p><a class="reference external" href="https://pytorch.org/docs/stable/optim.html#torch.optim.lr_scheduler.ReduceLROnPlateau" title="(in PyTorch vmaster (1.7.0a0+57bffc3 ))"><code class="xref py py-class docutils literal notranslate"><span class="pre">ReduceLROnPlateau</span></code></a></p>
 </dd>
 </dl>
 </dd></dl>
