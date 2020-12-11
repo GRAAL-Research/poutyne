@@ -1,0 +1,63 @@
+name: Continuous Integration
+
+on: [push, pull_request]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.6', '3.7', '3.8']
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt
+        pip install -r docs/requirements.txt
+        pip install -r tests/requirements.txt
+        pip install -r styling_requirements.txt
+        python setup.py develop
+    - name: Linting
+      run: |
+        yapf --diff --recursive poutyne/
+        yapf --diff --recursive tests/
+        pylint poutyne/
+        pylint tests/
+    - name: Test with pytest
+      run: |
+        pytest tests/
+    - name: Building doc
+      run: |
+        cd docs
+        ./rebuild_html_doc.sh
+        cd ..
+  deploy:
+    needs: build
+    if: github.ref == 'refs/heads/stable' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python 3.8
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+    - name: Install dependencies
+      run: |
+        pip install -r docs/requirements.txt
+        POUTYNE_RELEASE_BUILD=1 python setup.py develop
+    - name: Building doc
+      run: |
+        cd docs
+        ./rebuild_html_doc.sh
+        cd ..
+    - name: Deploy
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./docs/_build/html/
