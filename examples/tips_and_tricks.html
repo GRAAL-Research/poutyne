@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Tips and Tricks &mdash; Poutyne 1.1 documentation</title>
+  <title>Tips and Tricks &mdash; Poutyne 1.2 documentation</title>
   
 
   
@@ -64,7 +64,7 @@
             
             
               <div class="version">
-                1.1
+                1.2
               </div>
             
           
@@ -519,8 +519,7 @@
 </pre></div>
 </div>
 <p>Now let’s test our training loop for one epoch using the accuracy as the batch metric.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span><span class="n">full_network</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">loss_function</span><span class="p">,</span> <span class="n">batch_metrics</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;accuracy&#39;</span><span class="p">])</span>
-<span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span><span class="n">full_network</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">loss_function</span><span class="p">,</span> <span class="n">batch_metrics</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;accuracy&#39;</span><span class="p">],</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
 <span class="n">model</span><span class="o">.</span><span class="n">fit_generator</span><span class="p">(</span><span class="n">train_loader</span><span class="p">,</span>
                     <span class="n">valid_loader</span><span class="p">,</span>
                     <span class="n">epochs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
@@ -550,8 +549,8 @@ If a field is not specified, the default color will be used. <a class="reference
               <span class="n">optimizer</span><span class="p">,</span>
               <span class="n">loss_function</span><span class="p">,</span>
               <span class="n">batch_metrics</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;accuracy&#39;</span><span class="p">],</span>
-              <span class="n">epoch_metrics</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;f1&#39;</span><span class="p">])</span>
-<span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+              <span class="n">epoch_metrics</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;f1&#39;</span><span class="p">],</span>
+              <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
 <span class="n">model</span><span class="o">.</span><span class="n">fit_generator</span><span class="p">(</span><span class="n">train_loader</span><span class="p">,</span>
                     <span class="n">valid_loader</span><span class="p">,</span>
                     <span class="n">epochs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
@@ -572,8 +571,8 @@ If a field is not specified, the default color will be used. <a class="reference
               <span class="n">optimizer</span><span class="p">,</span>
               <span class="n">loss_function</span><span class="p">,</span>
               <span class="n">batch_metrics</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;accuracy&#39;</span><span class="p">],</span>
-              <span class="n">epoch_metrics</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;f1&#39;</span><span class="p">,</span> <span class="n">roc_epoch_metric</span><span class="p">])</span>
-<span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+              <span class="n">epoch_metrics</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;f1&#39;</span><span class="p">,</span> <span class="n">roc_epoch_metric</span><span class="p">],</span>
+              <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
 <span class="n">model</span><span class="o">.</span><span class="n">fit_generator</span><span class="p">(</span><span class="n">train_loader</span><span class="p">,</span>
                     <span class="n">valid_loader</span><span class="p">,</span>
                     <span class="n">epochs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
@@ -588,8 +587,8 @@ If a field is not specified, the default color will be used. <a class="reference
               <span class="n">optimizer</span><span class="p">,</span>
               <span class="n">loss_function</span><span class="p">,</span>
               <span class="n">batch_metrics</span><span class="o">=</span><span class="p">[(</span><span class="s2">&quot;My accuracy name&quot;</span><span class="p">,</span> <span class="n">accuracy</span><span class="p">)],</span>
-              <span class="n">epoch_metrics</span><span class="o">=</span><span class="p">[(</span><span class="s2">&quot;My metric name&quot;</span><span class="p">,</span> <span class="n">F1</span><span class="p">())])</span>
-<span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+              <span class="n">epoch_metrics</span><span class="o">=</span><span class="p">[(</span><span class="s2">&quot;My metric name&quot;</span><span class="p">,</span> <span class="n">F1</span><span class="p">())],</span>
+              <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
 <span class="n">model</span><span class="o">.</span><span class="n">fit_generator</span><span class="p">(</span><span class="n">train_loader</span><span class="p">,</span>
                     <span class="n">valid_loader</span><span class="p">,</span>
                     <span class="n">epochs</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
@@ -607,8 +606,8 @@ If a field is not specified, the default color will be used. <a class="reference
               <span class="n">optimizer</span><span class="p">,</span>
               <span class="n">loss_function</span><span class="p">,</span>
               <span class="n">batch_metrics</span><span class="o">=</span><span class="p">[(</span><span class="s2">&quot;My accuracy name&quot;</span><span class="p">,</span> <span class="n">accuracy</span><span class="p">)],</span>
-              <span class="n">epoch_metrics</span><span class="o">=</span><span class="p">[(</span><span class="s2">&quot;My metric name&quot;</span><span class="p">,</span> <span class="n">F1</span><span class="p">())])</span>
-<span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;all&quot;</span><span class="p">)</span>
+              <span class="n">epoch_metrics</span><span class="o">=</span><span class="p">[(</span><span class="s2">&quot;My metric name&quot;</span><span class="p">,</span> <span class="n">F1</span><span class="p">())],</span>
+              <span class="n">device</span><span class="o">=</span><span class="s2">&quot;all&quot;</span><span class="p">)</span>
 <span class="n">model</span><span class="o">.</span><span class="n">fit_generator</span><span class="p">(</span><span class="n">train_loader</span><span class="p">,</span>
                     <span class="n">valid_loader</span><span class="p">,</span>
                     <span class="n">epochs</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>

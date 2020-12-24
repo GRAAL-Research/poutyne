@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Train CIFAR with the policy module &mdash; Poutyne 1.1 documentation</title>
+  <title>Train CIFAR with the policy module &mdash; Poutyne 1.2 documentation</title>
   
 
   
@@ -64,7 +64,7 @@
             
             
               <div class="version">
-                1.1
+                1.2
               </div>
             
           
@@ -265,8 +265,8 @@ This takes a while without GPU but is pretty quick with GPU.</p>
     <span class="n">optimizer</span><span class="p">,</span>
     <span class="n">criterion</span><span class="p">,</span>
     <span class="n">batch_metrics</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;acc&quot;</span><span class="p">],</span>
+    <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="n">model</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
 
 <span class="n">history</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">fit_generator</span><span class="p">(</span>
     <span class="n">train_dl</span><span class="p">,</span>
@@ -291,8 +291,8 @@ This takes a while without GPU but is pretty quick with GPU.</p>
     <span class="n">optimizer</span><span class="p">,</span>
     <span class="n">criterion</span><span class="p">,</span>
     <span class="n">batch_metrics</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;acc&quot;</span><span class="p">],</span>
+    <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="n">model</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
 
 <span class="n">policy</span> <span class="o">=</span> <span class="n">OptimizerPolicy</span><span class="p">(</span>
     <span class="n">one_cycle_phases</span><span class="p">(</span><span class="n">epochs</span> <span class="o">*</span> <span class="n">steps_per_epoch</span><span class="p">,</span> <span class="n">lr</span><span class="o">=</span><span class="p">(</span><span class="mf">0.01</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.008</span><span class="p">)),</span>

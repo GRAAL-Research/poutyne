@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>poutyne.framework.experiment &mdash; Poutyne 1.1 documentation</title>
+  <title>poutyne.framework.experiment &mdash; Poutyne 1.2 documentation</title>
   
 
   
@@ -62,7 +62,7 @@
             
             
               <div class="version">
-                1.1
+                1.2
               </div>
             
           
@@ -167,8 +167,7 @@
            <div itemprop="articleBody">
             
   <h1>Source code for poutyne.framework.experiment</h1><div class="highlight"><pre>
-<span></span><span class="c1"># pylint: disable=redefined-builtin</span>
-<span class="kn">import</span> <span class="nn">os</span>
+<span></span><span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">warnings</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Tuple</span>
 
@@ -355,7 +354,7 @@
     <span class="n">TENSORBOARD_DIRECTORY</span> <span class="o">=</span> <span class="s1">&#39;tensorboard&#39;</span>
     <span class="n">EPOCH_FILENAME</span> <span class="o">=</span> <span class="s1">&#39;last.epoch&#39;</span>
     <span class="n">LR_SCHEDULER_FILENAME</span> <span class="o">=</span> <span class="s1">&#39;lr_sched_</span><span class="si">%d</span><span class="s1">.lrsched&#39;</span>
-    <span class="n">TEST_LOG_FILENAME</span> <span class="o">=</span> <span class="s1">&#39;test_log.tsv&#39;</span>
+    <span class="n">TEST_LOG_FILENAME</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{name}</span><span class="s1">_log.tsv&#39;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                  <span class="n">directory</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -384,9 +383,12 @@
         <span class="n">epoch_metrics</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_epoch_metrics</span><span class="p">(</span><span class="n">epoch_metrics</span><span class="p">,</span> <span class="n">network</span><span class="p">,</span> <span class="n">task</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_set_monitor</span><span class="p">(</span><span class="n">monitor_metric</span><span class="p">,</span> <span class="n">monitor_mode</span><span class="p">,</span> <span class="n">task</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span><span class="n">network</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">loss_function</span><span class="p">,</span> <span class="n">batch_metrics</span><span class="o">=</span><span class="n">batch_metrics</span><span class="p">,</span> <span class="n">epoch_metrics</span><span class="o">=</span><span class="n">epoch_metrics</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">device</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span><span class="n">network</span><span class="p">,</span>
+                           <span class="n">optimizer</span><span class="p">,</span>
+                           <span class="n">loss_function</span><span class="p">,</span>
+                           <span class="n">batch_metrics</span><span class="o">=</span><span class="n">batch_metrics</span><span class="p">,</span>
+                           <span class="n">epoch_metrics</span><span class="o">=</span><span class="n">epoch_metrics</span><span class="p">,</span>
+                           <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">best_checkpoint_filename</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_path</span><span class="p">(</span><span class="n">Experiment</span><span class="o">.</span><span class="n">BEST_CHECKPOINT_FILENAME</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">model_checkpoint_filename</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_path</span><span class="p">(</span><span class="n">Experiment</span><span class="o">.</span><span class="n">MODEL_CHECKPOINT_FILENAME</span><span class="p">)</span>
@@ -595,34 +597,19 @@
             <span class="n">callbacks</span> <span class="o">+=</span> <span class="p">[</span><span class="n">BestModelRestore</span><span class="p">(</span><span class="n">monitor</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">monitor_metric</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">monitor_mode</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)]</span>
         <span class="k">return</span> <span class="n">callbacks</span>
 
-<div class="viewcode-block" id="Experiment.train"><a class="viewcode-back" href="../../../experiment.html#poutyne.Experiment.train">[docs]</a>    <span class="k">def</span> <span class="nf">train</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
-              <span class="n">train_generator</span><span class="p">,</span>
-              <span class="n">valid_generator</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-              <span class="o">*</span><span class="p">,</span>
-              <span class="n">callbacks</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-              <span class="n">lr_schedulers</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-              <span class="n">keep_only_last_best</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-              <span class="n">save_every_epoch</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-              <span class="n">disable_tensorboard</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-              <span class="n">epochs</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">,</span>
-              <span class="n">steps_per_epoch</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-              <span class="n">validation_steps</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-              <span class="n">batches_per_step</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
-              <span class="n">seed</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">42</span><span class="p">,</span>
-              <span class="n">progress_options</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">dict</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">]:</span>
-        <span class="c1"># pylint: disable=too-many-locals</span>
+<div class="viewcode-block" id="Experiment.train"><a class="viewcode-back" href="../../../experiment.html#poutyne.Experiment.train">[docs]</a>    <span class="k">def</span> <span class="nf">train</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">train_generator</span><span class="p">,</span> <span class="n">valid_generator</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">]:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Trains or finetunes the attribute model on a dataset using a generator. If a previous training already occured</span>
 <span class="sd">        and lasted a total of `n_previous` epochs, then the model&#39;s weights will be set to the last checkpoint and the</span>
 <span class="sd">        training will be resumed for epochs range (`n_previous`, `epochs`].</span>
 
 <span class="sd">        If the Experiment has logging enabled (i.e. self.logging is True), numerous callbacks will be automatically</span>
-<span class="sd">        included. Notably, two :class:`~callbacks.ModelCheckpoint` objects will take care of saving the last and every</span>
+<span class="sd">        included. Notably, two :class:`~poutyne.ModelCheckpoint` objects will take care of saving the last and every</span>
 <span class="sd">        new best (according to monitor mode) model weights in appropriate checkpoint files.</span>
-<span class="sd">        :class:`~callbacks.OptimizerCheckpoint` and :class:`~callbacks.LRSchedulerCheckpoint` will also respectively</span>
+<span class="sd">        :class:`~poutyne.OptimizerCheckpoint` and :class:`~poutyne.LRSchedulerCheckpoint` will also respectively</span>
 <span class="sd">        handle the saving of the optimizer and LR scheduler&#39;s respective states for future retrieval. Moreover, a</span>
-<span class="sd">        :class:`~callbacks.AtomicCSVLogger` will save all available epoch statistics in an output .tsv file. Lastly, a</span>
-<span class="sd">        :class:`~callbacks.TensorBoardLogger` handles automatic TensorBoard logging of various neural network</span>
+<span class="sd">        :class:`~poutyne.AtomicCSVLogger` will save all available epoch statistics in an output .tsv file. Lastly, a</span>
+<span class="sd">        :class:`~poutyne.TensorBoardLogger` handles automatic TensorBoard logging of various neural network</span>
 <span class="sd">        statistics.</span>
 
 <span class="sd">        .. warning:: With **Jupyter Notebooks in Firefox**, if ``colorama`` is installed and colors are enabled (as it</span>
@@ -641,9 +628,7 @@
 <span class="sd">                training. These callbacks are added after those used in this method (see above). This allows to assume</span>
 <span class="sd">                that they are called after those.</span>
 <span class="sd">                (Default value = None)</span>
-<span class="sd">            lr_schedulers (List[~poutyne.lr_scheduler._PyTorchLRSchedulerWrapper]): List of</span>
-<span class="sd">                learning rate schedulers.</span>
-<span class="sd">                (Default value = None)</span>
+<span class="sd">            lr_schedulers: List of learning rate schedulers. (Default value = None)</span>
 <span class="sd">            keep_only_last_best (bool): Whether only the last saved best checkpoint is kept. Applies only when</span>
 <span class="sd">                 `save_every_epoch` is false.</span>
 <span class="sd">                 (Default value = False)</span>
@@ -653,28 +638,66 @@
 <span class="sd">            disable_tensorboard (bool, optional): Whether or not to disable the automatic tensorboard logging</span>
 <span class="sd">                callbacks.</span>
 <span class="sd">                (Default value = False)</span>
-<span class="sd">            epochs (int): Number of times the entire training dataset is seen.</span>
-<span class="sd">                (Default value = 1000)</span>
-<span class="sd">            steps_per_epoch (int, optional): Number of batch used during one epoch. Obviously, using this</span>
-<span class="sd">                argument may cause one epoch not to see the entire training dataset or see it multiple times.</span>
-<span class="sd">                (Defaults the number of steps needed to see the entire</span>
-<span class="sd">                training dataset)</span>
-<span class="sd">            validation_steps (int, optional): Same as for ``steps_per_epoch`` but for the validation dataset.</span>
-<span class="sd">                (Defaults to ``steps_per_epoch`` if provided or the number of steps needed to see the entire</span>
-<span class="sd">                validation dataset)</span>
-<span class="sd">            batches_per_step (int): Number of batches on which to compute the running loss before</span>
-<span class="sd">                backpropagating it through the network. Note that the total loss used for backpropagation is</span>
-<span class="sd">                the mean of the `batches_per_step` batch losses.</span>
-<span class="sd">                (Default value = 1)</span>
 <span class="sd">            seed (int, optional): Seed used to make the sampling deterministic.</span>
 <span class="sd">                (Default value = 42)</span>
-<span class="sd">            progress_options (dict, optional): Keyword arguments to pass to the default progression callback used</span>
-<span class="sd">                in Poutyne (See :class:`~poutyne.ProgressionCallback` for the available arguments).</span>
-<span class="sd">                (Default value = None)</span>
+<span class="sd">            kwargs: Any keyword arguments to pass to :func:`~Model.fit_generator()`.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            List of dict containing the history of each epoch.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_train</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">fit_generator</span><span class="p">,</span> <span class="n">train_generator</span><span class="p">,</span> <span class="n">valid_generator</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Experiment.train_dataset"><a class="viewcode-back" href="../../../experiment.html#poutyne.Experiment.train_dataset">[docs]</a>    <span class="k">def</span> <span class="nf">train_dataset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">train_dataset</span><span class="p">,</span> <span class="n">valid_dataset</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Trains or finetunes the attribute model on a dataset. If a previous training already occured</span>
+<span class="sd">        and lasted a total of `n_previous` epochs, then the model&#39;s weights will be set to the last checkpoint and the</span>
+<span class="sd">        training will be resumed for epochs range (`n_previous`, `epochs`].</span>
+
+<span class="sd">        If the Experiment has logging enabled (i.e. self.logging is True), numerous callbacks will be automatically</span>
+<span class="sd">        included. Notably, two :class:`~poutyne.ModelCheckpoint` objects will take care of saving the last and every</span>
+<span class="sd">        new best (according to monitor mode) model weights in appropriate checkpoint files.</span>
+<span class="sd">        :class:`~poutyne.OptimizerCheckpoint` and :class:`~poutyne.LRSchedulerCheckpoint` will also respectively</span>
+<span class="sd">        handle the saving of the optimizer and LR scheduler&#39;s respective states for future retrieval. Moreover, a</span>
+<span class="sd">        :class:`~poutyne.AtomicCSVLogger` will save all available epoch statistics in an output .tsv file. Lastly, a</span>
+<span class="sd">        :class:`~poutyne.TensorBoardLogger` handles automatic TensorBoard logging of various neural network</span>
+<span class="sd">        statistics.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            train_dataset (~torch.utils.data.Dataset): Training dataset.</span>
+<span class="sd">            valid_dataset (~torch.utils.data.Dataset): Validation dataset.</span>
+<span class="sd">            callbacks (List[~poutyne.Callback]): List of callbacks that will be called during</span>
+<span class="sd">                training. These callbacks are added after those used in this method (see above). This allows to assume</span>
+<span class="sd">                that they are called after those.</span>
+<span class="sd">                (Default value = None)</span>
+<span class="sd">            lr_schedulers: List of learning rate schedulers. (Default value = None)</span>
+<span class="sd">            keep_only_last_best (bool): Whether only the last saved best checkpoint is kept. Applies only when</span>
+<span class="sd">                 `save_every_epoch` is false.</span>
+<span class="sd">                 (Default value = False)</span>
+<span class="sd">            save_every_epoch (bool, optional): Whether or not to save the experiment model&#39;s weights after</span>
+<span class="sd">                every epoch.</span>
+<span class="sd">                (Default value = False)</span>
+<span class="sd">            disable_tensorboard (bool, optional): Whether or not to disable the automatic tensorboard logging</span>
+<span class="sd">                callbacks.</span>
+<span class="sd">                (Default value = False)</span>
+<span class="sd">            seed (int, optional): Seed used to make the sampling deterministic.</span>
+<span class="sd">                (Default value = 42)</span>
+<span class="sd">            kwargs: Any keyword arguments to pass to :func:`~Model.fit_dataset()`.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            List of dict containing the history of each epoch.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_train</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">fit_dataset</span><span class="p">,</span> <span class="n">train_dataset</span><span class="p">,</span> <span class="n">valid_dataset</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_train</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+               <span class="n">training_func</span><span class="p">,</span>
+               <span class="o">*</span><span class="n">args</span><span class="p">,</span>
+               <span class="n">callbacks</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+               <span class="n">lr_schedulers</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+               <span class="n">keep_only_last_best</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+               <span class="n">save_every_epoch</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+               <span class="n">disable_tensorboard</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+               <span class="n">seed</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">42</span><span class="p">,</span>
+               <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">]:</span>
         <span class="n">set_seeds</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
 
         <span class="n">lr_schedulers</span> <span class="o">=</span> <span class="p">[]</span> <span class="k">if</span> <span class="n">lr_schedulers</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">lr_schedulers</span>
@@ -713,18 +736,10 @@
             <span class="n">expt_callbacks</span> <span class="o">+=</span> <span class="n">callbacks</span>
 
         <span class="k">try</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">fit_generator</span><span class="p">(</span><span class="n">train_generator</span><span class="p">,</span>
-                                            <span class="n">valid_generator</span><span class="p">,</span>
-                                            <span class="n">epochs</span><span class="o">=</span><span class="n">epochs</span><span class="p">,</span>
-                                            <span class="n">steps_per_epoch</span><span class="o">=</span><span class="n">steps_per_epoch</span><span class="p">,</span>
-                                            <span class="n">validation_steps</span><span class="o">=</span><span class="n">validation_steps</span><span class="p">,</span>
-                                            <span class="n">batches_per_step</span><span class="o">=</span><span class="n">batches_per_step</span><span class="p">,</span>
-                                            <span class="n">initial_epoch</span><span class="o">=</span><span class="n">initial_epoch</span><span class="p">,</span>
-                                            <span class="n">callbacks</span><span class="o">=</span><span class="n">expt_callbacks</span><span class="p">,</span>
-                                            <span class="n">progress_options</span><span class="o">=</span><span class="n">progress_options</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">training_func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">initial_epoch</span><span class="o">=</span><span class="n">initial_epoch</span><span class="p">,</span> <span class="n">callbacks</span><span class="o">=</span><span class="n">expt_callbacks</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">finally</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">tensorboard_writer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">tensorboard_writer</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+                <span class="n">tensorboard_writer</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
 <div class="viewcode-block" id="Experiment.load_checkpoint"><a class="viewcode-back" href="../../../experiment.html#poutyne.Experiment.load_checkpoint">[docs]</a>    <span class="k">def</span> <span class="nf">load_checkpoint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">checkpoint</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="o">*</span><span class="p">,</span> <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">Dict</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -732,15 +747,20 @@
 
 <span class="sd">        Args:</span>
 <span class="sd">            checkpoint (Union[int, str]): Which checkpoint to load the model&#39;s weights form.</span>
-<span class="sd">                If &#39;best&#39;, will load the best weights according to ``monitor_metric`` and ``monitor_mode``.</span>
-<span class="sd">                If &#39;last&#39;, will load the last model checkpoint. If int, will load the checkpoint of the</span>
-<span class="sd">                specified epoch.</span>
+
+<span class="sd">                - If &#39;best&#39;, will load the best weights according to ``monitor_metric`` and ``monitor_mode``.</span>
+<span class="sd">                - If &#39;last&#39;, will load the last model checkpoint.</span>
+<span class="sd">                - If int, will load the checkpoint of the specified epoch.</span>
+<span class="sd">                - If a path (str), will load the model pickled state_dict weights (for instance, saved as</span>
+<span class="sd">                  ``torch.save(a_pytorch_network.state_dict(), &quot;./a_path.p&quot;)``).</span>
 <span class="sd">            verbose (bool, optional): Whether or not to print the checkpoint filename, and the best epoch</span>
 <span class="sd">                number and stats when checkpoint is &#39;best&#39;.</span>
 <span class="sd">                (Default value = False)</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            If checkpoint is &#39;best&#39;, will return the best epoch stats, as per :func:`~get_best_epoch_stats()`,</span>
+<span class="sd">            if checkpoint is &#39;last&#39;, will return the last epoch stats, if checkpoint is a int, will return the</span>
+<span class="sd">            epoch number stats, if a path, will return the stats of that specific checkpoint.</span>
 <span class="sd">            else None.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">best_epoch_stats</span> <span class="o">=</span> <span class="kc">None</span>
@@ -752,7 +772,7 @@
         <span class="k">elif</span> <span class="n">checkpoint</span> <span class="o">==</span> <span class="s1">&#39;last&#39;</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_load_last_checkpoint</span><span class="p">(</span><span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;checkpoint argument must be either &#39;best&#39;, &#39;last&#39; or int. Found : </span><span class="si">{</span><span class="n">checkpoint</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_load_path_checkpoint</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="n">checkpoint</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">best_epoch_stats</span></div>
 
@@ -786,13 +806,13 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">load_weights</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_checkpoint_filename</span><span class="p">)</span>
 
-<div class="viewcode-block" id="Experiment.test"><a class="viewcode-back" href="../../../experiment.html#poutyne.Experiment.test">[docs]</a>    <span class="k">def</span> <span class="nf">test</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
-             <span class="n">test_generator</span><span class="p">,</span>
-             <span class="o">*</span><span class="p">,</span>
-             <span class="n">callbacks</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-             <span class="n">steps</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-             <span class="n">checkpoint</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;best&#39;</span><span class="p">,</span>
-             <span class="n">seed</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">42</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">_load_path_checkpoint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Loading checkpoint </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">load_weights</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Experiment.test"><a class="viewcode-back" href="../../../experiment.html#poutyne.Experiment.test">[docs]</a>    <span class="k">def</span> <span class="nf">test</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">test_generator</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Computes and returns the loss and the metrics of the attribute model on a given test examples</span>
 <span class="sd">        generator.</span>
@@ -804,42 +824,83 @@
 <span class="sd">        Args:</span>
 <span class="sd">            test_generator: Generator-like object for the test set. See :func:`~Model.fit_generator()` for</span>
 <span class="sd">                details on the types of generators supported.</span>
-<span class="sd">            callbacks (List[~poutyne.Callback], optional): List of callbacks that will be called</span>
-<span class="sd">                during the testing.</span>
-<span class="sd">                (Default value = None)</span>
-<span class="sd">            steps (int, optional): Number of iterations done on ``generator``.</span>
-<span class="sd">                (Defaults the number of steps needed to see the entire dataset)</span>
 <span class="sd">            checkpoint (Union[str, int]): Which model checkpoint weights to load for the test evaluation.</span>
-<span class="sd">                If &#39;best&#39;, will load the best weights according to ``monitor_metric`` and ``monitor_mode``.</span>
-<span class="sd">                If &#39;last&#39;, will load the last model checkpoint. If int, will load the checkpoint of the</span>
-<span class="sd">                specified epoch. This argument has no effect when logging is disabled.</span>
-<span class="sd">                (Default value = &#39;best&#39;)</span>
+
+<span class="sd">                - If &#39;best&#39;, will load the best weights according to ``monitor_metric`` and ``monitor_mode``.</span>
+<span class="sd">                - If &#39;last&#39;, will load the last model checkpoint.</span>
+<span class="sd">                - If int, will load the checkpoint of the specified epoch.</span>
+<span class="sd">                - If a path (str), will load the model pickled state_dict weights (for instance, saved as</span>
+<span class="sd">                  ``torch.save(a_pytorch_network.state_dict(), &quot;./a_path.p&quot;)``).</span>
+
+<span class="sd">                This argument has no effect when logging is disabled. (Default value = &#39;best&#39;)</span>
 <span class="sd">            seed (int, optional): Seed used to make the sampling deterministic.</span>
 <span class="sd">                (Default value = 42)</span>
+<span class="sd">            name (str): Prefix of the test log file. (Default value = &#39;test&#39;)</span>
+<span class="sd">            kwargs: Any keyword arguments to pass to :func:`~Model.evaluate_generator()`.</span>
 
 <span class="sd">        If the Experiment has logging enabled (i.e. self.logging is True), one callback will be automatically</span>
-<span class="sd">        included to save the test metrics. Moreover, a :class:`~callbacks.AtomicCSVLogger` will save the test</span>
+<span class="sd">        included to save the test metrics. Moreover, a :class:`~poutyne.AtomicCSVLogger` will save the test</span>
 <span class="sd">        metrics in an output .tsv file.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            dict sorting of all the test metrics values by their names.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_test</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">evaluate_generator</span><span class="p">,</span> <span class="n">test_generator</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Experiment.test_dataset"><a class="viewcode-back" href="../../../experiment.html#poutyne.Experiment.test_dataset">[docs]</a>    <span class="k">def</span> <span class="nf">test_dataset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">test_dataset</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Computes and returns the loss and the metrics of the attribute model on a given test dataset.</span>
+
+<span class="sd">        If the Experiment has logging enabled (i.e. self.logging is True), a checkpoint (the best one by default)</span>
+<span class="sd">        is loaded and test and validation statistics are saved in a specific test output .tsv file. Otherwise, the</span>
+<span class="sd">        current weights of the network is used for testing and statistics are only shown in the standard output.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            test_dataset (~torch.utils.data.Dataset): Test dataset.</span>
+<span class="sd">            checkpoint (Union[str, int]): Which model checkpoint weights to load for the test evaluation.</span>
+
+<span class="sd">                - If &#39;best&#39;, will load the best weights according to ``monitor_metric`` and ``monitor_mode``.</span>
+<span class="sd">                - If &#39;last&#39;, will load the last model checkpoint.</span>
+<span class="sd">                - If int, will load the checkpoint of the specified epoch.</span>
+<span class="sd">                - If a path (str), will load the model pickled state_dict weights (for instance, saved as</span>
+<span class="sd">                  ``torch.save(a_pytorch_network.state_dict(), &quot;./a_path.p&quot;)``).</span>
+
+<span class="sd">                This argument has no effect when logging is disabled. (Default value = &#39;best&#39;)</span>
+<span class="sd">            seed (int, optional): Seed used to make the sampling deterministic.</span>
+<span class="sd">                (Default value = 42)</span>
+<span class="sd">            name (str): Prefix of the test log file. (Default value = &#39;test&#39;)</span>
+<span class="sd">            kwargs: Any keyword arguments to pass to :func:`~Model.evaluate_dataset()`.</span>
+
+<span class="sd">        If the Experiment has logging enabled (i.e. self.logging is True), one callback will be automatically</span>
+<span class="sd">        included to save the test metrics. Moreover, a :class:`~poutyne.AtomicCSVLogger` will save the test</span>
+<span class="sd">        metrics in an output .tsv file.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict sorting of all the test metrics values by their names.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_test</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">evaluate_dataset</span><span class="p">,</span> <span class="n">test_dataset</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_test</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+              <span class="n">evaluate_func</span><span class="p">,</span>
+              <span class="o">*</span><span class="n">args</span><span class="p">,</span>
+              <span class="n">checkpoint</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;best&#39;</span><span class="p">,</span>
+              <span class="n">seed</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">42</span><span class="p">,</span>
+              <span class="n">name</span><span class="o">=</span><span class="s1">&#39;test&#39;</span><span class="p">,</span>
+              <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;return_ground_truth&#39;</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">True</span> <span class="ow">or</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;return_pred&#39;</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;This method does not return predictions or ground truth data.&quot;</span><span class="p">)</span>
+
         <span class="n">set_seeds</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
-
-        <span class="n">callbacks</span> <span class="o">=</span> <span class="p">[]</span> <span class="k">if</span> <span class="n">callbacks</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">callbacks</span>
-
-        <span class="c1"># Copy callback list.</span>
-        <span class="n">callbacks</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">callbacks</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logging</span><span class="p">:</span>
             <span class="n">best_epoch_stats</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_checkpoint</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">metrics_names</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">test_loss</span><span class="p">,</span> <span class="n">test_metrics</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">evaluate_generator</span><span class="p">(</span><span class="n">test_generator</span><span class="p">,</span> <span class="n">steps</span><span class="o">=</span><span class="n">steps</span><span class="p">,</span> <span class="n">callbacks</span><span class="o">=</span><span class="n">callbacks</span><span class="p">)</span>
+            <span class="n">test_loss</span><span class="p">,</span> <span class="n">test_metrics</span> <span class="o">=</span> <span class="n">evaluate_func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">test_metrics</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
                 <span class="n">test_metrics</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">test_metrics</span><span class="p">])</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">test_loss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">evaluate_generator</span><span class="p">(</span><span class="n">test_generator</span><span class="p">,</span> <span class="n">steps</span><span class="o">=</span><span class="n">steps</span><span class="p">,</span> <span class="n">callbacks</span><span class="o">=</span><span class="n">callbacks</span><span class="p">)</span>
+            <span class="n">test_loss</span> <span class="o">=</span> <span class="n">evaluate_func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
             <span class="n">test_metrics</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
 
         <span class="n">test_metrics_names</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;test_loss&#39;</span><span class="p">]</span> <span class="o">+</span> \
@@ -855,9 +916,9 @@
             <span class="k">if</span> <span class="n">best_epoch_stats</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">best_epoch_stats</span> <span class="o">=</span> <span class="n">best_epoch_stats</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
                 <span class="n">test_stats</span> <span class="o">=</span> <span class="n">best_epoch_stats</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">test_stats</span><span class="p">)</span>
-            <span class="n">test_stats</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">test_log_filename</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="n">test_stats</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">test_log_filename</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">),</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">test_metrics_dict</span></div></div>
+        <span class="k">return</span> <span class="n">test_metrics_dict</span></div>
 </pre></div>
 
            </div>

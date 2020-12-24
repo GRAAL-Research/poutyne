@@ -188,9 +188,9 @@ Finally, we start the training and output its final test loss, accuracy, and mic
     optimizer = optim.SGD(resnet18.fc.parameters(), lr=learning_rate, weight_decay=0.001)
     loss_function = nn.CrossEntropyLoss()
 
-    model = Model(resnet18, optimizer, loss_function, batch_metrics=['accuracy'], epoch_metrics=['f1'])
-
-    model.to(device)
+    model = Model(resnet18, optimizer, loss_function,
+                  batch_metrics=['accuracy'], epoch_metrics=['f1'],
+                  device=device)
 
     model.fit_generator(train_loader, valid_loader, epochs=n_epoch, callbacks=callbacks)
 
@@ -239,9 +239,9 @@ Since we have created checkpoints using callbacks, we can restore the best model
 
     resnet18 = models.resnet18(pretrained=False, num_classes=num_classes)
 
-    model = Model(resnet18, 'sgd', 'cross_entropy', batch_metrics=['accuracy'], epoch_metrics=['f1'])
-
-    model.to(device)
+    model = Model(resnet18, 'sgd', 'cross_entropy',
+                  batch_metrics=['accuracy'], epoch_metrics=['f1'],
+                  device=device)
 
     model.load_weights(os.path.join(save_path, 'best_epoch_{epoch}.ckpt').format(epoch=best_epoch))
 

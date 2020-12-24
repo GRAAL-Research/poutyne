@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>poutyne.framework.model &mdash; Poutyne 1.1 documentation</title>
+  <title>poutyne.framework.model &mdash; Poutyne 1.2 documentation</title>
   
 
   
@@ -62,7 +62,7 @@
             
             
               <div class="version">
-                1.1
+                1.2
               </div>
             
           
@@ -196,9 +196,11 @@
 
 <span class="sd">    Args:</span>
 <span class="sd">        network (torch.nn.Module): A PyTorch network.</span>
-<span class="sd">        optimizer (Union[torch.optim.Optimizer, str]): If torch.optim.Optimier, an initialized PyTorch.</span>
-<span class="sd">            If str, should be the optimizer&#39;s name in Pytorch (i.e. &#39;Adam&#39; for torch.optim.Adam).</span>
-<span class="sd">            (Default value = &#39;sgd&#39;)</span>
+<span class="sd">        optimizer (Union[torch.optim.Optimizer, str, dict]): If torch.optim.Optimier, an initialized PyTorch.</span>
+<span class="sd">            If str, should be the name of the optimizer in Pytorch (i.e. &#39;Adam&#39; for torch.optim.Adam).</span>
+<span class="sd">            If dict, should contain a key ``&#39;optim&#39;`` with the value be the name of the optimizer; other</span>
+<span class="sd">            entries are passed to the optimizer as keyword arguments.</span>
+<span class="sd">            (Default value = None)</span>
 <span class="sd">        loss_function(Union[Callable, str]) It can be any PyTorch loss layer or custom loss function. It</span>
 <span class="sd">            can also be a string with the same name as a PyTorch loss function (either the functional or</span>
 <span class="sd">            object name). The loss function must have the signature ``loss_function(input, target)`` where</span>
@@ -213,6 +215,8 @@
 <span class="sd">        epoch_metrics (list): List of functions with the same signature as</span>
 <span class="sd">            :class:`~poutyne.EpochMetric`</span>
 <span class="sd">            (Default value = None)</span>
+<span class="sd">        device (Union[torch.torch.device, List[torch.torch.device]]): The device to which the network is</span>
+<span class="sd">            sent or the list of device to which the network is sent. See :func:`~Model.to()` for details.</span>
 
 <span class="sd">    Note:</span>
 <span class="sd">        The name of each batch and epoch metric can be change by passing a tuple ``(name, metric)`` instead</span>
@@ -321,7 +325,7 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">network</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">loss_function</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">batch_metrics</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">epoch_metrics</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">network</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">loss_function</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">batch_metrics</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">epoch_metrics</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="n">batch_metrics</span> <span class="o">=</span> <span class="p">[]</span> <span class="k">if</span> <span class="n">batch_metrics</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">batch_metrics</span>
         <span class="n">epoch_metrics</span> <span class="o">=</span> <span class="p">[]</span> <span class="k">if</span> <span class="n">epoch_metrics</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">epoch_metrics</span>
 
@@ -333,6 +337,9 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">device</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">other_device</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="n">device</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_set_metrics_attributes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch_metrics</span><span class="p">,</span> <span class="n">epoch_metrics</span><span class="p">):</span>
         <span class="n">batch_metrics</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">get_loss_or_metric</span><span class="p">,</span> <span class="n">batch_metrics</span><span class="p">))</span>
@@ -475,8 +482,8 @@
         <span class="k">return</span> <span class="n">generator</span>
 
 <div class="viewcode-block" id="Model.fit_dataset"><a class="viewcode-back" href="../../../model.html#poutyne.Model.fit_dataset">[docs]</a>    <span class="k">def</span> <span class="nf">fit_dataset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
-                    <span class="n">training_dataset</span><span class="p">,</span>
-                    <span class="n">validation_dataset</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                    <span class="n">train_dataset</span><span class="p">,</span>
+                    <span class="n">valid_dataset</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                     <span class="o">*</span><span class="p">,</span>
                     <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span>
                     <span class="n">epochs</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
@@ -502,8 +509,8 @@
 <span class="sd">            `this Github issue for details &lt;https://github.com/jupyter/notebook/issues/5897&gt;`__.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            training_dataset (~torch.utils.data.Dataset): Training dataset.</span>
-<span class="sd">            validation_dataset (~torch.utils.data.Dataset): Validation dataset.</span>
+<span class="sd">            train_dataset (~torch.utils.data.Dataset): Training dataset.</span>
+<span class="sd">            valid_dataset (~torch.utils.data.Dataset): Validation dataset.</span>
 <span class="sd">            batch_size (int): Number of samples given to the network at one time.</span>
 <span class="sd">                (Default value = 32)</span>
 <span class="sd">            epochs (int): Number of times the entire training dataset is seen.</span>
@@ -549,8 +556,8 @@
 <span class="sd">            .. code-block:: python</span>
 
 <span class="sd">                model = Model(pytorch_network, optimizer, loss_function)</span>
-<span class="sd">                history = model.fit(training_dataset,</span>
-<span class="sd">                                    validation_dataset,</span>
+<span class="sd">                history = model.fit(train_dataset,</span>
+<span class="sd">                                    valid_dataset,</span>
 <span class="sd">                                    epochs=num_epochs,</span>
 <span class="sd">                                    batch_size=batch_size,</span>
 <span class="sd">                                    verbose=False)</span>
@@ -573,10 +580,10 @@
             <span class="o">**</span><span class="n">dataloader_kwargs</span>
         <span class="p">}</span>
 
-        <span class="n">train_generator</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">training_dataset</span><span class="p">,</span> <span class="o">**</span><span class="p">{</span><span class="s1">&#39;shuffle&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">dataloader_kwargs</span><span class="p">})</span>
+        <span class="n">train_generator</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">train_dataset</span><span class="p">,</span> <span class="o">**</span><span class="p">{</span><span class="s1">&#39;shuffle&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">dataloader_kwargs</span><span class="p">})</span>
         <span class="n">valid_generator</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="k">if</span> <span class="n">validation_dataset</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">valid_generator</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">validation_dataset</span><span class="p">,</span> <span class="o">**</span><span class="n">dataloader_kwargs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">valid_dataset</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">valid_generator</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">valid_dataset</span><span class="p">,</span> <span class="o">**</span><span class="n">dataloader_kwargs</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_generator</span><span class="p">(</span><span class="n">train_generator</span><span class="p">,</span>
                                   <span class="n">valid_generator</span><span class="o">=</span><span class="n">valid_generator</span><span class="p">,</span>
@@ -987,7 +994,7 @@
             <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">preprocess_input</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">torch_to_numpy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">network</span><span class="p">(</span><span class="o">*</span><span class="n">x</span><span class="p">))</span></div>
 
-<div class="viewcode-block" id="Model.evaluate"><a class="viewcode-back" href="../../../model.html#poutyne.Model.evaluate">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">return_pred</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">callbacks</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">dataloader_kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="Model.evaluate"><a class="viewcode-back" href="../../../model.html#poutyne.Model.evaluate">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">return_pred</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">callbacks</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dataloader_kwargs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Computes the loss and the metrics of the network on batches of samples and optionally</span>
 <span class="sd">        returns the predictions.</span>
@@ -1582,7 +1589,6 @@
 <span class="sd">        using either a list of devices or &quot;all&quot; to take all the available devices. In both cases,</span>
 <span class="sd">        the training loop will use the `~torch.nn.parallel.data_parallel()` function for single</span>
 <span class="sd">        node multi GPUs parallel process and the main device is the first device.</span>
-
 
 <span class="sd">        Note:</span>
 <span class="sd">            PyTorch optimizers assume that the parameters have been transferred to the right device</span>

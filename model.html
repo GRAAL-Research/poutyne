@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Model &mdash; Poutyne 1.1 documentation</title>
+  <title>Model &mdash; Poutyne 1.2 documentation</title>
   
 
   
@@ -64,7 +64,7 @@
             
             
               <div class="version">
-                1.1
+                1.2
               </div>
             
           
@@ -174,7 +174,7 @@
 <span id="models"></span><h1>Model<a class="headerlink" href="#model" title="Permalink to this headline">¶</a></h1>
 <dl class="py class">
 <dt id="poutyne.Model">
-<em class="property">class </em><code class="sig-prename descclassname">poutyne.</code><code class="sig-name descname">Model</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">network</span></em>, <em class="sig-param"><span class="n">optimizer</span></em>, <em class="sig-param"><span class="n">loss_function</span></em>, <em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">batch_metrics</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">epoch_metrics</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poutyne/framework/model.html#Model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#poutyne.Model" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">poutyne.</code><code class="sig-name descname">Model</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">network</span></em>, <em class="sig-param"><span class="n">optimizer</span></em>, <em class="sig-param"><span class="n">loss_function</span></em>, <em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">batch_metrics</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">epoch_metrics</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">device</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poutyne/framework/model.html#Model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#poutyne.Model" title="Permalink to this definition">¶</a></dt>
 <dd><p>The Model class encapsulates a PyTorch network, a PyTorch optimizer, a loss function and
 metric functions. It allows the user to train a neural network without hand-coding the
 epoch/step logic.</p>
@@ -182,9 +182,11 @@ epoch/step logic.</p>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>network</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="(in PyTorch vmaster (1.7.0a0+57bffc3 ))"><em>torch.nn.Module</em></a>) – A PyTorch network.</p></li>
-<li><p><strong>optimizer</strong> (<em>Union</em><em>[</em><a class="reference external" href="https://pytorch.org/docs/stable/optim.html#torch.optim.Optimizer" title="(in PyTorch vmaster (1.7.0a0+57bffc3 ))"><em>torch.optim.Optimizer</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em>]</em>) – If torch.optim.Optimier, an initialized PyTorch.
-If str, should be the optimizer’s name in Pytorch (i.e. ‘Adam’ for torch.optim.Adam).
-(Default value = ‘sgd’)</p></li>
+<li><p><strong>optimizer</strong> (<em>Union</em><em>[</em><a class="reference external" href="https://pytorch.org/docs/stable/optim.html#torch.optim.Optimizer" title="(in PyTorch vmaster (1.7.0a0+57bffc3 ))"><em>torch.optim.Optimizer</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.9)"><em>dict</em></a><em>]</em>) – If torch.optim.Optimier, an initialized PyTorch.
+If str, should be the name of the optimizer in Pytorch (i.e. ‘Adam’ for torch.optim.Adam).
+If dict, should contain a key <code class="docutils literal notranslate"><span class="pre">'optim'</span></code> with the value be the name of the optimizer; other
+entries are passed to the optimizer as keyword arguments.
+(Default value = None)</p></li>
 <li><p><strong>loss_function</strong> (<em>Union</em><em>[</em><em>Callable</em><em>, </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em>]</em>) – can also be a string with the same name as a PyTorch loss function (either the functional or
 object name). The loss function must have the signature <code class="docutils literal notranslate"><span class="pre">loss_function(input,</span> <span class="pre">target)</span></code> where
 <code class="docutils literal notranslate"><span class="pre">input</span></code> is the prediction of the network and <code class="docutils literal notranslate"><span class="pre">target</span></code> is the ground truth.
@@ -198,6 +200,8 @@ validation batches at the end of the epoch.
 <li><p><strong>epoch_metrics</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.9)"><em>list</em></a>) – List of functions with the same signature as
 <a class="reference internal" href="metrics.html#poutyne.EpochMetric" title="poutyne.EpochMetric"><code class="xref py py-class docutils literal notranslate"><span class="pre">EpochMetric</span></code></a>
 (Default value = None)</p></li>
+<li><p><strong>device</strong> (<em>Union</em><em>[</em><a class="reference external" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.torch.device" title="(in PyTorch vmaster (1.7.0a0+57bffc3 ))"><em>torch.torch.device</em></a><em>, </em><em>List</em><em>[</em><a class="reference external" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.torch.device" title="(in PyTorch vmaster (1.7.0a0+57bffc3 ))"><em>torch.torch.device</em></a><em>]</em><em>]</em>) – The device to which the network is
+sent or the list of device to which the network is sent. See <a class="reference internal" href="#poutyne.Model.to" title="poutyne.Model.to"><code class="xref py py-func docutils literal notranslate"><span class="pre">to()</span></code></a> for details.</p></li>
 </ul>
 </dd>
 </dl>
@@ -424,7 +428,7 @@ overriden by using this argument.</p></li>
 
 <dl class="py method">
 <dt id="poutyne.Model.fit_dataset">
-<code class="sig-name descname">fit_dataset</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">training_dataset</span></em>, <em class="sig-param"><span class="n">validation_dataset</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">batch_size</span><span class="o">=</span><span class="default_value">32</span></em>, <em class="sig-param"><span class="n">epochs</span><span class="o">=</span><span class="default_value">1000</span></em>, <em class="sig-param"><span class="n">steps_per_epoch</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">validation_steps</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">batches_per_step</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">initial_epoch</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">verbose</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">progress_options</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">callbacks</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">num_workers</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">collate_fn</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">dataloader_kwargs</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poutyne/framework/model.html#Model.fit_dataset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#poutyne.Model.fit_dataset" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">fit_dataset</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">train_dataset</span></em>, <em class="sig-param"><span class="n">valid_dataset</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">batch_size</span><span class="o">=</span><span class="default_value">32</span></em>, <em class="sig-param"><span class="n">epochs</span><span class="o">=</span><span class="default_value">1000</span></em>, <em class="sig-param"><span class="n">steps_per_epoch</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">validation_steps</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">batches_per_step</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">initial_epoch</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">verbose</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">progress_options</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">callbacks</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">num_workers</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">collate_fn</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">dataloader_kwargs</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poutyne/framework/model.html#Model.fit_dataset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#poutyne.Model.fit_dataset" title="Permalink to this definition">¶</a></dt>
 <dd><p>Trains the network on a dataset. This method creates dataloaders and calls the
 <a class="reference internal" href="#poutyne.Model.fit_generator" title="poutyne.Model.fit_generator"><code class="xref py py-func docutils literal notranslate"><span class="pre">fit_generator()</span></code></a> method.</p>
 <div class="admonition warning">
@@ -438,8 +442,8 @@ passing <code class="docutils literal notranslate"><span class="pre">progress_op
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>training_dataset</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.Dataset" title="(in PyTorch vmaster (1.7.0a0+57bffc3 ))"><em>Dataset</em></a>) – Training dataset.</p></li>
-<li><p><strong>validation_dataset</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.Dataset" title="(in PyTorch vmaster (1.7.0a0+57bffc3 ))"><em>Dataset</em></a>) – Validation dataset.</p></li>
+<li><p><strong>train_dataset</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.Dataset" title="(in PyTorch vmaster (1.7.0a0+57bffc3 ))"><em>Dataset</em></a>) – Training dataset.</p></li>
+<li><p><strong>valid_dataset</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.Dataset" title="(in PyTorch vmaster (1.7.0a0+57bffc3 ))"><em>Dataset</em></a>) – Validation dataset.</p></li>
 <li><p><strong>batch_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – Number of samples given to the network at one time.
 (Default value = 32)</p></li>
 <li><p><strong>epochs</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – Number of times the entire training dataset is seen.
@@ -486,8 +490,8 @@ overriden by using this argument.</p></li>
 </dl>
 <p class="rubric">Example</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span><span class="n">pytorch_network</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">loss_function</span><span class="p">)</span>
-<span class="n">history</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">training_dataset</span><span class="p">,</span>
-                    <span class="n">validation_dataset</span><span class="p">,</span>
+<span class="n">history</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">train_dataset</span><span class="p">,</span>
+                    <span class="n">valid_dataset</span><span class="p">,</span>
                     <span class="n">epochs</span><span class="o">=</span><span class="n">num_epochs</span><span class="p">,</span>
                     <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span>
                     <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
@@ -712,7 +716,7 @@ into Numpy arrays.</p>
 
 <dl class="py method">
 <dt id="poutyne.Model.evaluate">
-<code class="sig-name descname">evaluate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">batch_size</span><span class="o">=</span><span class="default_value">32</span></em>, <em class="sig-param"><span class="n">return_pred</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">callbacks</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">dataloader_kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poutyne/framework/model.html#Model.evaluate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#poutyne.Model.evaluate" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">evaluate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">batch_size</span><span class="o">=</span><span class="default_value">32</span></em>, <em class="sig-param"><span class="n">return_pred</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">callbacks</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">dataloader_kwargs</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poutyne/framework/model.html#Model.evaluate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#poutyne.Model.evaluate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Computes the loss and the metrics of the network on batches of samples and optionally
 returns the predictions.</p>
 <dl class="field-list simple">

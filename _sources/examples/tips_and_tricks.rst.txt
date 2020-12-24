@@ -388,8 +388,7 @@ Now let's test our training loop for one epoch using the accuracy as the batch m
 
 .. code-block:: python
 
-    model = Model(full_network, optimizer, loss_function, batch_metrics=['accuracy'])
-    model.to(device)
+    model = Model(full_network, optimizer, loss_function, batch_metrics=['accuracy'], device=device)
     model.fit_generator(train_loader,
                         valid_loader,
                         epochs=1,
@@ -424,8 +423,8 @@ It's also possible to used epoch metrics such as :class:`~poutyne.F1`. You could
                   optimizer,
                   loss_function,
                   batch_metrics=['accuracy'],
-                  epoch_metrics=['f1'])
-    model.to(device)
+                  epoch_metrics=['f1'],
+                  device=device)
     model.fit_generator(train_loader,
                         valid_loader,
                         epochs=1,
@@ -449,8 +448,8 @@ Furthermore, you could also use the :class:`~poutyne.SKLearnMetrics` wrapper to 
                   optimizer,
                   loss_function,
                   batch_metrics=['accuracy'],
-                  epoch_metrics=['f1', roc_epoch_metric])
-    model.to(device)
+                  epoch_metrics=['f1', roc_epoch_metric],
+                  device=device)
     model.fit_generator(train_loader,
                         valid_loader,
                         epochs=1,
@@ -468,8 +467,8 @@ It's also possible to name the metric using a tuple format ``(<metric name>, met
                   optimizer,
                   loss_function,
                   batch_metrics=[("My accuracy name", accuracy)],
-                  epoch_metrics=[("My metric name", F1())])
-    model.to(device)
+                  epoch_metrics=[("My metric name", F1())],
+                  device=device)
     model.fit_generator(train_loader,
                         valid_loader,
                         epochs=1)
@@ -488,8 +487,8 @@ Finally, it's also possible to use multi-GPUs for your training either by specif
                   optimizer,
                   loss_function,
                   batch_metrics=[("My accuracy name", accuracy)],
-                  epoch_metrics=[("My metric name", F1())])
-    model.to("all")
+                  epoch_metrics=[("My metric name", F1())],
+                  device="all")
     model.fit_generator(train_loader,
                         valid_loader,
                         epochs=1)
