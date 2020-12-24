@@ -42,7 +42,6 @@ NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FO
 OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
-import warnings
 from typing import Dict, List
 
 
@@ -212,28 +211,12 @@ class CallbackList:
     def on_train_batch_begin(self, batch_number: int, logs: Dict):
         logs = logs or {}
         for callback in self.callbacks:
-            if hasattr(callback, 'on_batch_begin'):
-                warnings.warn(
-                    'on_batch_begin method for callback has been deprecated as of version 0.7. '
-                    'Use on_batch_train_begin instead.',
-                    Warning,
-                    stacklevel=2)
-                callback.on_batch_begin(batch_number, logs)
-            else:
-                callback.on_train_batch_begin(batch_number, logs)
+            callback.on_train_batch_begin(batch_number, logs)
 
     def on_train_batch_end(self, batch_number: int, logs: Dict):
         logs = logs or {}
         for callback in self.callbacks:
-            if hasattr(callback, 'on_batch_end'):
-                warnings.warn(
-                    'on_batch_end method for callback has been deprecated as of version 0.7. '
-                    'Use on_batch_train_end instead.',
-                    Warning,
-                    stacklevel=2)
-                callback.on_batch_end(batch_number, logs)
-            else:
-                callback.on_train_batch_end(batch_number, logs)
+            callback.on_train_batch_end(batch_number, logs)
 
     def on_test_batch_begin(self, batch_number: int, logs: Dict):
         logs = logs or {}
