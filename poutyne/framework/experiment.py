@@ -680,8 +680,7 @@ class Experiment:
 
     def test_dataset(self, test_dataset, **kwargs) -> Dict:
         """
-        Computes and returns the loss and the metrics of the attribute model on a given test examples
-        generator.
+        Computes and returns the loss and the metrics of the attribute model on a given test dataset.
 
         If the Experiment has logging enabled (i.e. self.logging is True), a checkpoint (the best one by default)
         is loaded and test and validation statistics are saved in a specific test output .tsv file. Otherwise, the
@@ -690,10 +689,14 @@ class Experiment:
         Args:
             test_dataset (~torch.utils.data.Dataset): Test dataset.
             checkpoint (Union[str, int]): Which model checkpoint weights to load for the test evaluation.
-                If 'best', will load the best weights according to ``monitor_metric`` and ``monitor_mode``.
-                If 'last', will load the last model checkpoint. If int, will load the checkpoint of the
-                specified epoch. This argument has no effect when logging is disabled.
-                (Default value = 'best')
+
+                - If 'best', will load the best weights according to ``monitor_metric`` and ``monitor_mode``.
+                - If 'last', will load the last model checkpoint.
+                - If int, will load the checkpoint of the specified epoch.
+                - If a path (str), will load the model pickled state_dict weights (for instance, saved as
+                  ``torch.save(a_pytorch_network.state_dict(), "./a_path.p")``).
+
+                This argument has no effect when logging is disabled. (Default value = 'best')
             seed (int, optional): Seed used to make the sampling deterministic.
                 (Default value = 42)
             name (str): Prefix of the test log file. (Default value = 'test')
