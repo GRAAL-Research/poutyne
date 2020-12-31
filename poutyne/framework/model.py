@@ -27,9 +27,11 @@ class Model:
 
     Args:
         network (torch.nn.Module): A PyTorch network.
-        optimizer (Union[torch.optim.Optimizer, str]): If torch.optim.Optimier, an initialized PyTorch.
-            If str, should be the optimizer's name in Pytorch (i.e. 'Adam' for torch.optim.Adam).
-            (Default value = 'sgd')
+        optimizer (Union[torch.optim.Optimizer, str, dict]): If torch.optim.Optimier, an initialized PyTorch.
+            If str, should be the name of the optimizer in Pytorch (i.e. 'Adam' for torch.optim.Adam).
+            If dict, should contain a key ``'optim'`` with the value be the name of the optimizer; other
+            entries are passed to the optimizer as keyword arguments.
+            (Default value = None)
         loss_function(Union[Callable, str]) It can be any PyTorch loss layer or custom loss function. It
             can also be a string with the same name as a PyTorch loss function (either the functional or
             object name). The loss function must have the signature ``loss_function(input, target)`` where
@@ -214,6 +216,12 @@ class Model:
         Trains the network on a dataset. This method creates generators and calls
         the :func:`~Model.fit_generator()` method.
 
+        .. warning:: With **Jupyter Notebooks in Firefox**, if ``colorama`` is installed and colors are enabled (as it
+            is by default), a great number of epochs and steps per epoch can cause a spike in memory usage in Firefox.
+            The problem does not occur in Google Chrome/Chromium. To avoid this problem, you can disable the colors by
+            passing ``progress_options={'coloring': False}``. See
+            `this Github issue for details <https://github.com/jupyter/notebook/issues/5897>`__.
+
         Args:
             x (Union[~torch.Tensor, ~numpy.ndarray] or Union[tuple, list] of Union[~torch.Tensor, ~numpy.ndarray]):
                 Training dataset. Union[Tensor, ndarray] if the model has a single input.
@@ -305,8 +313,8 @@ class Model:
         return generator
 
     def fit_dataset(self,
-                    training_dataset,
-                    validation_dataset=None,
+                    train_dataset,
+                    valid_dataset=None,
                     *,
                     batch_size=32,
                     epochs=1000,
@@ -325,9 +333,15 @@ class Model:
         Trains the network on a dataset. This method creates dataloaders and calls the
         :func:`~Model.fit_generator()` method.
 
+        .. warning:: With **Jupyter Notebooks in Firefox**, if ``colorama`` is installed and colors are enabled (as it
+            is by default), a great number of epochs and steps per epoch can cause a spike in memory usage in Firefox.
+            The problem does not occur in Google Chrome/Chromium. To avoid this problem, you can disable the colors by
+            passing ``progress_options={'coloring': False}``. See
+            `this Github issue for details <https://github.com/jupyter/notebook/issues/5897>`__.
+
         Args:
-            training_dataset (~torch.utils.data.Dataset): Training dataset.
-            validation_dataset (~torch.utils.data.Dataset): Validation dataset.
+            train_dataset (~torch.utils.data.Dataset): Training dataset.
+            valid_dataset (~torch.utils.data.Dataset): Validation dataset.
             batch_size (int): Number of samples given to the network at one time.
                 (Default value = 32)
             epochs (int): Number of times the entire training dataset is seen.
@@ -373,8 +387,8 @@ class Model:
             .. code-block:: python
 
                 model = Model(pytorch_network, optimizer, loss_function)
-                history = model.fit(training_dataset,
-                                    validation_dataset,
+                history = model.fit(train_dataset,
+                                    valid_dataset,
                                     epochs=num_epochs,
                                     batch_size=batch_size,
                                     verbose=False)
@@ -397,10 +411,10 @@ class Model:
             **dataloader_kwargs
         }
 
-        train_generator = DataLoader(training_dataset, **{'shuffle': True, **dataloader_kwargs})
+        train_generator = DataLoader(train_dataset, **{'shuffle': True, **dataloader_kwargs})
         valid_generator = None
-        if validation_dataset is not None:
-            valid_generator = DataLoader(validation_dataset, **dataloader_kwargs)
+        if valid_dataset is not None:
+            valid_generator = DataLoader(valid_dataset, **dataloader_kwargs)
 
         return self.fit_generator(train_generator,
                                   valid_generator=valid_generator,
@@ -428,6 +442,12 @@ class Model:
         # pylint: disable=line-too-long
         """
         Trains the network on a dataset using a generator.
+
+        .. warning:: With **Jupyter Notebooks in Firefox**, if ``colorama`` is installed and colors are enabled (as it
+            is by default), a great number of epochs and steps per epoch can cause a spike in memory usage in Firefox.
+            The problem does not occur in Google Chrome/Chromium. To avoid this problem, you can disable the colors by
+            passing ``progress_options={'coloring': False}``. See
+            `this Github issue for details <https://github.com/jupyter/notebook/issues/5897>`__.
 
         Args:
             train_generator: Generator-like object for the training dataset. The generator must

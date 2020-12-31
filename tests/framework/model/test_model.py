@@ -1,4 +1,5 @@
-# pylint: disable=unused-argument,too-many-locals, too-many-lines
+# pylint: disable=unused-argument,too-many-locals,too-many-lines
+
 import warnings
 from collections import OrderedDict
 from math import ceil
@@ -1352,10 +1353,9 @@ class ModelDatasetMethodsTest(ModelFittingTestCase):
         self.assertEqual(type(pred_y), np.ndarray)
         self.assertEqual(type(true_y), np.ndarray)
         self.assertEqual(pred_y.shape, (num_steps * ModelTest.batch_size, 10))
-        self.assertEqual(true_y.shape, (num_steps * ModelTest.batch_size, ))
+        self.assertEqual(true_y.shape, (num_steps * ModelTest.batch_size,))
 
     def test_predict_dataset(self):
-
         class PredictDataset(Dataset):
 
             def __init__(self, dataset):

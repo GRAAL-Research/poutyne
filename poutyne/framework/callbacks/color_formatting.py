@@ -1,4 +1,5 @@
 import sys
+import math
 import warnings
 from typing import Dict, Union
 
@@ -174,7 +175,8 @@ class ColorProgress:
         self.progress_bar = True
 
     def _set_epoch_formatted_text(self, epoch_number: int, epochs: int) -> None:
-        self.epoch_formatted_text = f"\r{self.text_color}Epoch: {self.ratio_color}{epoch_number:d}/{epochs:d} "
+        digits = int(math.log10(epochs)) + 1
+        self.epoch_formatted_text = f"\r{self.text_color}Epoch: {self.ratio_color}{epoch_number:{digits}d}/{epochs:d} "
 
     def _get_formatted_epoch_total_time(self, epoch_total_time: float) -> str:
         return f"{self.time_color}{epoch_total_time:.2f}s "
@@ -190,7 +192,8 @@ class ColorProgress:
         if steps is None:
             formatted_step = f"{self.text_color}Step: {self.ratio_color}{batch_number:d} "
         else:
-            formatted_step = f"{self.text_color}Step: {self.ratio_color}{batch_number:d}/{steps:d} "
+            digits = int(math.log10(steps)) + 1
+            formatted_step = f"{self.text_color}Step: {self.ratio_color}{batch_number:{digits}d}/{steps:d} "
         return formatted_step
 
     def _get_formatted_metrics(self, metrics_str: str) -> str:
