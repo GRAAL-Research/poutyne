@@ -667,11 +667,6 @@ class Experiment:
             seed (int, optional): Seed used to make the sampling deterministic.
                 (Default value = 42)
             name (str): Prefix of the test log file. (Default value = 'test')
-            verbose (bool): Whether to display the progress of the training.
-                (Default value = True)
-            progress_options (dict, optional): Keyword arguments to pass to the default progression callback used
-                in Poutyne (See :class:`~poutyne.ProgressionCallback` for the available arguments).
-                (Default value = None, meaning default color setting and progress bar)
             kwargs: Any keyword arguments to pass to :func:`~Model.evaluate_generator()`.
 
         If the Experiment has logging enabled (i.e. self.logging is True), one callback will be automatically
