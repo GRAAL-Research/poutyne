@@ -5,7 +5,6 @@ from torchvision.datasets import MNIST
 from torchvision.transforms import ToTensor
 from poutyne import Experiment
 
-
 # Instanciate the MNIST dataset
 train_valid_dataset = MNIST('./datasets', train=True, download=True, transform=ToTensor())
 test_dataset = MNIST('./datasets', train=False, download=True, transform=ToTensor())
@@ -17,18 +16,14 @@ cuda_device = 0
 device = torch.device('cuda:%d' % cuda_device if torch.cuda.is_available() else 'cpu')
 
 # Define the network
-network = nn.Sequential(
-    nn.Flatten(),
-    nn.Linear(28*28, 100),
-    nn.ReLU(),
-    nn.Linear(100, 10)
-)
+network = nn.Sequential(nn.Flatten(), nn.Linear(28 * 28, 100), nn.ReLU(), nn.Linear(100, 10))
 epochs = 5
 
 # Define the Experiment and train
-experiment = Experiment('./simple_model', # Where to log
-                        network,
-                        optimizer='sgd',
-                        loss_function='cross_entropy',
-                        device=device)
+experiment = Experiment(
+    './simple_model',  # Where to log
+    network,
+    optimizer='sgd',
+    loss_function='cross_entropy',
+    device=device)
 experiment.train_dataset(train_dataset, valid_dataset, epochs=epochs)

@@ -16,13 +16,9 @@ cuda_device = 0
 device = torch.device('cuda:%d' % cuda_device if torch.cuda.is_available() else 'cpu')
 
 # Define the network
-network = nn.Sequential(
-    nn.Flatten(),
-    nn.Linear(28*28, 100),
-    nn.ReLU(),
-    nn.Linear(100, 10)
-)
+network = nn.Sequential(nn.Flatten(), nn.Linear(28 * 28, 100), nn.ReLU(), nn.Linear(100, 10))
 epochs = 5
+
 
 # Creating a batch metric for the accuracy
 def my_accuracy(y_pred, y_true):
@@ -30,8 +26,10 @@ def my_accuracy(y_pred, y_true):
     acc_pred = (y_pred == y_true).float().mean()
     return acc_pred * 100
 
+
 # Creating an epoch metric for the accuracy
 class MyEpochMetricAccuracy(EpochMetric):
+
     def __init__(self):
         super().__init__()
         self.reset()
@@ -51,8 +49,11 @@ class MyEpochMetricAccuracy(EpochMetric):
         self.num_true_positives = 0
         self.total_exemples = 0
 
+
 # Define the Model and train with our custom metrics
-model = Model(network, 'sgd', 'cross_entropy',
+model = Model(network,
+              'sgd',
+              'cross_entropy',
               batch_metrics=[my_accuracy],
               epoch_metrics=[MyEpochMetricAccuracy()],
               device=device)
