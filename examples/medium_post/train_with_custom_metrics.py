@@ -24,29 +24,34 @@ network = nn.Sequential(
 )
 epochs = 5
 
+# Creating a batch metric for the accuracy
 def my_accuracy(y_pred, y_true):
     y_pred = y_pred.argmax(1)
     acc_pred = (y_pred == y_true).float().mean()
     return acc_pred * 100
 
+# Creating an epoch metric for the accuracy
 class MyEpochMetricAccuracy(EpochMetric):
     def __init__(self):
         super().__init__()
         self.reset()
 
     def forward(self, y_pred, y_true) -> None:
+        # Increment the number of true positives and the total number of elemnts
         y_pred = y_pred.argmax(1)
         self.num_true_positives += (y_pred == y_true).long().sum().item()
         self.total_exemples += y_true.numel()
 
     def get_metric(self):
+        # Compute the epoch metric with the numbers computed in forward
         return self.num_true_positives / self.total_exemples * 100
 
     def reset(self) -> None:
+        # Reset the statistics for another epoch
         self.num_true_positives = 0
         self.total_exemples = 0
 
-# Define the Model and train
+# Define the Model and train with our custom metrics
 model = Model(network, 'sgd', 'cross_entropy',
               batch_metrics=[my_accuracy],
               epoch_metrics=[MyEpochMetricAccuracy()],
