@@ -16,7 +16,12 @@ cuda_device = 0
 device = torch.device('cuda:%d' % cuda_device if torch.cuda.is_available() else 'cpu')
 
 # Define the network
-network = nn.Sequential(nn.Flatten(), nn.Linear(28 * 28, 100), nn.ReLU(), nn.Linear(100, 10))
+network = nn.Sequential(
+    nn.Flatten(),
+    nn.Linear(28 * 28, 100),
+    nn.ReLU(),
+    nn.Linear(100, 10)
+)
 epochs = 5
 
 # Define the Model and train

@@ -25,5 +25,6 @@ experiment = Experiment(
     network,
     optimizer='sgd',
     loss_function='cross_entropy',
-    device=device)
+    device=device
+)
 experiment.train_dataset(train_dataset, valid_dataset, epochs=epochs)

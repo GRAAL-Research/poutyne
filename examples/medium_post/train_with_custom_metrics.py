@@ -51,9 +51,7 @@ class MyEpochMetricAccuracy(EpochMetric):
 
 
 # Define the Model and train with our custom metrics
-model = Model(network,
-              'sgd',
-              'cross_entropy',
+model = Model(network, 'sgd', 'cross_entropy',
               batch_metrics=[my_accuracy],
               epoch_metrics=[MyEpochMetricAccuracy()],
               device=device)
