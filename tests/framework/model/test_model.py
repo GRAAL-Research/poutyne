@@ -949,7 +949,8 @@ class ModelTest(ModelFittingTestCase):
         result_log = self.model.evaluate_generator(generator,
                                                    steps=num_steps,
                                                    return_pred=True,
-                                                   callbacks=[self.mock_callback])
+                                                   callbacks=[self.mock_callback],
+                                                   return_dict_format=True)
 
         params = {'steps': ModelTest.epochs}
         self._test_callbacks_test(params, result_log)
@@ -1335,7 +1336,8 @@ class ModelDatasetMethodsTest(ModelFittingTestCase):
                                                  batch_size=ModelTest.batch_size,
                                                  steps=num_steps,
                                                  return_pred=True,
-                                                 callbacks=[self.mock_callback])
+                                                 callbacks=[self.mock_callback],
+                                                 return_dict_format=True)
 
         params = {'steps': ModelTest.epochs}
         self._test_callbacks_test(params, result_log)

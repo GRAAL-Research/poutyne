@@ -91,7 +91,13 @@ class ProgressionCallback(Callback):
             self.last_step = batch_number
 
     def on_test_end(self, logs: Dict) -> None:
-        print("")  # To clean the sys.stdout end
+        test_total_time = logs['time']
+
+        metrics_str = self._get_metrics_string(logs)
+        if self.steps is not None:
+            self.color_progress.on_test_end(test_total_time, self.steps, metrics_str)
+        else:
+            self.color_progress.on_test_end(test_total_time, self.last_step, metrics_str)
 
     def _get_metrics_string(self, logs: Dict):
         train_metrics_str_gen = ('{}: {:f}'.format(k, logs[k]) for k in self.metrics if logs.get(k) is not None)

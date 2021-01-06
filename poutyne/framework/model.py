@@ -1,18 +1,19 @@
 # pylint: disable=too-many-lines,too-many-public-methods
 import contextlib
 import numbers
+import timeit
 import warnings
 from collections import defaultdict
-from typing import Iterable, Mapping, List, Union
+from typing import Iterable, Mapping, List, Union, Tuple, Dict
 
 import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
 from poutyne import torch_to_numpy, numpy_to_torch, torch_to
-from .metrics import get_epoch_metric
 from .callbacks import CallbackList, ProgressionCallback, Callback
 from .iterators import EpochIterator, _get_step_iterator, StepIterator
+from .metrics import get_epoch_metric
 from .metrics import get_loss_or_metric, get_callables_and_names, rename_doubles, flatten_metric_names
 from .optimizers import get_optimizer
 from .warning_manager import warning_settings
@@ -896,6 +897,7 @@ class Model:
                          steps=None,
                          return_pred=False,
                          return_ground_truth=False,
+                         return_dict_format=False,
                          concatenate_returns=True,
                          callbacks=None,
                          num_workers=0,
@@ -916,6 +918,8 @@ class Model:
             return_pred (bool, optional): Whether to return the predictions.
                 (Default value = False)
             return_ground_truth (bool, optional): Whether to return the ground truths.
+                (Default value = False)
+            return_dict_format (bool, optional): Whether to return the res in a dict format or not.
                 (Default value = False)
             concatenate_returns (bool, optional): Whether to concatenate the predictions
                 or the ground truths when returning them. (Default value = True)
@@ -965,6 +969,7 @@ class Model:
                                        steps=steps,
                                        return_pred=return_pred,
                                        return_ground_truth=return_ground_truth,
+                                       return_dict_format=return_dict_format,
                                        concatenate_returns=concatenate_returns,
                                        callbacks=callbacks,
                                        verbose=verbose,
@@ -976,6 +981,7 @@ class Model:
                            steps=None,
                            return_pred=False,
                            return_ground_truth=False,
+                           return_dict_format=False,
                            concatenate_returns=True,
                            verbose=True,
                            progress_options: Union[dict, None] = None,
@@ -993,6 +999,8 @@ class Model:
             return_pred (bool, optional): Whether to return the predictions.
                 (Default value = False)
             return_ground_truth (bool, optional): Whether to return the ground truths.
+                (Default value = False)
+            return_dict_format (bool, optional): Whether to return the res in a dict format or not.
                 (Default value = False)
             concatenate_returns (bool, optional): Whether to concatenate the predictions
                 or the ground truths when returning them. (Default value = True)
@@ -1090,9 +1098,12 @@ class Model:
 
         step_iterator = StepIterator(generator, steps, self.batch_metrics_names, callback_list, mode="test")
 
+        test_begin_time = timeit.default_timer()
         loss, batch_metrics, pred_y, true_y = self._validate(step_iterator,
                                                              return_pred=return_pred,
                                                              return_ground_truth=return_ground_truth)
+        test_total_time = timeit.default_timer() - test_begin_time
+
         epoch_metrics = self._get_epoch_metrics()
         metrics = np.concatenate((batch_metrics, epoch_metrics))
 
@@ -1103,8 +1114,13 @@ class Model:
 
         res = self._format_return(loss, metrics, pred_y, return_pred, true_y, return_ground_truth)
 
-        callback_list.on_test_end(res)
+        # we need it for the on_test_end for the last print update for progress
+        test_metrics_dict = self._format_res_in_dict(res, test_total_time)
 
+        callback_list.on_test_end(test_metrics_dict)
+
+        if return_dict_format:
+            res = test_metrics_dict
         return res
 
     def evaluate_on_batch(self, x, y, *, return_pred=False):
@@ -1505,3 +1521,23 @@ class Model:
                 metric.to(self.device)
 
         return self
+
+    def _format_res_in_dict(self, res: Union[Tuple, float], test_total_time: float) -> Dict:
+        """
+        Format an evaluate res into a dict of results.
+        """
+        if len(self.metrics_names) > 0:
+            test_loss, test_metrics = res[0], res[1]
+            if not isinstance(test_metrics, np.ndarray):
+                test_metrics = np.array([test_metrics])
+        else:
+            if isinstance(res, float):
+                test_loss = res
+            else:
+                test_loss = res[0]
+            test_metrics = np.array([])
+        test_metrics_names = ['test_loss'] + ['time'] + \
+                             ['test_' + metric_name for metric_name in self.metrics_names]
+        test_metrics_values = np.concatenate(([test_loss, test_total_time], test_metrics))
+
+        return dict(zip(test_metrics_names, test_metrics_values))
