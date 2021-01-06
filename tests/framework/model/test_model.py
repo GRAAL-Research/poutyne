@@ -946,14 +946,10 @@ class ModelTest(ModelFittingTestCase):
     def test_evaluate_generator_with_callback(self):
         num_steps = 10
         generator = some_data_tensor_generator(ModelTest.batch_size)
-        result_log = self.model.evaluate_generator(generator,
-                                                   steps=num_steps,
-                                                   return_pred=True,
-                                                   callbacks=[self.mock_callback],
-                                                   return_dict_format=True)
+        _ = self.model.evaluate_generator(generator, steps=num_steps, return_pred=True, callbacks=[self.mock_callback])
 
         params = {'steps': ModelTest.epochs}
-        self._test_callbacks_test(params, result_log)
+        self._test_callbacks_test(params)
 
     def test_evaluate_generator_with_callback_and_progress_bar_coloring(self):
         num_steps = 10
@@ -1332,15 +1328,14 @@ class ModelDatasetMethodsTest(ModelFittingTestCase):
 
     def test_evaluate_dataset_with_callback(self):
         num_steps = 10
-        result_log = self.model.evaluate_dataset(self.test_dataset,
-                                                 batch_size=ModelTest.batch_size,
-                                                 steps=num_steps,
-                                                 return_pred=True,
-                                                 callbacks=[self.mock_callback],
-                                                 return_dict_format=True)
+        _ = self.model.evaluate_dataset(self.test_dataset,
+                                        batch_size=ModelTest.batch_size,
+                                        steps=num_steps,
+                                        return_pred=True,
+                                        callbacks=[self.mock_callback])
 
         params = {'steps': ModelTest.epochs}
-        self._test_callbacks_test(params, result_log)
+        self._test_callbacks_test(params)
 
     def test_evaluate_dataset_with_ground_truth(self):
         num_steps = 10
