@@ -70,7 +70,11 @@ class ModelFittingTestCase(TestCase):
         self.assertEqual(method_calls[2:], call_list)
 
     def _test_callbacks_test(self, params, result_log):
-        test_batch_dict = dict(zip(self.batch_metrics_names, self.batch_metrics_values), loss=ANY, time=ANY)
+        test_batch_dict = {"time": ANY, "test_loss": ANY}
+        test_batch_dict.update({
+            "test_" + metric_name: metric
+            for metric_name, metric in zip(self.batch_metrics_names, self.batch_metrics_values)
+        })
 
         call_list = []
         call_list.append(call.on_test_begin({}))

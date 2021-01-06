@@ -97,7 +97,9 @@ class ProgressionCallback(Callback):
         train_metrics_str_gen = ('{}: {:f}'.format(k, logs[k]) for k in self.metrics if logs.get(k) is not None)
         val_metrics_str_gen = ('{}: {:f}'.format('val_' + k, logs['val_' + k]) for k in self.metrics
                                if logs.get('val_' + k) is not None)
-        return ', '.join(itertools.chain(train_metrics_str_gen, val_metrics_str_gen))
+        test_metrics_str_gen = ('{}: {:f}'.format('test_' + k, logs['test_' + k]) for k in self.metrics
+                                if logs.get('test_' + k) is not None)
+        return ', '.join(itertools.chain(train_metrics_str_gen, val_metrics_str_gen, test_metrics_str_gen))
 
     def _compute_step_times_rate(self, batch_number: int, logs: Dict):
         if self.equal_weights:

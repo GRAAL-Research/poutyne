@@ -1151,7 +1151,7 @@ class Model:
 
                 step.size = self.get_batch_size(x, y)
 
-        return step_iterator.loss, step_iterator.metrics, pred_list, true_list
+        return step_iterator.loss, step_iterator.batch_metrics, pred_list, true_list
 
     def _compute_loss_and_metrics(self, x, y, return_loss_tensor=False, return_pred=False):
         x, y = self.preprocess_input(x, y)
