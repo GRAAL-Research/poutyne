@@ -739,8 +739,6 @@ class Experiment:
         test_metrics_values = np.concatenate(([test_loss], test_metrics))
 
         test_metrics_dict = dict(zip(test_metrics_names, test_metrics_values))
-        test_metrics_str = ''.join('\n\t%s: %g' % (col, val) for col, val in test_metrics_dict.items())
-        print("On best model:%s" % test_metrics_str)
 
         if self.logging:
             test_stats = pd.DataFrame([test_metrics_values], columns=test_metrics_names)
