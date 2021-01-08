@@ -28,12 +28,13 @@ def _get_step_iterator(steps, generator):
 
 class StepIterator:
 
-    def __init__(self, generator, steps_per_epoch, batch_metrics_names, callback=None, mode=None):
+    def __init__(self, generator, steps_per_epoch, batch_metrics_names, epoch_metrics_names, callback=None, mode=None):
         # pylint: disable=too-many-arguments
         self.generator = generator
         self.steps_per_epoch = steps_per_epoch
         self.prefix = "" if mode == "train" else f"{mode}_"
         self.batch_metrics_names = [self.prefix + metric_name for metric_name in batch_metrics_names]
+        self.epoch_metrics_names = [self.prefix + metric_name for metric_name in epoch_metrics_names]
 
         self.on_batch_begin = lambda *_: None
         self.on_batch_end = lambda *_: None
@@ -51,12 +52,12 @@ class StepIterator:
         self.epoch_metrics = None
 
     @property
-    def metrics_step_log(self):
-        step_log = dict(zip(self.batch_metrics_names, self.batch_metrics))
+    def metrics_logs(self):
+        logs = dict(zip(self.batch_metrics_names, self.batch_metrics))
+        logs.update(dict(zip(self.epoch_metrics_names, self.epoch_metrics)))
 
-        step_log = {f'{self.prefix}loss': self.loss, **step_log}
-
-        return step_log
+        logs = {f'{self.prefix}loss': self.loss, **logs}
+        return logs
 
     @property
     def loss(self):
@@ -148,6 +149,7 @@ class EpochIterator:
             train_step_iterator = StepIterator(self.train_generator,
                                                self.steps_per_epoch,
                                                self.batch_metrics_names,
+                                               self.epoch_metrics_names,
                                                self.callback,
                                                mode="train")
 
@@ -156,27 +158,19 @@ class EpochIterator:
                 valid_step_iterator = StepIterator(self.valid_generator,
                                                    self.validation_steps,
                                                    self.batch_metrics_names,
+                                                   self.epoch_metrics_names,
                                                    mode="val")
 
             yield train_step_iterator, valid_step_iterator
 
-            val_metrics_log = {}
-            if valid_step_iterator is not None:
-                val_metrics_log = valid_step_iterator.metrics_step_log
-                val_metrics_log.update({
-                    'val_' + metric_name: metric
-                    for metric_name, metric in zip(self.epoch_metrics_names, valid_step_iterator.epoch_metrics)
-                })
-
             epoch_total_time = timeit.default_timer() - epoch_begin_time
-            train_metrics_log = train_step_iterator.metrics_step_log
-            train_metrics_log.update(dict(zip(self.epoch_metrics_names, train_step_iterator.epoch_metrics)))
 
+            val_metrics_log = {} if valid_step_iterator is None else valid_step_iterator.metrics_logs
             epoch_log = {
                 'epoch': epoch,
                 'loss': train_step_iterator.loss,
                 'time': epoch_total_time,
-                **train_metrics_log,
+                **train_step_iterator.metrics_logs,
                 **val_metrics_log
             }
             self.callback.on_epoch_end(epoch, epoch_log)

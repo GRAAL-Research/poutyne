@@ -1089,7 +1089,12 @@ class Model:
         callback_list.set_params({'steps': steps})
         callback_list.on_test_begin({})
 
-        step_iterator = StepIterator(generator, steps, self.batch_metrics_names, callback_list, mode="test")
+        step_iterator = StepIterator(generator,
+                                     steps,
+                                     self.batch_metrics_names,
+                                     self.epoch_metrics_names,
+                                     callback_list,
+                                     mode="test")
 
         test_begin_time = timeit.default_timer()
         loss, batch_metrics, pred_y, true_y = self._validate(step_iterator,
@@ -1097,20 +1102,18 @@ class Model:
                                                              return_ground_truth=return_ground_truth)
         test_total_time = timeit.default_timer() - test_begin_time
 
-        epoch_metrics = self._get_epoch_metrics()
-        metrics = np.concatenate((batch_metrics, epoch_metrics))
+        step_iterator.epoch_metrics = self._get_epoch_metrics()
 
         if return_pred and concatenate_returns:
             pred_y = _concat(pred_y)
         if return_ground_truth and concatenate_returns:
             true_y = _concat(true_y)
 
+        metrics = np.concatenate((batch_metrics, step_iterator.epoch_metrics))
         res = self._format_return(loss, metrics, pred_y, return_pred, true_y, return_ground_truth)
 
         test_metrics_log = {'time': test_total_time}
-        test_metrics_log.update(step_iterator.metrics_step_log)
-        test_epoch_metrics_names = ['test_' + epoch_metric_name for epoch_metric_name in self.epoch_metrics_names]
-        test_metrics_log.update(dict(zip(test_epoch_metrics_names, epoch_metrics)))
+        test_metrics_log.update(step_iterator.metrics_logs)
 
         callback_list.on_test_end(test_metrics_log)
 
