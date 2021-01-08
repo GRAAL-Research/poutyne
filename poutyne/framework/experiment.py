@@ -2,8 +2,6 @@ import os
 import warnings
 from typing import Union, Callable, List, Dict, Tuple
 
-import numpy as np
-
 try:
     import pandas as pd
 except ImportError:
