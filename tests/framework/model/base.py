@@ -81,6 +81,11 @@ class ModelFittingTestCase(TestCase):
         for batch in range(1, params['steps'] + 1):
             call_list.append(call.on_test_batch_begin(batch, {}))
             call_list.append(call.on_test_batch_end(batch, {'batch': batch, 'size': ANY, **test_batch_dict}))
+
+        test_batch_dict.update({
+            "test_" + metric_name: metric
+            for metric_name, metric in zip(self.epoch_metrics_names, self.epoch_metrics_values)
+        })
         call_list.append(call.on_test_end({"time": ANY, "test_loss": ANY, **test_batch_dict}))
 
         method_calls = self.mock_callback.method_calls

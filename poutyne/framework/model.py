@@ -1109,6 +1109,8 @@ class Model:
 
         test_metrics_log = {'time': test_total_time}
         test_metrics_log.update(step_iterator.metrics_step_log)
+        test_epoch_metrics_names = ['test_' + epoch_metric_name for epoch_metric_name in self.epoch_metrics_names]
+        test_metrics_log.update(dict(zip(test_epoch_metrics_names, epoch_metrics)))
 
         callback_list.on_test_end(test_metrics_log)
 
