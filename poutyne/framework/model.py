@@ -879,6 +879,9 @@ class Model:
             If ``return_pred`` is True, ``pred_y`` is the list of the predictions
             of each batch with tensors converted into Numpy arrays. It is otherwise omitted.
 
+            If ``return_dict_format`` is True, then ``loss, metrics`` are replaced by a
+            dictionnary as passed to :func:`~poutyne.Callback.on_test_end()`.
+
         """
         if dataloader_kwargs is None:
             dataloader_kwargs = {}
@@ -955,6 +958,9 @@ class Model:
 
             If ``return_pred`` is True, ``pred_y`` is the list of the predictions
             of each batch with tensors converted into Numpy arrays. It is otherwise omitted.
+
+            If ``return_dict_format`` is True, then ``loss, metrics`` are replaced by a
+            dictionnary as passed to :func:`~poutyne.Callback.on_test_end()`.
 
         See:
             :class:`~torch.utils.data.DataLoader` for details on ``batch_size``, ``num_workers`` and ``collate_fn``.
@@ -1035,6 +1041,7 @@ class Model:
 
             If ``return_dict_format`` is True, then ``loss, metrics`` are replaced by a
             dictionnary as passed to :func:`~poutyne.Callback.on_test_end()`.
+
         Example:
             With no metrics:
 
