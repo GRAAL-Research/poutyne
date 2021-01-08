@@ -720,28 +720,20 @@ class Experiment:
               **kwargs) -> Dict:
         if kwargs.get('return_ground_truth') is True or kwargs.get('return_pred') is True:
             raise ValueError("This method does not return predictions or ground truth data.")
+        if kwargs.get('return_dict_format') is False:
+            raise ValueError("This method return a dict.")
+        kwargs['return_dict_format'] = True
 
         set_seeds(seed)
 
         if self.logging:
             best_epoch_stats = self.load_checkpoint(checkpoint, verbose=True)
 
-        if len(self.model.metrics_names) > 0:
-            test_loss, test_metrics = evaluate_func(*args, **kwargs)
-            if not isinstance(test_metrics, np.ndarray):
-                test_metrics = np.array([test_metrics])
-        else:
-            test_loss = evaluate_func(*args, **kwargs)
-            test_metrics = np.array([])
-
-        test_metrics_names = ['test_loss'] + \
-                             ['test_' + metric_name for metric_name in self.model.metrics_names]
-        test_metrics_values = np.concatenate(([test_loss], test_metrics))
-
-        test_metrics_dict = dict(zip(test_metrics_names, test_metrics_values))
+        test_metrics_dict = evaluate_func(*args, **kwargs)
 
         if self.logging:
-            test_stats = pd.DataFrame([test_metrics_values], columns=test_metrics_names)
+            test_stats = pd.DataFrame([list(test_metrics_dict.values())], columns=list(test_metrics_dict.keys()))
+            test_stats.drop(['time'], axis=1, inplace=True)
             if best_epoch_stats is not None:
                 best_epoch_stats = best_epoch_stats.reset_index(drop=True)
                 test_stats = best_epoch_stats.join(test_stats)
