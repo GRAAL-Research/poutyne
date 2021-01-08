@@ -832,6 +832,7 @@ class Model:
                  *,
                  batch_size=32,
                  return_pred=False,
+                 return_dict_format=False,
                  callbacks=None,
                  verbose=True,
                  progress_options: Union[dict, None] = None,
@@ -851,6 +852,8 @@ class Model:
             batch_size (int): Number of samples given to the network at one time.
                 (Default value = 32)
             return_pred (bool, optional): Whether to return the predictions.
+                (Default value = False)
+            return_dict_format (bool, optional): Whether to return the loss and metrics in a dict format or not.
                 (Default value = False)
             callbacks (List[~poutyne.Callback]): List of callbacks that will be called during
                 testing. (Default value = None)
@@ -885,6 +888,7 @@ class Model:
         return self.evaluate_generator(generator,
                                        steps=len(generator),
                                        return_pred=return_pred,
+                                       return_dict_format=return_dict_format,
                                        concatenate_returns=True,
                                        callbacks=callbacks,
                                        verbose=verbose,
@@ -897,6 +901,7 @@ class Model:
                          steps=None,
                          return_pred=False,
                          return_ground_truth=False,
+                         return_dict_format=False,
                          concatenate_returns=True,
                          callbacks=None,
                          num_workers=0,
@@ -917,6 +922,8 @@ class Model:
             return_pred (bool, optional): Whether to return the predictions.
                 (Default value = False)
             return_ground_truth (bool, optional): Whether to return the ground truths.
+                (Default value = False)
+            return_dict_format (bool, optional): Whether to return the loss and metrics in a dict format or not.
                 (Default value = False)
             concatenate_returns (bool, optional): Whether to concatenate the predictions
                 or the ground truths when returning them. (Default value = True)
@@ -966,6 +973,7 @@ class Model:
                                        steps=steps,
                                        return_pred=return_pred,
                                        return_ground_truth=return_ground_truth,
+                                       return_dict_format=return_dict_format,
                                        concatenate_returns=concatenate_returns,
                                        callbacks=callbacks,
                                        verbose=verbose,
@@ -977,6 +985,7 @@ class Model:
                            steps=None,
                            return_pred=False,
                            return_ground_truth=False,
+                           return_dict_format=False,
                            concatenate_returns=True,
                            verbose=True,
                            progress_options: Union[dict, None] = None,
@@ -994,6 +1003,8 @@ class Model:
             return_pred (bool, optional): Whether to return the predictions.
                 (Default value = False)
             return_ground_truth (bool, optional): Whether to return the ground truths.
+                (Default value = False)
+            return_dict_format (bool, optional): Whether to return the loss and metrics in a dict format or not.
                 (Default value = False)
             concatenate_returns (bool, optional): Whether to concatenate the predictions
                 or the ground truths when returning them. (Default value = True)
@@ -1021,6 +1032,9 @@ class Model:
 
             If ``return_ground_truth`` is True, ``true_y`` is the ground truths returned
             as in the :func:`predict_generator()` method. It is otherwise ommited.
+
+            If ``return_dict_format`` is True, then ``loss, metrics`` are replaced by a
+            dictionnary as passed to :func:`~poutyne.Callback.on_test_end()`.
         Example:
             With no metrics:
 
@@ -1073,6 +1087,14 @@ class Model:
                 loss, (my_metric1, my_metric2), pred_y, true_y = model.evaluate_generator(
                     test_generator, return_pred=True, return_ground_truth=True
                 )
+
+            With ``return_dict_format``:
+
+            .. code-block:: python
+
+                model = Model(pytorch_network, optimizer, loss_function,
+                              batch_metrics=[my_metric_fn])
+                logs = model.evaluate_generator(test_generator, return_dict_format=True)
         """
         callbacks = [] if callbacks is None else callbacks
 
@@ -1109,15 +1131,16 @@ class Model:
         if return_ground_truth and concatenate_returns:
             true_y = _concat(true_y)
 
-        metrics = np.concatenate((batch_metrics, step_iterator.epoch_metrics))
-        res = self._format_return(loss, metrics, pred_y, return_pred, true_y, return_ground_truth)
-
         test_metrics_log = {'time': test_total_time}
         test_metrics_log.update(step_iterator.metrics_logs)
 
         callback_list.on_test_end(test_metrics_log)
 
-        return res
+        if return_dict_format:
+            return test_metrics_log
+
+        metrics = np.concatenate((batch_metrics, step_iterator.epoch_metrics))
+        return self._format_return(loss, metrics, pred_y, return_pred, true_y, return_ground_truth)
 
     def evaluate_on_batch(self, x, y, *, return_pred=False):
         """

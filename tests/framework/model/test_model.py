@@ -891,6 +891,21 @@ class ModelTest(ModelFittingTestCase):
                                            callbacks=[self.mock_callback])
         self.assertEqual(pred_y.shape, (ModelTest.evaluate_dataset_len, 1))
 
+    def test_evaluate_with_return_dict(self):
+        x = torch.rand(ModelTest.evaluate_dataset_len, 1)
+        y = torch.rand(ModelTest.evaluate_dataset_len, 1)
+        logs = self.model.evaluate(x, y, batch_size=ModelTest.batch_size, return_dict_format=True)
+        test_logs = {"time": ANY, "test_loss": ANY}
+        test_logs.update({
+            "test_" + metric_name: metric
+            for metric_name, metric in zip(self.batch_metrics_names, self.batch_metrics_values)
+        })
+        test_logs.update({
+            "test_" + metric_name: metric
+            for metric_name, metric in zip(self.epoch_metrics_names, self.epoch_metrics_values)
+        })
+        self.assertEqual(logs, test_logs)
+
     def test_evaluate_with_np_array(self):
         x = np.random.rand(ModelTest.evaluate_dataset_len, 1).astype(np.float32)
         y = np.random.rand(ModelTest.evaluate_dataset_len, 1).astype(np.float32)
@@ -946,10 +961,25 @@ class ModelTest(ModelFittingTestCase):
     def test_evaluate_generator_with_callback(self):
         num_steps = 10
         generator = some_data_tensor_generator(ModelTest.batch_size)
-        _ = self.model.evaluate_generator(generator, steps=num_steps, return_pred=True, callbacks=[self.mock_callback])
+        self.model.evaluate_generator(generator, steps=num_steps, callbacks=[self.mock_callback])
 
         params = {'steps': ModelTest.epochs}
         self._test_callbacks_test(params)
+
+    def test_evaluate_generator_with_return_dict(self):
+        num_steps = 10
+        generator = some_data_tensor_generator(ModelTest.batch_size)
+        logs = self.model.evaluate_generator(generator, steps=num_steps, return_dict_format=True)
+        test_logs = {"time": ANY, "test_loss": ANY}
+        test_logs.update({
+            "test_" + metric_name: metric
+            for metric_name, metric in zip(self.batch_metrics_names, self.batch_metrics_values)
+        })
+        test_logs.update({
+            "test_" + metric_name: metric
+            for metric_name, metric in zip(self.epoch_metrics_names, self.epoch_metrics_values)
+        })
+        self.assertEqual(logs, test_logs)
 
     def test_evaluate_generator_with_callback_and_progress_bar_coloring(self):
         num_steps = 10
@@ -1320,22 +1350,35 @@ class ModelDatasetMethodsTest(ModelFittingTestCase):
         num_steps = 10
         self._capture_output()
 
-        _, _, _ = self.model.evaluate_dataset(self.test_dataset,
-                                              batch_size=ModelTest.batch_size,
-                                              steps=num_steps,
-                                              return_pred=True)
+        self.model.evaluate_dataset(self.test_dataset, batch_size=ModelTest.batch_size, steps=num_steps)
         self.assertStdoutContains(["%", "[32m", "[35m", "[36m", "[94m", "\u2588"])
 
     def test_evaluate_dataset_with_callback(self):
         num_steps = 10
-        _ = self.model.evaluate_dataset(self.test_dataset,
-                                        batch_size=ModelTest.batch_size,
-                                        steps=num_steps,
-                                        return_pred=True,
-                                        callbacks=[self.mock_callback])
+        self.model.evaluate_dataset(self.test_dataset,
+                                    batch_size=ModelTest.batch_size,
+                                    steps=num_steps,
+                                    callbacks=[self.mock_callback])
 
         params = {'steps': ModelTest.epochs}
         self._test_callbacks_test(params)
+
+    def test_evaluate_dataset_with_return_dict(self):
+        num_steps = 10
+        logs = self.model.evaluate_dataset(self.test_dataset,
+                                           batch_size=ModelTest.batch_size,
+                                           steps=num_steps,
+                                           return_dict_format=True)
+        test_logs = {"time": ANY, "test_loss": ANY}
+        test_logs.update({
+            "test_" + metric_name: metric
+            for metric_name, metric in zip(self.batch_metrics_names, self.batch_metrics_values)
+        })
+        test_logs.update({
+            "test_" + metric_name: metric
+            for metric_name, metric in zip(self.epoch_metrics_names, self.epoch_metrics_values)
+        })
+        self.assertEqual(logs, test_logs)
 
     def test_evaluate_dataset_with_ground_truth(self):
         num_steps = 10
