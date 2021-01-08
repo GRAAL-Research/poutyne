@@ -95,6 +95,18 @@ class ModelFittingTestCase(TestCase):
         self.assertEqual(len(method_calls), len(call_list) + 2)  # for set_model and set param
         self.assertEqual(method_calls[2:], call_list)
 
+    def _test_return_dict_logs(self, logs):
+        test_logs = {"time": ANY, "test_loss": ANY}
+        test_logs.update({
+            "test_" + metric_name: metric
+            for metric_name, metric in zip(self.batch_metrics_names, self.batch_metrics_values)
+        })
+        test_logs.update({
+            "test_" + metric_name: metric
+            for metric_name, metric in zip(self.epoch_metrics_names, self.epoch_metrics_values)
+        })
+        self.assertEqual(logs, test_logs)
+
     def _test_size_and_type_for_generator(self, pred_y, expected_size):
         if isinstance(pred_y, (list, tuple)):
             for o in pred_y:
