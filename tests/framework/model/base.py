@@ -1,6 +1,8 @@
 # abstract-method because nn.Module has the abstract method _forward_unimplemented
 # pylint: disable=too-many-locals,abstract-method
+import io
 import os
+import sys
 from unittest import TestCase
 from unittest.mock import MagicMock, call, ANY
 
@@ -67,21 +69,43 @@ class ModelFittingTestCase(TestCase):
         self.assertEqual(len(method_calls), len(call_list) + 2)  # for set_model and set param
         self.assertEqual(method_calls[2:], call_list)
 
-    def _test_callbacks_test(self, params, result_log):
-        test_batch_dict = dict(zip(self.batch_metrics_names, self.batch_metrics_values), loss=ANY, time=ANY)
+    def _test_callbacks_test(self, params):
+        test_batch_dict = {"time": ANY, "test_loss": ANY}
+        test_batch_dict.update({
+            "test_" + metric_name: metric
+            for metric_name, metric in zip(self.batch_metrics_names, self.batch_metrics_values)
+        })
 
         call_list = []
         call_list.append(call.on_test_begin({}))
-        for batch in range(1, params['batch'] + 1):
+        for batch in range(1, params['steps'] + 1):
             call_list.append(call.on_test_batch_begin(batch, {}))
             call_list.append(call.on_test_batch_end(batch, {'batch': batch, 'size': ANY, **test_batch_dict}))
-        call_list.append(call.on_test_end(result_log))
+
+        test_batch_dict.update({
+            "test_" + metric_name: metric
+            for metric_name, metric in zip(self.epoch_metrics_names, self.epoch_metrics_values)
+        })
+        call_list.append(call.on_test_end({"time": ANY, "test_loss": ANY, **test_batch_dict}))
 
         method_calls = self.mock_callback.method_calls
-        self.assertEqual(call.set_model(self.model), method_calls[0])  # skip set_model
+        self.assertEqual(call.set_model(self.model), method_calls[0])  # skip set_model and set param call
+        self.assertEqual(call.set_params(params), method_calls[1])
 
-        self.assertEqual(len(method_calls), len(call_list) + 1)  # for set_model
-        self.assertEqual(method_calls[1:], call_list)
+        self.assertEqual(len(method_calls), len(call_list) + 2)  # for set_model and set param
+        self.assertEqual(method_calls[2:], call_list)
+
+    def _test_return_dict_logs(self, logs):
+        test_logs = {"time": ANY, "test_loss": ANY}
+        test_logs.update({
+            "test_" + metric_name: metric
+            for metric_name, metric in zip(self.batch_metrics_names, self.batch_metrics_values)
+        })
+        test_logs.update({
+            "test_" + metric_name: metric
+            for metric_name, metric in zip(self.epoch_metrics_names, self.epoch_metrics_values)
+        })
+        self.assertEqual(logs, test_logs)
 
     def _test_size_and_type_for_generator(self, pred_y, expected_size):
         if isinstance(pred_y, (list, tuple)):
@@ -97,6 +121,11 @@ class ModelFittingTestCase(TestCase):
     def _test_device(self, device):
         for p in self.pytorch_network.parameters():
             self.assertEqual(p.device, device)
+
+    def _capture_output(self):
+        self.test_out = io.StringIO()
+        self.original_output = sys.stdout
+        sys.stdout = self.test_out
 
 
 class MultiIOModel(nn.Module):

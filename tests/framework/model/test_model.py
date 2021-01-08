@@ -1,6 +1,5 @@
 # pylint: disable=unused-argument,too-many-locals,too-many-lines
-import io
-import sys
+
 import warnings
 from collections import OrderedDict
 from math import ceil
@@ -212,10 +211,7 @@ class ModelTest(ModelFittingTestCase):
         train_generator = some_data_tensor_generator(ModelTest.batch_size)
         valid_generator = some_data_tensor_generator(ModelTest.batch_size)
 
-        # Capture the output
-        self.test_out = io.StringIO()
-        self.original_output = sys.stdout
-        sys.stdout = self.test_out
+        self._capture_output()
 
         _ = self.model.fit_generator(train_generator,
                                      valid_generator,
@@ -231,10 +227,7 @@ class ModelTest(ModelFittingTestCase):
         train_generator = some_data_tensor_generator(ModelTest.batch_size)
         valid_generator = some_data_tensor_generator(ModelTest.batch_size)
 
-        # Capture the output
-        self.test_out = io.StringIO()
-        self.original_output = sys.stdout
-        sys.stdout = self.test_out
+        self._capture_output()
 
         coloring = {
             "text_color": 'BLACK',
@@ -258,10 +251,7 @@ class ModelTest(ModelFittingTestCase):
         train_generator = some_data_tensor_generator(ModelTest.batch_size)
         valid_generator = some_data_tensor_generator(ModelTest.batch_size)
 
-        # Capture the output
-        self.test_out = io.StringIO()
-        self.original_output = sys.stdout
-        sys.stdout = self.test_out
+        self._capture_output()
 
         _ = self.model.fit_generator(train_generator,
                                      valid_generator,
@@ -280,10 +270,8 @@ class ModelTest(ModelFittingTestCase):
         train_generator = some_data_tensor_generator(ModelTest.batch_size)
         valid_generator = some_data_tensor_generator(ModelTest.batch_size)
 
-        # Capture the output
-        self.test_out = io.StringIO()
-        self.original_output = sys.stdout
-        sys.stdout = self.test_out
+        self._capture_output()
+
         with self.assertRaises(KeyError):
             _ = self.model.fit_generator(train_generator,
                                          valid_generator,
@@ -297,10 +285,7 @@ class ModelTest(ModelFittingTestCase):
         train_generator = some_data_tensor_generator(ModelTest.batch_size)
         valid_generator = some_data_tensor_generator(ModelTest.batch_size)
 
-        # Capture the output
-        self.test_out = io.StringIO()
-        self.original_output = sys.stdout
-        sys.stdout = self.test_out
+        self._capture_output()
 
         _ = self.model.fit_generator(train_generator,
                                      valid_generator,
@@ -317,10 +302,7 @@ class ModelTest(ModelFittingTestCase):
         train_generator = some_data_tensor_generator(ModelTest.batch_size)
         valid_generator = some_data_tensor_generator(ModelTest.batch_size)
 
-        # Capture the output
-        self.test_out = io.StringIO()
-        self.original_output = sys.stdout
-        sys.stdout = self.test_out
+        self._capture_output()
 
         _ = self.model.fit_generator(train_generator,
                                      valid_generator,
@@ -337,10 +319,7 @@ class ModelTest(ModelFittingTestCase):
         train_generator = some_data_tensor_generator(ModelTest.batch_size)
         valid_generator = some_data_tensor_generator(ModelTest.batch_size)
 
-        # Capture the output
-        self.test_out = io.StringIO()
-        self.original_output = sys.stdout
-        sys.stdout = self.test_out
+        self._capture_output()
 
         coloring = {
             "text_color": 'BLACK',
@@ -363,10 +342,7 @@ class ModelTest(ModelFittingTestCase):
         train_generator = some_data_tensor_generator(ModelTest.batch_size)
         valid_generator = some_data_tensor_generator(ModelTest.batch_size)
 
-        # Capture the output
-        self.test_out = io.StringIO()
-        self.original_output = sys.stdout
-        sys.stdout = self.test_out
+        self._capture_output()
 
         _ = self.model.fit_generator(train_generator,
                                      valid_generator,
@@ -383,10 +359,7 @@ class ModelTest(ModelFittingTestCase):
         train_generator = some_data_tensor_generator(ModelTest.batch_size)
         valid_generator = some_data_tensor_generator(ModelTest.batch_size)
 
-        # Capture the output
-        self.test_out = io.StringIO()
-        self.original_output = sys.stdout
-        sys.stdout = self.test_out
+        self._capture_output()
 
         _ = self.model.fit_generator(train_generator,
                                      valid_generator,
@@ -403,10 +376,7 @@ class ModelTest(ModelFittingTestCase):
         train_generator = SomeDataGeneratorUsingStopIteration(ModelTest.batch_size, 10)
         valid_generator = SomeDataGeneratorUsingStopIteration(ModelTest.batch_size, 10)
 
-        # Capture the output
-        self.test_out = io.StringIO()
-        self.original_output = sys.stdout
-        sys.stdout = self.test_out
+        self._capture_output()
 
         _ = self.model.fit_generator(train_generator,
                                      valid_generator,
@@ -762,6 +732,147 @@ class ModelTest(ModelFittingTestCase):
         self.assertEqual(type(metrics), np.ndarray)
         self.assertEqual(metrics.tolist(), self.batch_metrics_values + self.epoch_metrics_values)
 
+    def test_evaluate_without_progress_output(self):
+        x = torch.rand(ModelTest.evaluate_dataset_len, 1)
+        y = torch.rand(ModelTest.evaluate_dataset_len, 1)
+
+        self._capture_output()
+
+        _, _ = self.model.evaluate(x, y, batch_size=ModelTest.batch_size, verbose=False)
+
+        self.assertStdoutNotContains(["[32m", "[35m", "[36m", "[94m"])
+
+    @skipIf(color is None, "Unable to import colorama")
+    def test_evaluate_with_default_coloring(self):
+        x = torch.rand(ModelTest.evaluate_dataset_len, 1)
+        y = torch.rand(ModelTest.evaluate_dataset_len, 1)
+
+        self._capture_output()
+
+        _, _ = self.model.evaluate(x, y, batch_size=ModelTest.batch_size)
+
+        self.assertStdoutContains(["[32m", "[35m", "[36m", "[94m"])
+
+    @skipIf(color is None, "Unable to import colorama")
+    def test_evaluate_with_user_coloring(self):
+        x = torch.rand(ModelTest.evaluate_dataset_len, 1)
+        y = torch.rand(ModelTest.evaluate_dataset_len, 1)
+
+        self._capture_output()
+
+        coloring = {
+            "text_color": 'BLACK',
+            "ratio_color": "BLACK",
+            "metric_value_color": "BLACK",
+            "time_color": "BLACK",
+            "progress_bar_color": "BLACK"
+        }
+
+        _, _ = self.model.evaluate(x, y, batch_size=ModelTest.batch_size, progress_options=dict(coloring=coloring))
+
+        self.assertStdoutContains(["[30m"])
+
+    @skipIf(color is None, "Unable to import colorama")
+    def test_evaluate_with_user_partial_coloring(self):
+        x = torch.rand(ModelTest.evaluate_dataset_len, 1)
+        y = torch.rand(ModelTest.evaluate_dataset_len, 1)
+
+        self._capture_output()
+
+        _, _ = self.model.evaluate(x,
+                                   y,
+                                   batch_size=ModelTest.batch_size,
+                                   progress_options=dict(coloring={
+                                       "text_color": 'BLACK',
+                                       "ratio_color": "BLACK"
+                                   }))
+        self.assertStdoutContains(["[30m", "[32m", "[35m", "[94m"])
+
+    def test_evaluate_with_user_coloring_invalid(self):
+        x = torch.rand(ModelTest.evaluate_dataset_len, 1)
+        y = torch.rand(ModelTest.evaluate_dataset_len, 1)
+
+        with self.assertRaises(KeyError):
+            _, _ = self.model.evaluate(x,
+                                       y,
+                                       batch_size=ModelTest.batch_size,
+                                       progress_options=dict(coloring={"invalid_name": 'A COLOR'}))
+
+    def test_evaluate_with_no_coloring(self):
+        x = torch.rand(ModelTest.evaluate_dataset_len, 1)
+        y = torch.rand(ModelTest.evaluate_dataset_len, 1)
+
+        self._capture_output()
+
+        _, _ = self.model.evaluate(x, y, batch_size=ModelTest.batch_size, progress_options=dict(coloring=False))
+
+        self.assertStdoutNotContains(["[32m", "[35m", "[36m", "[94m"])
+
+    @skipIf(color is None, "Unable to import colorama")
+    def test_evaluate_with_progress_bar_default_coloring(self):
+        x = torch.rand(ModelTest.evaluate_dataset_len, 1)
+        y = torch.rand(ModelTest.evaluate_dataset_len, 1)
+
+        self._capture_output()
+
+        _, _ = self.model.evaluate(x,
+                                   y,
+                                   batch_size=ModelTest.batch_size,
+                                   progress_options=dict(coloring=True, progress_bar=True))
+
+        self.assertStdoutContains(["%", "[32m", "[35m", "[36m", "[94m", "\u2588"])
+
+    @skipIf(color is None, "Unable to import colorama")
+    def test_evaluate_with_progress_bar_user_coloring(self):
+        x = torch.rand(ModelTest.evaluate_dataset_len, 1)
+        y = torch.rand(ModelTest.evaluate_dataset_len, 1)
+
+        self._capture_output()
+
+        coloring = {
+            "text_color": 'BLACK',
+            "ratio_color": "BLACK",
+            "metric_value_color": "BLACK",
+            "time_color": "BLACK",
+            "progress_bar_color": "BLACK"
+        }
+
+        _, _ = self.model.evaluate(x,
+                                   y,
+                                   batch_size=ModelTest.batch_size,
+                                   progress_options=dict(coloring=coloring, progress_bar=True))
+
+        self.assertStdoutContains(["%", "[30m", "\u2588"])
+
+    @skipIf(color is None, "Unable to import colorama")
+    def test_evaluate_with_progress_bar_user_no_color(self):
+        x = torch.rand(ModelTest.evaluate_dataset_len, 1)
+        y = torch.rand(ModelTest.evaluate_dataset_len, 1)
+
+        self._capture_output()
+
+        _, _ = self.model.evaluate(x,
+                                   y,
+                                   batch_size=ModelTest.batch_size,
+                                   progress_options=dict(coloring=False, progress_bar=True))
+
+        self.assertStdoutContains(["%", "\u2588"])
+        self.assertStdoutNotContains(["[32m", "[35m", "[36m", "[94m"])
+
+    def test_evaluate_with_no_progress_bar(self):
+        x = torch.rand(ModelTest.evaluate_dataset_len, 1)
+        y = torch.rand(ModelTest.evaluate_dataset_len, 1)
+
+        self._capture_output()
+
+        _, _ = self.model.evaluate(x,
+                                   y,
+                                   batch_size=ModelTest.batch_size,
+                                   progress_options=dict(coloring=False, progress_bar=False))
+
+        self.assertStdoutNotContains(["%", "\u2588"])
+        self.assertStdoutNotContains(["[32m", "[35m", "[36m", "[94m"])
+
     def test_evaluate_with_pred(self):
         x = torch.rand(ModelTest.evaluate_dataset_len, 1)
         y = torch.rand(ModelTest.evaluate_dataset_len, 1)
@@ -779,6 +890,13 @@ class ModelTest(ModelFittingTestCase):
                                            return_pred=True,
                                            callbacks=[self.mock_callback])
         self.assertEqual(pred_y.shape, (ModelTest.evaluate_dataset_len, 1))
+
+    def test_evaluate_with_return_dict(self):
+        x = torch.rand(ModelTest.evaluate_dataset_len, 1)
+        y = torch.rand(ModelTest.evaluate_dataset_len, 1)
+        logs = self.model.evaluate(x, y, batch_size=ModelTest.batch_size, return_dict_format=True)
+
+        self._test_return_dict_logs(logs)
 
     def test_evaluate_with_np_array(self):
         x = np.random.rand(ModelTest.evaluate_dataset_len, 1).astype(np.float32)
@@ -800,6 +918,18 @@ class ModelTest(ModelFittingTestCase):
         self.assertEqual(metrics.tolist(), self.batch_metrics_values + self.epoch_metrics_values)
         self.assertEqual(pred_y.shape, (ModelTest.evaluate_dataset_len, 1))
 
+    def test_evaluate_data_loader_with_progress_bar_coloring(self):
+        x = torch.rand(ModelTest.evaluate_dataset_len, 1)
+        y = torch.rand(ModelTest.evaluate_dataset_len, 1)
+        dataset = TensorDataset(x, y)
+        generator = DataLoader(dataset, ModelTest.batch_size)
+
+        self._capture_output()
+
+        _, _ = self.model.evaluate_generator(generator, verbose=True)
+
+        self.assertStdoutContains(["%", "[32m", "[35m", "[36m", "[94m", "\u2588"])
+
     def test_evaluate_generator(self):
         num_steps = 10
         generator = some_data_tensor_generator(ModelTest.batch_size)
@@ -810,16 +940,40 @@ class ModelTest(ModelFittingTestCase):
         self.assertEqual(type(pred_y), np.ndarray)
         self.assertEqual(pred_y.shape, (num_steps * ModelTest.batch_size, 1))
 
+    def test_evaluate_generator_with_progress_bar_coloring(self):
+        num_steps = 10
+        generator = some_data_tensor_generator(ModelTest.batch_size)
+
+        self._capture_output()
+
+        _, _ = self.model.evaluate_generator(generator, steps=num_steps, verbose=True)
+
+        self.assertStdoutContains(["%", "[32m", "[35m", "[36m", "[94m", "\u2588"])
+
     def test_evaluate_generator_with_callback(self):
         num_steps = 10
         generator = some_data_tensor_generator(ModelTest.batch_size)
-        result_log = self.model.evaluate_generator(generator,
-                                                   steps=num_steps,
-                                                   return_pred=True,
-                                                   callbacks=[self.mock_callback])
+        self.model.evaluate_generator(generator, steps=num_steps, callbacks=[self.mock_callback])
 
-        params = {'batch': ModelTest.epochs}
-        self._test_callbacks_test(params, result_log)
+        params = {'steps': ModelTest.epochs}
+        self._test_callbacks_test(params)
+
+    def test_evaluate_generator_with_return_dict(self):
+        num_steps = 10
+        generator = some_data_tensor_generator(ModelTest.batch_size)
+        logs = self.model.evaluate_generator(generator, steps=num_steps, return_dict_format=True)
+
+        self._test_return_dict_logs(logs)
+
+    def test_evaluate_generator_with_callback_and_progress_bar_coloring(self):
+        num_steps = 10
+        generator = some_data_tensor_generator(ModelTest.batch_size)
+
+        self._capture_output()
+
+        _, _ = self.model.evaluate_generator(generator, steps=num_steps, callbacks=[self.mock_callback], verbose=True)
+
+        self.assertStdoutContains(["%", "[32m", "[35m", "[36m", "[94m", "\u2588"])
 
     def test_evaluate_generator_with_ground_truth(self):
         num_steps = 10
@@ -980,6 +1134,8 @@ class ModelTest(ModelFittingTestCase):
         train_generator = some_data_tensor_generator(ModelTest.batch_size)
         valid_generator = some_data_tensor_generator(ModelTest.batch_size)
 
+        self._capture_output()
+
         with torch.cuda.device(ModelTest.cuda_device):
             self.model.cuda()
             self.model.fit_generator(train_generator,
@@ -1139,6 +1295,10 @@ class ModelDatasetMethodsTest(ModelFittingTestCase):
                            batch_metrics=self.batch_metrics,
                            epoch_metrics=self.epoch_metrics)
 
+    def assertStdoutContains(self, values):
+        for value in values:
+            self.assertIn(value, self.test_out.getvalue().strip())
+
     def test_fitting_mnist(self):
         logs = self.model.fit_dataset(self.train_sub_dataset,
                                       self.valid_sub_dataset,
@@ -1170,16 +1330,30 @@ class ModelDatasetMethodsTest(ModelFittingTestCase):
         self.assertEqual(type(pred_y), np.ndarray)
         self.assertEqual(pred_y.shape, (num_steps * ModelTest.batch_size, 10))
 
+    def test_evaluate_dataset_with_progress_bar_coloring(self):
+        num_steps = 10
+        self._capture_output()
+
+        self.model.evaluate_dataset(self.test_dataset, batch_size=ModelTest.batch_size, steps=num_steps)
+        self.assertStdoutContains(["%", "[32m", "[35m", "[36m", "[94m", "\u2588"])
+
     def test_evaluate_dataset_with_callback(self):
         num_steps = 10
-        result_log = self.model.evaluate_dataset(self.test_dataset,
-                                                 batch_size=ModelTest.batch_size,
-                                                 steps=num_steps,
-                                                 return_pred=True,
-                                                 callbacks=[self.mock_callback])
+        self.model.evaluate_dataset(self.test_dataset,
+                                    batch_size=ModelTest.batch_size,
+                                    steps=num_steps,
+                                    callbacks=[self.mock_callback])
 
-        params = {'batch': ModelTest.epochs}
-        self._test_callbacks_test(params, result_log)
+        params = {'steps': ModelTest.epochs}
+        self._test_callbacks_test(params)
+
+    def test_evaluate_dataset_with_return_dict(self):
+        num_steps = 10
+        logs = self.model.evaluate_dataset(self.test_dataset,
+                                           batch_size=ModelTest.batch_size,
+                                           steps=num_steps,
+                                           return_dict_format=True)
+        self._test_return_dict_logs(logs)
 
     def test_evaluate_dataset_with_ground_truth(self):
         num_steps = 10
