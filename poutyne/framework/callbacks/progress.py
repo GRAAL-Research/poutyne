@@ -42,6 +42,15 @@ class ProgressionCallback(Callback):
         if self.progress_bar and self.steps is not None:
             self.color_progress.set_progress_bar(self.steps)
 
+    def on_test_begin(self, logs: Dict) -> None:
+        self.step_times_weighted_sum = 0.
+
+        self.metrics = ['loss'] + self.model.metrics_names
+        self.steps = self.params['steps']
+
+        if self.progress_bar and self.steps is not None:
+            self.color_progress.set_progress_bar(self.steps)
+
     def on_epoch_begin(self, epoch_number: int, logs: Dict) -> None:
         self.step_times_weighted_sum = 0.
         self.epoch_number = epoch_number
@@ -68,15 +77,6 @@ class ProgressionCallback(Callback):
         else:
             self.color_progress.on_train_batch_end(step_times_rate, batch_number, metrics_str)
             self.last_step = batch_number
-
-    def on_test_begin(self, logs: Dict) -> None:
-        self.step_times_weighted_sum = 0.
-
-        self.metrics = ['loss'] + self.model.metrics_names
-        self.steps = self.params['steps']
-
-        if self.progress_bar and self.steps is not None:
-            self.color_progress.set_progress_bar(self.steps)
 
     def on_test_batch_end(self, batch_number: int, logs: Dict) -> None:
         step_times_rate = self._compute_step_times_rate(batch_number, logs)

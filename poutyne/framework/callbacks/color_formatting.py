@@ -106,7 +106,7 @@ class ColorProgress:
 
         self.progress_bar = False
         self.steps_progress_bar = None
-        self.epoch_formatted_text = ""
+        self.formatted_text = "\r"
 
     def on_epoch_begin(self, epoch_number, epochs) -> None:
         if self.progress_bar:
@@ -124,11 +124,7 @@ class ColorProgress:
         Format on train batch end for a steps the epoch ratio (so far / to do), the total time for the epoch, the steps
         done and the metrics name and values.
         """
-        update = self.epoch_formatted_text
-
-        update += self._batch_update(remaining_time, batch_number, metrics_str, steps)
-
-        self._update_print(update)
+        self._on_batch_end(remaining_time, batch_number, metrics_str, steps)
 
     def on_test_batch_end(self,
                           remaining_time: float,
@@ -140,8 +136,16 @@ class ColorProgress:
         Format on test batch end for a steps the epoch ratio (so far / to do), the total time, the steps
         done and the metrics name and values.
         """
+        self._on_batch_end(remaining_time, batch_number, metrics_str, steps)
 
-        update = "\r" + self._batch_update(remaining_time, batch_number, metrics_str, steps)
+    def _on_batch_end(self, remaining_time: float,
+                      batch_number: int,
+                      metrics_str: str,
+                      steps: Union[int, None] = None) -> None:
+        # pylint: disable=too-many-arguments
+        update = self.formatted_text
+
+        update += self._batch_update(remaining_time, batch_number, metrics_str, steps)
 
         self._update_print(update)
 
@@ -151,15 +155,19 @@ class ColorProgress:
         Format on epoch end: the epoch ratio (so far / to do), the total time for the epoch, the steps done and the
         metrics name and values.
         """
-        update = self.end_update(self.epoch_formatted_text, steps, epoch_total_time, metrics_str)
+        self._on_end(epoch_total_time, steps, metrics_str)
 
-        self._end_print(update)
-
-    def on_test_end(self, test_total_time, steps, metrics_str):
+    def on_test_end(self, test_total_time: float, steps: int, metrics_str: str) -> None:
         """
         Format on test end: the total time for the test, the steps done and the metrics name and values.
         """
-        update = self.end_update("\r", steps, test_total_time, metrics_str)
+        self._on_end(test_total_time, steps, metrics_str)
+
+    def _on_end(self, total_time: float, steps: int, metrics_str: str) -> None:
+        """
+        Format on end: the total time for the loop, the steps done and the metrics name and values.
+        """
+        update = self.end_update(self.formatted_text, steps, total_time, metrics_str)
 
         self._end_print(update)
 
