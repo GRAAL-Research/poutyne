@@ -9,7 +9,7 @@ from torch import nn
 from poutyne import Experiment
 
 
-def some_data_tensor_generator(batch_size):
+def some_finite_data_tensor_generator(batch_size):
     for _ in range(100):
         x = torch.rand(batch_size, 1)
         y = torch.rand(batch_size, 1)
@@ -30,7 +30,7 @@ class ExperimentTest(TestCase):
                           loss_function='mse',
                           monitor_metric="loss",
                           monitor_mode="min")
-        train_generator = some_data_tensor_generator(2)
+        train_generator = some_finite_data_tensor_generator(2)
         expt.train(train_generator, epochs=1)
 
         self.test_experiment = Experiment(self.test_checkpoints_path,
