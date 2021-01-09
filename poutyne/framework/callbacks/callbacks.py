@@ -42,15 +42,14 @@ NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FO
 OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
-import warnings
 from typing import Dict, List
 
 
 class Callback:
     """
     Attributes:
-        params (dict): Contains 'epoch' and 'steps_per_epoch' keys which are passed to the
-            :func:`Model.fit() <poutyne.Model.fit>` function. It may contain other keys.
+        params (dict): Contains ``'epoch'`` and ``'steps_per_epoch'`` keys which are passed to the
+            when training. Contains ``'steps'`` when evaluating. May contain other keys.
         model (Model): A reference to the :class:`~poutyne.Model` object which is using the callback.
     """
 
@@ -82,17 +81,18 @@ class Callback:
             epoch_number (int): The epoch number.
             logs (dict): Contains the following keys:
 
-                 * 'epoch': The epoch number.
-                 * 'loss': The average loss of the batches.
-                 * 'time': The computation time of the epoch.
-                 * Other metrics: One key for each type of metrics. The metrics are also averaged.
-                 * val_loss': The average loss of the batches on the validation set.
-                 * Other metrics: One key for each type of metrics on the validation set. The metrics are also averaged.
+                 * ``'epoch'``: The epoch number.
+                 * ``'time'``: The computation time of the epoch.
+                 * ``'loss'``: The average loss of the batches.
+                 * Values of training metrics: One key for each type of metrics. The metrics are also averaged.
+                 * ``'val_loss'``: The average loss of the batches on the validation set.
+                 * Values of validation metrics: One key for each type of metrics on the validation set. Each key is
+                   prefixed by ``'val_'``. The metrics are also averaged.
 
         Example::
 
-            logs = {'epoch': 6, 'time': 3.141519837, 'loss': 4.34462, 'accuracy': 0.766,
-                    'val_loss': 5.2352, 'val_accuracy': 0.682}
+            logs = {'epoch': 2, 'time': 6.08248, 'loss': 0.40161, 'acc': 89.052, 'fscore_micro': 0.89051,
+                    'val_loss': 0.36814, 'val_acc': 89.52, 'val_fscore_micro': 0.89520}
         """
         pass
 
@@ -112,7 +112,17 @@ class Callback:
 
         Args:
             batch_number (int): The batch number.
-            logs (dict): Usually an empty dict.
+            logs (dict): Contains the following keys:
+
+                 * ``'batch'``: The batch number.
+                 * ``'size'``: The size of the batch as inferred by :func:`~Model.get_batch_size()`.
+                 * ``'time'``: The computation time of the batch.
+                 * ``'loss'``: The loss of the batch.
+                 * Values of the batch metrics for the specific batch: One key for each type of metrics.
+
+        Example::
+
+            logs = {'batch': 171, 'size': 32, 'time': 0.00310, 'loss': 1.95204, 'acc': 43.75}
         """
         pass
 
@@ -132,7 +142,18 @@ class Callback:
 
         Args:
             batch_number (int): The batch number.
-            logs (dict): Usually an empty dict.
+            logs (dict): Contains the following keys:
+
+                 * ``'batch'``: The batch number.
+                 * ``'size'``: The size of the batch as inferred by :func:`~Model.get_batch_size()`.
+                 * ``'time'``: The computation time of the batch.
+                 * ``'loss'``: The loss of the batch.
+                 * Values of the batch metrics for the specific batch: One key for each type of metrics. Each key is
+                   prefixed by ``'test_'``. The metrics are also averaged.
+
+        Example::
+
+            logs = {'batch': 171, 'size': 32, 'time': 0.00310, 'test_loss': 1.95204, 'test_acc': 43.75}
         """
         pass
 
@@ -168,7 +189,16 @@ class Callback:
         Is called before the end of the testing.
 
         Args:
-            logs (dict): Usually an empty dict.
+            logs (dict): Contains the following keys:
+
+                 * ``'time'``: The total computation time of the test.
+                 * ``'test_loss'``: The average loss of the batches on the test set.
+                 * Values of testing metrics: One key for each type of metrics. Each key is
+                   prefixed by ``'test_'``. The metrics are also averaged.
+
+        Example::
+
+            logs = {'time': 6.08248, 'test_loss': 0.40161, 'test_acc': 89.052, 'test_fscore_micro': 0.89051}
         """
         pass
 
@@ -212,28 +242,12 @@ class CallbackList:
     def on_train_batch_begin(self, batch_number: int, logs: Dict):
         logs = logs or {}
         for callback in self.callbacks:
-            if hasattr(callback, 'on_batch_begin'):
-                warnings.warn(
-                    'on_batch_begin method for callback has been deprecated as of version 0.7. '
-                    'Use on_batch_train_begin instead.',
-                    Warning,
-                    stacklevel=2)
-                callback.on_batch_begin(batch_number, logs)
-            else:
-                callback.on_train_batch_begin(batch_number, logs)
+            callback.on_train_batch_begin(batch_number, logs)
 
     def on_train_batch_end(self, batch_number: int, logs: Dict):
         logs = logs or {}
         for callback in self.callbacks:
-            if hasattr(callback, 'on_batch_end'):
-                warnings.warn(
-                    'on_batch_end method for callback has been deprecated as of version 0.7. '
-                    'Use on_batch_train_end instead.',
-                    Warning,
-                    stacklevel=2)
-                callback.on_batch_end(batch_number, logs)
-            else:
-                callback.on_train_batch_end(batch_number, logs)
+            callback.on_train_batch_end(batch_number, logs)
 
     def on_test_batch_begin(self, batch_number: int, logs: Dict):
         logs = logs or {}

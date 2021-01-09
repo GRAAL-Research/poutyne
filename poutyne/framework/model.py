@@ -1,18 +1,19 @@
 # pylint: disable=too-many-lines,too-many-public-methods
 import contextlib
 import numbers
+import timeit
 import warnings
 from collections import defaultdict
-from typing import Iterable, Mapping, List
+from typing import Iterable, Mapping, List, Union
 
 import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
 from poutyne import torch_to_numpy, numpy_to_torch, torch_to
-from .metrics import get_epoch_metric
 from .callbacks import CallbackList, ProgressionCallback, Callback
 from .iterators import EpochIterator, _get_step_iterator, StepIterator
+from .metrics import get_epoch_metric
 from .metrics import get_loss_or_metric, get_callables_and_names, rename_doubles, flatten_metric_names
 from .optimizers import get_optimizer
 from .warning_manager import warning_settings
@@ -27,9 +28,11 @@ class Model:
 
     Args:
         network (torch.nn.Module): A PyTorch network.
-        optimizer (Union[torch.optim.Optimizer, str]): If torch.optim.Optimier, an initialized PyTorch.
-            If str, should be the optimizer's name in Pytorch (i.e. 'Adam' for torch.optim.Adam).
-            (Default value = 'sgd')
+        optimizer (Union[torch.optim.Optimizer, str, dict]): If torch.optim.Optimier, an initialized PyTorch.
+            If str, should be the name of the optimizer in Pytorch (i.e. 'Adam' for torch.optim.Adam).
+            If dict, should contain a key ``'optim'`` with the value be the name of the optimizer; other
+            entries are passed to the optimizer as keyword arguments.
+            (Default value = None)
         loss_function(Union[Callable, str]) It can be any PyTorch loss layer or custom loss function. It
             can also be a string with the same name as a PyTorch loss function (either the functional or
             object name). The loss function must have the signature ``loss_function(input, target)`` where
@@ -214,6 +217,12 @@ class Model:
         Trains the network on a dataset. This method creates generators and calls
         the :func:`~Model.fit_generator()` method.
 
+        .. warning:: With **Jupyter Notebooks in Firefox**, if ``colorama`` is installed and colors are enabled (as it
+            is by default), a great number of epochs and steps per epoch can cause a spike in memory usage in Firefox.
+            The problem does not occur in Google Chrome/Chromium. To avoid this problem, you can disable the colors by
+            passing ``progress_options={'coloring': False}``. See
+            `this Github issue for details <https://github.com/jupyter/notebook/issues/5897>`__.
+
         Args:
             x (Union[~torch.Tensor, ~numpy.ndarray] or Union[tuple, list] of Union[~torch.Tensor, ~numpy.ndarray]):
                 Training dataset. Union[Tensor, ndarray] if the model has a single input.
@@ -305,8 +314,8 @@ class Model:
         return generator
 
     def fit_dataset(self,
-                    training_dataset,
-                    validation_dataset=None,
+                    train_dataset,
+                    valid_dataset=None,
                     *,
                     batch_size=32,
                     epochs=1000,
@@ -325,9 +334,15 @@ class Model:
         Trains the network on a dataset. This method creates dataloaders and calls the
         :func:`~Model.fit_generator()` method.
 
+        .. warning:: With **Jupyter Notebooks in Firefox**, if ``colorama`` is installed and colors are enabled (as it
+            is by default), a great number of epochs and steps per epoch can cause a spike in memory usage in Firefox.
+            The problem does not occur in Google Chrome/Chromium. To avoid this problem, you can disable the colors by
+            passing ``progress_options={'coloring': False}``. See
+            `this Github issue for details <https://github.com/jupyter/notebook/issues/5897>`__.
+
         Args:
-            training_dataset (~torch.utils.data.Dataset): Training dataset.
-            validation_dataset (~torch.utils.data.Dataset): Validation dataset.
+            train_dataset (~torch.utils.data.Dataset): Training dataset.
+            valid_dataset (~torch.utils.data.Dataset): Validation dataset.
             batch_size (int): Number of samples given to the network at one time.
                 (Default value = 32)
             epochs (int): Number of times the entire training dataset is seen.
@@ -373,8 +388,8 @@ class Model:
             .. code-block:: python
 
                 model = Model(pytorch_network, optimizer, loss_function)
-                history = model.fit(training_dataset,
-                                    validation_dataset,
+                history = model.fit(train_dataset,
+                                    valid_dataset,
                                     epochs=num_epochs,
                                     batch_size=batch_size,
                                     verbose=False)
@@ -397,10 +412,10 @@ class Model:
             **dataloader_kwargs
         }
 
-        train_generator = DataLoader(training_dataset, **{'shuffle': True, **dataloader_kwargs})
+        train_generator = DataLoader(train_dataset, **{'shuffle': True, **dataloader_kwargs})
         valid_generator = None
-        if validation_dataset is not None:
-            valid_generator = DataLoader(validation_dataset, **dataloader_kwargs)
+        if valid_dataset is not None:
+            valid_generator = DataLoader(valid_dataset, **dataloader_kwargs)
 
         return self.fit_generator(train_generator,
                                   valid_generator=valid_generator,
@@ -428,6 +443,12 @@ class Model:
         # pylint: disable=line-too-long
         """
         Trains the network on a dataset using a generator.
+
+        .. warning:: With **Jupyter Notebooks in Firefox**, if ``colorama`` is installed and colors are enabled (as it
+            is by default), a great number of epochs and steps per epoch can cause a spike in memory usage in Firefox.
+            The problem does not occur in Google Chrome/Chromium. To avoid this problem, you can disable the colors by
+            passing ``progress_options={'coloring': False}``. See
+            `this Github issue for details <https://github.com/jupyter/notebook/issues/5897>`__.
 
         Args:
             train_generator: Generator-like object for the training dataset. The generator must
@@ -467,11 +488,11 @@ class Model:
             initial_epoch (int, optional): Epoch at which to start training (useful for resuming a previous
                 training run).
                 (Default value = 1)
-            verbose (bool, optional): Whether to display the progress of the training.
+            verbose (bool): Whether to display the progress of the training.
                 (Default value = True)
             progress_options (dict, optional): Keyword arguments to pass to the default progression callback used
                 in Poutyne (See :class:`~poutyne.ProgressionCallback` for the available arguments).
-                (Default value = None)
+                (Default value = None, meaning default color setting and progress bar)
             callbacks (List[~poutyne.Callback]): List of callbacks that will be called during
                 training. (Default value = None)
 
@@ -805,7 +826,17 @@ class Model:
             x = self.preprocess_input(x)
             return torch_to_numpy(self.network(*x))
 
-    def evaluate(self, x, y, *, batch_size=32, return_pred=False, callbacks=None, dataloader_kwargs=None):
+    def evaluate(self,
+                 x,
+                 y,
+                 *,
+                 batch_size=32,
+                 return_pred=False,
+                 return_dict_format=False,
+                 callbacks=None,
+                 verbose=True,
+                 progress_options: Union[dict, None] = None,
+                 dataloader_kwargs=None):
         """
         Computes the loss and the metrics of the network on batches of samples and optionally
         returns the predictions.
@@ -822,10 +853,17 @@ class Model:
                 (Default value = 32)
             return_pred (bool, optional): Whether to return the predictions.
                 (Default value = False)
+            return_dict_format (bool, optional): Whether to return the loss and metrics in a dict format or not.
+                (Default value = False)
             callbacks (List[~poutyne.Callback]): List of callbacks that will be called during
                 testing. (Default value = None)
             dataloader_kwargs (dict, optional): Keyword arguments to pass to the PyTorch dataloaders created
                 internally.
+            verbose (bool): Whether to display the progress of the evaluation.
+                (Default value = True)
+            progress_options (dict, optional): Keyword arguments to pass to the default progression callback used
+                in Poutyne (See :class:`~poutyne.ProgressionCallback` for the available arguments).
+                (Default value = None, meaning default color setting and progress bar)
 
         Returns:
             Tuple ``(loss, metrics, pred_y)`` where specific elements are omitted if not
@@ -841,6 +879,9 @@ class Model:
             If ``return_pred`` is True, ``pred_y`` is the list of the predictions
             of each batch with tensors converted into Numpy arrays. It is otherwise omitted.
 
+            If ``return_dict_format`` is True, then ``loss, metrics`` are replaced by a
+            dictionnary as passed to :func:`~poutyne.Callback.on_test_end()`.
+
         """
         if dataloader_kwargs is None:
             dataloader_kwargs = {}
@@ -850,8 +891,11 @@ class Model:
         return self.evaluate_generator(generator,
                                        steps=len(generator),
                                        return_pred=return_pred,
+                                       return_dict_format=return_dict_format,
                                        concatenate_returns=True,
-                                       callbacks=callbacks)
+                                       callbacks=callbacks,
+                                       verbose=verbose,
+                                       progress_options=progress_options)
 
     def evaluate_dataset(self,
                          dataset,
@@ -860,11 +904,14 @@ class Model:
                          steps=None,
                          return_pred=False,
                          return_ground_truth=False,
+                         return_dict_format=False,
                          concatenate_returns=True,
                          callbacks=None,
                          num_workers=0,
                          collate_fn=None,
-                         dataloader_kwargs=None):
+                         dataloader_kwargs=None,
+                         verbose=True,
+                         progress_options: Union[dict, None] = None):
         """
         Computes the loss and the metrics of the network on batches of samples and optionally
         returns the predictions.
@@ -879,6 +926,8 @@ class Model:
                 (Default value = False)
             return_ground_truth (bool, optional): Whether to return the ground truths.
                 (Default value = False)
+            return_dict_format (bool, optional): Whether to return the loss and metrics in a dict format or not.
+                (Default value = False)
             concatenate_returns (bool, optional): Whether to concatenate the predictions
                 or the ground truths when returning them. (Default value = True)
             callbacks (List[~poutyne.Callback]): List of callbacks that will be called during
@@ -890,6 +939,11 @@ class Model:
                 Used when using batched loading from a map-style dataset.
             dataloader_kwargs (dict, optional): Keyword arguments to pass to the PyTorch dataloaders created
                 internally.
+            verbose (bool): Whether to display the progress of the evaluation.
+                (Default value = True)
+            progress_options (dict, optional): Keyword arguments to pass to the default progression callback used
+                in Poutyne (See :class:`~poutyne.ProgressionCallback` for the available arguments).
+                (Default value = None, meaning default color setting and progress bar)
 
         Returns:
             Tuple ``(loss, metrics, pred_y)`` where specific elements are omitted if not
@@ -904,6 +958,9 @@ class Model:
 
             If ``return_pred`` is True, ``pred_y`` is the list of the predictions
             of each batch with tensors converted into Numpy arrays. It is otherwise omitted.
+
+            If ``return_dict_format`` is True, then ``loss, metrics`` are replaced by a
+            dictionnary as passed to :func:`~poutyne.Callback.on_test_end()`.
 
         See:
             :class:`~torch.utils.data.DataLoader` for details on ``batch_size``, ``num_workers`` and ``collate_fn``.
@@ -922,8 +979,11 @@ class Model:
                                        steps=steps,
                                        return_pred=return_pred,
                                        return_ground_truth=return_ground_truth,
+                                       return_dict_format=return_dict_format,
                                        concatenate_returns=concatenate_returns,
-                                       callbacks=callbacks)
+                                       callbacks=callbacks,
+                                       verbose=verbose,
+                                       progress_options=progress_options)
 
     def evaluate_generator(self,
                            generator,
@@ -931,7 +991,10 @@ class Model:
                            steps=None,
                            return_pred=False,
                            return_ground_truth=False,
+                           return_dict_format=False,
                            concatenate_returns=True,
+                           verbose=True,
+                           progress_options: Union[dict, None] = None,
                            callbacks=None):
         # pylint: disable=too-many-locals
         """
@@ -947,8 +1010,15 @@ class Model:
                 (Default value = False)
             return_ground_truth (bool, optional): Whether to return the ground truths.
                 (Default value = False)
+            return_dict_format (bool, optional): Whether to return the loss and metrics in a dict format or not.
+                (Default value = False)
             concatenate_returns (bool, optional): Whether to concatenate the predictions
                 or the ground truths when returning them. (Default value = True)
+            verbose (bool): Whether to display the progress of the evaluation.
+                (Default value = True)
+            progress_options (dict, optional): Keyword arguments to pass to the default progression callback used
+                in Poutyne (See :class:`~poutyne.ProgressionCallback` for the available arguments).
+                (Default value = None, meaning default color setting and progress bar)
             callbacks (List[~poutyne.Callback]): List of callbacks that will be called during
                 testing. (Default value = None)
 
@@ -968,6 +1038,10 @@ class Model:
 
             If ``return_ground_truth`` is True, ``true_y`` is the ground truths returned
             as in the :func:`predict_generator()` method. It is otherwise ommited.
+
+            If ``return_dict_format`` is True, then ``loss, metrics`` are replaced by a
+            dictionnary as passed to :func:`~poutyne.Callback.on_test_end()`.
+
         Example:
             With no metrics:
 
@@ -1020,31 +1094,60 @@ class Model:
                 loss, (my_metric1, my_metric2), pred_y, true_y = model.evaluate_generator(
                     test_generator, return_pred=True, return_ground_truth=True
                 )
-        """
-        callback_list = CallbackList(callbacks)
-        callback_list.set_model(self)
 
-        callback_list.on_test_begin({})
+            With ``return_dict_format``:
+
+            .. code-block:: python
+
+                model = Model(pytorch_network, optimizer, loss_function,
+                              batch_metrics=[my_metric_fn])
+                logs = model.evaluate_generator(test_generator, return_dict_format=True)
+        """
+        callbacks = [] if callbacks is None else callbacks
+
+        if verbose:
+            progress_options = {} if progress_options is None else progress_options
+            callbacks = [ProgressionCallback(**progress_options)] + callbacks
 
         if steps is None:
             steps = len(generator)
-        step_iterator = StepIterator(generator, steps, self.batch_metrics_names, callback_list, mode="test")
+
+        callback_list = CallbackList(callbacks)
+        callback_list.set_model(self)
+
+        callback_list.set_params({'steps': steps})
+        callback_list.on_test_begin({})
+
+        step_iterator = StepIterator(generator,
+                                     steps,
+                                     self.batch_metrics_names,
+                                     self.epoch_metrics_names,
+                                     callback_list,
+                                     mode="test")
+
+        test_begin_time = timeit.default_timer()
         loss, batch_metrics, pred_y, true_y = self._validate(step_iterator,
                                                              return_pred=return_pred,
                                                              return_ground_truth=return_ground_truth)
-        epoch_metrics = self._get_epoch_metrics()
-        metrics = np.concatenate((batch_metrics, epoch_metrics))
+        test_total_time = timeit.default_timer() - test_begin_time
+
+        step_iterator.epoch_metrics = self._get_epoch_metrics()
 
         if return_pred and concatenate_returns:
             pred_y = _concat(pred_y)
         if return_ground_truth and concatenate_returns:
             true_y = _concat(true_y)
 
-        res = self._format_return(loss, metrics, pred_y, return_pred, true_y, return_ground_truth)
+        test_metrics_log = {'time': test_total_time}
+        test_metrics_log.update(step_iterator.metrics_logs)
 
-        callback_list.on_test_end(res)
+        callback_list.on_test_end(test_metrics_log)
 
-        return res
+        if return_dict_format:
+            return test_metrics_log
+
+        metrics = np.concatenate((batch_metrics, step_iterator.epoch_metrics))
+        return self._format_return(loss, metrics, pred_y, return_pred, true_y, return_ground_truth)
 
     def evaluate_on_batch(self, x, y, *, return_pred=False):
         """
@@ -1090,7 +1193,7 @@ class Model:
 
                 step.size = self.get_batch_size(x, y)
 
-        return step_iterator.loss, step_iterator.metrics, pred_list, true_list
+        return step_iterator.loss, step_iterator.batch_metrics, pred_list, true_list
 
     def _compute_loss_and_metrics(self, x, y, return_loss_tensor=False, return_pred=False):
         x, y = self.preprocess_input(x, y)

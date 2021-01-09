@@ -1,9 +1,6 @@
-# pylint: disable=redefined-builtin
 import os
 import warnings
 from typing import Union, Callable, List, Dict, Tuple
-
-import numpy as np
 
 try:
     import pandas as pd
@@ -186,7 +183,7 @@ class Experiment:
     TENSORBOARD_DIRECTORY = 'tensorboard'
     EPOCH_FILENAME = 'last.epoch'
     LR_SCHEDULER_FILENAME = 'lr_sched_%d.lrsched'
-    TEST_LOG_FILENAME = 'test_log.tsv'
+    TEST_LOG_FILENAME = '{name}_log.tsv'
 
     def __init__(self,
                  directory: str,
@@ -429,35 +426,26 @@ class Experiment:
             callbacks += [BestModelRestore(monitor=self.monitor_metric, mode=self.monitor_mode, verbose=True)]
         return callbacks
 
-    def train(self,
-              train_generator,
-              valid_generator=None,
-              *,
-              callbacks: Union[List, None] = None,
-              lr_schedulers: Union[List, None] = None,
-              keep_only_last_best: bool = False,
-              save_every_epoch: bool = False,
-              disable_tensorboard: bool = False,
-              epochs: int = 1000,
-              steps_per_epoch: Union[int, None] = None,
-              validation_steps: Union[int, None] = None,
-              batches_per_step: int = 1,
-              seed: int = 42,
-              progress_options: Union[dict, None] = None) -> List[Dict]:
-        # pylint: disable=too-many-locals
+    def train(self, train_generator, valid_generator=None, **kwargs) -> List[Dict]:
         """
         Trains or finetunes the attribute model on a dataset using a generator. If a previous training already occured
         and lasted a total of `n_previous` epochs, then the model's weights will be set to the last checkpoint and the
         training will be resumed for epochs range (`n_previous`, `epochs`].
 
         If the Experiment has logging enabled (i.e. self.logging is True), numerous callbacks will be automatically
-        included. Notably, two :class:`~callbacks.ModelCheckpoint` objects will take care of saving the last and every
+        included. Notably, two :class:`~poutyne.ModelCheckpoint` objects will take care of saving the last and every
         new best (according to monitor mode) model weights in appropriate checkpoint files.
-        :class:`~callbacks.OptimizerCheckpoint` and :class:`~callbacks.LRSchedulerCheckpoint` will also respectively
+        :class:`~poutyne.OptimizerCheckpoint` and :class:`~poutyne.LRSchedulerCheckpoint` will also respectively
         handle the saving of the optimizer and LR scheduler's respective states for future retrieval. Moreover, a
-        :class:`~callbacks.AtomicCSVLogger` will save all available epoch statistics in an output .tsv file. Lastly, a
-        :class:`~callbacks.TensorBoardLogger` handles automatic TensorBoard logging of various neural network
+        :class:`~poutyne.AtomicCSVLogger` will save all available epoch statistics in an output .tsv file. Lastly, a
+        :class:`~poutyne.TensorBoardLogger` handles automatic TensorBoard logging of various neural network
         statistics.
+
+        .. warning:: With **Jupyter Notebooks in Firefox**, if ``colorama`` is installed and colors are enabled (as it
+            is by default), a great number of epochs and steps per epoch can cause a spike in memory usage in Firefox.
+            The problem does not occur in Google Chrome/Chromium. To avoid this problem, you can disable the colors by
+            passing ``progress_options={'coloring': False}``. See
+            `this Github issue for details <https://github.com/jupyter/notebook/issues/5897>`__.
 
         Args:
             train_generator: Generator-like object for the training set. See :func:`~Model.fit_generator()`
@@ -469,9 +457,7 @@ class Experiment:
                 training. These callbacks are added after those used in this method (see above). This allows to assume
                 that they are called after those.
                 (Default value = None)
-            lr_schedulers (List[~poutyne.lr_scheduler._PyTorchLRSchedulerWrapper]): List of
-                learning rate schedulers.
-                (Default value = None)
+            lr_schedulers: List of learning rate schedulers. (Default value = None)
             keep_only_last_best (bool): Whether only the last saved best checkpoint is kept. Applies only when
                  `save_every_epoch` is false.
                  (Default value = False)
@@ -481,28 +467,66 @@ class Experiment:
             disable_tensorboard (bool, optional): Whether or not to disable the automatic tensorboard logging
                 callbacks.
                 (Default value = False)
-            epochs (int): Number of times the entire training dataset is seen.
-                (Default value = 1000)
-            steps_per_epoch (int, optional): Number of batch used during one epoch. Obviously, using this
-                argument may cause one epoch not to see the entire training dataset or see it multiple times.
-                (Defaults the number of steps needed to see the entire
-                training dataset)
-            validation_steps (int, optional): Same as for ``steps_per_epoch`` but for the validation dataset.
-                (Defaults to ``steps_per_epoch`` if provided or the number of steps needed to see the entire
-                validation dataset)
-            batches_per_step (int): Number of batches on which to compute the running loss before
-                backpropagating it through the network. Note that the total loss used for backpropagation is
-                the mean of the `batches_per_step` batch losses.
-                (Default value = 1)
             seed (int, optional): Seed used to make the sampling deterministic.
                 (Default value = 42)
-            progress_options (dict, optional): Keyword arguments to pass to the default progression callback used
-                in Poutyne (See :class:`~poutyne.ProgressionCallback` for the available arguments).
-                (Default value = None)
+            kwargs: Any keyword arguments to pass to :func:`~Model.fit_generator()`.
 
         Returns:
             List of dict containing the history of each epoch.
         """
+        return self._train(self.model.fit_generator, train_generator, valid_generator, **kwargs)
+
+    def train_dataset(self, train_dataset, valid_dataset=None, **kwargs) -> List[Dict]:
+        """
+        Trains or finetunes the attribute model on a dataset. If a previous training already occured
+        and lasted a total of `n_previous` epochs, then the model's weights will be set to the last checkpoint and the
+        training will be resumed for epochs range (`n_previous`, `epochs`].
+
+        If the Experiment has logging enabled (i.e. self.logging is True), numerous callbacks will be automatically
+        included. Notably, two :class:`~poutyne.ModelCheckpoint` objects will take care of saving the last and every
+        new best (according to monitor mode) model weights in appropriate checkpoint files.
+        :class:`~poutyne.OptimizerCheckpoint` and :class:`~poutyne.LRSchedulerCheckpoint` will also respectively
+        handle the saving of the optimizer and LR scheduler's respective states for future retrieval. Moreover, a
+        :class:`~poutyne.AtomicCSVLogger` will save all available epoch statistics in an output .tsv file. Lastly, a
+        :class:`~poutyne.TensorBoardLogger` handles automatic TensorBoard logging of various neural network
+        statistics.
+
+        Args:
+            train_dataset (~torch.utils.data.Dataset): Training dataset.
+            valid_dataset (~torch.utils.data.Dataset): Validation dataset.
+            callbacks (List[~poutyne.Callback]): List of callbacks that will be called during
+                training. These callbacks are added after those used in this method (see above). This allows to assume
+                that they are called after those.
+                (Default value = None)
+            lr_schedulers: List of learning rate schedulers. (Default value = None)
+            keep_only_last_best (bool): Whether only the last saved best checkpoint is kept. Applies only when
+                 `save_every_epoch` is false.
+                 (Default value = False)
+            save_every_epoch (bool, optional): Whether or not to save the experiment model's weights after
+                every epoch.
+                (Default value = False)
+            disable_tensorboard (bool, optional): Whether or not to disable the automatic tensorboard logging
+                callbacks.
+                (Default value = False)
+            seed (int, optional): Seed used to make the sampling deterministic.
+                (Default value = 42)
+            kwargs: Any keyword arguments to pass to :func:`~Model.fit_dataset()`.
+
+        Returns:
+            List of dict containing the history of each epoch.
+        """
+        return self._train(self.model.fit_dataset, train_dataset, valid_dataset, **kwargs)
+
+    def _train(self,
+               training_func,
+               *args,
+               callbacks: Union[List, None] = None,
+               lr_schedulers: Union[List, None] = None,
+               keep_only_last_best: bool = False,
+               save_every_epoch: bool = False,
+               disable_tensorboard: bool = False,
+               seed: int = 42,
+               **kwargs) -> List[Dict]:
         set_seeds(seed)
 
         lr_schedulers = [] if lr_schedulers is None else lr_schedulers
@@ -541,15 +565,7 @@ class Experiment:
             expt_callbacks += callbacks
 
         try:
-            return self.model.fit_generator(train_generator,
-                                            valid_generator,
-                                            epochs=epochs,
-                                            steps_per_epoch=steps_per_epoch,
-                                            validation_steps=validation_steps,
-                                            batches_per_step=batches_per_step,
-                                            initial_epoch=initial_epoch,
-                                            callbacks=expt_callbacks,
-                                            progress_options=progress_options)
+            return training_func(*args, initial_epoch=initial_epoch, callbacks=expt_callbacks, **kwargs)
         finally:
             if tensorboard_writer is not None:
                 tensorboard_writer.close()
@@ -560,11 +576,12 @@ class Experiment:
 
         Args:
             checkpoint (Union[int, str]): Which checkpoint to load the model's weights form.
+
                 - If 'best', will load the best weights according to ``monitor_metric`` and ``monitor_mode``.
                 - If 'last', will load the last model checkpoint.
                 - If int, will load the checkpoint of the specified epoch.
                 - If a path (str), will load the model pickled state_dict weights (for instance, saved as
-                    `torch.save(a_pytorch_network.state_dict(), "./a_path.p")`).
+                  ``torch.save(a_pytorch_network.state_dict(), "./a_path.p")``).
             verbose (bool, optional): Whether or not to print the checkpoint filename, and the best epoch
                 number and stats when checkpoint is 'best'.
                 (Default value = False)
@@ -624,13 +641,7 @@ class Experiment:
 
         self.model.load_weights(path)
 
-    def test(self,
-             test_generator,
-             *,
-             callbacks: Union[List, None] = None,
-             steps: Union[int, None] = None,
-             checkpoint: Union[str, int] = 'best',
-             seed: int = 42) -> Dict:
+    def test(self, test_generator, **kwargs):
         """
         Computes and returns the loss and the metrics of the attribute model on a given test examples
         generator.
@@ -642,59 +653,88 @@ class Experiment:
         Args:
             test_generator: Generator-like object for the test set. See :func:`~Model.fit_generator()` for
                 details on the types of generators supported.
-            callbacks (List[~poutyne.Callback], optional): List of callbacks that will be called
-                during the testing.
-                (Default value = None)
-            steps (int, optional): Number of iterations done on ``generator``.
-                (Defaults the number of steps needed to see the entire dataset)
             checkpoint (Union[str, int]): Which model checkpoint weights to load for the test evaluation.
+
                 - If 'best', will load the best weights according to ``monitor_metric`` and ``monitor_mode``.
                 - If 'last', will load the last model checkpoint.
                 - If int, will load the checkpoint of the specified epoch.
                 - If a path (str), will load the model pickled state_dict weights (for instance, saved as
-                    `torch.save(a_pytorch_network.state_dict(), "./a_path.p")`).
+                  ``torch.save(a_pytorch_network.state_dict(), "./a_path.p")``).
+
                 This argument has no effect when logging is disabled. (Default value = 'best')
             seed (int, optional): Seed used to make the sampling deterministic.
                 (Default value = 42)
+            name (str): Prefix of the test log file. (Default value = 'test')
+            kwargs: Any keyword arguments to pass to :func:`~Model.evaluate_generator()`.
 
         If the Experiment has logging enabled (i.e. self.logging is True), one callback will be automatically
-        included to save the test metrics. Moreover, a :class:`~callbacks.AtomicCSVLogger` will save the test
+        included to save the test metrics. Moreover, a :class:`~poutyne.AtomicCSVLogger` will save the test
         metrics in an output .tsv file.
 
         Returns:
             dict sorting of all the test metrics values by their names.
         """
+        return self._test(self.model.evaluate_generator, test_generator, **kwargs)
+
+    def test_dataset(self, test_dataset, **kwargs) -> Dict:
+        """
+        Computes and returns the loss and the metrics of the attribute model on a given test dataset.
+
+        If the Experiment has logging enabled (i.e. self.logging is True), a checkpoint (the best one by default)
+        is loaded and test and validation statistics are saved in a specific test output .tsv file. Otherwise, the
+        current weights of the network is used for testing and statistics are only shown in the standard output.
+
+        Args:
+            test_dataset (~torch.utils.data.Dataset): Test dataset.
+            checkpoint (Union[str, int]): Which model checkpoint weights to load for the test evaluation.
+
+                - If 'best', will load the best weights according to ``monitor_metric`` and ``monitor_mode``.
+                - If 'last', will load the last model checkpoint.
+                - If int, will load the checkpoint of the specified epoch.
+                - If a path (str), will load the model pickled state_dict weights (for instance, saved as
+                  ``torch.save(a_pytorch_network.state_dict(), "./a_path.p")``).
+
+                This argument has no effect when logging is disabled. (Default value = 'best')
+            seed (int, optional): Seed used to make the sampling deterministic.
+                (Default value = 42)
+            name (str): Prefix of the test log file. (Default value = 'test')
+            kwargs: Any keyword arguments to pass to :func:`~Model.evaluate_dataset()`.
+
+        If the Experiment has logging enabled (i.e. self.logging is True), one callback will be automatically
+        included to save the test metrics. Moreover, a :class:`~poutyne.AtomicCSVLogger` will save the test
+        metrics in an output .tsv file.
+
+        Returns:
+            dict sorting of all the test metrics values by their names.
+        """
+        return self._test(self.model.evaluate_dataset, test_dataset, **kwargs)
+
+    def _test(self,
+              evaluate_func,
+              *args,
+              checkpoint: Union[str, int] = 'best',
+              seed: int = 42,
+              name='test',
+              **kwargs) -> Dict:
+        if kwargs.get('return_ground_truth') is True or kwargs.get('return_pred') is True:
+            raise ValueError("This method does not return predictions or ground truth data.")
+        if kwargs.get('return_dict_format') is False:
+            raise ValueError("This method return a dict.")
+        kwargs['return_dict_format'] = True
+
         set_seeds(seed)
-
-        callbacks = [] if callbacks is None else callbacks
-
-        # Copy callback list.
-        callbacks = list(callbacks)
 
         if self.logging:
             best_epoch_stats = self.load_checkpoint(checkpoint, verbose=True)
 
-        if len(self.model.metrics_names) > 0:
-            test_loss, test_metrics = self.model.evaluate_generator(test_generator, steps=steps, callbacks=callbacks)
-            if not isinstance(test_metrics, np.ndarray):
-                test_metrics = np.array([test_metrics])
-        else:
-            test_loss = self.model.evaluate_generator(test_generator, steps=steps, callbacks=callbacks)
-            test_metrics = np.array([])
-
-        test_metrics_names = ['test_loss'] + \
-                             ['test_' + metric_name for metric_name in self.model.metrics_names]
-        test_metrics_values = np.concatenate(([test_loss], test_metrics))
-
-        test_metrics_dict = dict(zip(test_metrics_names, test_metrics_values))
-        test_metrics_str = ''.join('\n\t%s: %g' % (col, val) for col, val in test_metrics_dict.items())
-        print("On best model:%s" % test_metrics_str)
+        test_metrics_dict = evaluate_func(*args, **kwargs)
 
         if self.logging:
-            test_stats = pd.DataFrame([test_metrics_values], columns=test_metrics_names)
+            test_stats = pd.DataFrame([list(test_metrics_dict.values())], columns=list(test_metrics_dict.keys()))
+            test_stats.drop(['time'], axis=1, inplace=True)
             if best_epoch_stats is not None:
                 best_epoch_stats = best_epoch_stats.reset_index(drop=True)
                 test_stats = best_epoch_stats.join(test_stats)
-            test_stats.to_csv(self.test_log_filename, sep='\t', index=False)
+            test_stats.to_csv(self.test_log_filename.format(name=name), sep='\t', index=False)
 
         return test_metrics_dict
