@@ -126,6 +126,37 @@ class Callback:
         """
         pass
 
+    def on_valid_batch_begin(self, batch_number: int, logs: Dict):
+        """
+        Is called before the beginning of the validation batch.
+
+        Args:
+            batch_number (int): The batch number.
+            logs (dict): Usually an empty dict.
+        """
+        pass
+
+    def on_valid_batch_end(self, batch_number: int, logs: Dict):
+        """
+        Is called before the end of the validation batch.
+
+        Args:
+            batch_number (int): The batch number.
+            logs (dict): Contains the following keys:
+
+                 * ``'batch'``: The batch number.
+                 * ``'size'``: The size of the batch as inferred by :func:`~Model.get_batch_size()`.
+                 * ``'time'``: The computation time of the batch.
+                 * ``'loss'``: The loss of the batch.
+                 * Values of the batch metrics for the specific batch: One key for each type of metrics. Each key is
+                   prefixed by ``'val_'``. The metrics are also averaged.
+
+        Example::
+
+            logs = {'batch': 171, 'size': 32, 'time': 0.00310, 'val_loss': 1.95204, 'val_acc': 43.75}
+        """
+        pass
+
     def on_test_batch_begin(self, batch_number: int, logs: Dict):
         """
         Is called before the beginning of the testing batch.
@@ -172,6 +203,33 @@ class Callback:
 
         Args:
             logs (dict): Usually an empty dict.
+        """
+        pass
+
+    def on_valid_begin(self, logs: Dict):
+        """
+        Is called before the beginning of the validation.
+
+        Args:
+            logs (dict): Usually an empty dict.
+        """
+        pass
+
+    def on_valid_end(self, logs: Dict):
+        """
+        Is called before the end of the validation.
+
+        Args:
+            logs (dict): Contains the following keys:
+
+                 * ``'time'``: The total computation time of the test.
+                 * ``'val_loss'``: The average loss of the batches on the test set.
+                 * Values of testing metrics: One key for each type of metrics. Each key is
+                   prefixed by ``'val_'``. The metrics are also averaged.
+
+        Example::
+
+            logs = {'time': 6.08248, 'val_loss': 0.40161, 'val_acc': 89.052, 'val_fscore_micro': 0.89051}
         """
         pass
 
@@ -249,6 +307,16 @@ class CallbackList:
         for callback in self.callbacks:
             callback.on_train_batch_end(batch_number, logs)
 
+    def on_valid_batch_begin(self, batch_number: int, logs: Dict):
+        logs = logs or {}
+        for callback in self.callbacks:
+            callback.on_valid_batch_begin(batch_number, logs)
+
+    def on_valid_batch_end(self, batch_number: int, logs: Dict):
+        logs = logs or {}
+        for callback in self.callbacks:
+            callback.on_valid_batch_end(batch_number, logs)
+
     def on_test_batch_begin(self, batch_number: int, logs: Dict):
         logs = logs or {}
         for callback in self.callbacks:
@@ -268,6 +336,16 @@ class CallbackList:
         logs = logs or {}
         for callback in self.callbacks:
             callback.on_train_end(logs)
+
+    def on_valid_begin(self, logs: Dict):
+        logs = logs or {}
+        for callback in self.callbacks:
+            callback.on_valid_begin(logs)
+
+    def on_valid_end(self, logs: Dict):
+        logs = logs or {}
+        for callback in self.callbacks:
+            callback.on_valid_end(logs)
 
     def on_test_begin(self, logs: Dict):
         logs = logs or {}
