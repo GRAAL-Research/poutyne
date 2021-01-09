@@ -42,6 +42,15 @@ class ProgressionCallback(Callback):
         if self.progress_bar and self.steps is not None:
             self.color_progress.set_progress_bar(self.steps)
 
+    def on_valid_begin(self, logs: Dict) -> None:
+        self.step_times_weighted_sum = 0.
+
+        self.metrics = ['loss'] + self.model.metrics_names
+        self.steps = self.params['steps']
+
+        if self.progress_bar and self.steps is not None:
+            self.color_progress.set_progress_bar(self.steps)
+
     def on_test_begin(self, logs: Dict) -> None:
         self.step_times_weighted_sum = 0.
 
@@ -78,6 +87,18 @@ class ProgressionCallback(Callback):
             self.color_progress.on_train_batch_end(step_times_rate, batch_number, metrics_str)
             self.last_step = batch_number
 
+    def on_valid_batch_end(self, batch_number: int, logs: Dict) -> None:
+        step_times_rate = self._compute_step_times_rate(batch_number, logs)
+
+        metrics_str = self._get_metrics_string(logs)
+
+        if self.steps is not None:
+            remaining_time = step_times_rate * (self.steps - batch_number)
+            self.color_progress.on_test_batch_end(remaining_time, batch_number, metrics_str, self.steps)
+        else:
+            self.color_progress.on_test_batch_end(step_times_rate, batch_number, metrics_str)
+            self.last_step = batch_number
+
     def on_test_batch_end(self, batch_number: int, logs: Dict) -> None:
         step_times_rate = self._compute_step_times_rate(batch_number, logs)
 
@@ -89,6 +110,15 @@ class ProgressionCallback(Callback):
         else:
             self.color_progress.on_test_batch_end(step_times_rate, batch_number, metrics_str)
             self.last_step = batch_number
+
+    def on_valid_end(self, logs: Dict) -> None:
+        test_total_time = logs['time']
+
+        metrics_str = self._get_metrics_string(logs)
+        if self.steps is not None:
+            self.color_progress.on_test_end(test_total_time, self.steps, metrics_str)
+        else:
+            self.color_progress.on_test_end(test_total_time, self.last_step, metrics_str)
 
     def on_test_end(self, logs: Dict) -> None:
         test_total_time = logs['time']

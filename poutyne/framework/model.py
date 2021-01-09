@@ -573,9 +573,18 @@ class Model:
             train_step_iterator.epoch_metrics = self._get_epoch_metrics()
 
             if valid_step_iterator is not None:
+                valid_begin_time = timeit.default_timer()
+
                 self._validate(valid_step_iterator, callback_list=callback_list)
+
+                valid_total_time = timeit.default_timer() - valid_begin_time
+
                 valid_step_iterator.epoch_metrics = self._get_epoch_metrics()
-                callback_list.on_valid_end(valid_step_iterator.metrics_logs)
+
+                valid_metrics_log = {'time': valid_total_time}
+                valid_metrics_log.update(valid_step_iterator.metrics_logs)
+
+                callback_list.on_valid_end(valid_metrics_log)
 
             epoch_iterator.stop_training = self.stop_training
 
@@ -622,9 +631,14 @@ class Model:
             train_step_iterator.epoch_metrics = self._get_epoch_metrics()
 
             if valid_step_iterator is not None:
+                valid_begin_time = timeit.default_timer()
                 self._validate(valid_step_iterator, callback_list=callback_list)
+                valid_total_time = timeit.default_timer() - valid_begin_time
                 valid_step_iterator.epoch_metrics = self._get_epoch_metrics()
-                callback_list.on_valid_end(valid_step_iterator.metrics_logs)
+                valid_metrics_log = {'time': valid_total_time}
+                valid_metrics_log.update(valid_step_iterator.metrics_logs)
+
+                callback_list.on_valid_end(valid_metrics_log)
 
             epoch_iterator.stop_training = self.stop_training
 
