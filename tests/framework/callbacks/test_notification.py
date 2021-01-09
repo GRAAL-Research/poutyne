@@ -108,16 +108,30 @@ class NotificationCallbackTest(TestCase):
 
         self._test_notificator_call(logs)
 
-    def _test_notificator_call(self, logs: Dict):
+    def test_givenANotificationCallbackWithExperimentName_whenTrainingLoop_thenSendNotificationWithExperimentName(self):
+        a_experiment_name = "A experiment name"
+        notification_callback = NotificationCallback(notificator=self.notificator_mock,
+                                                     experiment_name=a_experiment_name)
+        logs = self.model.fit_generator(self.train_generator,
+                                        self.valid_generator,
+                                        epochs=NotificationCallbackTest.epochs,
+                                        steps_per_epoch=NotificationCallbackTest.steps_per_epoch,
+                                        validation_steps=NotificationCallbackTest.steps_per_epoch,
+                                        callbacks=[notification_callback])
+
+        self._test_notificator_call(logs, experiment_name=a_experiment_name)
+
+    def _test_notificator_call(self, logs: Dict, experiment_name=None):
+        experiment_name_text = f" for {experiment_name}" if experiment_name is not None else ""
         call_list = []
-        call_list.append(call.send_notification('', subject='Start of the training.'))
+        call_list.append(call.send_notification('', subject=f'Start of the training{experiment_name_text}.'))
         for batch_log in logs:
             formatted_log_data = " ".join([f"{key}: {value}\n" for key, value in batch_log.items()])
             call_list.append(
                 call.send_notification(f"Here the epoch metrics: \n{formatted_log_data}",
-                                       subject=f"Epoch {batch_log['epoch']} is done."))
-        call_list.append(call.send_notification('', subject='End of the training.'))
+                                       subject=f"Epoch {batch_log['epoch']} is done{experiment_name_text}."))
+        call_list.append(call.send_notification('', subject=f'End of the training{experiment_name_text}.'))
 
         method_calls = self.notificator_mock.method_calls
         self.assertEqual(len(method_calls), len(call_list))  # for set_model and set param
-        self.assertEqual(method_calls[1], call_list[1])
+        self.assertEqual(method_calls, call_list)
