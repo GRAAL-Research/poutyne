@@ -34,11 +34,11 @@ from typing import Dict, Union
 import numpy as np
 
 try:
-    from mlflow import pytorch, log_params, end_run, active_run, start_run, set_tracking_uri
+    import mlflow
     from mlflow.exceptions import MlflowException
     from mlflow.tracking import MlflowClient
 except ImportError:
-    raise ImportError("Mlflow needs to be installed to use this callback.")
+    mlflow = None
 
 try:
     import omegaconf as omega
@@ -50,7 +50,7 @@ try:
 except ImportError:
     git = None
 
-from poutyne.framework import Logger
+from . import Logger
 
 warnings.filterwarnings("ignore")
 
@@ -85,6 +85,8 @@ class MLFlowLogger(Logger):
 
     def __init__(self, experiment_name: str, saving_directory: str, batch_granularity: bool = False) -> None:
         super().__init__(batch_granularity=batch_granularity)
+        if mlflow is None:
+            raise ImportError("Mlflow needs to be installed to use this callback.")
         self.tracking = saving_directory
 
         self.working_directory = os.getcwd()
@@ -104,7 +106,7 @@ class MLFlowLogger(Logger):
                 The config parameters of the training to log, such as number of epoch, loss function, optimizer etc.
         """
         if isinstance(config_params, Dict):
-            log_params(config_params)
+            mlflow.log_params(config_params)
         else:
             for param_name, element in config_params.items():
                 self._log_config_write(param_name, element)
@@ -169,7 +171,7 @@ class MLFlowLogger(Logger):
         Log the last epoch batch and epoch metric and close the active run.
         """
         self._on_train_end_write(logs)
-        end_run()
+        mlflow.end_run()
 
     def _on_train_end_write(self, logs) -> None:
         """
@@ -184,7 +186,7 @@ class MLFlowLogger(Logger):
         """
         test_dict = self.format_test_logs(logs)
         self._on_test_end_write(test_dict)
-        end_run()
+        mlflow.end_run()
 
     def _on_test_end_write(self, logs: Dict) -> None:
         for key, value in logs.items():
@@ -196,11 +198,11 @@ class MLFlowLogger(Logger):
         """
         if self.model is None:
             raise AttributeError("The model is not loaded into the logger.")
-        set_tracking_uri(self.tracking)  # we need to set the tracking uri to be able start the close run
-        start_run(run_id=self.run_id)  # reopen run since logging of model don't use the MLflowClient
-        with active_run():  # log_model use the a context manager
-            pytorch.log_model(self.model.network, "trained-model")
-        end_run()
+        mlflow.set_tracking_uri(self.tracking)  # we need to set the tracking uri to be able start the close run
+        mlflow.start_run(run_id=self.run_id)  # reopen run since logging of model don't use the MLflowClient
+        with mlflow.active_run():  # log_model use the a context manager
+            mlflow.pytorch.log_model(self.model.network, "trained-model")
+        mlflow.end_run()
 
     def _handle_experiment_id(self, experiment_name):
         """
