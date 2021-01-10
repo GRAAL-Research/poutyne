@@ -1,6 +1,6 @@
 from typing import Dict
 from unittest import TestCase
-from unittest.mock import MagicMock, ANY, call
+from unittest.mock import MagicMock, call
 
 import torch
 from torch import nn
@@ -49,53 +49,6 @@ class NotificationCallbackTest(TestCase):
                            self.loss_function,
                            batch_metrics=self.batch_metrics,
                            epoch_metrics=self.epoch_metrics)
-
-    def test_givenANotificationCallback_whenTrainingLoop_thenCallbackIsCallProperly(self):
-        logs = self.model.fit_generator(self.train_generator,
-                                        self.valid_generator,
-                                        epochs=NotificationCallbackTest.epochs,
-                                        steps_per_epoch=NotificationCallbackTest.steps_per_epoch,
-                                        validation_steps=NotificationCallbackTest.steps_per_epoch,
-                                        callbacks=[self.notification_callback_mock])
-
-        params = {'epochs': NotificationCallbackTest.epochs, 'steps': NotificationCallbackTest.steps_per_epoch}
-        self._test_callbacks_call(params, logs)
-
-    def _test_callbacks_call(self, params: Dict, logs: Dict):
-        # pylint: disable=too-many-locals
-        steps = params['steps']
-
-        self.assertEqual(len(logs), params['epochs'])
-        train_batch_dict = dict(zip(self.batch_metrics_names, self.batch_metrics_values), loss=ANY, time=ANY)
-        train_epochs_dict = dict(zip(self.epoch_metrics_names, self.epoch_metrics_values))
-        log_dict = {**train_batch_dict, **train_epochs_dict}
-
-        val_batch_metrics_names = ['val_' + metric_name for metric_name in self.batch_metrics_names]
-        val_batch_dict = dict(zip(val_batch_metrics_names, self.batch_metrics_values), val_loss=ANY)
-        val_epoch_metrics_names = ['val_' + metric_name for metric_name in self.epoch_metrics_names]
-        val_epochs_dict = dict(zip(val_epoch_metrics_names, self.epoch_metrics_values))
-        log_dict.update({**val_batch_dict, **val_epochs_dict})
-
-        for epoch, log in enumerate(logs, 1):
-            self.assertEqual(log, dict(log_dict, epoch=epoch))
-
-        call_list = []
-        call_list.append(call.on_train_begin({}))
-        for epoch in range(1, params['epochs'] + 1):
-            call_list.append(call.on_epoch_begin(epoch, {}))
-            for step in range(1, steps + 1):
-                call_list.append(call.on_train_batch_begin(step, {}))
-                call_list.append(call.on_backward_end(step))
-                call_list.append(call.on_train_batch_end(step, {'batch': step, 'size': ANY, **train_batch_dict}))
-            call_list.append(call.on_epoch_end(epoch, logs[epoch - 1]))
-        call_list.append(call.on_train_end({}))
-
-        method_calls = self.notification_callback_mock.method_calls
-        self.assertIn(call.set_model(self.model), method_calls[:2])  # skip set_model and set param call
-        self.assertIn(call.set_params(params), method_calls[:2])
-
-        self.assertEqual(len(method_calls), len(call_list) + 2)  # for set_model and set param
-        self.assertEqual(method_calls[2:], call_list)
 
     def test_givenANotificationCallback_whenTrainingLoop_thenSendNotification(self):
         notification_callback = NotificationCallback(notificator=self.notificator_mock)
