@@ -65,14 +65,14 @@ class NotificationCallback(Callback):
     def on_train_begin(self, logs: Dict) -> None:
         """
         Send the message to the channel 'Start of the training' or
-        'Start of the training( for the experiment experiment_name)' if an experiment name is given.
+        'Start of the training for the experiment experiment_name' if an experiment name is given.
         """
         empty_message = ""
         self.notificator.send_notification(empty_message, subject=f"Start of the training{self.experiment_name_msg}.")
 
     def on_epoch_end(self, epoch_number: int, logs: Dict) -> None:
         """
-        Send the message to the channel 'Epoch is done' or 'Start of the training( for the experiment experiment_name)'
+        Send the message to the channel 'Epoch is done' or 'Epoch is done for the experiment experiment_name'
         if an experiment name is given and the logs metrics (one per line).
         """
 
@@ -84,7 +84,7 @@ class NotificationCallback(Callback):
     def on_train_end(self, logs: Dict) -> None:
         """
         Send the message to the channel 'End of the training' or
-        'End of the training( for the experiment experiment_name)' if an experiment name is given.
+        'End of the training for the experiment experiment_name' if an experiment name is given.
         """
 
         empty_message = ""
@@ -93,7 +93,7 @@ class NotificationCallback(Callback):
     def on_test_begin(self, logs: Dict) -> None:
         """
         Send the message to the channel 'Start of the testing' or
-        'Start of the testing( for the experiment experiment_name)' if an experiment name is given.
+        'Start of the testing for the experiment experiment_name' if an experiment name is given.
         """
 
         empty_message = ""
@@ -102,7 +102,7 @@ class NotificationCallback(Callback):
     def on_test_end(self, logs: Dict) -> None:
         """
         Send the message to the channel 'End of the testing' or
-        'End of the testing( for the experiment experiment_name)' if an experiment name is given.
+        'End of the testing for the experiment experiment_name' if an experiment name is given.
         """
 
         message = f"Here the epoch metrics: \n{self._format_logs(logs)}"
