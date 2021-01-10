@@ -1,8 +1,27 @@
+from abc import ABC, abstractmethod
 from typing import Dict, Union
 
-from notif import Notificator
-
 from . import Callback
+
+
+class Notificator(ABC):
+    """
+    The interface of the Notificator. It must at least implement a `send_notification` method.
+    The interface is similar to the `notif <https://notificationdoc.ca/index.html>`_ package.
+    """
+
+    @abstractmethod
+    def send_notification(self, message: str, subject: Union[str, None] = None) -> None:
+        """
+        Abstract method to send a notification.
+
+        Args:
+
+            message (str): The message to send as a notification message through the notificator.
+            subject (str): The subject of the notification. If None, the default message is used. By default, None.
+                Also, we recommend formatting the subject for better readability, e.g. using bolding it using Markdown
+                and appending with a new line '*Title*\n'.
+        """
 
 
 class NotificationCallback(Callback):
@@ -11,10 +30,12 @@ class NotificationCallback(Callback):
     (`alert_frequency`) during the training.
 
     Args:
-        notificator (~notif.Notificator): The notification channel to send the message. It's a Notificator class define
-            by the `notif <https://notificationdoc.ca/index.html>`_ package.
-        alert_frequency (int): The frequency (in epoch), during training, to send update. By default 1.
-        experiment_name (Union[str, None]): The name of the experiment to add into the message. By default None.
+        notificator (~poutyne.Notificator): The notification channel to send the message.
+            The expected interface need to implement a `send_notification` method to send the message. You can see the
+            `notif <https://notificationdoc.ca/index.html>`_ package which implements some Notificator respecting the
+            interface.
+        alert_frequency (int): The frequency (in epoch), during training, to send an update. By default, 1.
+        experiment_name (Union[str, None]): The name of the experiment to add to the message. By default, None.
     """
 
     def __init__(self,
