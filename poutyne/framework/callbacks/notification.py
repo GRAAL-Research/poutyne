@@ -11,7 +11,7 @@ class Notificator(ABC):
     """
 
     @abstractmethod
-    def send_notification(self, message: str, subject: Union[str, None] = None) -> None:
+    def send_notification(self, message: str, *, subject: Union[str, None] = None) -> None:
         """
         Abstract method to send a notification.
 
