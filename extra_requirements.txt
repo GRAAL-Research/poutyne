@@ -4,4 +4,3 @@ tensorboardX
 colorama
 torchvision
 pandas
-notif
