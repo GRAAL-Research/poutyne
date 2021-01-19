@@ -14,4 +14,5 @@ from .policies import *
 from .progress import *
 from .terminate_on_nan import *
 from .tracker import *
+from .notification import *
 from .mlflow_logger import *

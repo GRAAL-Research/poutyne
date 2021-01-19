@@ -53,6 +53,12 @@ Tracking
 
 .. autoclass:: TensorBoardGradientTracker
 
+Notification
+------------
+
+.. autoclass:: Notificator
+.. autoclass:: NotificationCallback
+
 Checkpointing
 -------------
 
