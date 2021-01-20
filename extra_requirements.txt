@@ -5,4 +5,3 @@ colorama
 torchvision
 pandas
 mlflow
-omegaconf
