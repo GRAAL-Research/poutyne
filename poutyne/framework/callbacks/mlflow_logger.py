@@ -125,7 +125,7 @@ class MLFlowLogger(Logger):
             for key, value in element.items():
                 # We recursively open the element (Dict format type)
                 self._log_config_write("{}.{}".format(parent_name, key), value)
-        elif isinstance(element, Sequence) and not str:  # Since string are sequence we negate it to be log in the else
+        elif isinstance(element, Sequence) and not isinstance(element, AnyStr):  # Since string are sequence we negate it to be log in the else
             for idx, value in enumerate(element):
                 self.log_param("{}.{}".format(parent_name, idx), value)
         else:
