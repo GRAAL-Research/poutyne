@@ -74,8 +74,7 @@ def main():
                         "tensorboard": "tensorboard>=2.4.0", "tensorboardX": "tensorboardX>=2.1",
                         "torchvision": "torchvision>=0.8.1",
                         "pandas": "pandas>=2.0.0.0",
-                        "mlflow": "mlflow>=1.12.1",
-                        "omegaconf": "omegaconf>=2.0.5"}
+                        "mlflow": "mlflow>=1.12.1"}
     )
 
 
