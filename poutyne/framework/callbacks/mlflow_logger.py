@@ -1,37 +1,9 @@
-# pylint: disable=line-too-long
-"""
-The source code of this file was inspired from the Hydra-MLflow-experiment-management
-(https://github.com/ymym3412/Hydra-MLflow-experiment-management/tree/master), and has been modified. All modifications
-made from the original source code are under the LGPLv3 license.
-
-COPYRIGHT
-
-All contributions by ymym3412:
-Copyright (c) 2020, ymym3412.
-All rights reserved.
-
-Each contributor holds copyright over their respective contributions. The project versioning (Git)
-records all such contribution source information.
-
-----------
-The source code of the function _get_git_commit was inspired from the MLflow project
-(https://github.com/mlflow/mlflow/blob/7fde53e497c50b4eb4da1e9988710695b8c2e093/mlflow/tracking/context/git_context.py#L11),
-and has been modified. All modifications made from the original source code are under the LGPLv3 license.
-
-COPYRIGHT
-
-All contributions by MLflow:
-Copyright (c) 2020, ymym3412.
-All rights reserved.
-
-Each contributor holds copyright over their respective contributions. The project versioning (Git)
-records all such contribution source information.
-"""
+# pylint: disable=line-too-long, pointless-string-statement
 import os
 import warnings
-from typing import Dict, Union
+from typing import Dict, Union, Mapping, Sequence
 
-import numpy as np
+from . import Logger
 
 try:
     import mlflow
@@ -41,16 +13,9 @@ except ImportError:
     mlflow = None
 
 try:
-    import omegaconf as omega
-except ImportError:
-    omega = None
-
-try:
     import git
 except ImportError:
     git = None
-
-from . import Logger
 
 warnings.filterwarnings("ignore")
 
@@ -62,13 +27,17 @@ class MLFlowLogger(Logger):
 
     Args:
         experiment_name (str): The name of the experiment. Name must be unique and are case sensitive.
-        saving_directory (str): Either the URI tracking path (for server tracking) of the absolute path to the directory
-            to save the files. For example: /home/<user>/mlflow-server (local directory) or ...
+        tracking_uri (Union[str, None]): Either the URI tracking path (for server tracking) of the absolute path to
+            the directory to save the files (for file store). For example: http://<ip address>:<port> (remote server) or
+            /home/<user>/mlflow-server (local server). If None, will use the default MLflow file
+            tracking URI "./mlruns".
         batch_granularity (bool): Whether to also output the result of each batch in addition to the epochs.
             (Default value = False)
 
     Example:
-            mlflow_logger = MLFlowLogger(experiment_name="experiment", saving_directory="/absolute/path/to/directory")
+        Using file store::
+
+            mlflow_logger = MLFlowLogger(experiment_name="experiment", tracking_uri="/absolute/path/to/directory")
             mlflow_logger.log_config_params(config_params=cfg_dict) # logging the config dictionary
 
             # our Poutyne experiment
@@ -79,30 +48,45 @@ class MLFlowLogger(Logger):
             experiment.train(train_generator=train_loader, valid_generator=valid_loader, epochs=1,
                              seed=42, callbacks=[mlflow_logger])
 
-            # logging the last epoch model
-            mlflow_logger.log_model()
+        Using server tracking::
+
+            mlflow_logger = MLFlowLogger(experiment_name="experiment", tracking_uri="http://IP_ADDRESS:PORT")
+            mlflow_logger.log_config_params(config_params=cfg_dict) # logging the config dictionary
+
+            # our Poutyne experiment
+            experiment = Experiment(directory=saving_directory, network=network, device=device, optimizer=optimizer,
+                            loss_function=cross_entropy_loss, batch_metrics=[accuracy])
+
+            # Using the MLflow logger callback during training
+            experiment.train(train_generator=train_loader, valid_generator=valid_loader, epochs=1,
+                             seed=42, callbacks=[mlflow_logger])
     """
 
-    def __init__(self, experiment_name: str, saving_directory: str, batch_granularity: bool = False) -> None:
+    def __init__(self,
+                 experiment_name: str,
+                 tracking_uri: Union[str, None] = None,
+                 batch_granularity: bool = False) -> None:
         super().__init__(batch_granularity=batch_granularity)
         if mlflow is None:
             raise ImportError("Mlflow needs to be installed to use this callback.")
-        self.tracking = saving_directory
 
-        self.working_directory = os.getcwd()
+        self.tracking = tracking_uri
 
-        self.ml_flow_client = MlflowClient(tracking_uri=self.tracking, registry_uri=self.working_directory)
+        self._working_directory = os.getcwd()  # for Git
+
+        self.ml_flow_client = MlflowClient(tracking_uri=self.tracking)
 
         self._handle_experiment_id(experiment_name)
         self.run_id = self.ml_flow_client.create_run(experiment_id=self.experiment_id).info.run_id
 
         self._log_git_version()
 
-    def log_config_params(self, config_params: Union[Dict, omega.omegaconf.DictConfig,
-                                                     omega.omegaconf.ListConfig]) -> None:
+        self._status = "FAILED"  # base case is a failure
+
+    def log_config_params(self, config_params: Union[Mapping, Sequence]) -> None:
         """
         Args:
-            config_params (Union[Dict, ~omegaconf.dictconfig.DictConfig, ~omegaconf.listconfig.ListConfig]):
+            config_params (Union[Mapping, Sequence]):
                 The config parameters of the training to log, such as number of epoch, loss function, optimizer etc.
         """
         if isinstance(config_params, Dict):
@@ -133,22 +117,19 @@ class MLFlowLogger(Logger):
         """
         self.ml_flow_client.log_metric(run_id=self.run_id, key=metric_name, value=value, step=step)
 
-    def _log_config_write(self, parent_name: str, element: Union[Dict, omega.omegaconf.DictConfig,
-                                                                 omega.omegaconf.ListConfig]) -> None:
+    def _log_config_write(self, parent_name: str, element: Union[int, float, str, Mapping, Sequence]) -> None:
         """
-        Log the config parameters when it's a list of dictionary or a dictionary of dictionary.
+        Log the config parameters when it's a mapping or a sequence of elements.
         """
-        if omega is None:
-            raise ImportError("Omegaconf needs to be installed to log this type of dictionary.")
-        if isinstance(element, omega.omegaconf.DictConfig):
+        if isinstance(element, Mapping):
             for key, value in element.items():
-                if isinstance(value, (omega.omegaconf.DictConfig, omega.omegaconf.ListConfig)):
-                    self._log_config_write("{}.{}".format(parent_name, key), value)
-                else:
-                    self.log_param("{}.{}".format(parent_name, key), value)
-        elif isinstance(element, omega.omegaconf.ListConfig):
+                # We recursively open the element (Dict format type)
+                self._log_config_write("{}.{}".format(parent_name, key), value)
+        elif isinstance(element, Sequence) and not str:  # Since string are sequence we negate it to be log in the else
             for idx, value in enumerate(element):
                 self.log_param("{}.{}".format(parent_name, idx), value)
+        else:
+            self.log_param(parent_name, element)
 
     def _on_train_batch_end_write(self, batch_number: int, logs: Dict) -> None:
         """
@@ -170,8 +151,12 @@ class MLFlowLogger(Logger):
         """
         Log the last epoch batch and epoch metric and close the active run.
         """
-        self._on_train_end_write(logs)
+        if len(logs) > 0:  # to manage failure of the training loop
+            self._status = "FINISHED"
+            self._on_train_end_write(logs)
+
         mlflow.end_run()
+        self._status_handling()
 
     def _on_train_end_write(self, logs) -> None:
         """
@@ -180,29 +165,27 @@ class MLFlowLogger(Logger):
         last_epoch = self.params["epochs"]
         self.log_metric("last-epoch", last_epoch)
 
+    def on_test_begin(self, logs: Dict):
+        self._status = "FAILED"  # to change status from FINISHED to FAILED (base case) if trained before
+
     def on_test_end(self, logs: Dict):
         """
         Log the test results.
         """
-        test_dict = self.format_test_logs(logs)
-        self._on_test_end_write(test_dict)
+        if len(logs) > 0:
+            self._status = "FINISHED"
+            self._on_test_end_write(logs)
+
         mlflow.end_run()
+        self._status_handling()
 
     def _on_test_end_write(self, logs: Dict) -> None:
         for key, value in logs.items():
             self.log_metric(key, value)
 
-    def log_model(self):
-        """
-        Log the trained model.
-        """
-        if self.model is None:
-            raise AttributeError("The model is not loaded into the logger.")
-        mlflow.set_tracking_uri(self.tracking)  # we need to set the tracking uri to be able start the close run
-        mlflow.start_run(run_id=self.run_id)  # reopen run since logging of model don't use the MLflowClient
-        with mlflow.active_run():  # log_model use the a context manager
-            mlflow.pytorch.log_model(self.model.network, "trained-model")
-        mlflow.end_run()
+    def _status_handling(self):
+        # we set_terminated the run to get the finishing status (FINISHED or FAILED)
+        self.ml_flow_client.set_terminated(self.run_id, status=self._status)
 
     def _handle_experiment_id(self, experiment_name):
         """
@@ -217,21 +200,25 @@ class MLFlowLogger(Logger):
         """
         Log the git commit of the run.
         """
-        source_version = _get_git_commit(self.working_directory)
+        source_version = _get_git_commit(self._working_directory)
         if source_version is not None:
             self.ml_flow_client.set_tag(self.run_id, "mlflow.source.git.commit", source_version)
 
-    def format_test_logs(self, logs: Dict) -> Dict:
-        """
-        Format the test logs using the metric of the model.
-        """
-        test_loss, test_metrics = logs
-        test_metrics_names = ['test_loss'] + \
-                             ['test_' + metric_name for metric_name in self.model.metrics_names]
-        test_metrics_values = np.concatenate(([test_loss], test_metrics))
 
-        test_metrics_dict = dict(zip(test_metrics_names, test_metrics_values))
-        return test_metrics_dict
+"""
+The source code of the function _get_git_commit was inspired from the MLflow project
+(https://github.com/mlflow/mlflow/blob/7fde53e497c50b4eb4da1e9988710695b8c2e093/mlflow/tracking/context/git_context.py#L11),
+and has been modified. All modifications made from the original source code are under the LGPLv3 license.
+
+COPYRIGHT
+
+All contributions by MLflow:
+Copyright (c) 2020, MLFlow.
+All rights reserved.
+
+Each contributor holds copyright over their respective contributions. The project versioning (Git)
+records all such contribution source information.
+"""
 
 
 def _get_git_commit(path):
