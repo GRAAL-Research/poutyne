@@ -1,4 +1,3 @@
-import os
 from unittest import TestCase
 from unittest.mock import patch
 
@@ -6,6 +5,7 @@ from poutyne.framework.callbacks.mlflow_logger import _get_git_commit
 
 
 class GetGitCommit(TestCase):
+
     def setUp(self) -> None:
         self.a_fake_path = "a_fake_path"
 
