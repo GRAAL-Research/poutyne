@@ -1,4 +1,4 @@
-# pylint: disable=unused-argument,too-many-locals,too-many-lines
+# pylint: disable=too-many-locals,too-many-lines
 
 import warnings
 from collections import OrderedDict
@@ -13,7 +13,10 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import DataLoader, random_split, Dataset
 
-from poutyne import Model, warning_settings, EpochMetric, TensorDataset
+from poutyne import Model, warning_settings, TensorDataset
+from tests.framework.tools import some_data_tensor_generator, SomeConstantEpochMetric, some_batch_metric_1, \
+    some_batch_metric_2, repeat_batch_metric, some_metric_1_value, some_metric_2_value, repeat_batch_metric_value, \
+    some_constant_epoch_metric_value, SomeEpochMetric
 from .base import ModelFittingTestCase
 
 try:
@@ -28,62 +31,6 @@ except ImportError:
     color = None
 
 warning_settings['concatenate_returns'] = 'ignore'
-
-some_metric_1_value = 1.
-some_metric_2_value = 2.
-repeat_batch_metric_value = 3.
-
-
-def some_batch_metric_1(y_pred, y_true):
-    return torch.FloatTensor([some_metric_1_value])
-
-
-def some_batch_metric_2(y_pred, y_true):
-    return torch.FloatTensor([some_metric_2_value])
-
-
-def repeat_batch_metric(y_pred, y_true):
-    return torch.FloatTensor([repeat_batch_metric_value])
-
-
-class SomeEpochMetric(EpochMetric):
-
-    def __init__(self):
-        super().__init__()
-        self.increment = 0.0
-
-    def forward(self, y_pred, y_true):
-        self.increment += 1
-
-    def get_metric(self):
-        increment_value = self.increment
-        self.increment = 0
-        return increment_value
-
-    def reset(self):
-        pass
-
-
-some_constant_epoch_metric_value = 3
-
-
-class SomeConstantEpochMetric(EpochMetric):
-
-    def forward(self, y_pred, y_true):
-        pass
-
-    def get_metric(self):
-        return torch.FloatTensor([some_constant_epoch_metric_value])
-
-    def reset(self):
-        pass
-
-
-def some_data_tensor_generator(batch_size):
-    while True:
-        x = torch.rand(batch_size, 1)
-        y = torch.rand(batch_size, 1)
-        yield x, y
 
 
 def some_ndarray_generator(batch_size):
