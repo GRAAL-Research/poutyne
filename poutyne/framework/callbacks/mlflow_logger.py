@@ -136,9 +136,8 @@ class MLFlowLogger(Logger):
         """
         Log the batch metric.
         """
-        if self.batch_granularity:
-            for key, value in logs.items():
-                self.log_metric(key, value, step=batch_number)
+        for key, value in logs.items():
+            self.log_metric(key, value, step=batch_number)
 
     def _on_epoch_end_write(self, epoch_number: int, logs: Dict) -> None:
         """
@@ -152,9 +151,8 @@ class MLFlowLogger(Logger):
         """
         Log the last epoch batch and epoch metric and close the active run.
         """
-        if len(logs) > 0:  # to manage failure of the training loop
-            self._status = "FINISHED"
-            self._on_train_end_write(logs)
+        self._on_train_end_write(logs)
+        self._status = "FINISHED"
 
         mlflow.end_run()
         self._status_handling()
@@ -168,14 +166,15 @@ class MLFlowLogger(Logger):
 
     def on_test_begin(self, logs: Dict):
         self._status = "FAILED"  # to change status from FINISHED to FAILED (base case) if trained before
+        self._status_handling()
 
     def on_test_end(self, logs: Dict):
         """
         Log the test results.
         """
-        if len(logs) > 0:
-            self._status = "FINISHED"
+        if len(logs) > 0:  # to manage failure of the test loop
             self._on_test_end_write(logs)
+            self._status = "FINISHED"
 
         mlflow.end_run()
         self._status_handling()
