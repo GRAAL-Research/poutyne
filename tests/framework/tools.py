@@ -18,6 +18,13 @@ def some_data_tensor_generator(batch_size):
         yield x, y
 
 
+def some_data_generator(batch_size):
+    while True:
+        x = torch.rand(batch_size, 1)
+        y = torch.rand(batch_size, 1)
+        yield x, y
+
+
 def some_batch_metric_1(y_pred, y_true):
     return torch.FloatTensor([some_metric_1_value])
 
