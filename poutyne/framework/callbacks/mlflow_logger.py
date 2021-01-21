@@ -232,11 +232,9 @@ def _get_git_commit(path):
         return None
 
     try:
-        if os.path.isfile(path):
-            path = os.path.dirname(path)
         repo = git.Repo(path, search_parent_directories=True)
         commit = repo.head.commit.hexsha
         return commit
-    except (git.InvalidGitRepositoryError, ValueError, git.NoSuchPathError) as e:
+    except (git.InvalidGitRepositoryError, git.NoSuchPathError) as e:
         warnings.warn(f"Failed to grab the git repository so Git SHA is not available. Error: {e}")
         return None
