@@ -1,9 +1,11 @@
 import os
+from typing import Mapping
 from unittest import TestCase
 from unittest.mock import patch, MagicMock, call
 
 import git
 from mlflow.exceptions import MlflowException
+from omegaconf import DictConfig
 
 from poutyne.framework.callbacks.mlflow_logger import _get_git_commit, MLFlowLogger
 
@@ -32,7 +34,17 @@ class MLFlowLoggerTest(TestCase):
         self.epochs = 1
         self.a_log = {"metric_1": 1, "metric_2": 2}
 
-        self.a_param_dict_setting = {"param_1": 1, "param_2": 2, "param_3": "value"}
+        self.settings_in_dict = {"param_1": 1, "param_2": 2, "param_3": "value"}
+        self.settings_in_dictconfig = DictConfig({
+            'param_dict': {
+                'param_1': 1
+            },
+            'param_dict_2': {
+                'param_2"': 2,
+                'param_3"': 3
+            },
+            'param': 'value'
+        })
 
     @patch("poutyne.framework.mlflow_logger._get_git_commit", MagicMock())
     def test_whenNewExperiment_givenAMLFlowInstantiation_thenCreateNewExperiment(self):
@@ -118,9 +130,45 @@ class MLFlowLoggerTest(TestCase):
             mlflow_logger = MLFlowLogger(self.a_experiment_name)
 
             ml_flow_client_calls = []
-            for key, value in self.a_param_dict_setting.items():
+            for key, value in self.settings_in_dict.items():
                 mlflow_logger.log_param(key, value)
                 ml_flow_client_calls.append(call().log_param(run_id=self.a_run_id, key=key, value=value))
+            ml_flow_client_patch.assert_has_calls(ml_flow_client_calls)
+
+    @patch("poutyne.framework.mlflow_logger._get_git_commit", MagicMock())
+    def test_whenLogConfigParamsASimpleDict_givenAMLFlowCallback_thenLogParams(self):
+        with patch("poutyne.framework.mlflow_logger.MlflowClient") as ml_flow_client_patch:
+            ml_flow_client_patch.return_value.create_experiment = self.experiment_mock
+            ml_flow_client_patch.return_value.create_run = self.run_mock
+
+            mlflow_logger = MLFlowLogger(self.a_experiment_name)
+            mlflow_logger.log_config_params(self.settings_in_dict)
+
+            ml_flow_client_calls = []
+            for key, value in self.settings_in_dict.items():
+                ml_flow_client_calls.append(call().log_param(run_id=self.a_run_id, key=key, value=value))
+            ml_flow_client_patch.assert_has_calls(ml_flow_client_calls)
+
+    @patch("poutyne.framework.mlflow_logger._get_git_commit", MagicMock())
+    def test_whenLogConfigParamsAConfigDict_givenAMLFlowCallback_thenLogParams(self):
+        with patch("poutyne.framework.mlflow_logger.MlflowClient") as ml_flow_client_patch:
+            ml_flow_client_patch.return_value.create_experiment = self.experiment_mock
+            ml_flow_client_patch.return_value.create_run = self.run_mock
+
+            mlflow_logger = MLFlowLogger(self.a_experiment_name)
+            mlflow_logger.log_config_params(self.settings_in_dictconfig)
+
+            ml_flow_client_calls = []
+            # we construct the hierarchical dict mapping
+            for key, value in self.settings_in_dictconfig.items():
+                if isinstance(value, Mapping):
+                    for key_lower, value_lower in value.items():
+                        good_key = "{}.{}".format(key, key_lower)
+                        ml_flow_client_calls.append(call().log_param(run_id=self.a_run_id,
+                                                                     key=good_key,
+                                                                     value=value_lower))
+                else:
+                    ml_flow_client_calls.append(call().log_param(run_id=self.a_run_id, key=key, value=value))
             ml_flow_client_patch.assert_has_calls(ml_flow_client_calls)
 
     @patch("poutyne.framework.mlflow_logger._get_git_commit", MagicMock())

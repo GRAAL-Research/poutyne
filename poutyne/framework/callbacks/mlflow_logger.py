@@ -90,7 +90,8 @@ class MLFlowLogger(Logger):
                 The config parameters of the training to log, such as number of epoch, loss function, optimizer etc.
         """
         if isinstance(config_params, Dict):
-            mlflow.log_params(config_params)
+            for param_name, element in config_params.items():
+                self.log_param(param_name, element)
         else:
             for param_name, element in config_params.items():
                 self._log_config_write(param_name, element)
@@ -125,10 +126,6 @@ class MLFlowLogger(Logger):
             for key, value in element.items():
                 # We recursively open the element (Dict format type)
                 self._log_config_write("{}.{}".format(parent_name, key), value)
-        elif isinstance(element, Sequence) and not isinstance(element, str):
-            # Since str are sequence we negate it to be log in the else
-            for idx, value in enumerate(element):
-                self.log_param("{}.{}".format(parent_name, idx), value)
         else:
             self.log_param(parent_name, element)
 
