@@ -1,5 +1,5 @@
 import os
-from typing import Mapping
+from typing import Mapping, Sequence
 from unittest import TestCase
 from unittest.mock import patch, MagicMock, call
 
@@ -35,7 +35,7 @@ class MLFlowLoggerTest(TestCase):
         self.a_log = {"metric_1": 1, "metric_2": 2}
 
         self.settings_in_dict = {"param_1": 1, "param_2": 2, "param_3": "value"}
-        self.settings_in_dictconfig = DictConfig({
+        self.settings_in_dictconfig_no_sequence = DictConfig({
             'param_dict': {
                 'param_1': 1
             },
@@ -44,6 +44,17 @@ class MLFlowLoggerTest(TestCase):
                 'param_3"': 3
             },
             'param': 'value'
+        })
+        self.settings_in_dictconfig_with_sequence = DictConfig({
+            'param_dict': {
+                'param_1': 1
+            },
+            'param_dict_2': {
+                'param_2"': 2,
+                'param_3"': 3
+            },
+            'param': 'value',
+            'a_list_param': [0, 1]
         })
 
     @patch("poutyne.framework.mlflow_logger._get_git_commit", MagicMock())
@@ -156,19 +167,21 @@ class MLFlowLoggerTest(TestCase):
             ml_flow_client_patch.return_value.create_run = self.run_mock
 
             mlflow_logger = MLFlowLogger(self.a_experiment_name)
-            mlflow_logger.log_config_params(self.settings_in_dictconfig)
+            mlflow_logger.log_config_params(self.settings_in_dictconfig_no_sequence)
 
-            ml_flow_client_calls = []
-            # we construct the hierarchical dict mapping
-            for key, value in self.settings_in_dictconfig.items():
-                if isinstance(value, Mapping):
-                    for key_lower, value_lower in value.items():
-                        good_key = "{}.{}".format(key, key_lower)
-                        ml_flow_client_calls.append(call().log_param(run_id=self.a_run_id,
-                                                                     key=good_key,
-                                                                     value=value_lower))
-                else:
-                    ml_flow_client_calls.append(call().log_param(run_id=self.a_run_id, key=key, value=value))
+            ml_flow_client_calls = self._populate_calls_from_dict(self.settings_in_dictconfig_no_sequence)
+            ml_flow_client_patch.assert_has_calls(ml_flow_client_calls)
+
+    @patch("poutyne.framework.mlflow_logger._get_git_commit", MagicMock())
+    def test_whenLogConfigParamsAConfigDictWithSequence_givenAMLFlowCallback_thenLogParams(self):
+        with patch("poutyne.framework.mlflow_logger.MlflowClient") as ml_flow_client_patch:
+            ml_flow_client_patch.return_value.create_experiment = self.experiment_mock
+            ml_flow_client_patch.return_value.create_run = self.run_mock
+
+            mlflow_logger = MLFlowLogger(self.a_experiment_name)
+            mlflow_logger.log_config_params(self.settings_in_dictconfig_with_sequence)
+
+            ml_flow_client_calls = self._populate_calls_from_dict(self.settings_in_dictconfig_with_sequence)
             ml_flow_client_patch.assert_has_calls(ml_flow_client_calls)
 
     @patch("poutyne.framework.mlflow_logger._get_git_commit", MagicMock())
@@ -226,6 +239,22 @@ class MLFlowLoggerTest(TestCase):
 
             ml_flow_client_calls = [call().set_terminated(self.a_run_id, status="FINISHED")]
             ml_flow_client_patch.assert_has_calls(ml_flow_client_calls)
+
+    def _populate_calls_from_dict(self, config_dict):
+        ml_flow_client_calls = []
+        for key, value in config_dict.items():
+            if isinstance(value, Mapping):
+                for key_lower, value_lower in value.items():
+                    good_key = "{}.{}".format(key, key_lower)
+                    ml_flow_client_calls.append(call().log_param(run_id=self.a_run_id, key=good_key, value=value_lower))
+            elif isinstance(value, Sequence) and not isinstance(value, str):
+                for idx, value_lower in enumerate(value):
+                    good_key = "{}.{}".format(key, idx)
+                    ml_flow_client_calls.append((call().log_param(run_id=self.a_run_id, key=good_key,
+                                                                  value=value_lower)))
+            else:
+                ml_flow_client_calls.append(call().log_param(run_id=self.a_run_id, key=key, value=value))
+        return ml_flow_client_calls
 
 
 class GetGitCommitTest(TestCase):
