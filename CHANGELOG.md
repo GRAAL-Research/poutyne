@@ -5,6 +5,8 @@
   epoch).
 * A new logging callback, MLflowLogger, this callback allows you to log experimentation configuration and metrics 
   during training, validation and testing.
+* A progress bar is now set when validating a model (similar to training).
+
 
 
 # v1.2
