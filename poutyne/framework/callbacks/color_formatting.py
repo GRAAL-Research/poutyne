@@ -154,7 +154,7 @@ class ColorProgress:
 
         update += self._batch_update(remaining_time, batch_number, metrics_str, steps)
 
-        self.update(update, self._update_print)
+        self._update_print(update)
 
     def on_epoch_end(self, epoch_total_time: float, steps: int, metrics_str: str) -> None:
         """
@@ -253,10 +253,6 @@ class ColorProgress:
             update += Style.RESET_ALL
 
         return update
-
-    @staticmethod
-    def update(message: str, print_func: Callable) -> None:
-        print_func(message)
 
     @staticmethod
     def _update_print(message: str) -> None:
