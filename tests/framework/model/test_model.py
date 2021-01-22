@@ -465,7 +465,7 @@ class ModelTest(ModelFittingTestCase):
                                         validation_steps=ModelTest.steps_per_epoch,
                                         callbacks=[self.mock_callback])
         params = {'epochs': ModelTest.epochs, 'steps': ModelTest.steps_per_epoch}
-        self._test_callbacks_train(params, logs)
+        self._test_callbacks_train(params, logs, valid_steps=ModelTest.steps_per_epoch)
 
     def test_fitting_with_data_loader(self):
         train_real_steps_per_epoch = 30
@@ -1254,7 +1254,7 @@ class ModelDatasetMethodsTest(ModelFittingTestCase):
                                       validation_steps=ModelTest.steps_per_epoch,
                                       callbacks=[self.mock_callback])
         params = {'epochs': ModelTest.epochs, 'steps': ModelTest.steps_per_epoch}
-        self._test_callbacks_train(params, logs)
+        self._test_callbacks_train(params, logs, valid_steps=ModelTest.steps_per_epoch)
 
     def test_fitting_mnist_without_valid(self):
         logs = self.model.fit_dataset(self.train_dataset,
