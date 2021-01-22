@@ -143,7 +143,7 @@ class ModelTest(ModelFittingTestCase):
                                         validation_steps=ModelTest.steps_per_epoch,
                                         callbacks=[self.mock_callback])
         params = {'epochs': ModelTest.epochs, 'steps': ModelTest.steps_per_epoch}
-        self._test_callbacks_train(params, logs)
+        self._test_callbacks_train(params, logs, valid_steps=ModelTest.steps_per_epoch)
 
     def assertStdoutContains(self, values):
         for value in values:

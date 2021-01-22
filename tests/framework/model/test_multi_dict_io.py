@@ -70,7 +70,7 @@ class ModelMultiDictIOTest(ModelFittingTestCase):
                                         validation_steps=ModelMultiDictIOTest.steps_per_epoch,
                                         callbacks=[self.mock_callback])
         params = {'epochs': ModelMultiDictIOTest.epochs, 'steps': ModelMultiDictIOTest.steps_per_epoch}
-        self._test_callbacks_train(params, logs)
+        self._test_callbacks_train(params, logs, valid_steps=ModelMultiDictIOTest.steps_per_epoch)
 
     def test_tensor_train_on_batch_multi_dict_io(self):
         x, y = get_batch(ModelMultiDictIOTest.batch_size)

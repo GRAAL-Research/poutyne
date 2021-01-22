@@ -53,7 +53,7 @@ class ModelMultiOutputTest(ModelFittingTestCase):
                                         validation_steps=ModelMultiOutputTest.steps_per_epoch,
                                         callbacks=[self.mock_callback])
         params = {'epochs': ModelMultiOutputTest.epochs, 'steps': ModelMultiOutputTest.steps_per_epoch}
-        self._test_callbacks_train(params, logs)
+        self._test_callbacks_train(params, logs, valid_steps=ModelMultiOutputTest.steps_per_epoch)
 
     def test_fitting_with_tensor_multi_output(self):
         train_real_steps_per_epoch = 30
