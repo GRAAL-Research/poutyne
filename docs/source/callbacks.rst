@@ -48,6 +48,9 @@ Logging
 
 .. autoclass:: ProgressionCallback
 
+.. autoclass:: MLFlowLogger
+    :members: log_config_params, log_param, log_metric
+
 Tracking
 --------
 

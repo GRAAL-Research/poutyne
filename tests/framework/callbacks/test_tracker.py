@@ -6,6 +6,8 @@ from unittest.mock import MagicMock, call, ANY
 import torch
 import torch.nn as nn
 
+from tests.framework.tools import some_data_generator
+
 try:
     from torch.utils.tensorboard import SummaryWriter
 except ImportError:
@@ -173,13 +175,6 @@ class GradientStatsTrackerTest(TestCase):
         self.assertEqual(expected.keys(), actual.keys())
         for expected_value, actual_value in zip(expected.values(), actual.values()):
             self.assertAlmostEqual(float(expected_value), float(actual_value), places=3)
-
-
-def some_data_generator(batch_size):
-    while True:
-        x = torch.rand(batch_size, 1)
-        y = torch.rand(batch_size, 1)
-        yield x, y
 
 
 @skipIf(SummaryWriter is None, "Unable to import SummaryWriter from torch")

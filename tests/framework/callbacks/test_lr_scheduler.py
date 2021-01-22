@@ -7,13 +7,7 @@ import torch
 import torch.nn as nn
 
 from poutyne import Model, LambdaLR, StepLR, MultiStepLR, ExponentialLR, CosineAnnealingLR, ReduceLROnPlateau
-
-
-def some_data_generator(batch_size):
-    while True:
-        x = torch.rand(batch_size, 1)
-        y = torch.rand(batch_size, 1)
-        yield x, y
+from tests.framework.tools import some_data_generator
 
 
 class LRSchedulersTest(TestCase):
