@@ -52,7 +52,11 @@ class ModelMultiOutputTest(ModelFittingTestCase):
                                         steps_per_epoch=ModelMultiOutputTest.steps_per_epoch,
                                         validation_steps=ModelMultiOutputTest.steps_per_epoch,
                                         callbacks=[self.mock_callback])
-        params = {'epochs': ModelMultiOutputTest.epochs, 'steps': ModelMultiOutputTest.steps_per_epoch}
+        params = {
+            'epochs': ModelMultiOutputTest.epochs,
+            'steps': ModelMultiOutputTest.steps_per_epoch,
+            'valid_steps': ModelMultiOutputTest.steps_per_epoch
+        }
         self._test_callbacks_train(params, logs, valid_steps=ModelMultiOutputTest.steps_per_epoch)
 
     def test_fitting_with_tensor_multi_output(self):
@@ -81,7 +85,11 @@ class ModelMultiOutputTest(ModelFittingTestCase):
                               steps_per_epoch=None,
                               validation_steps=None,
                               callbacks=[self.mock_callback])
-        params = {'epochs': ModelMultiOutputTest.epochs, 'steps': train_real_steps_per_epoch}
+        params = {
+            'epochs': ModelMultiOutputTest.epochs,
+            'steps': train_real_steps_per_epoch,
+            'valid_steps': valid_real_steps_per_epoch
+        }
         self._test_callbacks_train(params, logs)
 
     def test_tensor_train_on_batch_multi_output(self):

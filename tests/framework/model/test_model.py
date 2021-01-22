@@ -142,7 +142,11 @@ class ModelTest(ModelFittingTestCase):
                                         steps_per_epoch=ModelTest.steps_per_epoch,
                                         validation_steps=ModelTest.steps_per_epoch,
                                         callbacks=[self.mock_callback])
-        params = {'epochs': ModelTest.epochs, 'steps': ModelTest.steps_per_epoch}
+        params = {
+            'epochs': ModelTest.epochs,
+            'steps': ModelTest.steps_per_epoch,
+            'valid_steps': ModelTest.steps_per_epoch
+        }
         self._test_callbacks_train(params, logs, valid_steps=ModelTest.steps_per_epoch)
 
     def assertStdoutContains(self, values):
@@ -464,7 +468,11 @@ class ModelTest(ModelFittingTestCase):
                                         steps_per_epoch=ModelTest.steps_per_epoch,
                                         validation_steps=ModelTest.steps_per_epoch,
                                         callbacks=[self.mock_callback])
-        params = {'epochs': ModelTest.epochs, 'steps': ModelTest.steps_per_epoch}
+        params = {
+            'epochs': ModelTest.epochs,
+            'steps': ModelTest.steps_per_epoch,
+            'valid_steps': ModelTest.steps_per_epoch
+        }
         self._test_callbacks_train(params, logs, valid_steps=ModelTest.steps_per_epoch)
 
     def test_fitting_with_data_loader(self):
@@ -494,7 +502,11 @@ class ModelTest(ModelFittingTestCase):
                                         steps_per_epoch=None,
                                         validation_steps=None,
                                         callbacks=[self.mock_callback])
-        params = {'epochs': ModelTest.epochs, 'steps': train_real_steps_per_epoch}
+        params = {
+            'epochs': ModelTest.epochs,
+            'steps': train_real_steps_per_epoch,
+            'valid_steps': valid_real_steps_per_epoch
+        }
         self._test_callbacks_train(params, logs)
 
     def test_fitting_generator_calls(self):
@@ -585,7 +597,11 @@ class ModelTest(ModelFittingTestCase):
                               steps_per_epoch=None,
                               validation_steps=None,
                               callbacks=[self.mock_callback])
-        params = {'epochs': ModelTest.epochs, 'steps': train_real_steps_per_epoch}
+        params = {
+            'epochs': ModelTest.epochs,
+            'steps': train_real_steps_per_epoch,
+            'valid_steps': valid_real_steps_per_epoch
+        }
         self._test_callbacks_train(params, logs)
 
     def test_fitting_with_np_array(self):
@@ -614,7 +630,11 @@ class ModelTest(ModelFittingTestCase):
                               steps_per_epoch=None,
                               validation_steps=None,
                               callbacks=[self.mock_callback])
-        params = {'epochs': ModelTest.epochs, 'steps': train_real_steps_per_epoch}
+        params = {
+            'epochs': ModelTest.epochs,
+            'steps': train_real_steps_per_epoch,
+            'valid_steps': valid_real_steps_per_epoch
+        }
         self._test_callbacks_train(params, logs)
 
     def test_fitting_with_generator_with_len(self):
@@ -622,14 +642,21 @@ class ModelTest(ModelFittingTestCase):
         train_generator = SomeDataGeneratorWithLen(batch_size=ModelTest.batch_size,
                                                    length=train_real_steps_per_epoch,
                                                    num_missing_samples=7)
-        valid_generator = SomeDataGeneratorWithLen(batch_size=15, length=10, num_missing_samples=3)
+        valid_real_steps_per_epoch = 10
+        valid_generator = SomeDataGeneratorWithLen(batch_size=15,
+                                                   length=valid_real_steps_per_epoch,
+                                                   num_missing_samples=3)
         logs = self.model.fit_generator(train_generator,
                                         valid_generator,
                                         epochs=ModelTest.epochs,
                                         steps_per_epoch=None,
                                         validation_steps=None,
                                         callbacks=[self.mock_callback])
-        params = {'epochs': ModelTest.epochs, 'steps': train_real_steps_per_epoch}
+        params = {
+            'epochs': ModelTest.epochs,
+            'steps': train_real_steps_per_epoch,
+            'valid_steps': valid_real_steps_per_epoch
+        }
         self._test_callbacks_train(params, logs)
 
     def test_fitting_with_generator_with_stop_iteration(self):
@@ -1253,7 +1280,11 @@ class ModelDatasetMethodsTest(ModelFittingTestCase):
                                       steps_per_epoch=ModelTest.steps_per_epoch,
                                       validation_steps=ModelTest.steps_per_epoch,
                                       callbacks=[self.mock_callback])
-        params = {'epochs': ModelTest.epochs, 'steps': ModelTest.steps_per_epoch}
+        params = {
+            'epochs': ModelTest.epochs,
+            'steps': ModelTest.steps_per_epoch,
+            'valid_steps': ModelTest.steps_per_epoch
+        }
         self._test_callbacks_train(params, logs, valid_steps=ModelTest.steps_per_epoch)
 
     def test_fitting_mnist_without_valid(self):
@@ -1262,7 +1293,11 @@ class ModelDatasetMethodsTest(ModelFittingTestCase):
                                       steps_per_epoch=ModelTest.steps_per_epoch,
                                       validation_steps=ModelTest.steps_per_epoch,
                                       callbacks=[self.mock_callback])
-        params = {'epochs': ModelTest.epochs, 'steps': ModelTest.steps_per_epoch}
+        params = {
+            'epochs': ModelTest.epochs,
+            'steps': ModelTest.steps_per_epoch,
+            'valid_steps': ModelTest.steps_per_epoch
+        }
         self._test_callbacks_train(params, logs, has_valid=False)
 
     def test_evaluate_dataset(self):

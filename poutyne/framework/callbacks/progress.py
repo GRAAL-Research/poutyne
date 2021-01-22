@@ -34,39 +34,50 @@ class ProgressionCallback(Callback):
         self.progress_bar = progress_bar
         self.equal_weights = equal_weights
 
+    def set_params(self, params: Dict):
+        super().set_params(params)
+        self._train_steps = self.params['steps']
+        self._valid_steps = self.params.get('valid_steps')
+        self._test_steps = self.params['steps']
+
+    def _set_progress_bar(self):
+        if self.progress_bar and self.steps is not None:
+            self.color_progress.set_progress_bar(self.steps)
+
     def on_train_begin(self, logs: Dict) -> None:
         self.metrics = ['loss'] + self.model.metrics_names
         self.epochs = self.params['epochs']
-        self.steps = self.params['steps']
+        self.steps = self._train_steps
 
-        if self.progress_bar and self.steps is not None:
-            self.color_progress.set_progress_bar(self.steps)
+        self._set_progress_bar()
 
     def on_valid_begin(self, logs: Dict) -> None:
         self.step_times_weighted_sum = 0.
 
         self.metrics = ['loss'] + self.model.metrics_names
-        self.steps = self.params['steps']
+        self.steps = self._valid_steps
 
-        if self.progress_bar and self.steps is not None:
-            self.color_progress.set_progress_bar(self.steps)
+        self._set_progress_bar()
 
     def on_test_begin(self, logs: Dict) -> None:
         self.step_times_weighted_sum = 0.
 
         self.metrics = ['loss'] + self.model.metrics_names
-        self.steps = self.params['steps']
+        self.steps = self._test_steps
 
-        if self.progress_bar and self.steps is not None:
-            self.color_progress.set_progress_bar(self.steps)
+        self._set_progress_bar()
 
     def on_epoch_begin(self, epoch_number: int, logs: Dict) -> None:
         self.step_times_weighted_sum = 0.
         self.epoch_number = epoch_number
+        self.steps = self._train_steps
 
-        self.color_progress.on_epoch_begin(self.epoch_number, self.epochs)
+        self._set_progress_bar()
+
+        self.color_progress.on_epoch_begin()
 
     def on_epoch_end(self, epoch_number: int, logs: Dict) -> None:
+        self.steps = self._train_steps
         epoch_total_time = logs['time']
         progress_fun = self.color_progress.on_epoch_end
 

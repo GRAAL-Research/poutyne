@@ -43,7 +43,11 @@ class ModelMultiIOTest(ModelFittingTestCase):
                                         steps_per_epoch=ModelMultiIOTest.steps_per_epoch,
                                         validation_steps=ModelMultiIOTest.steps_per_epoch,
                                         callbacks=[self.mock_callback])
-        params = {'epochs': ModelMultiIOTest.epochs, 'steps': ModelMultiIOTest.steps_per_epoch}
+        params = {
+            'epochs': ModelMultiIOTest.epochs,
+            'steps': ModelMultiIOTest.steps_per_epoch,
+            'valid_steps': ModelMultiIOTest.steps_per_epoch
+        }
         self._test_callbacks_train(params, logs, valid_steps=ModelMultiIOTest.steps_per_epoch)
 
     def test_fitting_with_tensor_multi_io(self):
@@ -72,7 +76,11 @@ class ModelMultiIOTest(ModelFittingTestCase):
                               steps_per_epoch=None,
                               validation_steps=None,
                               callbacks=[self.mock_callback])
-        params = {'epochs': ModelMultiIOTest.epochs, 'steps': train_real_steps_per_epoch}
+        params = {
+            'epochs': ModelMultiIOTest.epochs,
+            'steps': train_real_steps_per_epoch,
+            'valid_steps': valid_real_steps_per_epoch
+        }
         self._test_callbacks_train(params, logs)
 
     def test_tensor_train_on_batch_multi_io(self):

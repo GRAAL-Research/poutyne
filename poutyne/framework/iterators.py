@@ -128,6 +128,9 @@ class EpochIterator:
         self.stop_training = False
 
         params = {'epochs': self.epochs, 'steps': self.steps_per_epoch}
+        if self.validation_steps is not None:
+            params.update({'valid_steps': self.validation_steps})
+
         self.callback.set_params(params)
 
     def _init_steps(self, train_generator, valid_generator, steps_per_epoch, validation_steps):

@@ -66,7 +66,11 @@ class ModelDictOutputTest(ModelFittingTestCase):
                               steps_per_epoch=None,
                               validation_steps=None,
                               callbacks=[self.mock_callback])
-        params = {'epochs': ModelDictOutputTest.epochs, 'steps': train_real_steps_per_epoch}
+        params = {
+            'epochs': ModelDictOutputTest.epochs,
+            'steps': train_real_steps_per_epoch,
+            'valid_steps': valid_real_steps_per_epoch
+        }
         self._test_callbacks_train(params, logs, valid_steps=valid_real_steps_per_epoch)
 
     def test_ndarray_train_on_batch_dict_output(self):

@@ -108,7 +108,7 @@ class ColorProgress:
         self.steps_progress_bar = None
         self.formatted_text = "\r"
 
-    def on_epoch_begin(self, epoch_number: int, epochs: int) -> None:
+    def on_epoch_begin(self) -> None:
         if self.progress_bar:
             self.steps_progress_bar.reset()
 
