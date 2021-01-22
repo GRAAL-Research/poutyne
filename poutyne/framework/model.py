@@ -575,6 +575,7 @@ class Model:
             if valid_step_iterator is not None:
                 valid_begin_time = timeit.default_timer()
 
+                callback_list.on_valid_begin({})
                 self._validate(valid_step_iterator, callback_list=callback_list)
 
                 valid_total_time = timeit.default_timer() - valid_begin_time
@@ -631,6 +632,7 @@ class Model:
             train_step_iterator.epoch_metrics = self._get_epoch_metrics()
 
             if valid_step_iterator is not None:
+                callback_list.on_valid_begin({})
                 valid_begin_time = timeit.default_timer()
                 self._validate(valid_step_iterator, callback_list=callback_list)
                 valid_total_time = timeit.default_timer() - valid_begin_time
@@ -1193,7 +1195,6 @@ class Model:
         return self._format_return(loss, metrics, pred_y, return_pred)
 
     def _validate(self, step_iterator, return_pred=False, return_ground_truth=False, callback_list=None):
-        callback_list.on_valid_begin({})
         pred_list = None
         true_list = None
         if return_pred:

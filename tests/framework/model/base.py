@@ -59,8 +59,8 @@ class ModelFittingTestCase(TestCase):
                 call_list.append(call.on_train_batch_begin(step, {}))
                 call_list.append(call.on_backward_end(step))
                 call_list.append(call.on_train_batch_end(step, {'batch': step, 'size': ANY, **train_batch_dict}))
-            call_list.append(call.on_valid_begin({}))
             if has_valid:
+                call_list.append(call.on_valid_begin({}))
                 for step in range(1, valid_steps + 1):
                     call_list.append(call.on_valid_batch_begin(step, {}))
                     call_list.append(
