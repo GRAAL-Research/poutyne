@@ -92,7 +92,7 @@ class MLFlowLogger(Logger):
         if isinstance(config_params, Mapping):
             for param_name, element in config_params.items():
                 self._log_config_write(param_name, element)
-        else:  # if isinstance(config_params, Sequence):
+        else:  # equivalent to "if isinstance(config_params, Sequence):"
             for idx, element in enumerate(config_params):
                 self._log_config_write(str(idx), element)
 
