@@ -576,7 +576,7 @@ class Model:
                 valid_begin_time = timeit.default_timer()
 
                 callback_list.on_valid_begin({})
-                self._validate(valid_step_iterator, callback_list=callback_list)
+                self._validate(valid_step_iterator)
 
                 valid_total_time = timeit.default_timer() - valid_begin_time
 
@@ -634,7 +634,7 @@ class Model:
             if valid_step_iterator is not None:
                 callback_list.on_valid_begin({})
                 valid_begin_time = timeit.default_timer()
-                self._validate(valid_step_iterator, callback_list=callback_list)
+                self._validate(valid_step_iterator)
                 valid_total_time = timeit.default_timer() - valid_begin_time
                 valid_step_iterator.epoch_metrics = self._get_epoch_metrics()
                 valid_metrics_log = {'time': valid_total_time}
@@ -1146,8 +1146,7 @@ class Model:
         test_begin_time = timeit.default_timer()
         loss, batch_metrics, pred_y, true_y = self._validate(step_iterator,
                                                              return_pred=return_pred,
-                                                             return_ground_truth=return_ground_truth,
-                                                             callback_list=callback_list)
+                                                             return_ground_truth=return_ground_truth)
         test_total_time = timeit.default_timer() - test_begin_time
 
         step_iterator.epoch_metrics = self._get_epoch_metrics()
@@ -1194,7 +1193,7 @@ class Model:
             loss, metrics, pred_y = self._compute_loss_and_metrics(x, y, return_pred=return_pred)
         return self._format_return(loss, metrics, pred_y, return_pred)
 
-    def _validate(self, step_iterator, return_pred=False, return_ground_truth=False, callback_list=None):
+    def _validate(self, step_iterator, return_pred=False, return_ground_truth=False):
         pred_list = None
         true_list = None
         if return_pred:
