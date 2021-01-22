@@ -48,6 +48,8 @@ Logging
 
 .. autoclass:: ProgressionCallback
 
+.. autoclass:: MLFlowLogger
+
 Tracking
 --------
 
