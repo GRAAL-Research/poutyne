@@ -108,11 +108,9 @@ class ColorProgress:
         self.steps_progress_bar = None
         self.formatted_text = "\r"
 
-    def on_epoch_begin(self, epoch_number, epochs) -> None:
+    def on_epoch_begin(self, epoch_number: int, epochs: int) -> None:
         if self.progress_bar:
             self.steps_progress_bar.reset()
-
-        self._set_epoch_formatted_text(epoch_number, epochs)
 
     def on_train_batch_end(self,
                            remaining_time: float,
@@ -203,10 +201,6 @@ class ColorProgress:
             update += Style.RESET_ALL
 
         return update
-
-    def _set_epoch_formatted_text(self, epoch_number: int, epochs: int) -> None:
-        digits = int(math.log10(epochs)) + 1
-        self.epoch_formatted_text = f"\r{self.text_color}Epoch: {self.ratio_color}{epoch_number:{digits}d}/{epochs:d} "
 
     def _get_formatted_total_time(self, total_time: float) -> str:
         return f"{self.time_color}{total_time:.2f}s "
