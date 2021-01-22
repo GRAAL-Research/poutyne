@@ -98,7 +98,7 @@ class MLFlowLogger(Logger):
 
     def log_param(self, param_name: str, value: Union[str, float]) -> None:
         """
-        Log the value of a the parameter into the last run of the experiment.
+        Log the value of a the parameter into the experiment.
 
         Args:
             param_name (str): The name of the parameter.
@@ -109,7 +109,7 @@ class MLFlowLogger(Logger):
 
     def log_metric(self, metric_name: str, value: float, step: Union[int, None] = None) -> None:
         """
-        Log the value of a metric into the last run of the experiment.
+        Log the value of a metric into the experiment.
 
         Args:
             metric_name (str): The name of the metric.
