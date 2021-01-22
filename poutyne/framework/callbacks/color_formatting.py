@@ -243,7 +243,7 @@ class ColorProgress:
 
             update += str(self.steps_progress_bar) + self._get_formatted_time(remaining_time, steps)
         else:
-            update += self._get_formatted_time(remaining_time, steps) + self._get_formatted_step(batch_number, steps)
+            update += self._get_formatted_step(batch_number, steps) + self._get_formatted_time(remaining_time, steps)
 
         update += self._get_formatted_metrics(metrics_str)
 
