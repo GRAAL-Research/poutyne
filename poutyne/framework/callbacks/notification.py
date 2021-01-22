@@ -16,11 +16,10 @@ class Notificator(ABC):
         Abstract method to send a notification.
 
         Args:
-
             message (str): The message to send as a notification message through the notificator.
             subject (str): The subject of the notification. If None, the default message is used. By default, None.
                 Also, we recommend formatting the subject for better readability, e.g. using bolding it using Markdown
-                and appending with a new line '*Title*\n'.
+                and appending with a new line.
         """
 
 

@@ -59,6 +59,8 @@ Notification
 ------------
 
 .. autoclass:: Notificator
+    :members:
+
 .. autoclass:: NotificationCallback
 
 Checkpointing
