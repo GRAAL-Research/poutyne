@@ -98,7 +98,7 @@ class MLFlowLogger(Logger):
 
     def log_param(self, param_name: str, value: Union[str, float]) -> None:
         """
-        Log the value of a the parameter into the experiment.
+        Log the value of a parameter into the experiment.
 
         Args:
             param_name (str): The name of the parameter.
