@@ -147,7 +147,7 @@ class Callback:
                  * ``'batch'``: The batch number.
                  * ``'size'``: The size of the batch as inferred by :func:`~Model.get_batch_size()`.
                  * ``'time'``: The computation time of the batch.
-                 * ``'loss'``: The loss of the batch.
+                 * ``val_loss'``: The loss of the batch.
                  * Values of the batch metrics for the specific batch: One key for each type of metrics. Each key is
                    prefixed by ``'val_'``. The metrics are also averaged.
 
