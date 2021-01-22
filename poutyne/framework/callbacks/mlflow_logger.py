@@ -89,12 +89,12 @@ class MLFlowLogger(Logger):
             config_params (Union[Mapping, Sequence]):
                 The config parameters of the training to log, such as number of epoch, loss function, optimizer etc.
         """
-        if isinstance(config_params, Dict):
-            for param_name, element in config_params.items():
-                self.log_param(param_name, element)
-        else:
+        if isinstance(config_params, Mapping):
             for param_name, element in config_params.items():
                 self._log_config_write(param_name, element)
+        else: # if isinstance(config_params, Sequence):
+            for idx, element in enumerate(config_params):
+                self._log_config_write(str(idx), element)
 
     def log_param(self, param_name: str, value: Union[str, float]) -> None:
         """
