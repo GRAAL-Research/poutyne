@@ -5,13 +5,7 @@ import torch
 import torch.nn as nn
 
 from poutyne import Model, EarlyStopping
-
-
-def some_data_generator(batch_size):
-    while True:
-        x = torch.rand(batch_size, 1)
-        y = torch.rand(batch_size, 1)
-        yield x, y
+from tests.framework.tools import some_data_generator
 
 
 class EarlyStoppingTest(TestCase):

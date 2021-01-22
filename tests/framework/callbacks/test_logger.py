@@ -7,6 +7,8 @@ from unittest.mock import MagicMock, call
 import torch
 import torch.nn as nn
 
+from tests.framework.tools import some_data_generator
+
 try:
     from torch.utils.tensorboard import SummaryWriter as TorchSummaryWriter
 except ImportError:
@@ -18,13 +20,6 @@ except ImportError:
     XSummaryWriter = None
 
 from poutyne import Model, Callback, TensorBoardLogger, CSVLogger as NonAtomicCSVLogger, AtomicCSVLogger
-
-
-def some_data_generator(batch_size):
-    while True:
-        x = torch.rand(batch_size, 1)
-        y = torch.rand(batch_size, 1)
-        yield x, y
 
 
 class History(Callback):
