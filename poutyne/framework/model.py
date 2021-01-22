@@ -1149,7 +1149,6 @@ class Model:
         test_total_time = timeit.default_timer() - test_begin_time
 
         step_iterator.epoch_metrics = self._get_epoch_metrics()
-        callback_list.on_valid_end(step_iterator.metrics_logs)
 
         if return_pred and concatenate_returns:
             pred_y = _concat(pred_y)

@@ -1,5 +1,5 @@
 import itertools
-from typing import Dict
+from typing import Dict, Callable
 
 from .callbacks import Callback
 from .color_formatting import ColorProgress
@@ -68,68 +68,41 @@ class ProgressionCallback(Callback):
 
     def on_epoch_end(self, epoch_number: int, logs: Dict) -> None:
         epoch_total_time = logs['time']
+        progress_fun = self.color_progress.on_epoch_end
 
-        metrics_str = self._get_metrics_string(logs)
-        if self.steps is not None:
-            self.color_progress.on_epoch_end(epoch_total_time, self.steps, metrics_str)
-        else:
-            self.color_progress.on_epoch_end(epoch_total_time, self.last_step, metrics_str)
-
-    def on_train_batch_end(self, batch_number: int, logs: Dict) -> None:
-        step_times_rate = self._compute_step_times_rate(batch_number, logs)
-
-        metrics_str = self._get_metrics_string(logs)
-
-        if self.steps is not None:
-            remaining_time = step_times_rate * (self.steps - batch_number)
-            self.color_progress.on_train_batch_end(remaining_time, batch_number, metrics_str, self.steps)
-        else:
-            self.color_progress.on_train_batch_end(step_times_rate, batch_number, metrics_str)
-            self.last_step = batch_number
-
-    def on_valid_batch_end(self, batch_number: int, logs: Dict) -> None:
-        step_times_rate = self._compute_step_times_rate(batch_number, logs)
-
-        metrics_str = self._get_metrics_string(logs)
-
-        if self.steps is not None:
-            remaining_time = step_times_rate * (self.steps - batch_number)
-            self.color_progress.on_test_batch_end(remaining_time, batch_number, metrics_str, self.steps)
-        else:
-            self.color_progress.on_test_batch_end(step_times_rate, batch_number, metrics_str)
-            self.last_step = batch_number
-
-    def on_test_batch_end(self, batch_number: int, logs: Dict) -> None:
-        step_times_rate = self._compute_step_times_rate(batch_number, logs)
-
-        metrics_str = self._get_metrics_string(logs)
-
-        if self.steps is not None:
-            remaining_time = step_times_rate * (self.steps - batch_number)
-            self.color_progress.on_test_batch_end(remaining_time, batch_number, metrics_str, self.steps)
-        else:
-            self.color_progress.on_test_batch_end(step_times_rate, batch_number, metrics_str)
-            self.last_step = batch_number
+        self._end_progress(logs, epoch_total_time, progress_fun)
 
     def on_valid_end(self, logs: Dict) -> None:
-        test_total_time = logs['time']
+        valid_total_time = logs['time']
+        progress_fun = self.color_progress.on_valid_end
 
-        metrics_str = self._get_metrics_string(logs)
-        if self.steps is not None:
-            self.color_progress.on_test_end(test_total_time, self.steps, metrics_str)
-        else:
-            self.color_progress.on_test_end(test_total_time, self.last_step, metrics_str)
+        self._end_progress(logs, valid_total_time, progress_fun)
 
     def on_test_end(self, logs: Dict) -> None:
         test_total_time = logs['time']
+        progress_fun = self.color_progress.on_test_end
 
-        metrics_str = self._get_metrics_string(logs)
-        if self.steps is not None:
-            self.color_progress.on_test_end(test_total_time, self.steps, metrics_str)
-        else:
-            self.color_progress.on_test_end(test_total_time, self.last_step, metrics_str)
+        self._end_progress(logs, test_total_time, progress_fun)
 
-    def _get_metrics_string(self, logs: Dict):
+    def on_train_batch_end(self, batch_number: int, logs: Dict) -> None:
+        train_step_times_rate = self._compute_step_times_rate(batch_number, logs)
+        progress_batch_end_fun = self.color_progress.on_train_batch_end
+
+        self._batch_end_progress(logs, train_step_times_rate, batch_number, progress_batch_end_fun)
+
+    def on_valid_batch_end(self, batch_number: int, logs: Dict) -> None:
+        valid_step_times_rate = self._compute_step_times_rate(batch_number, logs)
+        progress_batch_end_fun = self.color_progress.on_valid_batch_end
+
+        self._batch_end_progress(logs, valid_step_times_rate, batch_number, progress_batch_end_fun)
+
+    def on_test_batch_end(self, batch_number: int, logs: Dict) -> None:
+        test_step_times_rate = self._compute_step_times_rate(batch_number, logs)
+        progress_batch_end_fun = self.color_progress.on_test_batch_end
+
+        self._batch_end_progress(logs, test_step_times_rate, batch_number, progress_batch_end_fun)
+
+    def _get_metrics_string(self, logs: Dict) -> str:
         train_metrics_str_gen = ('{}: {:f}'.format(k, logs[k]) for k in self.metrics if logs.get(k) is not None)
         val_metrics_str_gen = ('{}: {:f}'.format('val_' + k, logs['val_' + k]) for k in self.metrics
                                if logs.get('val_' + k) is not None)
@@ -137,7 +110,7 @@ class ProgressionCallback(Callback):
                                 if logs.get('test_' + k) is not None)
         return ', '.join(itertools.chain(train_metrics_str_gen, val_metrics_str_gen, test_metrics_str_gen))
 
-    def _compute_step_times_rate(self, batch_number: int, logs: Dict):
+    def _compute_step_times_rate(self, batch_number: int, logs: Dict) -> float:
         if self.equal_weights:
             self.step_times_weighted_sum += logs['time']
             step_times_rate = self.step_times_weighted_sum / batch_number
@@ -146,3 +119,25 @@ class ProgressionCallback(Callback):
             normalizing_factor = (batch_number * (batch_number + 1)) / 2
             step_times_rate = self.step_times_weighted_sum / normalizing_factor
         return step_times_rate
+
+    def _end_progress(self, logs: Dict, total_time: float, func: Callable) -> None:
+        """
+        Update the progress at the end of an epoch, test or valid.
+        """
+        metrics_str = self._get_metrics_string(logs)
+        if self.steps is not None:
+            func(total_time, self.steps, metrics_str)
+        else:
+            func(total_time, self.last_step, metrics_str)
+
+    def _batch_end_progress(self, logs: Dict, step_times_rate: float, batch_number: int, func: Callable) -> None:
+        """
+        Update the progress at the end of train, valid or test batch.
+        """
+        metrics_str = self._get_metrics_string(logs)
+        if self.steps is not None:
+            remaining_time = step_times_rate * (self.steps - batch_number)
+            func(remaining_time, batch_number, metrics_str, self.steps)
+        else:
+            func(step_times_rate, batch_number, metrics_str)
+            self.last_step = batch_number
