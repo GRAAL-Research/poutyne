@@ -43,6 +43,11 @@ class ProgressionCallback(Callback):
     def _set_progress_bar(self):
         if self.progress_bar and self.steps is not None:
             self.color_progress.set_progress_bar(self.steps)
+        elif self.progress_bar and self.steps is None:
+            # Specific case where we don't have steps for the training
+            # but we do during valid so we create a progress bar and
+            # when we return to the train, it's all messed up
+            self.color_progress.close_progress_bar()
 
     def on_train_begin(self, logs: Dict) -> None:
         self.metrics = ['loss'] + self.model.metrics_names
@@ -59,6 +64,8 @@ class ProgressionCallback(Callback):
 
         self._set_progress_bar()
 
+        self.color_progress.on_valid_begin()
+
     def on_test_begin(self, logs: Dict) -> None:
         self.step_times_weighted_sum = 0.
 
@@ -66,6 +73,8 @@ class ProgressionCallback(Callback):
         self.steps = self._test_steps
 
         self._set_progress_bar()
+
+        self.color_progress.on_test_begin()
 
     def on_epoch_begin(self, epoch_number: int, logs: Dict) -> None:
         self.step_times_weighted_sum = 0.

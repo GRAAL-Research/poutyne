@@ -634,7 +634,7 @@ class Model:
                 callback_list.on_valid_begin({})
                 valid_begin_time = timeit.default_timer()
                 self._validate(valid_step_iterator)
-
+                
                 valid_step_iterator.epoch_metrics = self._get_epoch_metrics()
                 valid_total_time = timeit.default_timer() - valid_begin_time
                 

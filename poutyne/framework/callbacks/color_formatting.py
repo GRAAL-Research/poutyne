@@ -108,6 +108,14 @@ class ColorProgress:
         self.steps_progress_bar = None
         self.formatted_text = "\r"
 
+    def on_valid_begin(self) -> None:
+        if self.progress_bar:
+            self.steps_progress_bar.reset()
+
+    def on_test_begin(self) -> None:
+        if self.progress_bar:
+            self.steps_progress_bar.reset()
+
     def on_epoch_begin(self) -> None:
         if self.progress_bar:
             self.steps_progress_bar.reset()
@@ -187,6 +195,10 @@ class ColorProgress:
         bar_format = f"{self.text_color}{{percentage}} |{self.progress_bar_color}{{bar}}{self.text_color}|"
         self.steps_progress_bar = ProgressBar(number_steps_per_epoch, bar_format=bar_format)
         self.progress_bar = True
+
+    def close_progress_bar(self) -> None:
+        self.steps_progress_bar = None
+        self.progress_bar = False
 
     def end_update(self, update: str, steps: int, total_time: float, metrics_str: str) -> str:
         if self.progress_bar:
