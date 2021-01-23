@@ -568,6 +568,23 @@ class ModelTest(ModelFittingTestCase):
         self.assertEqual(type(pred_y), np.ndarray)
         self.assertEqual(pred_y.shape, (num_steps * ModelTest.batch_size, 1))
 
+    def test_evaluate_generator_with_stop_iteration(self):
+        test_generator = SomeDataGeneratorUsingStopIteration(ModelTest.batch_size, 10)
+
+        loss, _ = self.model.evaluate_generator(test_generator)
+
+        self.assertEqual(type(loss), float)
+
+    def test_evaluate_generator_with_progress_bar_coloring(self):
+        num_steps = 10
+        generator = some_data_tensor_generator(ModelTest.batch_size)
+
+        self._capture_output()
+
+        _, _ = self.model.evaluate_generator(generator, steps=num_steps, verbose=True)
+
+        self.assertStdoutContains(["%", "[32m", "[35m", "[36m", "[94m", "\u2588"])
+
     def test_evaluate_generator_with_callback(self):
         num_steps = 10
         generator = some_data_tensor_generator(ModelTest.batch_size)
@@ -870,13 +887,6 @@ class ModelTest(ModelFittingTestCase):
             inf_batch_size = self.model.get_batch_size([1, 2, 3], [4, 5, 6])
             self.assertEqual(inf_batch_size, 1)
             self.assertEqual(len(w), 0)
-
-    def test_evaluate_generator_with_iterator(self):
-        test_generator = some_data_tensor_generator(ModelTest.batch_size)
-
-        loss, _ = self.model.evaluate_generator(test_generator, steps=10)
-
-        self.assertEqual(type(loss), float)
 
 
 @skipIf(MNIST is None, "Unable to import MNIST")
