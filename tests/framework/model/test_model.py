@@ -575,16 +575,6 @@ class ModelTest(ModelFittingTestCase):
 
         self.assertEqual(type(loss), float)
 
-    def test_evaluate_generator_with_progress_bar_coloring(self):
-        num_steps = 10
-        generator = some_data_tensor_generator(ModelTest.batch_size)
-
-        self._capture_output()
-
-        _, _ = self.model.evaluate_generator(generator, steps=num_steps, verbose=True)
-
-        self.assertStdoutContains(["%", "[32m", "[35m", "[36m", "[94m", "\u2588"])
-
     def test_evaluate_generator_with_callback(self):
         num_steps = 10
         generator = some_data_tensor_generator(ModelTest.batch_size)
