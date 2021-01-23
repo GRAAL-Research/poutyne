@@ -1109,7 +1109,7 @@ class Model:
             progress_options = {} if progress_options is None else progress_options
             callbacks = [ProgressionCallback(**progress_options)] + callbacks
 
-        if steps is None:
+        if steps is None and hasattr(generator, '__len__'):
             steps = len(generator)
 
         callback_list = CallbackList(callbacks)
