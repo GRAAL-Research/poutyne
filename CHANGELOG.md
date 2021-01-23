@@ -7,7 +7,7 @@
   during training, validation and testing.
 * Fix bug where [`evaluate_generator`](https://poutyne.org/model.html#poutyne.Model.evaluate_generator) did not support
   generators with StopIteration exception.
-
+* Experiment now has a `train_data` and a `test_data` method.
 
 # v1.2
 

@@ -517,6 +517,56 @@ class Experiment:
         """
         return self._train(self.model.fit_dataset, train_dataset, valid_dataset, **kwargs)
 
+    def train_data(self, x, y, validation_data=None, **kwargs) -> List[Dict]:
+        """
+        Trains or finetunes the attribute model on data under the form of NumPy arrays or torch tensors. If a previous
+        training already occured and lasted a total of `n_previous` epochs, then the model's weights will be set to the
+        last checkpoint and the training will be resumed for epochs range (`n_previous`, `epochs`].
+
+        If the Experiment has logging enabled (i.e. self.logging is True), numerous callbacks will be automatically
+        included. Notably, two :class:`~poutyne.ModelCheckpoint` objects will take care of saving the last and every
+        new best (according to monitor mode) model weights in appropriate checkpoint files.
+        :class:`~poutyne.OptimizerCheckpoint` and :class:`~poutyne.LRSchedulerCheckpoint` will also respectively
+        handle the saving of the optimizer and LR scheduler's respective states for future retrieval. Moreover, a
+        :class:`~poutyne.AtomicCSVLogger` will save all available epoch statistics in an output .tsv file. Lastly, a
+        :class:`~poutyne.TensorBoardLogger` handles automatic TensorBoard logging of various neural network
+        statistics.
+
+        Args:
+            x (Union[~torch.Tensor, ~numpy.ndarray] or Union[tuple, list] of Union[~torch.Tensor, ~numpy.ndarray]):
+                Training dataset. Union[Tensor, ndarray] if the model has a single input.
+                Union[tuple, list] of Union[Tensor, ndarray] if the model has multiple inputs.
+            y (Union[~torch.Tensor, ~numpy.ndarray] or Union[tuple, list] of Union[~torch.Tensor, ~numpy.ndarray]):
+                Target. Union[Tensor, ndarray] if the model has a single output.
+                Union[tuple, list] of Union[Tensor, ndarray] if the model has multiple outputs.
+            validation_data (Tuple[``x_val``, ``y_val``]):
+                Same format as ``x`` and ``y`` previously described. Validation dataset on which to
+                evaluate the loss and any model metrics at the end of each epoch. The model will not be
+                trained on this data.
+                (Default value = None)
+            callbacks (List[~poutyne.Callback]): List of callbacks that will be called during
+                training. These callbacks are added after those used in this method (see above). This allows to assume
+                that they are called after those.
+                (Default value = None)
+            lr_schedulers: List of learning rate schedulers. (Default value = None)
+            keep_only_last_best (bool): Whether only the last saved best checkpoint is kept. Applies only when
+                 `save_every_epoch` is false.
+                 (Default value = False)
+            save_every_epoch (bool, optional): Whether or not to save the experiment model's weights after
+                every epoch.
+                (Default value = False)
+            disable_tensorboard (bool, optional): Whether or not to disable the automatic tensorboard logging
+                callbacks.
+                (Default value = False)
+            seed (int, optional): Seed used to make the sampling deterministic.
+                (Default value = 42)
+            kwargs: Any keyword arguments to pass to :func:`~Model.fit()`.
+
+        Returns:
+            List of dict containing the history of each epoch.
+        """
+        return self._train(self.model.fit, x, y, validation_data, **kwargs)
+
     def _train(self,
                training_func,
                *args,
@@ -709,12 +759,51 @@ class Experiment:
         """
         return self._test(self.model.evaluate_dataset, test_dataset, **kwargs)
 
+    def test_data(self, x, y, **kwargs) -> Dict:
+        """
+        Computes and returns the loss and the metrics of the attribute model on a given test dataset.
+
+        If the Experiment has logging enabled (i.e. self.logging is True), a checkpoint (the best one by default)
+        is loaded and test and validation statistics are saved in a specific test output .tsv file. Otherwise, the
+        current weights of the network is used for testing and statistics are only shown in the standard output.
+
+        Args:
+            x (Union[~torch.Tensor, ~numpy.ndarray] or Union[tuple, list] of Union[~torch.Tensor, ~numpy.ndarray]):
+                Input to the model. Union[Tensor, ndarray] if the model has a single input.
+                Union[tuple, list] of Union[Tensor, ndarray] if the model has multiple inputs.
+            y (Union[~torch.Tensor, ~numpy.ndarray] or Union[tuple, list] of Union[~torch.Tensor, ~numpy.ndarray]):
+                Target, corresponding ground truth.
+                Union[Tensor, ndarray] if the model has a single output.
+                Union[tuple, list] of Union[Tensor, ndarray] if the model has multiple outputs.
+            checkpoint (Union[str, int]): Which model checkpoint weights to load for the test evaluation.
+
+                - If 'best', will load the best weights according to ``monitor_metric`` and ``monitor_mode``.
+                - If 'last', will load the last model checkpoint.
+                - If int, will load the checkpoint of the specified epoch.
+                - If a path (str), will load the model pickled state_dict weights (for instance, saved as
+                  ``torch.save(a_pytorch_network.state_dict(), "./a_path.p")``).
+
+                This argument has no effect when logging is disabled. (Default value = 'best')
+            seed (int, optional): Seed used to make the sampling deterministic.
+                (Default value = 42)
+            name (str): Prefix of the test log file. (Default value = 'test')
+            kwargs: Any keyword arguments to pass to :func:`~Model.evaluate()`.
+        If the Experiment has logging enabled (i.e. self.logging is True), one callback will be automatically
+        included to save the test metrics. Moreover, a :class:`~poutyne.AtomicCSVLogger` will save the test
+        metrics in an output .tsv file.
+
+        Returns:
+            dict sorting of all the test metrics values by their names.
+        """
+        return self._test(self.model.evaluate, x, y, **kwargs)
+
     def _test(self,
               evaluate_func,
               *args,
               checkpoint: Union[str, int] = 'best',
               seed: int = 42,
               name='test',
+              verbose=True,
               **kwargs) -> Dict:
         if kwargs.get('return_ground_truth') is True or kwargs.get('return_pred') is True:
             raise ValueError("This method does not return predictions or ground truth data.")
@@ -725,9 +814,11 @@ class Experiment:
         set_seeds(seed)
 
         if self.logging:
-            best_epoch_stats = self.load_checkpoint(checkpoint, verbose=True)
+            best_epoch_stats = self.load_checkpoint(checkpoint, verbose=verbose)
 
-        test_metrics_dict = evaluate_func(*args, **kwargs)
+        if verbose:
+            print(name)
+        test_metrics_dict = evaluate_func(*args, **kwargs, verbose=verbose)
 
         if self.logging:
             test_stats = pd.DataFrame([list(test_metrics_dict.values())], columns=list(test_metrics_dict.keys()))

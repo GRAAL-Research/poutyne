@@ -14,9 +14,10 @@ import torch.nn.functional as F
 from torch.utils.data import DataLoader, random_split, Dataset
 
 from poutyne import Model, warning_settings, TensorDataset
-from tests.framework.tools import some_data_tensor_generator, SomeConstantEpochMetric, some_batch_metric_1, \
-    some_batch_metric_2, repeat_batch_metric, some_metric_1_value, some_metric_2_value, repeat_batch_metric_value, \
-    some_constant_epoch_metric_value, SomeEpochMetric
+from tests.framework.tools import some_data_tensor_generator, SomeDataGeneratorUsingStopIteration, \
+    SomeDataGeneratorWithLen, SomeConstantEpochMetric, some_batch_metric_1, some_batch_metric_2, repeat_batch_metric, \
+    some_metric_1_value, some_metric_2_value, repeat_batch_metric_value, some_constant_epoch_metric_value, \
+    SomeEpochMetric
 from .base import ModelFittingTestCase
 
 try:
@@ -44,44 +45,6 @@ def some_mocked_optimizer():
     optim = MagicMock()
 
     return optim
-
-
-class SomeDataGeneratorUsingStopIteration:
-
-    def __init__(self, batch_size, length):
-        self.batch_size = batch_size
-        self.length = length
-
-    def __iter__(self):
-        return ((np.random.rand(self.batch_size, 1).astype(np.float32), np.random.rand(self.batch_size,
-                                                                                       1).astype(np.float32))
-                for _ in range(self.length))
-
-
-class SomeDataGeneratorWithLen:
-
-    def __init__(self, batch_size, length, num_missing_samples):
-        self.batch_size = batch_size
-        self.length = length
-        self.num_generator_called = 0
-        self.x = torch.rand(length * batch_size - num_missing_samples, 1)
-        self.y = torch.rand(length * batch_size - num_missing_samples, 1)
-
-    def __len__(self):
-        return self.length
-
-    def __iter__(self):
-        return self
-
-    def __next__(self):
-        start_idx = self.num_generator_called * self.batch_size
-        end_idx = (self.num_generator_called + 1) * self.batch_size
-        x = self.x[start_idx:end_idx]
-        y = self.y[start_idx:end_idx]
-        self.num_generator_called += 1
-        if self.num_generator_called == self.length:
-            self.num_generator_called = 0
-        return x, y
 
 
 class IterableMock:
