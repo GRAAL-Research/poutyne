@@ -35,6 +35,9 @@ class ProgressionCallback(Callback):
         self.equal_weights = equal_weights
         self.step_times_weighted_sum = 0.
 
+        self.train_last_step = None
+        self.valid_last_step = None
+
     def set_params(self, params: Dict):
         super().set_params(params)
         self._train_steps = self.params['steps']
@@ -89,9 +92,10 @@ class ProgressionCallback(Callback):
     def on_epoch_end(self, epoch_number: int, logs: Dict) -> None:
         self.steps = self._train_steps
         epoch_total_time = logs['time']
-        progress_fun = self.color_progress.on_epoch_end
 
-        self._end_progress(logs, epoch_total_time, progress_fun)
+        metrics_str = self._get_metrics_string(logs)
+        self.color_progress.on_epoch_end(total_time=epoch_total_time, train_last_steps=self.train_last_step,
+                                         valid_last_steps=self.valid_last_step, metrics_str=metrics_str)
 
     def on_valid_end(self, logs: Dict) -> None:
         valid_total_time = logs['time']
@@ -110,12 +114,14 @@ class ProgressionCallback(Callback):
         progress_batch_end_fun = self.color_progress.on_train_batch_end
 
         self._batch_end_progress(logs, train_step_times_rate, batch_number, progress_batch_end_fun)
+        self.train_last_step = batch_number
 
     def on_valid_batch_end(self, batch_number: int, logs: Dict) -> None:
         valid_step_times_rate = self._compute_step_times_rate(batch_number, logs)
         progress_batch_end_fun = self.color_progress.on_valid_batch_end
 
         self._batch_end_progress(logs, valid_step_times_rate, batch_number, progress_batch_end_fun)
+        self.valid_last_step = batch_number
 
     def on_test_batch_end(self, batch_number: int, logs: Dict) -> None:
         test_step_times_rate = self._compute_step_times_rate(batch_number, logs)
@@ -143,7 +149,7 @@ class ProgressionCallback(Callback):
 
     def _end_progress(self, logs: Dict, total_time: float, func: Callable) -> None:
         """
-        Update the progress at the end of an epoch, test or valid.
+        Update the progress at the end of a test or valid phase.
         """
         metrics_str = self._get_metrics_string(logs)
         if self.steps is not None:

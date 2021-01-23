@@ -170,36 +170,50 @@ class ColorProgress:
 
         self._update_print(update)
 
-    def on_epoch_end(self, total_time: float, steps: int, metrics_str: str) -> None:
+    def on_epoch_end(self, total_time: float, train_last_steps: int, valid_last_steps: int, metrics_str: str) -> None:
         """
         Format on epoch end: the epoch ratio (so far / to do), the total time for the epoch, the steps done and the
         metrics name and values.
         """
         update = self.epoch_formatted_text
-        self._on_end(update, total_time, steps, metrics_str, self._end_print)
+        train_steps = self._get_formatted_step(train_last_steps, train_last_steps, prefix="train ", suffix="s",
+                                               ratio=False)
+        valid_steps = self._get_formatted_step(valid_last_steps, valid_last_steps, prefix="val ", suffix="s",
+                                               ratio=False)
+        update += train_steps + valid_steps + self._get_formatted_total_time(total_time)
+        update += self._get_formatted_metrics(metrics_str)
+
+        if self.style_reset:
+            update += Style.RESET_ALL
+
+        self._end_print(update)
 
     def on_valid_end(self, total_time: float, steps: int, metrics_str: str) -> None:
         """
         Format on valid end: the total time for the validation, the steps done and the metrics name and values.
         """
         update = self.formatted_text
-        self._on_end(update, total_time, steps, metrics_str, self._update_print)
+        update += self._get_formatted_step(steps, steps) + self._get_formatted_total_time(total_time)
+        update += self._get_formatted_metrics(metrics_str)
+
+        if self.style_reset:
+            update += Style.RESET_ALL
+
+        self._update_print(update)
 
     def on_test_end(self, total_time: float, steps: int, metrics_str: str) -> None:
         """
         Format on test end: the total time for the test, the steps done and the metrics name and values.
         """
         update = self.formatted_text
-        self._on_end(update, total_time, steps, metrics_str, self._end_print)
+        test_steps = self._get_formatted_step(steps, steps, prefix="test ", suffix="s", ratio=False)
+        update += test_steps + self._get_formatted_total_time(total_time)
+        update += self._get_formatted_metrics(metrics_str)
 
-    def _on_end(self, update: str, total_time: float, steps: int, metrics_str: str, update_func: Callable) -> None:
-        # pylint: disable=too-many-arguments
-        """
-        Format on end: the total time for the loop, the steps done and the metrics name and values.
-        """
-        update = self._end_update(update, steps, total_time, metrics_str)
+        if self.style_reset:
+            update += Style.RESET_ALL
 
-        update_func(update)
+        self._end_print(update)
 
     def set_progress_bar(self, number_steps_per_epoch: int) -> None:
         self.steps_progress_bar = ProgressBar(number_steps_per_epoch, bar_format=self.bar_format)
@@ -208,20 +222,6 @@ class ColorProgress:
     def close_progress_bar(self) -> None:
         self.steps_progress_bar = None
         self.progress_bar = False
-
-    def _end_update(self, update: str, steps: int, total_time: float, metrics_str: str) -> str:
-        if self.progress_bar:
-            update += self._get_formatted_step(steps, steps)
-
-            update += str(self.steps_progress_bar) + self._get_formatted_total_time(total_time)
-        else:
-            update += self._get_formatted_step(steps, steps) + self._get_formatted_total_time(total_time)
-        update += self._get_formatted_metrics(metrics_str)
-
-        if self.style_reset:
-            update += Style.RESET_ALL
-
-        return update
 
     def _set_epoch_formatted_text(self, epoch_number: int, epochs: int) -> None:
         digits = int(math.log10(epochs)) + 1
@@ -237,12 +237,17 @@ class ColorProgress:
             formatted_time = f"{self.text_color}ETA: {self.time_color}{time:.2f}s "
         return formatted_time
 
-    def _get_formatted_step(self, batch_number: int, steps: Union[int, None]) -> str:
+    def _get_formatted_step(self, batch_number: int, steps: Union[int, None], prefix: str = "",
+                            suffix: str = "", ratio: bool = True) -> str:
+        step_text = f"{prefix}step{suffix}".capitalize()
+        ratio_text = ""
         if steps is None:
-            formatted_step = f"{self.text_color}Step: {self.ratio_color}{batch_number:d} "
+            formatted_step = f"{self.text_color}{step_text}: {self.ratio_color}{batch_number:d} "
         else:
             digits = int(math.log10(steps)) + 1
-            formatted_step = f"{self.text_color}Step: {self.ratio_color}{batch_number:{digits}d}/{steps:d} "
+            if ratio:
+                ratio_text = f"/{steps:d}"
+            formatted_step = f"{self.text_color}{step_text}: {self.ratio_color}{batch_number:{digits}d}{ratio_text} "
         return formatted_step
 
     def _get_formatted_metrics(self, metrics_str: str) -> str:

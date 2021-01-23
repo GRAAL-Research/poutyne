@@ -169,7 +169,8 @@ class ProgressTest(TestCase):
 
         color_progress_calls.extend([
             call().on_valid_end(total_time=self.total_time, steps=self.num_steps, metrics_str=self.metrics_str),
-            call().on_epoch_end(total_time=self.total_time, steps=self.num_steps, metrics_str=self.metrics_str)
+            call().on_epoch_end(total_time=self.total_time, train_last_steps=self.num_steps,
+                                valid_last_steps=self.num_valid_steps, metrics_str=self.metrics_str)
         ])
 
         return color_progress_calls
