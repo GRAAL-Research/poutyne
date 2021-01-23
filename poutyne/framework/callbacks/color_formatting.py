@@ -144,7 +144,7 @@ class ColorProgress:
         Format on valid batch end for a steps the epoch ratio (so far / to do), the total time, the steps
         done and the metrics name and values.
         """
-        update = self.formatted_text
+        update = self.epoch_formatted_text
         self._on_batch_end(update, remaining_time, batch_number, metrics_str, steps)
 
     def on_test_batch_end(self,
