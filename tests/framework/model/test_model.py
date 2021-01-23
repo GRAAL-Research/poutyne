@@ -871,6 +871,13 @@ class ModelTest(ModelFittingTestCase):
             self.assertEqual(inf_batch_size, 1)
             self.assertEqual(len(w), 0)
 
+    def test_evaluate_generator_with_iterator(self):
+        test_generator = some_data_tensor_generator(ModelTest.batch_size)
+
+        loss, _ = self.model.evaluate_generator(test_generator, steps=10)
+
+        self.assertEqual(type(loss), float)
+
 
 @skipIf(MNIST is None, "Unable to import MNIST")
 class ModelDatasetMethodsTest(ModelFittingTestCase):
