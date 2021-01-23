@@ -3,11 +3,11 @@
 * A progress bar is now set when testing a model (similar to training).
 * A new notification callback allowing to received message at specific time (start/end training/testing an at any given
   epoch).
-* A new logging callback, MLflowLogger, this callback allows you to log experimentation configuration and metrics 
+* A new logging callback, MLflowLogger, this callback allows you to log experimentation configuration and metrics
   during training, validation and testing.
+* Fix bug where [`evaluate_generator`](https://poutyne.org/model.html#poutyne.Model.evaluate_generator) did not support
+  generators with StopIteration exception.
 * A progress bar is now set when validating a model (similar to training).
-
-
 
 # v1.2
 
