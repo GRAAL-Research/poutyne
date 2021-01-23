@@ -165,24 +165,24 @@ class ColorProgress:
 
         self._update_print(update)
 
-    def on_epoch_end(self, epoch_total_time: float, steps: int, metrics_str: str) -> None:
+    def on_epoch_end(self, total_time: float, steps: int, metrics_str: str) -> None:
         """
         Format on epoch end: the epoch ratio (so far / to do), the total time for the epoch, the steps done and the
         metrics name and values.
         """
-        self._on_end(epoch_total_time, steps, metrics_str, self._end_print)
+        self._on_end(total_time, steps, metrics_str, self._end_print)
 
-    def on_valid_end(self, valid_total_time: float, steps: int, metrics_str: str) -> None:
+    def on_valid_end(self, total_time: float, steps: int, metrics_str: str) -> None:
         """
         Format on valid end: the total time for the validation, the steps done and the metrics name and values.
         """
-        self._on_end(valid_total_time, steps, metrics_str, self._update_print)
+        self._on_end(total_time, steps, metrics_str, self._update_print)
 
-    def on_test_end(self, test_total_time: float, steps: int, metrics_str: str) -> None:
+    def on_test_end(self, total_time: float, steps: int, metrics_str: str) -> None:
         """
         Format on test end: the total time for the test, the steps done and the metrics name and values.
         """
-        self._on_end(test_total_time, steps, metrics_str, self._end_print)
+        self._on_end(total_time, steps, metrics_str, self._end_print)
 
     def _on_end(self, total_time: float, steps: int, metrics_str: str, update_func: Callable) -> None:
         """

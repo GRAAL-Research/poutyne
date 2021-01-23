@@ -30,9 +30,10 @@ class ProgressionCallback(Callback):
 
     def __init__(self, *, coloring=True, progress_bar=True, equal_weights=False) -> None:
         super().__init__()
-        self.color_progress = ColorProgress(coloring)
+        self.color_progress = ColorProgress(coloring=coloring)
         self.progress_bar = progress_bar
         self.equal_weights = equal_weights
+        self.step_times_weighted_sum = 0.
 
     def set_params(self, params: Dict):
         super().set_params(params)
@@ -146,9 +147,9 @@ class ProgressionCallback(Callback):
         """
         metrics_str = self._get_metrics_string(logs)
         if self.steps is not None:
-            func(total_time, self.steps, metrics_str)
+            func(total_time=total_time, steps=self.steps, metrics_str=metrics_str)
         else:
-            func(total_time, self.last_step, metrics_str)
+            func(total_time=total_time, steps=self.last_step, metrics_str=metrics_str)
 
     def _batch_end_progress(self, logs: Dict, step_times_rate: float, batch_number: int, func: Callable) -> None:
         """
@@ -157,7 +158,7 @@ class ProgressionCallback(Callback):
         metrics_str = self._get_metrics_string(logs)
         if self.steps is not None:
             remaining_time = step_times_rate * (self.steps - batch_number)
-            func(remaining_time, batch_number, metrics_str, self.steps)
+            func(remaining_time=remaining_time, batch_number=batch_number, metrics_str=metrics_str, steps=self.steps)
         else:
-            func(step_times_rate, batch_number, metrics_str)
+            func(remaining_time=step_times_rate, batch_number=batch_number, metrics_str=metrics_str)
             self.last_step = batch_number
