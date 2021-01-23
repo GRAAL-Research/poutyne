@@ -1,5 +1,6 @@
 # pylint: disable=unused-argument
 
+import numpy as np
 import torch
 
 from poutyne import EpochMetric
@@ -23,6 +24,44 @@ def some_data_generator(batch_size):
         x = torch.rand(batch_size, 1)
         y = torch.rand(batch_size, 1)
         yield x, y
+
+
+class SomeDataGeneratorUsingStopIteration:
+
+    def __init__(self, batch_size, length):
+        self.batch_size = batch_size
+        self.length = length
+
+    def __iter__(self):
+        return ((np.random.rand(self.batch_size, 1).astype(np.float32), np.random.rand(self.batch_size,
+                                                                                       1).astype(np.float32))
+                for _ in range(self.length))
+
+
+class SomeDataGeneratorWithLen:
+
+    def __init__(self, batch_size, length, num_missing_samples):
+        self.batch_size = batch_size
+        self.length = length
+        self.num_generator_called = 0
+        self.x = torch.rand(length * batch_size - num_missing_samples, 1)
+        self.y = torch.rand(length * batch_size - num_missing_samples, 1)
+
+    def __len__(self):
+        return self.length
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        start_idx = self.num_generator_called * self.batch_size
+        end_idx = (self.num_generator_called + 1) * self.batch_size
+        x = self.x[start_idx:end_idx]
+        y = self.y[start_idx:end_idx]
+        self.num_generator_called += 1
+        if self.num_generator_called == self.length:
+            self.num_generator_called = 0
+        return x, y
 
 
 def some_batch_metric_1(y_pred, y_true):
