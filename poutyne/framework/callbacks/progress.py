@@ -26,13 +26,16 @@ class ProgressionCallback(Callback):
         equal_weights (bool): Whether or not the duration of each step is weighted equally when computing the
             average time of the steps and, thus, the ETA. By default, newer step times receive more weights than
             older step times. Set this to true to have equal weighting instead.
+        show_on_valid (bool): Whether or not to display the progression during the validation phase.
+            (Default value = True)
     """
 
-    def __init__(self, *, coloring=True, progress_bar=True, equal_weights=False) -> None:
+    def __init__(self, *, coloring=True, progress_bar=True, equal_weights=False, show_on_valid=True) -> None:
         super().__init__()
         self.color_progress = ColorProgress(coloring=coloring)
         self.progress_bar = progress_bar
         self.equal_weights = equal_weights
+        self.show_on_valid = show_on_valid
         self.step_times_weighted_sum = 0.
 
         self.train_last_step = None
@@ -61,14 +64,15 @@ class ProgressionCallback(Callback):
         self._set_progress_bar()
 
     def on_valid_begin(self, logs: Dict) -> None:
-        self.step_times_weighted_sum = 0.
+        if self.show_on_valid:
+            self.step_times_weighted_sum = 0.
 
-        self.metrics = ['loss'] + self.model.metrics_names
-        self.steps = self._valid_steps
+            self.metrics = ['loss'] + self.model.metrics_names
+            self.steps = self._valid_steps
 
-        self._set_progress_bar()
+            self._set_progress_bar()
 
-        self.color_progress.on_valid_begin()
+            self.color_progress.on_valid_begin()
 
     def on_test_begin(self, logs: Dict) -> None:
         self.step_times_weighted_sum = 0.
@@ -119,10 +123,11 @@ class ProgressionCallback(Callback):
         self.train_last_step = batch_number
 
     def on_valid_batch_end(self, batch_number: int, logs: Dict) -> None:
-        valid_step_times_rate = self._compute_step_times_rate(batch_number, logs)
-        progress_batch_end_fun = self.color_progress.on_valid_batch_end
+        if self.show_on_valid:
+            valid_step_times_rate = self._compute_step_times_rate(batch_number, logs)
+            progress_batch_end_fun = self.color_progress.on_valid_batch_end
 
-        self._batch_end_progress(logs, valid_step_times_rate, batch_number, progress_batch_end_fun)
+            self._batch_end_progress(logs, valid_step_times_rate, batch_number, progress_batch_end_fun)
         self.valid_last_step = batch_number
 
     def on_test_batch_end(self, batch_number: int, logs: Dict) -> None:
