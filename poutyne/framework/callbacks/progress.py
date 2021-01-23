@@ -94,8 +94,10 @@ class ProgressionCallback(Callback):
         epoch_total_time = logs['time']
 
         metrics_str = self._get_metrics_string(logs)
-        self.color_progress.on_epoch_end(total_time=epoch_total_time, train_last_steps=self.train_last_step,
-                                         valid_last_steps=self.valid_last_step, metrics_str=metrics_str)
+        self.color_progress.on_epoch_end(total_time=epoch_total_time,
+                                         train_last_steps=self.train_last_step,
+                                         valid_last_steps=self.valid_last_step,
+                                         metrics_str=metrics_str)
 
     def on_valid_end(self, logs: Dict) -> None:
         valid_total_time = logs['time']

@@ -1,7 +1,7 @@
 import math
 import sys
 import warnings
-from typing import Dict, Union, Callable
+from typing import Dict, Union
 
 from .progress_bar import ProgressBar
 
@@ -176,11 +176,19 @@ class ColorProgress:
         metrics name and values.
         """
         update = self.epoch_formatted_text
-        train_steps = self._get_formatted_step(train_last_steps, train_last_steps, prefix="train ", suffix="s",
-                                               ratio=False)
-        valid_steps = self._get_formatted_step(valid_last_steps, valid_last_steps, prefix="val ", suffix="s",
-                                               ratio=False)
-        update += train_steps + valid_steps + self._get_formatted_total_time(total_time)
+        steps_text = self._get_formatted_step(train_last_steps,
+                                              train_last_steps,
+                                              prefix="train ",
+                                              suffix="s",
+                                              ratio=False)
+        if valid_last_steps is not None:
+            valid_steps = self._get_formatted_step(valid_last_steps,
+                                                   valid_last_steps,
+                                                   prefix="val ",
+                                                   suffix="s",
+                                                   ratio=False)
+            steps_text += valid_steps
+        update += steps_text + self._get_formatted_total_time(total_time)
         update += self._get_formatted_metrics(metrics_str)
 
         if self.style_reset:
@@ -237,8 +245,13 @@ class ColorProgress:
             formatted_time = f"{self.text_color}ETA: {self.time_color}{time:.2f}s "
         return formatted_time
 
-    def _get_formatted_step(self, batch_number: int, steps: Union[int, None], prefix: str = "",
-                            suffix: str = "", ratio: bool = True) -> str:
+    def _get_formatted_step(self,
+                            batch_number: int,
+                            steps: Union[int, None],
+                            prefix: str = "",
+                            suffix: str = "",
+                            ratio: bool = True) -> str:
+        # pylint: disable=too-many-arguments
         step_text = f"{prefix}step{suffix}".capitalize()
         ratio_text = ""
         if steps is None:
