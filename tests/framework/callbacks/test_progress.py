@@ -8,6 +8,7 @@ from poutyne import ProgressionCallback
 class ProgressTest(TestCase):
 
     def setUp(self) -> None:
+        self.epochs = 2
         self.num_steps = 10
         self.num_valid_steps = 10
         self.step_times_rate = 1.0
@@ -32,16 +33,18 @@ class ProgressTest(TestCase):
             color_progress_calls = [call(coloring=self.coloring), call().set_progress_bar(self.num_steps)]
 
             # first train loop
-            color_progress_calls.extend(self._a_training_loop(self.num_steps, with_progress_bar=True))
+            epoch = 1
+            color_progress_calls.extend(self._a_training_loop(epoch, self.num_steps, with_progress_bar=True))
 
             # first valid loop
-            color_progress_calls.extend(self._a_valid_loop(self.num_steps, with_progress_bar=False))
+            color_progress_calls.extend(self._a_valid_loop(epoch, self.num_steps, with_progress_bar=False))
 
             # second train loop
-            color_progress_calls.extend(self._a_training_loop(self.num_steps, with_progress_bar=True))
+            epoch = 2
+            color_progress_calls.extend(self._a_training_loop(epoch, self.num_steps, with_progress_bar=True))
 
             # second valid loop
-            color_progress_calls.extend(self._a_valid_loop(self.num_steps, with_progress_bar=False))
+            color_progress_calls.extend(self._a_valid_loop(epoch, self.num_steps, with_progress_bar=False))
 
             color_progress_patch.assert_has_calls(color_progress_calls)
 
@@ -57,16 +60,18 @@ class ProgressTest(TestCase):
             color_progress_calls = [call(coloring=self.coloring), call().close_progress_bar()]
 
             # first train loop
-            color_progress_calls.extend(self._a_training_loop(self.num_steps, with_progress_bar=False))
+            epoch = 1
+            color_progress_calls.extend(self._a_training_loop(epoch, self.num_steps, with_progress_bar=False))
 
             # first valid loop
-            color_progress_calls.extend(self._a_valid_loop(self.num_steps, with_progress_bar=True))
+            color_progress_calls.extend(self._a_valid_loop(epoch, self.num_steps, with_progress_bar=True))
 
             # second train loop
-            color_progress_calls.extend(self._a_training_loop(self.num_steps, with_progress_bar=False))
+            epoch = 2
+            color_progress_calls.extend(self._a_training_loop(epoch, self.num_steps, with_progress_bar=False))
 
             # second valid loop
-            color_progress_calls.extend(self._a_valid_loop(self.num_steps, with_progress_bar=True))
+            color_progress_calls.extend(self._a_valid_loop(epoch, self.num_steps, with_progress_bar=True))
 
             color_progress_patch.assert_has_calls(color_progress_calls)
 
@@ -82,28 +87,30 @@ class ProgressTest(TestCase):
             color_progress_calls = [call(coloring=self.coloring), call().close_progress_bar()]
 
             # first train loop
-            color_progress_calls.extend(self._a_training_loop(self.num_steps, with_progress_bar=False))
+            epoch = 1
+            color_progress_calls.extend(self._a_training_loop(epoch, self.num_steps, with_progress_bar=False))
 
             # first valid loop
-            color_progress_calls.extend(self._a_valid_loop(self.num_steps, with_progress_bar=False))
+            color_progress_calls.extend(self._a_valid_loop(epoch, self.num_steps, with_progress_bar=False))
 
             # second train loop
-            color_progress_calls.extend(self._a_training_loop(self.num_steps, with_progress_bar=False))
+            epoch = 2
+            color_progress_calls.extend(self._a_training_loop(epoch, self.num_steps, with_progress_bar=False))
 
             # second valid loop
-            color_progress_calls.extend(self._a_valid_loop(self.num_steps, with_progress_bar=False))
+            color_progress_calls.extend(self._a_valid_loop(epoch, self.num_steps, with_progress_bar=False))
 
             color_progress_patch.assert_has_calls(color_progress_calls)
 
-    def _a_training_loop(self, num_steps: int = 5, with_progress_bar: bool = True) -> List:
+    def _a_training_loop(self, epoch_number, num_steps: int = 5, with_progress_bar: bool = True) -> List:
         color_progress_calls = []
 
-        self.progression_callback.on_epoch_begin(1, self.an_empty_log)
+        self.progression_callback.on_epoch_begin(epoch_number, self.an_empty_log)
         if with_progress_bar:
             color_progress_calls.append(call().set_progress_bar(self.num_steps))
         else:
             color_progress_calls.append(call().close_progress_bar())
-        color_progress_calls.append(call().on_epoch_begin())
+        color_progress_calls.append(call().on_epoch_begin(epoch_number=epoch_number, epochs=self.epochs))
 
         step_times_weighted_sum = 0.0
         for batch_number in range(0, num_steps):
@@ -126,7 +133,7 @@ class ProgressTest(TestCase):
                                                                       metrics_str=self.metrics_str))
         return color_progress_calls
 
-    def _a_valid_loop(self, num_steps: int = 5, with_progress_bar: bool = True) -> List:
+    def _a_valid_loop(self, epoch_number, num_steps: int = 5, with_progress_bar: bool = True) -> List:
         color_progress_calls = []
 
         self.progression_callback.on_valid_begin(self.an_empty_log)
@@ -158,7 +165,7 @@ class ProgressTest(TestCase):
                                                                       metrics_str=self.metrics_str))
 
         self.progression_callback.on_valid_end(self.final_log)
-        self.progression_callback.on_epoch_end(1, self.final_log)
+        self.progression_callback.on_epoch_end(epoch_number, self.final_log)
 
         color_progress_calls.extend([
             call().on_valid_end(total_time=self.total_time, steps=self.num_steps, metrics_str=self.metrics_str),

@@ -173,6 +173,37 @@ class ModelTest(ModelFittingTestCase):
 
         self.assertStdoutContains(["[32m", "[35m", "[36m", "[94m"])
 
+    def test_fitting_with_progress_bar_show_epoch(self):
+        train_generator = some_data_tensor_generator(ModelTest.batch_size)
+        valid_generator = some_data_tensor_generator(ModelTest.batch_size)
+
+        self._capture_output()
+
+        _ = self.model.fit_generator(train_generator,
+                                     valid_generator,
+                                     epochs=ModelTest.epochs,
+                                     steps_per_epoch=ModelTest.steps_per_epoch,
+                                     validation_steps=ModelTest.steps_per_epoch,
+                                     callbacks=[self.mock_callback])
+
+        self.assertStdoutContains(["Epoch", "1/5", "2/5"])
+
+    def test_fitting_with_no_progress_bar__dont_show_epoch(self):
+        train_generator = some_data_tensor_generator(ModelTest.batch_size)
+        valid_generator = some_data_tensor_generator(ModelTest.batch_size)
+
+        self._capture_output()
+
+        _ = self.model.fit_generator(train_generator,
+                                     valid_generator,
+                                     epochs=ModelTest.epochs,
+                                     steps_per_epoch=ModelTest.steps_per_epoch,
+                                     validation_steps=ModelTest.steps_per_epoch,
+                                     callbacks=[self.mock_callback],
+                                     verbose=False)
+
+        self.assertStdoutNotContains(["Epoch", "1/5", "2/5"])
+
     @skipIf(color is None, "Unable to import colorama")
     def test_fitting_with_user_coloring(self):
         train_generator = some_data_tensor_generator(ModelTest.batch_size)

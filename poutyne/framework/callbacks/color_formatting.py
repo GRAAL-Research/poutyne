@@ -117,9 +117,11 @@ class ColorProgress:
         if self.progress_bar:
             self.steps_progress_bar.reset()
 
-    def on_epoch_begin(self) -> None:
+    def on_epoch_begin(self, epoch_number: int, epochs: int) -> None:
         if self.progress_bar:
             self.steps_progress_bar.reset()
+
+        self._set_epoch_formatted_text(epoch_number, epochs)
 
     def on_train_batch_end(self,
                            remaining_time: float,
@@ -130,7 +132,8 @@ class ColorProgress:
         Format on train batch end for a steps the epoch ratio (so far / to do), the total time for the epoch, the steps
         done and the metrics name and values.
         """
-        self._on_batch_end(remaining_time, batch_number, metrics_str, steps)
+        update = self.epoch_formatted_text
+        self._on_batch_end(update, remaining_time, batch_number, metrics_str, steps)
 
     def on_valid_batch_end(self,
                            remaining_time: float,
@@ -141,7 +144,8 @@ class ColorProgress:
         Format on valid batch end for a steps the epoch ratio (so far / to do), the total time, the steps
         done and the metrics name and values.
         """
-        self._on_batch_end(remaining_time, batch_number, metrics_str, steps)
+        update = self.formatted_text
+        self._on_batch_end(update, remaining_time, batch_number, metrics_str, steps)
 
     def on_test_batch_end(self,
                           remaining_time: float,
@@ -152,15 +156,16 @@ class ColorProgress:
         Format on test batch end for a steps the epoch ratio (so far / to do), the total time, the steps
         done and the metrics name and values.
         """
-        self._on_batch_end(remaining_time, batch_number, metrics_str, steps)
+        update = self.formatted_text
+        self._on_batch_end(update, remaining_time, batch_number, metrics_str, steps)
 
     def _on_batch_end(self,
+                      update: str,
                       remaining_time: float,
                       batch_number: int,
                       metrics_str: str,
                       steps: Union[int, None] = None) -> None:
-        update = self.formatted_text
-
+        # pylint: disable=too-many-arguments
         update += self._batch_update(remaining_time, batch_number, metrics_str, steps)
 
         self._update_print(update)
@@ -170,25 +175,29 @@ class ColorProgress:
         Format on epoch end: the epoch ratio (so far / to do), the total time for the epoch, the steps done and the
         metrics name and values.
         """
-        self._on_end(total_time, steps, metrics_str, self._end_print)
+        update = self.epoch_formatted_text
+        self._on_end(update, total_time, steps, metrics_str, self._end_print)
 
     def on_valid_end(self, total_time: float, steps: int, metrics_str: str) -> None:
         """
         Format on valid end: the total time for the validation, the steps done and the metrics name and values.
         """
-        self._on_end(total_time, steps, metrics_str, self._update_print)
+        update = self.formatted_text
+        self._on_end(update, total_time, steps, metrics_str, self._update_print)
 
     def on_test_end(self, total_time: float, steps: int, metrics_str: str) -> None:
         """
         Format on test end: the total time for the test, the steps done and the metrics name and values.
         """
-        self._on_end(total_time, steps, metrics_str, self._end_print)
+        update = self.formatted_text
+        self._on_end(update, total_time, steps, metrics_str, self._end_print)
 
-    def _on_end(self, total_time: float, steps: int, metrics_str: str, update_func: Callable) -> None:
+    def _on_end(self, update: str, total_time: float, steps: int, metrics_str: str, update_func: Callable) -> None:
+        # pylint: disable=too-many-arguments
         """
         Format on end: the total time for the loop, the steps done and the metrics name and values.
         """
-        update = self.end_update(self.formatted_text, steps, total_time, metrics_str)
+        update = self._end_update(update, steps, total_time, metrics_str)
 
         update_func(update)
 
@@ -200,7 +209,7 @@ class ColorProgress:
         self.steps_progress_bar = None
         self.progress_bar = False
 
-    def end_update(self, update: str, steps: int, total_time: float, metrics_str: str) -> str:
+    def _end_update(self, update: str, steps: int, total_time: float, metrics_str: str) -> str:
         if self.progress_bar:
             update += self._get_formatted_step(steps, steps)
 
@@ -213,6 +222,10 @@ class ColorProgress:
             update += Style.RESET_ALL
 
         return update
+
+    def _set_epoch_formatted_text(self, epoch_number: int, epochs: int) -> None:
+        digits = int(math.log10(epochs)) + 1
+        self.epoch_formatted_text = f"\r{self.text_color}Epoch: {self.ratio_color}{epoch_number:{digits}d}/{epochs:d} "
 
     def _get_formatted_total_time(self, total_time: float) -> str:
         return f"{self.time_color}{total_time:.2f}s "

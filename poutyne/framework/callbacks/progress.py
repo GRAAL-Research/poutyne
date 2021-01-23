@@ -84,7 +84,7 @@ class ProgressionCallback(Callback):
 
         self._set_progress_bar()
 
-        self.color_progress.on_epoch_begin()
+        self.color_progress.on_epoch_begin(epoch_number=self.epoch_number, epochs=self.epochs)
 
     def on_epoch_end(self, epoch_number: int, logs: Dict) -> None:
         self.steps = self._train_steps
