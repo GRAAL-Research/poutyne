@@ -108,6 +108,7 @@ class ColorProgress:
         self.steps_progress_bar = None
         self.formatted_text = "\r"
         self.bar_format = f"{self.text_color}{{percentage}} |{self.progress_bar_color}{{bar}}{self.text_color}|"
+        self.prev_message_length = 0
 
     def on_valid_begin(self) -> None:
         if self.progress_bar:
@@ -195,19 +196,6 @@ class ColorProgress:
             update += Style.RESET_ALL
 
         self._end_print(update)
-
-    def on_valid_end(self, total_time: float, steps: int, metrics_str: str) -> None:
-        """
-        Format on valid end: the total time for the validation, the steps done and the metrics name and values.
-        """
-        update = self.formatted_text
-        update += self._get_formatted_step(steps, steps) + self._get_formatted_total_time(total_time)
-        update += self._get_formatted_metrics(metrics_str)
-
-        if self.style_reset:
-            update += Style.RESET_ALL
-
-        self._update_print(update)
 
     def on_test_end(self, total_time: float, steps: int, metrics_str: str) -> None:
         """
@@ -297,18 +285,27 @@ class ColorProgress:
 
         return update
 
-    @staticmethod
-    def _update_print(message: str) -> None:
+    def _pad_length(self, message):
+        new_message_length = len(message)
+        if new_message_length < self.prev_message_length:
+            # Pad current message to overwrite the previous longuer message.
+            message = message.ljust(self.prev_message_length)
+        self.prev_message_length = new_message_length
+        return message
+
+    def _update_print(self, message: str) -> None:
         """
         Print a update message.
         """
+        message = self._pad_length(message)
         sys.stdout.write(message)
         sys.stdout.flush()
 
-    @staticmethod
-    def _end_print(message: str) -> None:
+    def _end_print(self, message: str) -> None:
         """
         Print a update message but using print to create a new line after.
         """
+        message = self._pad_length(message)
         print(message)
         sys.stdout.flush()
+        self.prev_message_length = 0
