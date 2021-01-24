@@ -45,6 +45,9 @@ class StepIterator:
         elif mode == 'test':
             self.on_batch_begin = callback.on_test_batch_begin
             self.on_batch_end = callback.on_test_batch_end
+        elif mode == 'val':
+            self.on_batch_begin = callback.on_valid_batch_begin
+            self.on_batch_end = callback.on_valid_batch_end
 
         self.losses_sum = 0.
         self.metrics_sum = np.zeros(len(self.batch_metrics_names))
@@ -125,6 +128,9 @@ class EpochIterator:
         self.stop_training = False
 
         params = {'epochs': self.epochs, 'steps': self.steps_per_epoch}
+        if self.validation_steps is not None:
+            params.update({'valid_steps': self.validation_steps})
+
         self.callback.set_params(params)
 
     def _init_steps(self, train_generator, valid_generator, steps_per_epoch, validation_steps):
@@ -159,6 +165,7 @@ class EpochIterator:
                                                    self.validation_steps,
                                                    self.batch_metrics_names,
                                                    self.epoch_metrics_names,
+                                                   self.callback,
                                                    mode="val")
 
             yield train_step_iterator, valid_step_iterator

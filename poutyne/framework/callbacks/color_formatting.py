@@ -106,9 +106,19 @@ class ColorProgress:
 
         self.progress_bar = False
         self.steps_progress_bar = None
-        self.epoch_formatted_text = ""
+        self.formatted_text = "\r"
+        self.bar_format = f"{self.text_color}{{percentage}} |{self.progress_bar_color}{{bar}}{self.text_color}|"
+        self.prev_message_length = 0
 
-    def on_epoch_begin(self, epoch_number, epochs) -> None:
+    def on_valid_begin(self) -> None:
+        if self.progress_bar:
+            self.steps_progress_bar.reset()
+
+    def on_test_begin(self) -> None:
+        if self.progress_bar:
+            self.steps_progress_bar.reset()
+
+    def on_epoch_begin(self, epoch_number: int, epochs: int) -> None:
         if self.progress_bar:
             self.steps_progress_bar.reset()
 
@@ -119,68 +129,95 @@ class ColorProgress:
                            batch_number: int,
                            metrics_str: str,
                            steps: Union[int, None] = None) -> None:
-        # pylint: disable=too-many-arguments
         """
         Format on train batch end for a steps the epoch ratio (so far / to do), the total time for the epoch, the steps
         done and the metrics name and values.
         """
         update = self.epoch_formatted_text
+        self._on_batch_end(update, remaining_time, batch_number, metrics_str, steps)
 
-        update += self._batch_update(remaining_time, batch_number, metrics_str, steps)
-
-        self._update_print(update)
+    def on_valid_batch_end(self,
+                           remaining_time: float,
+                           batch_number: int,
+                           metrics_str: str,
+                           steps: Union[int, None] = None) -> None:
+        """
+        Format on valid batch end for a steps the epoch ratio (so far / to do), the total time, the steps
+        done and the metrics name and values.
+        """
+        update = self.epoch_formatted_text
+        self._on_batch_end(update, remaining_time, batch_number, metrics_str, steps)
 
     def on_test_batch_end(self,
                           remaining_time: float,
                           batch_number: int,
                           metrics_str: str,
                           steps: Union[int, None] = None) -> None:
-        # pylint: disable=too-many-arguments
         """
         Format on test batch end for a steps the epoch ratio (so far / to do), the total time, the steps
         done and the metrics name and values.
         """
+        update = self.formatted_text
+        self._on_batch_end(update, remaining_time, batch_number, metrics_str, steps)
 
-        update = "\r" + self._batch_update(remaining_time, batch_number, metrics_str, steps)
+    def _on_batch_end(self,
+                      update: str,
+                      remaining_time: float,
+                      batch_number: int,
+                      metrics_str: str,
+                      steps: Union[int, None] = None) -> None:
+        # pylint: disable=too-many-arguments
+        update += self._batch_update(remaining_time, batch_number, metrics_str, steps)
 
         self._update_print(update)
 
-    def on_epoch_end(self, epoch_total_time: float, steps: int, metrics_str: str) -> None:
-        # pylint: disable=too-many-arguments
+    def on_epoch_end(self, total_time: float, train_last_steps: int, valid_last_steps: int, metrics_str: str) -> None:
         """
         Format on epoch end: the epoch ratio (so far / to do), the total time for the epoch, the steps done and the
         metrics name and values.
         """
-        update = self.end_update(self.epoch_formatted_text, steps, epoch_total_time, metrics_str)
-
-        self._end_print(update)
-
-    def on_test_end(self, test_total_time, steps, metrics_str):
-        """
-        Format on test end: the total time for the test, the steps done and the metrics name and values.
-        """
-        update = self.end_update("\r", steps, test_total_time, metrics_str)
-
-        self._end_print(update)
-
-    def set_progress_bar(self, number_steps_per_epoch):
-        bar_format = f"{self.text_color}{{percentage}} |{self.progress_bar_color}{{bar}}{self.text_color}|"
-        self.steps_progress_bar = ProgressBar(number_steps_per_epoch, bar_format=bar_format)
-        self.progress_bar = True
-
-    def end_update(self, update: str, steps: int, total_time: float, metrics_str: str) -> str:
-        if self.progress_bar:
-            update += self._get_formatted_step(steps, steps)
-
-            update += str(self.steps_progress_bar) + self._get_formatted_total_time(total_time)
-        else:
-            update += self._get_formatted_total_time(total_time) + self._get_formatted_step(steps, steps)
+        update = self.epoch_formatted_text
+        steps_text = self._get_formatted_step(train_last_steps,
+                                              train_last_steps,
+                                              prefix="train ",
+                                              suffix="s",
+                                              ratio=False)
+        if valid_last_steps is not None:
+            valid_steps = self._get_formatted_step(valid_last_steps,
+                                                   valid_last_steps,
+                                                   prefix="val ",
+                                                   suffix="s",
+                                                   ratio=False)
+            steps_text += valid_steps
+        update += steps_text + self._get_formatted_total_time(total_time)
         update += self._get_formatted_metrics(metrics_str)
 
         if self.style_reset:
             update += Style.RESET_ALL
 
-        return update
+        self._end_print(update)
+
+    def on_test_end(self, total_time: float, steps: int, metrics_str: str) -> None:
+        """
+        Format on test end: the total time for the test, the steps done and the metrics name and values.
+        """
+        update = self.formatted_text
+        test_steps = self._get_formatted_step(steps, steps, prefix="test ", suffix="s", ratio=False)
+        update += test_steps + self._get_formatted_total_time(total_time)
+        update += self._get_formatted_metrics(metrics_str)
+
+        if self.style_reset:
+            update += Style.RESET_ALL
+
+        self._end_print(update)
+
+    def set_progress_bar(self, number_steps_per_epoch: int) -> None:
+        self.steps_progress_bar = ProgressBar(number_steps_per_epoch, bar_format=self.bar_format)
+        self.progress_bar = True
+
+    def close_progress_bar(self) -> None:
+        self.steps_progress_bar = None
+        self.progress_bar = False
 
     def _set_epoch_formatted_text(self, epoch_number: int, epochs: int) -> None:
         digits = int(math.log10(epochs)) + 1
@@ -189,19 +226,29 @@ class ColorProgress:
     def _get_formatted_total_time(self, total_time: float) -> str:
         return f"{self.time_color}{total_time:.2f}s "
 
-    def _get_formatted_time(self, time: float, steps) -> str:
+    def _get_formatted_time(self, time: float, steps: Union[int, None]) -> str:
         if steps is None:
             formatted_time = f"{self.time_color}{time:.2f}s/step "
         else:
             formatted_time = f"{self.text_color}ETA: {self.time_color}{time:.2f}s "
         return formatted_time
 
-    def _get_formatted_step(self, batch_number: int, steps: Union[int, None]) -> str:
+    def _get_formatted_step(self,
+                            batch_number: int,
+                            steps: Union[int, None],
+                            prefix: str = "",
+                            suffix: str = "",
+                            ratio: bool = True) -> str:
+        # pylint: disable=too-many-arguments
+        step_text = f"{prefix}step{suffix}".capitalize()
+        ratio_text = ""
         if steps is None:
-            formatted_step = f"{self.text_color}Step: {self.ratio_color}{batch_number:d} "
+            formatted_step = f"{self.text_color}{step_text}: {self.ratio_color}{batch_number:d} "
         else:
             digits = int(math.log10(steps)) + 1
-            formatted_step = f"{self.text_color}Step: {self.ratio_color}{batch_number:{digits}d}/{steps:d} "
+            if ratio:
+                ratio_text = f"/{steps:d}"
+            formatted_step = f"{self.text_color}{step_text}: {self.ratio_color}{batch_number:{digits}d}{ratio_text} "
         return formatted_step
 
     def _get_formatted_metrics(self, metrics_str: str) -> str:
@@ -219,7 +266,6 @@ class ColorProgress:
                       batch_number: int,
                       metrics_str: str,
                       steps: Union[int, None] = None) -> str:
-        # pylint: disable=too-many-arguments
         update = ""
         if self.progress_bar:
             update += self._get_formatted_step(batch_number, steps)
@@ -228,7 +274,7 @@ class ColorProgress:
 
             update += str(self.steps_progress_bar) + self._get_formatted_time(remaining_time, steps)
         else:
-            update += self._get_formatted_time(remaining_time, steps) + self._get_formatted_step(batch_number, steps)
+            update += self._get_formatted_step(batch_number, steps) + self._get_formatted_time(remaining_time, steps)
 
         update += self._get_formatted_metrics(metrics_str)
 
@@ -239,18 +285,27 @@ class ColorProgress:
 
         return update
 
-    @staticmethod
-    def _update_print(message: str) -> None:
+    def _pad_length(self, message):
+        new_message_length = len(message)
+        if new_message_length < self.prev_message_length:
+            # Pad current message to overwrite the previous longuer message.
+            message = message.ljust(self.prev_message_length)
+        self.prev_message_length = new_message_length
+        return message
+
+    def _update_print(self, message: str) -> None:
         """
         Print a update message.
         """
+        message = self._pad_length(message)
         sys.stdout.write(message)
         sys.stdout.flush()
 
-    @staticmethod
-    def _end_print(message: str) -> None:
+    def _end_print(self, message: str) -> None:
         """
         Print a update message but using print to create a new line after.
         """
+        message = self._pad_length(message)
         print(message)
         sys.stdout.flush()
+        self.prev_message_length = 0

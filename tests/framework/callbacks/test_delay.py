@@ -36,7 +36,11 @@ class DelayCallbackTest(TestCase):
                                  steps_per_epoch=DelayCallbackTest.steps_per_epoch,
                                  validation_steps=DelayCallbackTest.steps_per_epoch,
                                  callbacks=[delay_callback])
-        params = {'epochs': DelayCallbackTest.epochs, 'steps': DelayCallbackTest.steps_per_epoch}
+        params = {
+            'epochs': DelayCallbackTest.epochs,
+            'steps': DelayCallbackTest.steps_per_epoch,
+            'valid_steps': DelayCallbackTest.steps_per_epoch
+        }
 
         call_list = []
         call_list.append(call.on_train_begin({}))
@@ -81,7 +85,11 @@ class DelayCallbackTest(TestCase):
                                  steps_per_epoch=DelayCallbackTest.steps_per_epoch,
                                  validation_steps=DelayCallbackTest.steps_per_epoch,
                                  callbacks=[delay_callback])
-        params = {'epochs': DelayCallbackTest.epochs, 'steps': DelayCallbackTest.steps_per_epoch}
+        params = {
+            'epochs': DelayCallbackTest.epochs,
+            'steps': DelayCallbackTest.steps_per_epoch,
+            'valid_steps': DelayCallbackTest.steps_per_epoch
+        }
 
         call_list = []
         call_list.append(call.on_train_begin({}))

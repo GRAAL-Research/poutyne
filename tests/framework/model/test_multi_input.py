@@ -42,8 +42,12 @@ class ModelMultiInputTest(ModelFittingTestCase):
                                         steps_per_epoch=ModelMultiInputTest.steps_per_epoch,
                                         validation_steps=ModelMultiInputTest.steps_per_epoch,
                                         callbacks=[self.mock_callback])
-        params = {'epochs': ModelMultiInputTest.epochs, 'steps': ModelMultiInputTest.steps_per_epoch}
-        self._test_callbacks_train(params, logs)
+        params = {
+            'epochs': ModelMultiInputTest.epochs,
+            'steps': ModelMultiInputTest.steps_per_epoch,
+            'valid_steps': ModelMultiInputTest.steps_per_epoch
+        }
+        self._test_callbacks_train(params, logs, valid_steps=ModelMultiInputTest.steps_per_epoch)
 
     def test_fitting_with_tensor_multi_input(self):
         train_real_steps_per_epoch = 30
@@ -71,7 +75,11 @@ class ModelMultiInputTest(ModelFittingTestCase):
                               steps_per_epoch=None,
                               validation_steps=None,
                               callbacks=[self.mock_callback])
-        params = {'epochs': ModelMultiInputTest.epochs, 'steps': train_real_steps_per_epoch}
+        params = {
+            'epochs': ModelMultiInputTest.epochs,
+            'steps': train_real_steps_per_epoch,
+            'valid_steps': valid_real_steps_per_epoch
+        }
         self._test_callbacks_train(params, logs)
 
     def test_tensor_train_on_batch_multi_input(self):

@@ -817,7 +817,7 @@ class Experiment:
             best_epoch_stats = self.load_checkpoint(checkpoint, verbose=verbose)
 
         if verbose:
-            print(name)
+            print(f"Running {name}")
         test_metrics_dict = evaluate_func(*args, **kwargs, verbose=verbose)
 
         if self.logging:

@@ -573,8 +573,18 @@ class Model:
             train_step_iterator.epoch_metrics = self._get_epoch_metrics()
 
             if valid_step_iterator is not None:
+                valid_begin_time = timeit.default_timer()
+
+                callback_list.on_valid_begin({})
                 self._validate(valid_step_iterator)
+
                 valid_step_iterator.epoch_metrics = self._get_epoch_metrics()
+                valid_total_time = timeit.default_timer() - valid_begin_time
+
+                valid_metrics_log = {'time': valid_total_time}
+                valid_metrics_log.update(valid_step_iterator.metrics_logs)
+
+                callback_list.on_valid_end(valid_metrics_log)
 
             epoch_iterator.stop_training = self.stop_training
 
@@ -621,8 +631,17 @@ class Model:
             train_step_iterator.epoch_metrics = self._get_epoch_metrics()
 
             if valid_step_iterator is not None:
+                callback_list.on_valid_begin({})
+                valid_begin_time = timeit.default_timer()
                 self._validate(valid_step_iterator)
+
                 valid_step_iterator.epoch_metrics = self._get_epoch_metrics()
+                valid_total_time = timeit.default_timer() - valid_begin_time
+
+                valid_metrics_log = {'time': valid_total_time}
+                valid_metrics_log.update(valid_step_iterator.metrics_logs)
+
+                callback_list.on_valid_end(valid_metrics_log)
 
             epoch_iterator.stop_training = self.stop_training
 
@@ -1129,9 +1148,9 @@ class Model:
         loss, batch_metrics, pred_y, true_y = self._validate(step_iterator,
                                                              return_pred=return_pred,
                                                              return_ground_truth=return_ground_truth)
-        test_total_time = timeit.default_timer() - test_begin_time
 
         step_iterator.epoch_metrics = self._get_epoch_metrics()
+        test_total_time = timeit.default_timer() - test_begin_time
 
         if return_pred and concatenate_returns:
             pred_y = _concat(pred_y)
