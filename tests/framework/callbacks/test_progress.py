@@ -167,12 +167,10 @@ class ProgressTest(TestCase):
         self.progression_callback.on_valid_end(self.final_log)
         self.progression_callback.on_epoch_end(epoch_number, self.final_log)
 
-        color_progress_calls.extend([
-            call().on_valid_end(total_time=self.total_time, steps=self.num_steps, metrics_str=self.metrics_str),
+        color_progress_calls.append(
             call().on_epoch_end(total_time=self.total_time,
                                 train_last_steps=self.num_steps,
                                 valid_last_steps=self.num_valid_steps,
-                                metrics_str=self.metrics_str)
-        ])
+                                metrics_str=self.metrics_str))
 
         return color_progress_calls

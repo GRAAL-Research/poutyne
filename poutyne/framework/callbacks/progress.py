@@ -103,12 +103,6 @@ class ProgressionCallback(Callback):
                                          valid_last_steps=self.valid_last_step,
                                          metrics_str=metrics_str)
 
-    def on_valid_end(self, logs: Dict) -> None:
-        valid_total_time = logs['time']
-        progress_fun = self.color_progress.on_valid_end
-
-        self._end_progress(logs, valid_total_time, progress_fun)
-
     def on_test_end(self, logs: Dict) -> None:
         test_total_time = logs['time']
         progress_fun = self.color_progress.on_test_end
