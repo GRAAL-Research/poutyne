@@ -153,9 +153,9 @@ pip install -U git+https://github.com/GRAAL-Research/poutyne.git@dev
 
 ## Learning Material
 
-### Blogposts
+### Blog posts
 
-* [Medium PyTorch](https://medium.com/pytorch/poutyne-a-simplified-framework-for-deep-learning-in-pytorch-74b1fc1d5a8b) - Presentation of the basics of Poutyne and how it can help you be more efficient when developing neural networks with PyTorch.
+* [Medium PyTorch post](https://medium.com/pytorch/poutyne-a-simplified-framework-for-deep-learning-in-pytorch-74b1fc1d5a8b) - Presentation of the basics of Poutyne and how it can help you be more efficient when developing neural networks with PyTorch.
 
 ### Examples
 

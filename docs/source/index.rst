@@ -164,6 +164,11 @@ Before installing Poutyne, you must have the latest version of `PyTorch <https:/
 Learning Material
 =================
 
+Blog posts
+----------
+
+* `Medium PyTorch post <https://medium.com/pytorch/poutyne-a-simplified-framework-for-deep-learning-in-pytorch-74b1fc1d5a8b>`__ - Presentation of the basics of Poutyne and how it can help you be more efficient when developing neural networks with PyTorch.
+
 Examples
 --------
 
