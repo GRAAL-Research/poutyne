@@ -9,6 +9,7 @@
   generators with StopIteration exception.
 * Experiment now has a `train_data` and a `test_data` method.
 * A progress bar is now set when validating a model (similar to training).
+* The [Lambda layer](https://poutyne.org/layers.html#poutyne.Lambda) now supports multiple arguments in its forward method.
 
 # v1.2
 

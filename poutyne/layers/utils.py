@@ -23,5 +23,5 @@ class Lambda(nn.Module):
         super().__init__()
         self.func = func
 
-    def forward(self, x):
-        return self.func(x)
+    def forward(self, *x):
+        return self.func(*x)
