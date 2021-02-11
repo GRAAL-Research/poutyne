@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>Callbacks &mdash; Poutyne 1.2 documentation</title>
+  <title>Callbacks &mdash; Poutyne 1.3 documentation</title>
   
 
   
@@ -67,7 +67,7 @@
             
             
               <div class="version">
-                1.2
+                1.3
               </div>
             
           
@@ -102,6 +102,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#poutyne-s-callbacks">Poutyne’s Callbacks</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#logging">Logging</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#tracking">Tracking</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#notification">Notification</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#checkpointing">Checkpointing</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#lr-schedulers">LR Schedulers</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#policies">Policies</a><ul>
@@ -204,8 +205,8 @@ are provided with.</p>
 <dd><dl class="py attribute">
 <dt id="poutyne.Callback.params">
 <code class="sig-name descname">params</code><a class="headerlink" href="#poutyne.Callback.params" title="Permalink to this definition">¶</a></dt>
-<dd><p>Contains ‘epoch’ and ‘steps_per_epoch’ keys which are passed to the
-<a class="reference internal" href="model.html#poutyne.Model.fit" title="poutyne.Model.fit"><code class="xref py py-func docutils literal notranslate"><span class="pre">Model.fit()</span></code></a> function. It may contain other keys.</p>
+<dd><p>Contains <code class="docutils literal notranslate"><span class="pre">'epoch'</span></code> and <code class="docutils literal notranslate"><span class="pre">'steps_per_epoch'</span></code> keys which are passed to the
+when training. Contains <code class="docutils literal notranslate"><span class="pre">'steps'</span></code> when evaluating. May contain other keys.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.9)">dict</a></p>
@@ -248,20 +249,21 @@ are provided with.</p>
 <li><p><strong>epoch_number</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – The epoch number.</p></li>
 <li><p><strong>logs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.9)"><em>dict</em></a>) – <p>Contains the following keys:</p>
 <ul>
-<li><p>’epoch’: The epoch number.</p></li>
-<li><p>’loss’: The average loss of the batches.</p></li>
-<li><p>’time’: The computation time of the epoch.</p></li>
-<li><p>Other metrics: One key for each type of metrics. The metrics are also averaged.</p></li>
-<li><p>val_loss’: The average loss of the batches on the validation set.</p></li>
-<li><p>Other metrics: One key for each type of metrics on the validation set. The metrics are also averaged.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">'epoch'</span></code>: The epoch number.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">'time'</span></code>: The computation time of the epoch.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">'loss'</span></code>: The average loss of the batches.</p></li>
+<li><p>Values of training metrics: One key for each type of metrics. The metrics are also averaged.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">'val_loss'</span></code>: The average loss of the batches on the validation set.</p></li>
+<li><p>Values of validation metrics: One key for each type of metrics on the validation set. Each key is
+prefixed by <code class="docutils literal notranslate"><span class="pre">'val_'</span></code>. The metrics are also averaged.</p></li>
 </ul>
 </p></li>
 </ul>
 </dd>
 </dl>
 <p>Example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">logs</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;epoch&#39;</span><span class="p">:</span> <span class="mi">6</span><span class="p">,</span> <span class="s1">&#39;time&#39;</span><span class="p">:</span> <span class="mf">3.141519837</span><span class="p">,</span> <span class="s1">&#39;loss&#39;</span><span class="p">:</span> <span class="mf">4.34462</span><span class="p">,</span> <span class="s1">&#39;accuracy&#39;</span><span class="p">:</span> <span class="mf">0.766</span><span class="p">,</span>
-        <span class="s1">&#39;val_loss&#39;</span><span class="p">:</span> <span class="mf">5.2352</span><span class="p">,</span> <span class="s1">&#39;val_accuracy&#39;</span><span class="p">:</span> <span class="mf">0.682</span><span class="p">}</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">logs</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;epoch&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;time&#39;</span><span class="p">:</span> <span class="mf">6.08248</span><span class="p">,</span> <span class="s1">&#39;loss&#39;</span><span class="p">:</span> <span class="mf">0.40161</span><span class="p">,</span> <span class="s1">&#39;acc&#39;</span><span class="p">:</span> <span class="mf">89.052</span><span class="p">,</span> <span class="s1">&#39;fscore_micro&#39;</span><span class="p">:</span> <span class="mf">0.89051</span><span class="p">,</span>
+        <span class="s1">&#39;val_loss&#39;</span><span class="p">:</span> <span class="mf">0.36814</span><span class="p">,</span> <span class="s1">&#39;val_acc&#39;</span><span class="p">:</span> <span class="mf">89.52</span><span class="p">,</span> <span class="s1">&#39;val_fscore_micro&#39;</span><span class="p">:</span> <span class="mf">0.89520</span><span class="p">}</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -288,10 +290,63 @@ are provided with.</p>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>batch_number</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – The batch number.</p></li>
+<li><p><strong>logs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.9)"><em>dict</em></a>) – <p>Contains the following keys:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">'batch'</span></code>: The batch number.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">'size'</span></code>: The size of the batch as inferred by <a class="reference internal" href="model.html#poutyne.Model.get_batch_size" title="poutyne.Model.get_batch_size"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_batch_size()</span></code></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">'time'</span></code>: The computation time of the batch.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">'loss'</span></code>: The loss of the batch.</p></li>
+<li><p>Values of the batch metrics for the specific batch: One key for each type of metrics.</p></li>
+</ul>
+</p></li>
+</ul>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">logs</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;batch&#39;</span><span class="p">:</span> <span class="mi">171</span><span class="p">,</span> <span class="s1">&#39;size&#39;</span><span class="p">:</span> <span class="mi">32</span><span class="p">,</span> <span class="s1">&#39;time&#39;</span><span class="p">:</span> <span class="mf">0.00310</span><span class="p">,</span> <span class="s1">&#39;loss&#39;</span><span class="p">:</span> <span class="mf">1.95204</span><span class="p">,</span> <span class="s1">&#39;acc&#39;</span><span class="p">:</span> <span class="mf">43.75</span><span class="p">}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="poutyne.Callback.on_valid_batch_begin">
+<code class="sig-name descname">on_valid_batch_begin</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">batch_number</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)">int</a></span></em>, <em class="sig-param"><span class="n">logs</span><span class="p">:</span> <span class="n">Dict</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poutyne/framework/callbacks/callbacks.html#Callback.on_valid_batch_begin"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#poutyne.Callback.on_valid_batch_begin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Is called before the beginning of the validation batch.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>batch_number</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – The batch number.</p></li>
 <li><p><strong>logs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.9)"><em>dict</em></a>) – Usually an empty dict.</p></li>
 </ul>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="poutyne.Callback.on_valid_batch_end">
+<code class="sig-name descname">on_valid_batch_end</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">batch_number</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)">int</a></span></em>, <em class="sig-param"><span class="n">logs</span><span class="p">:</span> <span class="n">Dict</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poutyne/framework/callbacks/callbacks.html#Callback.on_valid_batch_end"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#poutyne.Callback.on_valid_batch_end" title="Permalink to this definition">¶</a></dt>
+<dd><p>Is called before the end of the validation batch.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>batch_number</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – The batch number.</p></li>
+<li><p><strong>logs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.9)"><em>dict</em></a>) – <p>Contains the following keys:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">'batch'</span></code>: The batch number.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">'size'</span></code>: The size of the batch as inferred by <a class="reference internal" href="model.html#poutyne.Model.get_batch_size" title="poutyne.Model.get_batch_size"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_batch_size()</span></code></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">'time'</span></code>: The computation time of the batch.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">val_loss'</span></code>: The loss of the batch.</p></li>
+<li><p>Values of the batch metrics for the specific batch: One key for each type of metrics. Each key is
+prefixed by <code class="docutils literal notranslate"><span class="pre">'val_'</span></code>. The metrics are also averaged.</p></li>
+</ul>
+</p></li>
+</ul>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">logs</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;batch&#39;</span><span class="p">:</span> <span class="mi">171</span><span class="p">,</span> <span class="s1">&#39;size&#39;</span><span class="p">:</span> <span class="mi">32</span><span class="p">,</span> <span class="s1">&#39;time&#39;</span><span class="p">:</span> <span class="mf">0.00310</span><span class="p">,</span> <span class="s1">&#39;val_loss&#39;</span><span class="p">:</span> <span class="mf">1.95204</span><span class="p">,</span> <span class="s1">&#39;val_acc&#39;</span><span class="p">:</span> <span class="mf">43.75</span><span class="p">}</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py method">
@@ -316,10 +371,23 @@ are provided with.</p>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>batch_number</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – The batch number.</p></li>
-<li><p><strong>logs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.9)"><em>dict</em></a>) – Usually an empty dict.</p></li>
+<li><p><strong>logs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.9)"><em>dict</em></a>) – <p>Contains the following keys:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">'batch'</span></code>: The batch number.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">'size'</span></code>: The size of the batch as inferred by <a class="reference internal" href="model.html#poutyne.Model.get_batch_size" title="poutyne.Model.get_batch_size"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_batch_size()</span></code></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">'time'</span></code>: The computation time of the batch.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">'loss'</span></code>: The loss of the batch.</p></li>
+<li><p>Values of the batch metrics for the specific batch: One key for each type of metrics. Each key is
+prefixed by <code class="docutils literal notranslate"><span class="pre">'test_'</span></code>. The metrics are also averaged.</p></li>
+</ul>
+</p></li>
 </ul>
 </dd>
 </dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">logs</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;batch&#39;</span><span class="p">:</span> <span class="mi">171</span><span class="p">,</span> <span class="s1">&#39;size&#39;</span><span class="p">:</span> <span class="mi">32</span><span class="p">,</span> <span class="s1">&#39;time&#39;</span><span class="p">:</span> <span class="mf">0.00310</span><span class="p">,</span> <span class="s1">&#39;test_loss&#39;</span><span class="p">:</span> <span class="mf">1.95204</span><span class="p">,</span> <span class="s1">&#39;test_acc&#39;</span><span class="p">:</span> <span class="mf">43.75</span><span class="p">}</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py method">
@@ -345,6 +413,39 @@ are provided with.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt id="poutyne.Callback.on_valid_begin">
+<code class="sig-name descname">on_valid_begin</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">logs</span><span class="p">:</span> <span class="n">Dict</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poutyne/framework/callbacks/callbacks.html#Callback.on_valid_begin"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#poutyne.Callback.on_valid_begin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Is called before the beginning of the validation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>logs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.9)"><em>dict</em></a>) – Usually an empty dict.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="poutyne.Callback.on_valid_end">
+<code class="sig-name descname">on_valid_end</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">logs</span><span class="p">:</span> <span class="n">Dict</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poutyne/framework/callbacks/callbacks.html#Callback.on_valid_end"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#poutyne.Callback.on_valid_end" title="Permalink to this definition">¶</a></dt>
+<dd><p>Is called before the end of the validation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>logs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.9)"><em>dict</em></a>) – <p>Contains the following keys:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">'time'</span></code>: The total computation time of the test.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">'val_loss'</span></code>: The average loss of the batches on the test set.</p></li>
+<li><p>Values of testing metrics: One key for each type of metrics. Each key is
+prefixed by <code class="docutils literal notranslate"><span class="pre">'val_'</span></code>. The metrics are also averaged.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">logs</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;time&#39;</span><span class="p">:</span> <span class="mf">6.08248</span><span class="p">,</span> <span class="s1">&#39;val_loss&#39;</span><span class="p">:</span> <span class="mf">0.40161</span><span class="p">,</span> <span class="s1">&#39;val_acc&#39;</span><span class="p">:</span> <span class="mf">89.052</span><span class="p">,</span> <span class="s1">&#39;val_fscore_micro&#39;</span><span class="p">:</span> <span class="mf">0.89051</span><span class="p">}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
 <dt id="poutyne.Callback.on_test_begin">
 <code class="sig-name descname">on_test_begin</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">logs</span><span class="p">:</span> <span class="n">Dict</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poutyne/framework/callbacks/callbacks.html#Callback.on_test_begin"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#poutyne.Callback.on_test_begin" title="Permalink to this definition">¶</a></dt>
 <dd><p>Is called before the beginning of the testing.</p>
@@ -361,9 +462,20 @@ are provided with.</p>
 <dd><p>Is called before the end of the testing.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>logs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.9)"><em>dict</em></a>) – Usually an empty dict.</p>
+<dd class="field-odd"><p><strong>logs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.9)"><em>dict</em></a>) – <p>Contains the following keys:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">'time'</span></code>: The total computation time of the test.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">'test_loss'</span></code>: The average loss of the batches on the test set.</p></li>
+<li><p>Values of testing metrics: One key for each type of metrics. Each key is
+prefixed by <code class="docutils literal notranslate"><span class="pre">'test_'</span></code>. The metrics are also averaged.</p></li>
+</ul>
+</p>
 </dd>
 </dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">logs</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;time&#39;</span><span class="p">:</span> <span class="mf">6.08248</span><span class="p">,</span> <span class="s1">&#39;test_loss&#39;</span><span class="p">:</span> <span class="mf">0.40161</span><span class="p">,</span> <span class="s1">&#39;test_acc&#39;</span><span class="p">:</span> <span class="mf">89.052</span><span class="p">,</span> <span class="s1">&#39;test_fscore_micro&#39;</span><span class="p">:</span> <span class="mf">0.89051</span><span class="p">}</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py method">
@@ -541,7 +653,7 @@ atomically.</p></li>
 
 <dl class="py class">
 <dt id="poutyne.ProgressionCallback">
-<em class="property">class </em><code class="sig-prename descclassname">poutyne.</code><code class="sig-name descname">ProgressionCallback</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">coloring</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">progress_bar</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">equal_weights</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poutyne/framework/callbacks/progress.html#ProgressionCallback"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#poutyne.ProgressionCallback" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">poutyne.</code><code class="sig-name descname">ProgressionCallback</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">coloring</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">progress_bar</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">equal_weights</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">show_on_valid</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poutyne/framework/callbacks/progress.html#ProgressionCallback"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#poutyne.ProgressionCallback" title="Permalink to this definition">¶</a></dt>
 <dd><p>Default progression callback used in <a class="reference internal" href="model.html#poutyne.Model" title="poutyne.Model"><code class="xref py py-class docutils literal notranslate"><span class="pre">Model</span></code></a>. You can use the <code class="docutils literal notranslate"><span class="pre">progress_options</span></code>
 in <a class="reference internal" href="model.html#poutyne.Model" title="poutyne.Model"><code class="xref py py-class docutils literal notranslate"><span class="pre">Model</span></code></a> instead of instanciating this callback. If you choose to use this callback
 anyway, make sure to pass <code class="docutils literal notranslate"><span class="pre">verbose=False</span></code> to <a class="reference internal" href="model.html#poutyne.Model.fit" title="poutyne.Model.fit"><code class="xref py py-func docutils literal notranslate"><span class="pre">fit()</span></code></a> or
@@ -562,9 +674,98 @@ the formatting could be impacted (a line for every step).
 <li><p><strong>equal_weights</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><em>bool</em></a>) – Whether or not the duration of each step is weighted equally when computing the
 average time of the steps and, thus, the ETA. By default, newer step times receive more weights than
 older step times. Set this to true to have equal weighting instead.</p></li>
+<li><p><strong>show_on_valid</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><em>bool</em></a>) – Whether or not to display the progression during the validation phase.
+(Default value = True)</p></li>
 </ul>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py class">
+<dt id="poutyne.MLFlowLogger">
+<em class="property">class </em><code class="sig-prename descclassname">poutyne.</code><code class="sig-name descname">MLFlowLogger</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">experiment_name</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)">str</a></span></em>, <em class="sig-param"><span class="n">tracking_uri</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)">str</a><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">batch_granularity</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)">bool</a></span> <span class="o">=</span> <span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poutyne/framework/callbacks/mlflow_logger.html#MLFlowLogger"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#poutyne.MLFlowLogger" title="Permalink to this definition">¶</a></dt>
+<dd><p>MLflow logger to manage logging of experiments parameters, metrics update, models log and other information. The
+logger will log all run into the same experiment.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>experiment_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – The name of the experiment. Name must be unique and are case sensitive.</p></li>
+<li><p><strong>tracking_uri</strong> (<em>Union</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a><em>]</em>) – Either the URI tracking path (for server tracking) of the absolute path to
+the directory to save the files (for file store). For example: <a class="reference external" href="http:/">http:/</a>/&lt;ip address&gt;:&lt;port&gt; (remote server) or
+/home/&lt;user&gt;/mlflow-server (local server). If None, will use the default MLflow file
+tracking URI “./mlruns”.</p></li>
+<li><p><strong>batch_granularity</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><em>bool</em></a>) – Whether to also output the result of each batch in addition to the epochs.
+(Default value = False)</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<p>Using file store:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mlflow_logger</span> <span class="o">=</span> <span class="n">MLFlowLogger</span><span class="p">(</span><span class="n">experiment_name</span><span class="o">=</span><span class="s2">&quot;experiment&quot;</span><span class="p">,</span> <span class="n">tracking_uri</span><span class="o">=</span><span class="s2">&quot;/absolute/path/to/directory&quot;</span><span class="p">)</span>
+<span class="n">mlflow_logger</span><span class="o">.</span><span class="n">log_config_params</span><span class="p">(</span><span class="n">config_params</span><span class="o">=</span><span class="n">cfg_dict</span><span class="p">)</span> <span class="c1"># logging the config dictionary</span>
+
+<span class="c1"># our Poutyne experiment</span>
+<span class="n">experiment</span> <span class="o">=</span> <span class="n">Experiment</span><span class="p">(</span><span class="n">directory</span><span class="o">=</span><span class="n">saving_directory</span><span class="p">,</span> <span class="n">network</span><span class="o">=</span><span class="n">network</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span> <span class="n">optimizer</span><span class="o">=</span><span class="n">optimizer</span><span class="p">,</span>
+                <span class="n">loss_function</span><span class="o">=</span><span class="n">cross_entropy_loss</span><span class="p">,</span> <span class="n">batch_metrics</span><span class="o">=</span><span class="p">[</span><span class="n">accuracy</span><span class="p">])</span>
+
+<span class="c1"># Using the MLflow logger callback during training</span>
+<span class="n">experiment</span><span class="o">.</span><span class="n">train</span><span class="p">(</span><span class="n">train_generator</span><span class="o">=</span><span class="n">train_loader</span><span class="p">,</span> <span class="n">valid_generator</span><span class="o">=</span><span class="n">valid_loader</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                 <span class="n">seed</span><span class="o">=</span><span class="mi">42</span><span class="p">,</span> <span class="n">callbacks</span><span class="o">=</span><span class="p">[</span><span class="n">mlflow_logger</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>Using server tracking:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mlflow_logger</span> <span class="o">=</span> <span class="n">MLFlowLogger</span><span class="p">(</span><span class="n">experiment_name</span><span class="o">=</span><span class="s2">&quot;experiment&quot;</span><span class="p">,</span> <span class="n">tracking_uri</span><span class="o">=</span><span class="s2">&quot;http://IP_ADDRESS:PORT&quot;</span><span class="p">)</span>
+<span class="n">mlflow_logger</span><span class="o">.</span><span class="n">log_config_params</span><span class="p">(</span><span class="n">config_params</span><span class="o">=</span><span class="n">cfg_dict</span><span class="p">)</span> <span class="c1"># logging the config dictionary</span>
+
+<span class="c1"># our Poutyne experiment</span>
+<span class="n">experiment</span> <span class="o">=</span> <span class="n">Experiment</span><span class="p">(</span><span class="n">directory</span><span class="o">=</span><span class="n">saving_directory</span><span class="p">,</span> <span class="n">network</span><span class="o">=</span><span class="n">network</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span> <span class="n">optimizer</span><span class="o">=</span><span class="n">optimizer</span><span class="p">,</span>
+                <span class="n">loss_function</span><span class="o">=</span><span class="n">cross_entropy_loss</span><span class="p">,</span> <span class="n">batch_metrics</span><span class="o">=</span><span class="p">[</span><span class="n">accuracy</span><span class="p">])</span>
+
+<span class="c1"># Using the MLflow logger callback during training</span>
+<span class="n">experiment</span><span class="o">.</span><span class="n">train</span><span class="p">(</span><span class="n">train_generator</span><span class="o">=</span><span class="n">train_loader</span><span class="p">,</span> <span class="n">valid_generator</span><span class="o">=</span><span class="n">valid_loader</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                 <span class="n">seed</span><span class="o">=</span><span class="mi">42</span><span class="p">,</span> <span class="n">callbacks</span><span class="o">=</span><span class="p">[</span><span class="n">mlflow_logger</span><span class="p">])</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt id="poutyne.MLFlowLogger.log_config_params">
+<code class="sig-name descname">log_config_params</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">config_params</span><span class="p">:</span> <span class="n">Union<span class="p">[</span>Mapping<span class="p">, </span>Sequence<span class="p">]</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)">None</a><a class="reference internal" href="_modules/poutyne/framework/callbacks/mlflow_logger.html#MLFlowLogger.log_config_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#poutyne.MLFlowLogger.log_config_params" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>config_params</strong> (<em>Union</em><em>[</em><em>Mapping</em><em>, </em><em>Sequence</em><em>]</em>) – The config parameters of the training to log, such as number of epoch, loss function, optimizer etc.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="poutyne.MLFlowLogger.log_param">
+<code class="sig-name descname">log_param</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">param_name</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)">str</a></span></em>, <em class="sig-param"><span class="n">value</span><span class="p">:</span> <span class="n">Union<span class="p">[</span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)">str</a><span class="p">, </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)">float</a><span class="p">]</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)">None</a><a class="reference internal" href="_modules/poutyne/framework/callbacks/mlflow_logger.html#MLFlowLogger.log_param"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#poutyne.MLFlowLogger.log_param" title="Permalink to this definition">¶</a></dt>
+<dd><p>Log the value of a parameter into the experiment.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>param_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – The name of the parameter.</p></li>
+<li><p><strong>(</strong><strong>Union</strong><strong>[</strong><strong>str</strong> (<em>value</em>) – The value of the parameter.</p></li>
+<li><p><strong>float</strong><strong>]</strong> – The value of the parameter.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="poutyne.MLFlowLogger.log_metric">
+<code class="sig-name descname">log_metric</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">metric_name</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)">str</a></span></em>, <em class="sig-param"><span class="n">value</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)">float</a></span></em>, <em class="sig-param"><span class="n">step</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)">int</a><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)">None</a><a class="reference internal" href="_modules/poutyne/framework/callbacks/mlflow_logger.html#MLFlowLogger.log_metric"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#poutyne.MLFlowLogger.log_metric" title="Permalink to this definition">¶</a></dt>
+<dd><p>Log the value of a metric into the experiment.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>metric_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – The name of the metric.</p></li>
+<li><p><strong>value</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a>) – The value of the metric.</p></li>
+<li><p><strong>step</strong> (<em>Union</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a><em>]</em>) – The step when the metric was compute (Default = None).</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
 </dd></dl>
 
 </div>
@@ -592,6 +793,65 @@ older step times. Set this to true to have equal weighting instead.</p></li>
 
 <span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
 <span class="n">model</span><span class="o">.</span><span class="n">fit_generator</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">callbacks</span><span class="o">=</span><span class="p">[</span><span class="n">tb_tracker</span><span class="p">])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+<div class="section" id="notification">
+<h2>Notification<a class="headerlink" href="#notification" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="poutyne.Notificator">
+<em class="property">class </em><code class="sig-prename descclassname">poutyne.</code><code class="sig-name descname">Notificator</code><a class="reference internal" href="_modules/poutyne/framework/callbacks/notification.html#Notificator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#poutyne.Notificator" title="Permalink to this definition">¶</a></dt>
+<dd><p>The interface of the Notificator. It must at least implement a <cite>send_notification</cite> method.
+The interface is similar to the <a class="reference external" href="https://notificationdoc.ca/index.html">notif</a> package.</p>
+<dl class="py method">
+<dt id="poutyne.Notificator.send_notification">
+<em class="property">abstract </em><code class="sig-name descname">send_notification</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">message</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)">str</a></span></em>, <em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">subject</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)">str</a><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)">None</a><a class="reference internal" href="_modules/poutyne/framework/callbacks/notification.html#Notificator.send_notification"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#poutyne.Notificator.send_notification" title="Permalink to this definition">¶</a></dt>
+<dd><p>Abstract method to send a notification.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>message</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – The message to send as a notification message through the notificator.</p></li>
+<li><p><strong>subject</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – The subject of the notification. If None, the default message is used. By default, None.
+Also, we recommend formatting the subject for better readability, e.g. using bolding it using Markdown
+and appending with a new line.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="poutyne.NotificationCallback">
+<em class="property">class </em><code class="sig-prename descclassname">poutyne.</code><code class="sig-name descname">NotificationCallback</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">notificator</span><span class="p">:</span> <span class="n">poutyne.framework.callbacks.notification.Notificator</span></em>, <em class="sig-param"><span class="n">alert_frequency</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)">int</a></span> <span class="o">=</span> <span class="default_value">1</span></em>, <em class="sig-param"><span class="n">experiment_name</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)">str</a><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poutyne/framework/callbacks/notification.html#NotificationCallback"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#poutyne.NotificationCallback" title="Permalink to this definition">¶</a></dt>
+<dd><p>Send a notification to a channel at the beginning/ending of the training/testing and at a constant frequency
+(<cite>alert_frequency</cite>) during the training.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>notificator</strong> (<a class="reference internal" href="#poutyne.Notificator" title="poutyne.Notificator"><em>Notificator</em></a>) – <p>The notification channel to send the message.
+The expected interface need to implement a <cite>send_notification</cite> method to send the message. You can see the
+<a class="reference external" href="https://notificationdoc.ca/index.html">notif</a> package which implements some Notificator respecting the
+interface.</p>
+</p></li>
+<li><p><strong>alert_frequency</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – The frequency (in epoch), during training, to send an update. By default, 1.</p></li>
+<li><p><strong>experiment_name</strong> (<em>Union</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a><em>]</em>) – The name of the experiment to add to the message. By default, None.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">notif.notificator</span> <span class="kn">import</span> <span class="n">SlackNotificator</span>
+<span class="kn">from</span> <span class="nn">poutyne.framework.callbacks.notification</span> <span class="kn">import</span> <span class="n">NotificationCallback</span>
+
+<span class="n">webhook_url</span> <span class="o">=</span> <span class="s2">&quot;a_link&quot;</span>
+<span class="n">slack_notif</span> <span class="o">=</span> <span class="n">SlackNotificator</span><span class="p">(</span><span class="n">webhook_url</span><span class="o">=</span><span class="n">webhook_url</span><span class="p">)</span>
+
+<span class="n">notif_callback</span> <span class="o">=</span> <span class="n">NotificationCallback</span><span class="p">(</span><span class="n">notificator</span><span class="o">=</span><span class="n">slack_notif</span><span class="p">)</span>
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">fit_generator</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">callbacks</span><span class="o">=</span><span class="p">[</span><span class="n">notif_callback</span><span class="p">])</span>
 </pre></div>
 </div>
 </dd></dl>

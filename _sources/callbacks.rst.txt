@@ -48,10 +48,21 @@ Logging
 
 .. autoclass:: ProgressionCallback
 
+.. autoclass:: MLFlowLogger
+    :members: log_config_params, log_param, log_metric
+
 Tracking
 --------
 
 .. autoclass:: TensorBoardGradientTracker
+
+Notification
+------------
+
+.. autoclass:: Notificator
+    :members:
+
+.. autoclass:: NotificationCallback
 
 Checkpointing
 -------------

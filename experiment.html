@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>Experiment &mdash; Poutyne 1.2 documentation</title>
+  <title>Experiment &mdash; Poutyne 1.3 documentation</title>
   
 
   
@@ -67,7 +67,7 @@
             
             
               <div class="version">
-                1.2
+                1.3
               </div>
             
           
@@ -457,6 +457,56 @@ callbacks.
 </dd></dl>
 
 <dl class="py method">
+<dt id="poutyne.Experiment.train_data">
+<code class="sig-name descname">train_data</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="n">validation_data</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span> &#x2192; List<span class="p">[</span>Dict<span class="p">]</span><a class="reference internal" href="_modules/poutyne/framework/experiment.html#Experiment.train_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#poutyne.Experiment.train_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Trains or finetunes the attribute model on data under the form of NumPy arrays or torch tensors. If a previous
+training already occured and lasted a total of <cite>n_previous</cite> epochs, then the model’s weights will be set to the
+last checkpoint and the training will be resumed for epochs range (<cite>n_previous</cite>, <cite>epochs</cite>].</p>
+<p>If the Experiment has logging enabled (i.e. self.logging is True), numerous callbacks will be automatically
+included. Notably, two <a class="reference internal" href="callbacks.html#poutyne.ModelCheckpoint" title="poutyne.ModelCheckpoint"><code class="xref py py-class docutils literal notranslate"><span class="pre">ModelCheckpoint</span></code></a> objects will take care of saving the last and every
+new best (according to monitor mode) model weights in appropriate checkpoint files.
+<a class="reference internal" href="callbacks.html#poutyne.OptimizerCheckpoint" title="poutyne.OptimizerCheckpoint"><code class="xref py py-class docutils literal notranslate"><span class="pre">OptimizerCheckpoint</span></code></a> and <a class="reference internal" href="callbacks.html#poutyne.LRSchedulerCheckpoint" title="poutyne.LRSchedulerCheckpoint"><code class="xref py py-class docutils literal notranslate"><span class="pre">LRSchedulerCheckpoint</span></code></a> will also respectively
+handle the saving of the optimizer and LR scheduler’s respective states for future retrieval. Moreover, a
+<a class="reference internal" href="callbacks.html#poutyne.AtomicCSVLogger" title="poutyne.AtomicCSVLogger"><code class="xref py py-class docutils literal notranslate"><span class="pre">AtomicCSVLogger</span></code></a> will save all available epoch statistics in an output .tsv file. Lastly, a
+<a class="reference internal" href="callbacks.html#poutyne.TensorBoardLogger" title="poutyne.TensorBoardLogger"><code class="xref py py-class docutils literal notranslate"><span class="pre">TensorBoardLogger</span></code></a> handles automatic TensorBoard logging of various neural network
+statistics.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>Union</em><em>[</em><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.7.0a0+57bffc3 ))"><em>Tensor</em></a><em>, </em><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.20)"><em>ndarray</em></a><em>] or </em><em>Union</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.9)"><em>tuple</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.9)"><em>list</em></a><em>] </em><em>of Union</em><em>[</em><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.7.0a0+57bffc3 ))"><em>Tensor</em></a><em>, </em><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.20)"><em>ndarray</em></a><em>]</em>) – Training dataset. Union[Tensor, ndarray] if the model has a single input.
+Union[tuple, list] of Union[Tensor, ndarray] if the model has multiple inputs.</p></li>
+<li><p><strong>y</strong> (<em>Union</em><em>[</em><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.7.0a0+57bffc3 ))"><em>Tensor</em></a><em>, </em><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.20)"><em>ndarray</em></a><em>] or </em><em>Union</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.9)"><em>tuple</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.9)"><em>list</em></a><em>] </em><em>of Union</em><em>[</em><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.7.0a0+57bffc3 ))"><em>Tensor</em></a><em>, </em><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.20)"><em>ndarray</em></a><em>]</em>) – Target. Union[Tensor, ndarray] if the model has a single output.
+Union[tuple, list] of Union[Tensor, ndarray] if the model has multiple outputs.</p></li>
+<li><p><strong>validation_data</strong> (Tuple[<code class="docutils literal notranslate"><span class="pre">x_val</span></code>, <code class="docutils literal notranslate"><span class="pre">y_val</span></code>]) – Same format as <code class="docutils literal notranslate"><span class="pre">x</span></code> and <code class="docutils literal notranslate"><span class="pre">y</span></code> previously described. Validation dataset on which to
+evaluate the loss and any model metrics at the end of each epoch. The model will not be
+trained on this data.
+(Default value = None)</p></li>
+<li><p><strong>callbacks</strong> (<em>List</em><em>[</em><a class="reference internal" href="callbacks.html#poutyne.Callback" title="poutyne.Callback"><em>Callback</em></a><em>]</em>) – List of callbacks that will be called during
+training. These callbacks are added after those used in this method (see above). This allows to assume
+that they are called after those.
+(Default value = None)</p></li>
+<li><p><strong>lr_schedulers</strong> – List of learning rate schedulers. (Default value = None)</p></li>
+<li><p><strong>keep_only_last_best</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><em>bool</em></a>) – Whether only the last saved best checkpoint is kept. Applies only when
+<cite>save_every_epoch</cite> is false.
+(Default value = False)</p></li>
+<li><p><strong>save_every_epoch</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><em>bool</em></a><em>, </em><em>optional</em>) – Whether or not to save the experiment model’s weights after
+every epoch.
+(Default value = False)</p></li>
+<li><p><strong>disable_tensorboard</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><em>bool</em></a><em>, </em><em>optional</em>) – Whether or not to disable the automatic tensorboard logging
+callbacks.
+(Default value = False)</p></li>
+<li><p><strong>seed</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a><em>, </em><em>optional</em>) – Seed used to make the sampling deterministic.
+(Default value = 42)</p></li>
+<li><p><strong>kwargs</strong> – Any keyword arguments to pass to <a class="reference internal" href="model.html#poutyne.Model.fit" title="poutyne.Model.fit"><code class="xref py py-func docutils literal notranslate"><span class="pre">fit()</span></code></a>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>List of dict containing the history of each epoch.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt id="poutyne.Experiment.load_checkpoint">
 <code class="sig-name descname">load_checkpoint</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">checkpoint</span><span class="p">:</span> <span class="n">Union<span class="p">[</span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)">int</a><span class="p">, </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)">str</a><span class="p">]</span></span></em>, <em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">verbose</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)">bool</a></span> <span class="o">=</span> <span class="default_value">False</span></em><span class="sig-paren">)</span> &#x2192; Optional<span class="p">[</span>Dict<span class="p">]</span><a class="reference internal" href="_modules/poutyne/framework/experiment.html#Experiment.load_checkpoint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#poutyne.Experiment.load_checkpoint" title="Permalink to this definition">¶</a></dt>
 <dd><p>Loads the attribute model’s weights with the weights at a given checkpoint epoch.</p>
@@ -551,6 +601,48 @@ current weights of the network is used for testing and statistics are only shown
 (Default value = 42)</p></li>
 <li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – Prefix of the test log file. (Default value = ‘test’)</p></li>
 <li><p><strong>kwargs</strong> – Any keyword arguments to pass to <a class="reference internal" href="model.html#poutyne.Model.evaluate_dataset" title="poutyne.Model.evaluate_dataset"><code class="xref py py-func docutils literal notranslate"><span class="pre">evaluate_dataset()</span></code></a>.</p></li>
+</ul>
+</dd>
+</dl>
+<p>If the Experiment has logging enabled (i.e. self.logging is True), one callback will be automatically
+included to save the test metrics. Moreover, a <a class="reference internal" href="callbacks.html#poutyne.AtomicCSVLogger" title="poutyne.AtomicCSVLogger"><code class="xref py py-class docutils literal notranslate"><span class="pre">AtomicCSVLogger</span></code></a> will save the test
+metrics in an output .tsv file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>dict sorting of all the test metrics values by their names.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="poutyne.Experiment.test_data">
+<code class="sig-name descname">test_data</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span> &#x2192; Dict<a class="reference internal" href="_modules/poutyne/framework/experiment.html#Experiment.test_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#poutyne.Experiment.test_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes and returns the loss and the metrics of the attribute model on a given test dataset.</p>
+<p>If the Experiment has logging enabled (i.e. self.logging is True), a checkpoint (the best one by default)
+is loaded and test and validation statistics are saved in a specific test output .tsv file. Otherwise, the
+current weights of the network is used for testing and statistics are only shown in the standard output.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>Union</em><em>[</em><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.7.0a0+57bffc3 ))"><em>Tensor</em></a><em>, </em><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.20)"><em>ndarray</em></a><em>] or </em><em>Union</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.9)"><em>tuple</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.9)"><em>list</em></a><em>] </em><em>of Union</em><em>[</em><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.7.0a0+57bffc3 ))"><em>Tensor</em></a><em>, </em><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.20)"><em>ndarray</em></a><em>]</em>) – Input to the model. Union[Tensor, ndarray] if the model has a single input.
+Union[tuple, list] of Union[Tensor, ndarray] if the model has multiple inputs.</p></li>
+<li><p><strong>y</strong> (<em>Union</em><em>[</em><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.7.0a0+57bffc3 ))"><em>Tensor</em></a><em>, </em><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.20)"><em>ndarray</em></a><em>] or </em><em>Union</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.9)"><em>tuple</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.9)"><em>list</em></a><em>] </em><em>of Union</em><em>[</em><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch vmaster (1.7.0a0+57bffc3 ))"><em>Tensor</em></a><em>, </em><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.20)"><em>ndarray</em></a><em>]</em>) – Target, corresponding ground truth.
+Union[Tensor, ndarray] if the model has a single output.
+Union[tuple, list] of Union[Tensor, ndarray] if the model has multiple outputs.</p></li>
+<li><p><strong>checkpoint</strong> (<em>Union</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a><em>]</em>) – <p>Which model checkpoint weights to load for the test evaluation.</p>
+<ul>
+<li><p>If ‘best’, will load the best weights according to <code class="docutils literal notranslate"><span class="pre">monitor_metric</span></code> and <code class="docutils literal notranslate"><span class="pre">monitor_mode</span></code>.</p></li>
+<li><p>If ‘last’, will load the last model checkpoint.</p></li>
+<li><p>If int, will load the checkpoint of the specified epoch.</p></li>
+<li><p>If a path (str), will load the model pickled state_dict weights (for instance, saved as
+<code class="docutils literal notranslate"><span class="pre">torch.save(a_pytorch_network.state_dict(),</span> <span class="pre">&quot;./a_path.p&quot;)</span></code>).</p></li>
+</ul>
+<p>This argument has no effect when logging is disabled. (Default value = ‘best’)</p>
+</p></li>
+<li><p><strong>seed</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a><em>, </em><em>optional</em>) – Seed used to make the sampling deterministic.
+(Default value = 42)</p></li>
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – Prefix of the test log file. (Default value = ‘test’)</p></li>
+<li><p><strong>kwargs</strong> – Any keyword arguments to pass to <a class="reference internal" href="model.html#poutyne.Model.evaluate" title="poutyne.Model.evaluate"><code class="xref py py-func docutils literal notranslate"><span class="pre">evaluate()</span></code></a>.</p></li>
 </ul>
 </dd>
 </dl>
