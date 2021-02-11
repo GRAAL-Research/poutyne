@@ -1,14 +1,22 @@
 # v1.x.x
 
-* A progress bar is now set when testing a model (similar to training).
-* A new notification callback allowing to received message at specific time (start/end training/testing an at any given
-  epoch).
-* A new logging callback, MLflowLogger, this callback allows you to log experimentation configuration and metrics
-  during training, validation and testing.
+*
+
+# v1.3
+
+
+* A progress bar is now set on validation a model (similar to training). It is disableable by passing
+`progress_options=dict(show_on_valid=False)` in the `fit*` methods.
+* A progress bar is now set testing a model (similar to training). It is disableable by passing `verbose=False` in the
+`evaluate*` methods.
+* A new notification callback [`NotificationCallback`](https://poutyne.org/callbacks.html#poutyne.NotificationCallback)
+  allowing to received message at specific time (start/end training/testing an at any given epoch).
+* A new logging callback, [`MLflowLogger`](https://poutyne.org/callbacks.html#poutyne.MLFlowLogger), this callback allows
+  you to log experimentation configuration and metrics during training, validation and testing.
 * Fix bug where [`evaluate_generator`](https://poutyne.org/model.html#poutyne.Model.evaluate_generator) did not support
   generators with StopIteration exception.
-* Experiment now has a `train_data` and a `test_data` method.
-* A progress bar is now set when validating a model (similar to training).
+* Experiment now has a [`train_data`](https://poutyne.org/experiment.html#poutyne.Experiment.train_data) and a
+  [`test_data`](https://poutyne.org/experiment.html#poutyne.Experiment.test_data) method.
 * The [Lambda layer](https://poutyne.org/layers.html#poutyne.Lambda) now supports multiple arguments in its forward method.
 
 # v1.2
