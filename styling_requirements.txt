@@ -1,2 +1,2 @@
 yapf==0.30
-pylint==2.6
+pylint==2.7.1
