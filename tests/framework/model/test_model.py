@@ -159,7 +159,7 @@ class ModelTest(ModelFittingTestCase):
 
         self.model.fit_generator(list(zip(x, y)), None, epochs=1, batches_per_step=1)
 
-        expected_params = list(self.model.get_weight_copies().values())
+        expected_params = self.model.get_weight_copies()
 
         for mini_batch_size in [1, 2, 5]:
             self.model.set_weights(initial_params)
@@ -171,9 +171,11 @@ class ModelTest(ModelFittingTestCase):
 
             self.model.fit_generator(list(zip(x, y)), None, epochs=1, batches_per_step=n_batches_per_step)
 
-            returned_params = list(self.model.get_weight_copies().values())
+            returned_params = self.model.get_weight_copies()
 
-            np.testing.assert_almost_equal(returned_params, expected_params, decimal=4)
+            self.assertEqual(returned_params.keys(), expected_params.keys())
+            for k in expected_params.keys():
+                np.testing.assert_almost_equal(returned_params[k].numpy(), expected_params[k].numpy(), decimal=4)
 
     def test_fitting_generator_n_batches_per_step_higher_than_num_batches(self):
         total_batch_size = 6
@@ -185,15 +187,17 @@ class ModelTest(ModelFittingTestCase):
 
         self.model.fit_generator(list(zip(x, y)), None, epochs=1, batches_per_step=1)
 
-        expected_params = list(self.model.get_weight_copies().values())
+        expected_params = self.model.get_weight_copies()
 
         self.model.set_weights(initial_params)
 
         self.model.fit_generator(list(zip(x, y)), None, epochs=1, batches_per_step=2)
 
-        returned_params = list(self.model.get_weight_copies().values())
+        returned_params = self.model.get_weight_copies()
 
-        np.testing.assert_almost_equal(returned_params, expected_params, decimal=4)
+        self.assertEqual(returned_params.keys(), expected_params.keys())
+        for k in expected_params.keys():
+            np.testing.assert_almost_equal(returned_params[k].numpy(), expected_params[k].numpy(), decimal=4)
 
     def test_fitting_generator_n_batches_per_step_uneven_batches(self):
         total_batch_size = 6
@@ -205,7 +209,7 @@ class ModelTest(ModelFittingTestCase):
 
         self.model.fit_generator(list(zip(x, y)), None, epochs=1, batches_per_step=1)
 
-        expected_params = list(self.model.get_weight_copies().values())
+        expected_params = self.model.get_weight_copies()
 
         x.squeeze_(dim=0)
         y.squeeze_(dim=0)
@@ -225,9 +229,11 @@ class ModelTest(ModelFittingTestCase):
                                      epochs=1,
                                      batches_per_step=n_batches_per_step)
 
-            returned_params = list(self.model.get_weight_copies().values())
+            returned_params = self.model.get_weight_copies()
 
-            np.testing.assert_almost_equal(returned_params, expected_params, decimal=4)
+            self.assertEqual(returned_params.keys(), expected_params.keys())
+            for k in expected_params.keys():
+                np.testing.assert_almost_equal(returned_params[k].numpy(), expected_params[k].numpy(), decimal=4)
 
     def test_fitting_ndarray_generator(self):
         train_generator = some_ndarray_generator(ModelTest.batch_size)
