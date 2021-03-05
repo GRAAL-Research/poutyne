@@ -2,8 +2,11 @@
 
 *
 
-# v1.3
+# v1.3.1
 
+* Bug fix for when changing the GPU device twice with optimizer having a state would crash.
+
+# v1.3
 
 * A progress bar is now set on validation a model (similar to training). It is disableable by passing
 `progress_options=dict(show_on_valid=False)` in the `fit*` methods.
