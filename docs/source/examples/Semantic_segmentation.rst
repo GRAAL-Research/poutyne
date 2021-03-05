@@ -2,24 +2,21 @@
 .. role:: hidden
     :class: hidden-section
 
-
-.. _intro:
-
 Semantic segmentation using Poutyne
 ***********************************
 
 .. note::
 
-    - See the notebook `here <https://github.com/GRAAL-Research/poutyne/blob/master/examples/Semantic_segmentation.ipynb>`_
-    - Run in `Google Colab <https://colab.research.google.com/github/GRAAL-Research/poutyne/blob/master/examples/Semantic_segmentation.ipynb>`_
+    - See the notebook `here <https://github.com/mohammad-brdrn/Semantic_segmentation_with_Poutyne/blob/main/Semantic_segmentation.ipynb>`_
+    - Run in `Google Colab <https://drive.google.com/file/d/1Slep8z8yBwKuXO-c8-JbEHBglSjPY7lg/view?usp=sharing>`_
 
 Semantic segmentation refers to the process of linking each pixel in an image to a class label. We can think of semantic segmentation as image classification at a pixel level. The image below clarifies the definition of semantic segmentation.
 
-.. image:: /_static/img/semantic_segmentation.png
+.. image:: /_static/img/semantic_segmentation/semantic_segmentation.png
 
-In this example, we are going to use and train a convolutional Unet, in order to design a network for semantic segmentation. In other words, we formulate the task of semantic segmentation as an image translation problem. We download and use the VOCSegmentation 2007 dataset for this purpose.
+In this example, we are going to use and train a convolutional U-Net, in order to design a network for semantic segmentation. In other words, we formulate the task of semantic segmentation as an image translation problem. We download and use the VOCSegmentation 2007 dataset for this purpose.
 
-Unet (the network we use in this example) is a convolutional neural network, similar to the convolutional autoencoders. However, Unet takes advantage of shortcuts between the encoder (contraction path) and decoder (expanding path), which helps it handle the vanishing gradient problem. In the following sections, we are going to install and import the segmentation-models-PyTorch library, which contains different architectures of Unet.
+U-Net (the network we use in this example) is a convolutional neural network similar to the convolutional autoencoders. However, U-Net takes advantage of shortcuts between the encoder (contraction path) and decoder (expanding path) which helps it handle the vanishing gradient problem. In the following sections, we are going to install and import the segmentation-models-Pytorch library which contains different architectures of U-Net.
 
 .. code-block:: python
 
@@ -54,7 +51,7 @@ Let’s import all the needed packages.
     print('The current processor is ...', device)
 
 Training constants
-==================================
+==================
 
 .. code-block:: python
 
@@ -62,21 +59,21 @@ Training constants
     batch_size = 32
     image_size = 224
     num_epochs = 70
-    _mean = [0.485, 0.456, 0.406]  # mean of the imagenet dataset for normalizing 
-    _std = [0.229, 0.224, 0.225]  # std of the imagenet dataset for normalizing 
+    imagenet_mean = [0.485, 0.456, 0.406]  # mean of the imagenet dataset for normalizing 
+    imagenet_std = [0.229, 0.224, 0.225]  # std of the imagenet dataset for normalizing 
     set_seeds(42)
     
 Loading the VOCSegmentation dataset    
-==================================
+===================================
 
-The VOCSegmentation dataset can be easily downloaded from torchvision.datasets. This dataset allows you, to apply the needed transforms on the ground-truth, directly, in addition to defining the proper transforms for the input images. To do so, it's enough to use the target_transfromargument and set it to your transform function of interest.
+The VOCSegmentation dataset can be easily downloaded from `torchvision.datasets`. This dataset allows you to apply the needed transformations on the ground-truth directly in addition to defining the proper transformations for the input images. To do so, it's enough to use the `target_transfrom` argument and set it to your transformation function of interest. 
 
 .. code-block:: python
 
     input_transform = tfms.Compose([
         tfms.Resize((image_size, image_size)),  
         tfms.ToTensor(),        
-        tfms.Normalize(_mean, _std)
+        tfms.Normalize(imagenet_mean, imagenet_std)
     ])
     
     target_transform = tfms.Compose([
@@ -93,7 +90,7 @@ The VOCSegmentation dataset can be easily downloaded from torchvision.datasets. 
     valid_dataloader = DataLoader(valid_dataset, batch_size=batch_size, shuffle=False)
 
 A random batch of the VODSegmentation dataset images
-==================================
+====================================================
 
 Let's see some of the input samples, inside the training dataset.
 
@@ -105,13 +102,13 @@ Let's see some of the input samples, inside the training dataset.
     
     fig = plt.figure(figsize=(10, 10))
     input_grid = input_grid.numpy()
-    input_grid = input_grid.transpose((1, 2, 0)) * _std + _mean
+    input_grid = input_grid.transpose((1, 2, 0)) * imagenet_std + imagenet_mean
     inp = np.clip(input_grid, 0, 1)
     plt.imshow(inp)
     plt.axis('off')
     plt.show()
     
-.. image:: /_static/img/voc_segment_batch.png 
+.. image:: /_static/img/semantic_segmentation/voc_segment_batch.png 
 
 The ground-truth (segmentation map) for the image grid shown above, is as below.
 
@@ -126,7 +123,7 @@ The ground-truth (segmentation map) for the image grid shown above, is as below.
     plt.axis('off')
     plt.show()
     
-.. image:: /_static/img/voc_segment_batch_gt.png 
+.. image:: /_static/img/semantic_segmentation/voc_segment_batch_gt.png 
 
 It is worth mentioning that, as we have approached the segmentation task as an image translation problem, we took advantage of MSELoss for the training. Moreover, we believe that using the Unet, with a pre-trained encoder, would help the network converge sooner and better, since a pre-trained CNN (trained on the Imagenet dataset), is already familiar with some of the object classes, and also some low-level image features (such as edge, texture, etc).
 
@@ -171,7 +168,7 @@ Training deep neural networks is a challenging task, especially when we are deal
     ]
 
 Training
-==================================
+========
 
 .. code-block:: python
 
@@ -179,12 +176,12 @@ Training
     model = Model(network, optimizer, criterion, device=device)
     
     # Train
-    model.fit_generator(train_dataloader, valid_dataloader, epochs=num_epochs, callbacks=callbacks, progress_options={'coloring': False})
+    model.fit_generator(train_dataloader, valid_dataloader, epochs=num_epochs, callbacks=callbacks)
 
 Calculation of the scores and visualization of results
-==================================
+======================================================
 
-There is one more surprising facility in Poutyne, which makes the evaluation task more easy and straight forward. Usually, computer vision researchers try to evaluate their trained networks for validation/test datasets, having the score (accuracy or loss usually), ground_truth, and calculated results simultaneously. The evaluate function in Poutyne, not only provides you with the score but also has made the other two items ready for further analysis and visualization. In the next few codes, you will see some examples.
+There is one more surprising facility in Poutyne which makes the evaluation task more easy and straight forward. Usually, computer vision researchers try to evaluate their trained networks on validation/test datasets by obtaining the scores (accuracy or loss usually), ground truths, and computed results simultaneously. The `evaluate` methods in Poutyne not only provides you with the scores but also have made the other two items ready for further analysis and visualization. In the next few blocks of code, you will see some examples.
 
 .. code-block:: python
 
@@ -203,15 +200,15 @@ We show some of the segmentation results in the image below (grayscale):
     plt.imshow((out))
     plt.show()
 
-.. image:: /_static/img/segment_out.png 
+.. image:: /_static/img/semantic_segmentation/segment_out.png 
 
-Here, we show one of the input samples, along with its segmentation ground-truth, and the produced output.
+Here, we show one of the input samples along with its segmentation ground truth and the produced output.
 
 .. code-block:: python
 
     sample_number = 14
     
-    input_sample = inputs[sample_number].numpy().transpose((1, 2, 0)) * _std + _mean
+    input_sample = inputs[sample_number].numpy().transpose((1, 2, 0)) * imagenet_std + imagenet_mean
     ground_truth_sample = ground_truth[sample_number][0]
     output_sample = outputs[sample_number][0].numpy()
     
@@ -229,18 +226,9 @@ Here, we show one of the input samples, along with its segmentation ground-truth
     ax3.set_title('output')
     plt.show()
 
-.. image:: /_static/img/segment_compare.png 
+.. image:: /_static/img/semantic_segmentation/segment_compare.png 
 
 Last note
-==================================
+=========
 
-This example shows you how to simply design and train your own segmentation network, however, to get better results you can play with hyperparameters and do further finetuning to increase the accuracy.
-
-
-
-
-
-
-
-
-
+This example shows you how to simply design and train your own segmentation network. However, to get better results you can play with hyperparameters and do further finetuning to increase the accuracy.
