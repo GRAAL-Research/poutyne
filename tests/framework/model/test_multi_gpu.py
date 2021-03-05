@@ -24,7 +24,7 @@ class ModelTestMultiGPU(ModelFittingTestCase):
         torch.manual_seed(42)
         self.pytorch_network = nn.Linear(1, 1)
         self.loss_function = nn.MSELoss()
-        self.optimizer = torch.optim.SGD(self.pytorch_network.parameters(), lr=1e-3)
+        self.optimizer = torch.optim.Adam(self.pytorch_network.parameters(), lr=1e-3)
         self.batch_metrics = [
             some_batch_metric_1, ('custom_name', some_batch_metric_2), repeat_batch_metric, repeat_batch_metric
         ]
@@ -201,7 +201,7 @@ class ModelTestMultiGPU(ModelFittingTestCase):
                                  callbacks=[self.mock_callback])
         self._test_multiple_gpu_mode(devices=devices)
 
-        devices = ["cuda:0"]
+        devices = ["cuda:1"]
         self.model.to(devices)
         self.assertIsNone(self.model.other_device)
         self.model.fit_generator(train_generator,
@@ -210,5 +210,5 @@ class ModelTestMultiGPU(ModelFittingTestCase):
                                  steps_per_epoch=ModelTestMultiGPU.steps_per_epoch,
                                  validation_steps=ModelTestMultiGPU.steps_per_epoch,
                                  callbacks=[self.mock_callback])
-        self._test_device(torch.device('cuda:0'))
+        self._test_device(torch.device('cuda:1'))
         self._test_single_gpu_mode()

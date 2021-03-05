@@ -32,6 +32,7 @@ class ModelFittingTestCase(TestCase):
         self.epoch_metrics_values = []
         self.model = None
         self.pytorch_network = None
+        self.optimizer = None
 
     def _test_callbacks_train(self, params, logs, has_valid=True, steps=None, valid_steps=10):
         # pylint: disable=too-many-arguments
@@ -134,6 +135,15 @@ class ModelFittingTestCase(TestCase):
     def _test_device(self, device):
         for p in self.pytorch_network.parameters():
             self.assertEqual(p.device, device)
+
+        for v in self.optimizer.state.values():
+            if torch.is_tensor(v):
+                self.assertEqual(v.device, device)
+
+        for param_group in self.optimizer.param_groups:
+            for param in param_group['params']:
+                if torch.is_tensor(param):
+                    self.assertEqual(param.device, device)
 
     def _capture_output(self):
         self.test_out = io.StringIO()

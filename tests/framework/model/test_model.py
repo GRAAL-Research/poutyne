@@ -71,7 +71,7 @@ class ModelTest(ModelFittingTestCase):
         torch.manual_seed(42)
         self.pytorch_network = nn.Linear(1, 1)
         self.loss_function = nn.MSELoss()
-        self.optimizer = torch.optim.SGD(self.pytorch_network.parameters(), lr=1e-3)
+        self.optimizer = torch.optim.Adam(self.pytorch_network.parameters(), lr=1e-3)
         self.batch_metrics = [
             some_batch_metric_1, ('custom_name', some_batch_metric_2), repeat_batch_metric, repeat_batch_metric
         ]
