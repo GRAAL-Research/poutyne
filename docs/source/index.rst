@@ -240,6 +240,7 @@ API Reference
   examples/policy_interface
   examples/train_with_policy_module
   examples/transfer_learning
+  examples/semantic_segmentation
 
 
 Indices and tables
