@@ -163,7 +163,7 @@ class Model:
         if not isinstance(network, nn.Module):
             raise ValueError(f"network should be of type derived from nn.Module, received {type(network)}.")
 
-        if not isinstance(optimizer, (optim.Optimizer, str, dict)):
+        if optimizer is not None and not isinstance(optimizer, (optim.Optimizer, str, dict)):
             raise ValueError(f"optimizer should be of type derived from optim.Optimizer, received {type(optimizer)}.")
 
         batch_metrics = [] if batch_metrics is None else batch_metrics
