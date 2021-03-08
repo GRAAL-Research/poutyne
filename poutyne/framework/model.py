@@ -8,6 +8,8 @@ from typing import Iterable, Mapping, List, Union
 
 import numpy as np
 import torch
+import torch.nn as nn
+import torch.optim as optim
 from torch.utils.data import DataLoader
 
 from poutyne import torch_to_numpy, numpy_to_torch, torch_to
@@ -158,6 +160,12 @@ class Model:
     """
 
     def __init__(self, network, optimizer, loss_function, *, batch_metrics=None, epoch_metrics=None, device=None):
+        if not isinstance(network, nn.Module):
+            raise ValueError(f"network should be of type derived from nn.Module, received {type(network)}.")
+
+        if not isinstance(optimizer, (optim.Optimizer, str, dict)):
+            raise ValueError(f"optimizer should be of type derived from optim.Optimizer, received {type(optimizer)}.")
+
         batch_metrics = [] if batch_metrics is None else batch_metrics
         epoch_metrics = [] if epoch_metrics is None else epoch_metrics
 

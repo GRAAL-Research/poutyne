@@ -36,12 +36,6 @@ def some_ndarray_generator(batch_size):
         yield x, y
 
 
-def some_mocked_optimizer():
-    optim = MagicMock()
-
-    return optim
-
-
 class IterableMock:
 
     def __init__(self, iterable):
@@ -120,7 +114,7 @@ class ModelTest(ModelFittingTestCase):
     def test_correct_optim_calls_1_batch_per_step(self):
         train_generator = some_data_tensor_generator(ModelTest.batch_size)
 
-        mocked_optimizer = some_mocked_optimizer()
+        mocked_optimizer = MagicMock(self.optimizer)
         mocked_optim_model = Model(self.pytorch_network,
                                    mocked_optimizer,
                                    self.loss_function,
@@ -138,7 +132,7 @@ class ModelTest(ModelFittingTestCase):
         x = torch.rand(n_batches, items_per_batch, 1)
         y = torch.rand(n_batches, items_per_batch, 1)
 
-        mocked_optimizer = some_mocked_optimizer()
+        mocked_optimizer = MagicMock(self.optimizer)
         mocked_optim_model = Model(self.pytorch_network,
                                    mocked_optimizer,
                                    self.loss_function,
