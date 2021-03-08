@@ -7,7 +7,7 @@ Image reconstruction using Poutyne
 .. note::
 
     - See the notebook `here <https://github.com/mohammad-brdrn/Image_reconstruction_with_Poutyne/blob/main/Image_reconstruction.ipynb>`_
-    - Run in `Google Colab <https://drive.google.com/file/d/1QAIPU_QsZ4DDPI0aSJlBnuX0WZJ3kkjj/view?usp=sharing>`_
+    - Run in `Google Colab <https://drive.google.com/file/d/1kUgmhtoCjZWZZ0uyZjy4NVW09E5krObZ/view?usp=sharing>`_
 
 In this example, we train a simple convolutional autoencoder (Conv-AE) on the MNIST dataset to learn image reconstruction. The Conv-AE is composed of two parts: an encoder and a decoder. The encoder encodes the input images to extract compact image features. The decoder, on the other hand, decodes the extracted features to reconstruct the input images.
 
@@ -148,7 +148,7 @@ In order to interact with the optimization process, `callbacks <https://poutyne.
     
         # Save the weights in a new file when the current model is better than all previous models.
         ModelCheckpoint(os.path.join(save_path, 'best_weight.ckpt'),
-                        save_best_only=True, restore_best=True, verbose=True),
+                        save_best_only=True, verbose=True),
     
         # Save the losses for each epoch in a TSV.
         CSVLogger(os.path.join(save_path, 'log.tsv'), separator='\t'),
@@ -240,7 +240,7 @@ In most computer vision applications, such as image reconstruction, it is very i
 Resuming the training for more epochs
 =====================================
 
-If we find the past epochs not enough, Poutyne allows you to resume the training from the last done epoch, as below:
+If we find the past epochs not enough, Poutyne allows you to resume the training from the last done epoch, as below. Please note that, in the `callbacks` that we defined before, since we did not set the `restore_best argument` to `True`, our model stays at the last epoch after finishing the first part of the training. Hence, by setting the `initial_epoch` to the last epoch of the previous training, we can resume our training for more epoch, using the last saved weights. Otherwise, to benefit from the saved best weights, all you need is to set the `restore_best` argument to True and resume your training from the epoch number corresponding to the best weights saved by the callbacks.
     
 .. code-block:: python    
     
