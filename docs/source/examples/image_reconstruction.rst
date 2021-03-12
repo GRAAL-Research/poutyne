@@ -6,8 +6,8 @@ Image reconstruction using Poutyne
 
 .. note::
 
-    - See the notebook `here <https://github.com/mohammad-brdrn/Image_reconstruction_with_Poutyne/blob/main/Image_reconstruction.ipynb>`_
-    - Run in `Google Colab <https://drive.google.com/file/d/1kUgmhtoCjZWZZ0uyZjy4NVW09E5krObZ/view?usp=sharing>`_
+    - See the notebook `here <https://github.com/GRAAL-Research/poutyne/blob/master/examples/image_reconstruction.ipynb>`_
+    - Run in `Google Colab <https://colab.research.google.com/github/GRAAL-Research/poutyne/blob/master/examples/image_reconstruction.ipynb>`_
 
 In this example, we train a simple convolutional autoencoder (Conv-AE) on the MNIST dataset to learn image reconstruction. The Conv-AE is composed of two parts: an encoder and a decoder. The encoder encodes the input images to extract compact image features. The decoder, on the other hand, decodes the extracted features to reconstruct the input images.
 
@@ -53,7 +53,7 @@ Training constants
 Loading the MNIST dataset
 =========================
 
-The MNIST dataset is directly downloaded from the `torchvision.datasets`. The training dataset contains 60,000 images of digits of size 28x28. However, we separate 20% of the full train dataset as a validation dataset. On the other hand, by setting the "train" argument to `False`, the test dataset containing 10,000 images is downloaded and saved in the "datasets" directory.
+The MNIST dataset is directly downloaded from the ``torchvision.datasets`` package. The training dataset contains 60,000 images of digits of size 28x28. However, we separate 20% of the full train dataset as a validation dataset. On the other hand, by setting the "train" argument to ``False``, the test dataset containing 10,000 images is downloaded and saved in the "datasets" directory.
 
 .. code-block:: python
 
@@ -131,11 +131,9 @@ Convolutional autoencoder
     
     network = ConvAutoencoder()
     
-In order to interact with the optimization process, `callbacks <https://poutyne.org/callbacks.html>`_ are defined and saved using the code below which saves the last weights, best weights and the logs, respectively.
+In order to interact with the optimization process, `callbacks <https://poutyne.org/callbacks.html>`_ are defined and added to a list using the code below. They will save the last weights, best weights and the logs, respectively.
 
 .. code-block:: python
-
-    #callbacks
 
     save_path = 'saves'
     
@@ -154,9 +152,10 @@ In order to interact with the optimization process, `callbacks <https://poutyne.
         CSVLogger(os.path.join(save_path, 'log.tsv'), separator='\t'),
     ]
 
+Let's specify the loss and the optimization function.
+
 .. code-block:: python
 
-    # specifying loss and optimization function
     criterion = nn.MSELoss()
     optimizer = torch.optim.Adam(network.parameters(), lr=learning_rate)
 
@@ -174,7 +173,7 @@ Training
 A random batch of the MNIST dataset images
 ==========================================
 
-Let's see some of the input samples, inside the training dataset.
+Let's see some of the input samples inside the training dataset.
 
 .. code-block:: python
 
@@ -207,11 +206,11 @@ In order to visually evaluate the quality of the results, here, we show the reco
 Evaluation
 ==========
 
-One of the strong and useful tools in Poutyne is the evaluate methods, which not only provide you with the evaluation metrics but also provide the ground truths and the predictions if the related arguments have been set to True (as below).
+One of the strong and useful tools in Poutyne is the ``evaluate`` methods, which not only provide you with the evaluation metrics but also provide the ground truths and the predictions if the related arguments have been set to ``True`` (as below).
 
 .. code-block:: python
 
-    # evaluating thetrained network on test data
+    # evaluating the trained network on test data
     loss, predictions, ground_truth = model.evaluate_generator(test_dataloader, return_pred=True, return_ground_truth=True)
 
 In most computer vision applications, such as image reconstruction, it is very important to check the network's failures (or abilities, vice versa). The following part shows an input and a reconstructed image, as well as its reconstruction error map. The reconstruction error map shows which part of the image has not been reconstructed accurately.
@@ -240,7 +239,7 @@ In most computer vision applications, such as image reconstruction, it is very i
 Resuming the training for more epochs
 =====================================
 
-If we find the past epochs not enough, Poutyne allows you to resume the training from the last done epoch, as below. Please note that, in the `callbacks` that we defined before, since we did not set the `restore_best argument` to `True`, our model stays at the last epoch after finishing the first part of the training. Hence, by setting the `initial_epoch` to the last epoch of the previous training, we can resume our training for more epoch, using the last saved weights. Otherwise, to benefit from the saved best weights, all you need is to set the `restore_best` argument to True and resume your training from the epoch number corresponding to the best weights saved by the callbacks.
+If we find the past epochs not enough, Poutyne allows you to resume the training from the last done epoch, as below. Please note that, in the ``callbacks`` that we defined before, since we did not set the ``restore_best`` argument in ``ModelCheckpoint`` to ``True``, our model stays at the last epoch after finishing the first part of the training. Hence, by setting the ``initial_epoch`` to the last epoch of the previous training, we can resume our training for more epochs, using the last state of the neural network.
     
 .. code-block:: python    
     
