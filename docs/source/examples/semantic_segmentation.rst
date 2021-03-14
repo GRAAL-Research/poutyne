@@ -13,7 +13,7 @@ Semantic segmentation refers to the process of linking each pixel in an image to
 
 .. image:: /_static/img/semantic_segmentation/semantic_segmentation.png
 
-Reference of the image. [`Image1 <https://www.jeremyjordan.me/semantic-segmentation/>`_]
+`Reference of the image. <https://www.jeremyjordan.me/semantic-segmentation/>`_
 
 In this example, we are going to use and train a convolutional U-Net in order to design a network for semantic segmentation. In other words, we formulate the task of semantic segmentation as an image translation problem. We download and use the VOCSegmentation 2007 dataset for this purpose.
 
