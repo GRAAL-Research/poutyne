@@ -1,4 +1,3 @@
-
 .. role:: hidden
     :class: hidden-section
 
@@ -7,16 +6,18 @@ Semantic segmentation using Poutyne
 
 .. note::
 
-    - See the notebook `here <https://github.com/mohammad-brdrn/Semantic_segmentation_with_Poutyne/blob/main/Semantic_segmentation.ipynb>`_
-    - Run in `Google Colab <https://drive.google.com/file/d/1Slep8z8yBwKuXO-c8-JbEHBglSjPY7lg/view?usp=sharing>`_
+    - See the notebook `here <https://github.com/GRAAL-Research/poutyne/blob/master/examples/semantic_segmentation.ipynb>`_
+    - Run in `Google Colab <https://colab.research.google.com/github/GRAAL-Research/poutyne/blob/master/examples/semantic_segmentation.ipynb>`_
 
 Semantic segmentation refers to the process of linking each pixel in an image to a class label. We can think of semantic segmentation as image classification at a pixel level. The image below clarifies the definition of semantic segmentation.
 
 .. image:: /_static/img/semantic_segmentation/semantic_segmentation.png
 
-In this example, we are going to use and train a convolutional U-Net, in order to design a network for semantic segmentation. In other words, we formulate the task of semantic segmentation as an image translation problem. We download and use the VOCSegmentation 2007 dataset for this purpose.
+Reference of the image. [`Image1 <https://www.jeremyjordan.me/semantic-segmentation/>`_]
 
-U-Net (the network we use in this example) is a convolutional neural network similar to the convolutional autoencoders. However, U-Net takes advantage of shortcuts between the encoder (contraction path) and decoder (expanding path) which helps it handle the vanishing gradient problem. In the following sections, we are going to install and import the segmentation-models-Pytorch library which contains different architectures of U-Net.
+In this example, we are going to use and train a convolutional U-Net in order to design a network for semantic segmentation. In other words, we formulate the task of semantic segmentation as an image translation problem. We download and use the VOCSegmentation 2007 dataset for this purpose.
+
+U-Net (the network we use in this example) is a convolutional neural network similar to convolutional autoencoders. However, U-Net takes advantage of shortcuts between the encoder (contraction path) and decoder (expanding path) which helps it handle the vanishing gradient problem. In the following sections, we are going to install and import the segmentation-models-Pytorch library which contains different architectures of U-Net.
 
 .. code-block:: python
 
@@ -66,7 +67,7 @@ Training constants
 Loading the VOCSegmentation dataset    
 ===================================
 
-The VOCSegmentation dataset can be easily downloaded from `torchvision.datasets`. This dataset allows you to apply the needed transformations on the ground-truth directly in addition to defining the proper transformations for the input images. To do so, it's enough to use the `target_transfrom` argument and set it to your transformation function of interest. 
+The VOCSegmentation dataset can be easily downloaded from ``torchvision.datasets``. This dataset allows you to apply the needed transformations on the ground-truth directly in addition to defining the proper transformations for the input images. To do so, it's enough to use the ``target_transfrom`` argument and set it to your transformation function of interest. 
 
 .. code-block:: python
 
