@@ -1,7 +1,7 @@
 .. role:: hidden
     :class: hidden-section
 
-Image reconstruction using Poutyne
+Image Reconstruction Using Poutyne
 ***********************************
 
 .. note::
@@ -13,31 +13,25 @@ In this example, we train a simple convolutional autoencoder (Conv-AE) on the MN
 
 .. image:: /_static/img/image_reconstruction/AE.png
 
-`Reference of the image. <https://blog.keras.io/building-autoencoders-in-keras.html>`_
+`Source <https://blog.keras.io/building-autoencoders-in-keras.html>`_
 
 Let's import all the needed packages.
 
 .. code-block:: python
 
-    import numpy as np
     import math
     import os
     import matplotlib.pyplot as plt
-    
+    import numpy as np
     import torch
     import torch.nn as nn
-    import torch.optim as optim
-    from torch.utils.data import DataLoader, Subset, Dataset
-    
-    import torchvision
     import torchvision.datasets as datasets
     import torchvision.transforms as tfms
+    from poutyne import set_seeds, Model, ModelCheckpoint, CSVLogger
+    from torch.utils.data import DataLoader, Subset, Dataset
     from torchvision.utils import make_grid
 
-    import poutyne
-    from poutyne import set_seeds, Model, Experiment, ModelCheckpoint, CSVLogger
-
-Training constants
+Training Constants
 ==================
 
 .. code-block:: python
@@ -52,10 +46,10 @@ Training constants
     print('The running processor is...', device)
     set_seeds(42)
 
-Loading the MNIST dataset
+Loading the MNIST Dataset
 =========================
 
-The MNIST dataset is directly downloaded from the ``torchvision.datasets`` package. The training dataset contains 60,000 images of digits of size 28x28. However, we separate 20% of the full train dataset as a validation dataset. On the other hand, by setting the "train" argument to ``False``, the test dataset containing 10,000 images is downloaded and saved in the "datasets" directory.
+The MNIST dataset is directly downloaded from the ``torchvision.datasets`` package. The training dataset contains 60,000 images of digits of size 28x28. However, we separate 20% of the full train dataset as a validation dataset. Also, by setting the ``train`` argument to ``False``, the test dataset containing 10,000 images is downloaded and saved in the "datasets" directory.
 
 .. code-block:: python
 
@@ -72,7 +66,7 @@ The MNIST dataset is directly downloaded from the ``torchvision.datasets`` packa
     train_dataset = Subset(full_train_dataset, train_indices)
     valid_dataset = Subset(full_train_dataset, valid_indices)
 
-The format of the downloaded MNIST dataset is proper for a classification application, which means each sample is composed of an image and a label (the digit drawn in the image). However, for image reconstruction, the dataset should contain an input image and a target image, which simply are the same. Hence, using the code below, we define a new dataset that wraps an MNIST dataset and provides an image as an input and sets that image as its target, as well. In other words, we change the format of each dataset sample, from (image, label) to the (image, image).
+The downloaded MNIST dataset format is for classification, which means each sample contains an image and a label (the digit drawn in the image). However, for image reconstruction, the dataset should contain an input image and a target image, which are simply the same. Hence, using the code below, we define a new dataset that wraps an MNIST dataset and provides an image as an input and sets that image as its target. In other words, we change the format of each dataset sample from (image, label) to the (image, image).
 
 .. code-block:: python
 
@@ -83,15 +77,14 @@ The format of the downloaded MNIST dataset is proper for a classification applic
               
         def __getitem__(self, index):
             input_image = self.dataset[index][0]
-            reconstructed_image = input_image  # In image reconstruction, input and target images are the same.
+            target_image = input_image  # In image reconstruction, input and target images are the same.
               
-            return input_image, reconstructed_image
+            return input_image, target_image
           
-        def __len__(self):
-              
+        def __len__(self):              
             return len(self.dataset)  
 
-Finally, in the section below, we wrap the MNIST datasets into our wrapper and create dataloaders for them.
+Finally, in the section below, we wrap the MNIST datasets into our wrapper and create data loaders for them.
 
 .. code-block:: python
 
@@ -103,7 +96,7 @@ Finally, in the section below, we wrap the MNIST datasets into our wrapper and c
     valid_dataloader = DataLoader(valid_dataset_new, batch_size=batch_size, shuffle=False)
     test_dataloader = DataLoader(test_dataset_new, batch_size=1, shuffle=False)
 
-Convolutional autoencoder
+Convolutional Autoencoder
 =========================
 
 .. code-block:: python
@@ -172,7 +165,7 @@ Training
     # Train
     model.fit_generator(train_dataloader, valid_dataloader, epochs=num_epochs, callbacks=callbacks)
 
-A random batch of the MNIST dataset images
+A Random Batch of the MNIST Dataset Images
 ==========================================
 
 Let's see some of the input samples inside the training dataset.
@@ -188,10 +181,10 @@ Let's see some of the input samples inside the training dataset.
 
 .. image:: /_static/img/image_reconstruction/mnist_batch.png
 
-Reconstructed images after 3 epochs of training
+Reconstructed Images after 3 Epochs of Training
 ===============================================
 
-In order to visually evaluate the quality of the results, here, we show the reconstruction results of the samples shown above.
+Here, we show the reconstruction results of the samples shown above to visually evaluate the quality of the results.
 
 .. code-block:: python
 
@@ -208,14 +201,14 @@ In order to visually evaluate the quality of the results, here, we show the reco
 Evaluation
 ==========
 
-One of the strong and useful tools in Poutyne is the ``evaluate`` methods, which not only provide you with the evaluation metrics but also provide the ground truths and the predictions if the related arguments have been set to ``True`` (as below).
+One of the useful tools of Poutyne is the ``evaluate`` methods, which provide you with the evaluation metrics and the ground truths and the predictions if the related arguments have been set to True (as below).
 
 .. code-block:: python
 
     # evaluating the trained network on test data
     loss, predictions, ground_truth = model.evaluate_generator(test_dataloader, return_pred=True, return_ground_truth=True)
 
-In most computer vision applications, such as image reconstruction, it is very important to check the network's failures (or abilities, vice versa). The following part shows an input and a reconstructed image, as well as its reconstruction error map. The reconstruction error map shows which part of the image has not been reconstructed accurately.
+In most computer vision applications, such as image reconstruction, it is imperative to check the network's failures (or abilities, vice versa). The following part shows an example of an input and the reconstructed image, as well as its reconstruction error map. The reconstruction error map shows which part of the image has not been reconstructed accurately.
 
 .. code-block:: python
 
@@ -241,8 +234,8 @@ In most computer vision applications, such as image reconstruction, it is very i
 Resuming the training for more epochs
 =====================================
 
-If we find the past epochs not enough, Poutyne allows you to resume the training from the last done epoch, as below. Please note that, in the ``callbacks`` that we defined before, since we did not set the ``restore_best`` argument in ``ModelCheckpoint`` to ``True``, our model stays at the last epoch after finishing the first part of the training. Hence, by setting the ``initial_epoch`` to the last epoch of the previous training, we can resume our training for more epochs, using the last state of the neural network.
-    
+If we find the previous epochs' results not enough, Poutyne allows you to resume the last done epoch's training, as shown below. Please note that in the ``callbacks`` that we defined before since we did not set the ``restore_best`` argument in ``ModelCheckpoint`` to ``True``, our model stays at the last epoch after finishing the first part of the training. Hence, by setting the ``initial_epoch`` to the last epoch of the previous training, we can resume our training to train for more epochs, using the last state of the neural network.    
+
 .. code-block:: python    
     
     model.fit_generator(train_dataloader, valid_dataloader, epochs=13, callbacks=callbacks, initial_epoch=num_epochs)    
@@ -250,7 +243,7 @@ If we find the past epochs not enough, Poutyne allows you to resume the training
 Reconstructed images after the second training process
 ======================================================
 
-Now let's visualize the quality of the results after the second phase of training.
+Now let's visualize the quality of the results after the second training.
 
 .. code-block:: python  
 
@@ -299,4 +292,4 @@ Here, we compare the reconstruction accuracy of the network after 3 epochs and 1
 
 .. image:: /_static/img/image_reconstruction/mnist_compare.png
 
-You can also try more finetuning, by changing the hyperparameters (network capacity, epochs, etc) to increase the accuracy as much as you want.
+You can also try finetuning the model to obtain better performance. Such as changing the hyperparameters (network capacity, epochs, etc.).
