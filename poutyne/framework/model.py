@@ -225,10 +225,16 @@ class Model:
         Trains the network on a dataset. This method creates generators and calls
         the :func:`~Model.fit_generator()` method.
 
+        .. note:: With **Jupyter Notebooks**, a great number of displays per second (around > 200) seems to slow down
+            Jupyter Notebook. In which cases, we suggest to pass
+            ``progress_options={'show_every_n_train_steps': 100, 'show_on_valid': False}`` so that the number of
+            displays per second is at an acceptable level.
+
         .. warning:: With **Jupyter Notebooks in Firefox**, if ``colorama`` is installed and colors are enabled (as it
             is by default), a great number of epochs and steps per epoch can cause a spike in memory usage in Firefox.
-            The problem does not occur in Google Chrome/Chromium. To avoid this problem, you can disable the colors by
-            passing ``progress_options={'coloring': False}``. See
+            The problem does not occur in Google Chrome/Chromium. To avoid this problem, you can decrease the number of
+            steps shown by passing ``progress_options={'show_every_n_train_steps': 100, 'show_on_valid': False}`` or you
+            can disable the colors by passing ``progress_options={'coloring': False}``. See
             `this Github issue for details <https://github.com/jupyter/notebook/issues/5897>`__.
 
         Args:
@@ -342,10 +348,16 @@ class Model:
         Trains the network on a dataset. This method creates dataloaders and calls the
         :func:`~Model.fit_generator()` method.
 
+        .. note:: With **Jupyter Notebooks**, a great number of displays per second (around > 200) seems to slow down
+            Jupyter Notebook. In which cases, we suggest to pass
+            ``progress_options={'show_every_n_train_steps': 100, 'show_on_valid': False}`` so that the number of
+            displays per second is at an acceptable level.
+
         .. warning:: With **Jupyter Notebooks in Firefox**, if ``colorama`` is installed and colors are enabled (as it
             is by default), a great number of epochs and steps per epoch can cause a spike in memory usage in Firefox.
-            The problem does not occur in Google Chrome/Chromium. To avoid this problem, you can disable the colors by
-            passing ``progress_options={'coloring': False}``. See
+            The problem does not occur in Google Chrome/Chromium. To avoid this problem, you can decrease the number of
+            steps shown by passing ``progress_options={'show_every_n_train_steps': 100, 'show_on_valid': False}`` or you
+            can disable the colors by passing ``progress_options={'coloring': False}``. See
             `this Github issue for details <https://github.com/jupyter/notebook/issues/5897>`__.
 
         Args:
@@ -452,10 +464,16 @@ class Model:
         """
         Trains the network on a dataset using a generator.
 
+        .. note:: With **Jupyter Notebooks**, a great number of displays per second (around > 200) seems to slow down
+            Jupyter Notebook. In which cases, we suggest to pass
+            ``progress_options={'show_every_n_train_steps': 100, 'show_on_valid': False}`` so that the number of
+            displays per second is at an acceptable level.
+
         .. warning:: With **Jupyter Notebooks in Firefox**, if ``colorama`` is installed and colors are enabled (as it
             is by default), a great number of epochs and steps per epoch can cause a spike in memory usage in Firefox.
-            The problem does not occur in Google Chrome/Chromium. To avoid this problem, you can disable the colors by
-            passing ``progress_options={'coloring': False}``. See
+            The problem does not occur in Google Chrome/Chromium. To avoid this problem, you can decrease the number of
+            steps shown by passing ``progress_options={'show_every_n_train_steps': 100, 'show_on_valid': False}`` or you
+            can disable the colors by passing ``progress_options={'coloring': False}``. See
             `this Github issue for details <https://github.com/jupyter/notebook/issues/5897>`__.
 
         Args:

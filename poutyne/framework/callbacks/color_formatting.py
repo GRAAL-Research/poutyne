@@ -125,51 +125,59 @@ class ColorProgress:
         self._set_epoch_formatted_text(epoch_number, epochs)
 
     def on_train_batch_end(self,
+                           *,
                            remaining_time: float,
                            batch_number: int,
                            metrics_str: str,
-                           steps: Union[int, None] = None) -> None:
+                           steps: Union[int, None] = None,
+                           do_print: bool = True) -> None:
         """
         Format on train batch end for a steps the epoch ratio (so far / to do), the total time for the epoch, the steps
         done and the metrics name and values.
         """
         update = self.epoch_formatted_text
-        self._on_batch_end(update, remaining_time, batch_number, metrics_str, steps)
+        self._on_batch_end(update, remaining_time, batch_number, metrics_str, steps, do_print)
 
     def on_valid_batch_end(self,
+                           *,
                            remaining_time: float,
                            batch_number: int,
                            metrics_str: str,
-                           steps: Union[int, None] = None) -> None:
+                           steps: Union[int, None] = None,
+                           do_print: bool = True) -> None:
         """
         Format on valid batch end for a steps the epoch ratio (so far / to do), the total time, the steps
         done and the metrics name and values.
         """
         update = self.epoch_formatted_text
-        self._on_batch_end(update, remaining_time, batch_number, metrics_str, steps)
+        self._on_batch_end(update, remaining_time, batch_number, metrics_str, steps, do_print)
 
     def on_test_batch_end(self,
+                          *,
                           remaining_time: float,
                           batch_number: int,
                           metrics_str: str,
-                          steps: Union[int, None] = None) -> None:
+                          steps: Union[int, None] = None,
+                          do_print: bool = True) -> None:
         """
         Format on test batch end for a steps the epoch ratio (so far / to do), the total time, the steps
         done and the metrics name and values.
         """
         update = self.formatted_text
-        self._on_batch_end(update, remaining_time, batch_number, metrics_str, steps)
+        self._on_batch_end(update, remaining_time, batch_number, metrics_str, steps, do_print)
 
     def _on_batch_end(self,
                       update: str,
                       remaining_time: float,
                       batch_number: int,
                       metrics_str: str,
-                      steps: Union[int, None] = None) -> None:
+                      steps: Union[int, None] = None,
+                      do_print: bool = True) -> None:
         # pylint: disable=too-many-arguments
         update += self._batch_update(remaining_time, batch_number, metrics_str, steps)
 
-        self._update_print(update)
+        if do_print:
+            self._update_print(update)
 
     def on_epoch_end(self, total_time: float, train_last_steps: int, valid_last_steps: int, metrics_str: str) -> None:
         """

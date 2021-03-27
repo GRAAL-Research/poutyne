@@ -1,6 +1,8 @@
 # v1.x.x
 
-*
+* Add the following flags in [`ProgressionCallback`](https://poutyne.org/callbacks.html#poutyne.ProgressionCallback):
+  `show_every_n_train_steps`, `show_every_n_valid_steps`, `show_every_n_test_steps`. They allow to show only certain
+  steps instead of all steps.
 
 # v1.3.1
 
