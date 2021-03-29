@@ -99,7 +99,7 @@ Finally, in the section below, we wrap the MNIST datasets into our wrapper and c
 Convolutional Autoencoder
 =========================
 
-The most frequently used network for image reconstruction is the Autoencoder. In this section, we are going to define our own autoencoder. The encoder section tries to encode the input image and consequently, the decoder tries to decode the features and reconstruct the original image. As our input dataset (MNIST) contains images with low resolution and low complexity, we preferred not to design a complex network, in order to avoid overfitting.
+The most frequently used network for image reconstruction is the autoencoder. In this section, we are going to define our own autoencoder. The encoder section tries to encode the input image into features and consequently, the decoder tries to decode the features and reconstruct the original image. As our input dataset (MNIST) contains images with low resolution and low complexity, we preferred not to design a complex network in order to avoid overfitting.
 
 .. code-block:: python
 
