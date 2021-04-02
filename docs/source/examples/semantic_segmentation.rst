@@ -13,7 +13,7 @@ Semantic segmentation refers to the process of linking each pixel in an image to
 
 .. image:: /_static/img/semantic_segmentation/semantic_segmentation.png
 
-`Reference of the image. <https://www.jeremyjordan.me/semantic-segmentation/>`_
+`Source <https://www.jeremyjordan.me/semantic-segmentation/>`_
 
 In this example, we are going to use and train a convolutional U-Net in order to design a network for semantic segmentation. In other words, we formulate the task of semantic segmentation as an image translation problem. We download and use the VOCSegmentation 2007 dataset for this purpose.
 
@@ -27,30 +27,20 @@ Let’s import all the needed packages.
 
 .. code-block:: python
 
-    import numpy as np
-    import matplotlib.pyplot as plt
-    import math
     import os
-    import segmentation_models_pytorch as smp
-    import PIL
-    import cv2
-    
+    import matplotlib.pyplot as plt
+    import numpy as np
     import torch
     import torch.nn as nn
     import torch.optim as optim
-    from torch.utils.data import DataLoader, Dataset, Subset
-    
-    import torchvision
     import torchvision.models as models
     import torchvision.transforms as tfms
     import torchvision.datasets as datasets
-    from torchvision.utils import  make_grid, save_image
-    
+    import segmentation_models_pytorch as smp
     from poutyne import Model, ModelCheckpoint, CSVLogger, set_seeds
+    from torch.utils.data import DataLoader
+    from torchvision.utils import  make_grid
     
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    print('The current processor is ...', device)
-
 Training constants
 ==================
 
@@ -63,7 +53,9 @@ Training constants
     imagenet_mean = [0.485, 0.456, 0.406]  # mean of the imagenet dataset for normalizing 
     imagenet_std = [0.229, 0.224, 0.225]  # std of the imagenet dataset for normalizing 
     set_seeds(42)
-    
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    print('The current processor is ...', device)
+
 Loading the VOCSegmentation dataset    
 ===================================
 
@@ -93,7 +85,7 @@ The VOCSegmentation dataset can be easily downloaded from ``torchvision.datasets
 A random batch of the VODSegmentation dataset images
 ====================================================
 
-Let's see some of the input samples, inside the training dataset.
+Let's see some of the input samples inside the training dataset.
 
 .. code-block:: python
 
@@ -111,7 +103,7 @@ Let's see some of the input samples, inside the training dataset.
     
 .. image:: /_static/img/semantic_segmentation/voc_segment_batch.png 
 
-The ground-truth (segmentation map) for the image grid shown above, is as below.
+The ground-truth (segmentation map) for the image grid shown above is as below.
 
 .. code-block:: python
 
@@ -126,7 +118,7 @@ The ground-truth (segmentation map) for the image grid shown above, is as below.
     
 .. image:: /_static/img/semantic_segmentation/voc_segment_batch_gt.png 
 
-It is worth mentioning that, as we have approached the segmentation task as an image translation problem, we took advantage of MSELoss for the training. Moreover, we believe that using the Unet, with a pre-trained encoder, would help the network converge sooner and better, since a pre-trained CNN (trained on the Imagenet dataset), is already familiar with some of the object classes, and also some low-level image features (such as edge, texture, etc).
+It is worth mentioning that, as we have approached the segmentation task as an image translation problem, we take advantage of MSELoss for the training. Moreover, we believe that using the U-Net with a pre-trained encoder would help the network converge sooner and better since a pre-trained CNN (trained on the ImageNet dataset) is already familiar with some of the object classes and also some low-level image features (such as edge, texture, etc).
 
 .. code-block:: python
 
@@ -139,13 +131,13 @@ It is worth mentioning that, as we have approached the segmentation task as an i
     # specifying optimizer
     optimizer = optim.Adam (network.parameters(), lr=learning_rate)
 
-We can see the architecture of the Res34-Unet below. As noticed in the section above, this network is imported from the segmentation-models-PyTorch library, which contains many other architectures as well. You can import and use other available networks, trying to increase the accuracy.
+We can see the architecture of the ResNet-34-U-Net below. As noticed in the section above, this network is imported from the segmentation-models-pytorch library which contains many other architectures as well. You can import and use other available networks to try to increase the accuracy.
 
 .. code-block:: python
 
     print(network)  
 
-Training deep neural networks is a challenging task, especially when we are dealing with data with big sizes or numbers. There are numerous factors and hyperparameters, which play an important role in the success of the network. One of these determining factors is the epoch number. The right number of epochs would help your network train well, however, the lower and higher numbers would make your network under-fitted or overfitted, respectively. With some types of data (such as images or videos), it is very time-consuming to repeat the training for different numbers of epoch numbers, to find the best one. Poutyne library has provided some fascinating tools to address this problem. As you would notice in the following sections, by the use of `callbacks <https://poutyne.org/callbacks.html>`_, you would be able to record and retrieve the best parameters (weights) through your rather big number of epochs, without needing to repeat the training process again and again. Moreover, Poutyne also gives you the possibility to resume your training, from the last done epoch, if you feel the need for even more iterations.
+Training deep neural networks is a challenging task, especially when we are dealing with data with big sizes or numbers. There are numerous factors and hyperparameters which play an important role in the success of the network. One of these determining factors is the number of epochs. The right number of epochs would help your network train well. However, lower and higher numbers would make your network underfit or overfit, respectively. With some types of data (such as images or videos), it is very time-consuming to repeat the training for different numbers of epochs to find the best one. Poutyne library has provided some fascinating tools to address this problem. As you would notice in the following sections, by the use of `callbacks <https://poutyne.org/callbacks.html>`_, you would be able to record and retrieve the best parameters (weights) through your rather big number of epochs without needing to repeat the training process again and again. Moreover, Poutyne also gives you the possibility to resume your training, from the last done epoch, if you feel the need for even more iterations.
 
 .. code-block:: python
 
