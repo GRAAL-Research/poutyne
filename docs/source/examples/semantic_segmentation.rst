@@ -75,8 +75,8 @@ The VOCSegmentation dataset can be easily downloaded from ``torchvision.datasets
     ])
     
     # Creating the dataset
-    train_dataset = torchvision.datasets.VOCSegmentation('./dataset/', year='2007', download=True, image_set='train', transform=input_transform, target_transform= target_transform)
-    valid_dataset = torchvision.datasets.VOCSegmentation('./dataset/', year='2007', download=True, image_set='val', transform=input_transform, target_transform= target_transform )
+    train_dataset = datasets.VOCSegmentation('./dataset/', year='2007', download=True, image_set='train', transform=input_transform, target_transform= target_transform)
+    valid_dataset = datasets.VOCSegmentation('./dataset/', year='2007', download=True, image_set='val', transform=input_transform, target_transform= target_transform )
     
     # Creating the dataloader
     train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
@@ -89,7 +89,7 @@ Let's see some of the input samples inside the training dataset.
 
 .. code-block:: python
 
-    samples = next(iter(train_dataloader))
+    samples = next(iter(valid_dataloader))
     inputs = samples[0]
     input_grid = make_grid(inputs)
     
@@ -137,7 +137,9 @@ We can see the architecture of the ResNet-34-U-Net below. As noticed in the sect
 
     print(network)  
 
-Training deep neural networks is a challenging task, especially when we are dealing with data with big sizes or numbers. There are numerous factors and hyperparameters which play an important role in the success of the network. One of these determining factors is the number of epochs. The right number of epochs would help your network train well. However, lower and higher numbers would make your network underfit or overfit, respectively. With some types of data (such as images or videos), it is very time-consuming to repeat the training for different numbers of epochs to find the best one. Poutyne library has provided some fascinating tools to address this problem. As you would notice in the following sections, by the use of `callbacks <https://poutyne.org/callbacks.html>`_, you would be able to record and retrieve the best parameters (weights) through your rather big number of epochs without needing to repeat the training process again and again. Moreover, Poutyne also gives you the possibility to resume your training, from the last done epoch, if you feel the need for even more iterations.
+Training deep neural networks is a challenging task, especially when we are dealing with data with big sizes or numbers. There are numerous factors and hyperparameters which play an important role in the success of the network. One of these determining factors is the number of epochs. The right number of epochs would help your network train well. However, lower and higher numbers would make your network underfit or overfit, respectively. With some types of data (such as images or videos), it is very time-consuming to repeat the training for different numbers of epochs to find the best one. Poutyne library has provided some fascinating tools to address this problem.
+
+As you would notice in the following sections, by the use of `callbacks <https://poutyne.org/callbacks.html>`_, you would be able to record and retrieve the best parameters (weights) through your rather big number of epochs without needing to repeat the training process again and again. Moreover, Poutyne also gives you the possibility to resume your training, from the last done epoch, if you feel the need for even more iterations.
 
 .. code-block:: python
 
