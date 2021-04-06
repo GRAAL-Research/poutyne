@@ -55,6 +55,7 @@ The MNIST dataset is directly downloaded from the ``torchvision.datasets`` packa
 
     full_train_dataset = datasets.MNIST('./datasets/', train=True, download=True, transform=tfms.ToTensor())
     test_dataset = datasets.MNIST('./datasets/', train=False, download=True, transform=tfms.ToTensor())
+
     # Selecting and seperating a proportion of the full_train_dataset to create the validation dataset.
     full_dataset_length = len(full_train_dataset)
     indices = list(np.arange(full_dataset_length))
