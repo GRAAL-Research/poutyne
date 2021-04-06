@@ -1,9 +1,14 @@
 # v1.x.x
 
-*
+* Add the following flags in [`ProgressionCallback`](https://poutyne.org/callbacks.html#poutyne.ProgressionCallback):
+  `show_every_n_train_steps`, `show_every_n_valid_steps`, `show_every_n_test_steps`. They allow to show only certain
+  steps instead of all steps.
+
+# v1.3.1
+
+* Bug fix for when changing the GPU device twice with optimizer having a state would crash.
 
 # v1.3
-
 
 * A progress bar is now set on validation a model (similar to training). It is disableable by passing
 `progress_options=dict(show_on_valid=False)` in the `fit*` methods.

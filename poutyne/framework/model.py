@@ -8,6 +8,8 @@ from typing import Iterable, Mapping, List, Union
 
 import numpy as np
 import torch
+import torch.nn as nn
+import torch.optim as optim
 from torch.utils.data import DataLoader
 
 from poutyne import torch_to_numpy, numpy_to_torch, torch_to
@@ -158,6 +160,12 @@ class Model:
     """
 
     def __init__(self, network, optimizer, loss_function, *, batch_metrics=None, epoch_metrics=None, device=None):
+        if not isinstance(network, nn.Module):
+            raise ValueError(f"network should be of type derived from nn.Module, received {type(network)}.")
+
+        if optimizer is not None and not isinstance(optimizer, (optim.Optimizer, str, dict)):
+            raise ValueError(f"optimizer should be of type derived from optim.Optimizer, received {type(optimizer)}.")
+
         batch_metrics = [] if batch_metrics is None else batch_metrics
         epoch_metrics = [] if epoch_metrics is None else epoch_metrics
 
@@ -217,10 +225,16 @@ class Model:
         Trains the network on a dataset. This method creates generators and calls
         the :func:`~Model.fit_generator()` method.
 
+        .. note:: With **Jupyter Notebooks**, a great number of displays per second (around > 200) seems to slow down
+            Jupyter Notebook. In which cases, we suggest to pass
+            ``progress_options={'show_every_n_train_steps': 100, 'show_on_valid': False}`` so that the number of
+            displays per second is at an acceptable level.
+
         .. warning:: With **Jupyter Notebooks in Firefox**, if ``colorama`` is installed and colors are enabled (as it
             is by default), a great number of epochs and steps per epoch can cause a spike in memory usage in Firefox.
-            The problem does not occur in Google Chrome/Chromium. To avoid this problem, you can disable the colors by
-            passing ``progress_options={'coloring': False}``. See
+            The problem does not occur in Google Chrome/Chromium. To avoid this problem, you can decrease the number of
+            steps shown by passing ``progress_options={'show_every_n_train_steps': 100, 'show_on_valid': False}`` or you
+            can disable the colors by passing ``progress_options={'coloring': False}``. See
             `this Github issue for details <https://github.com/jupyter/notebook/issues/5897>`__.
 
         Args:
@@ -334,10 +348,16 @@ class Model:
         Trains the network on a dataset. This method creates dataloaders and calls the
         :func:`~Model.fit_generator()` method.
 
+        .. note:: With **Jupyter Notebooks**, a great number of displays per second (around > 200) seems to slow down
+            Jupyter Notebook. In which cases, we suggest to pass
+            ``progress_options={'show_every_n_train_steps': 100, 'show_on_valid': False}`` so that the number of
+            displays per second is at an acceptable level.
+
         .. warning:: With **Jupyter Notebooks in Firefox**, if ``colorama`` is installed and colors are enabled (as it
             is by default), a great number of epochs and steps per epoch can cause a spike in memory usage in Firefox.
-            The problem does not occur in Google Chrome/Chromium. To avoid this problem, you can disable the colors by
-            passing ``progress_options={'coloring': False}``. See
+            The problem does not occur in Google Chrome/Chromium. To avoid this problem, you can decrease the number of
+            steps shown by passing ``progress_options={'show_every_n_train_steps': 100, 'show_on_valid': False}`` or you
+            can disable the colors by passing ``progress_options={'coloring': False}``. See
             `this Github issue for details <https://github.com/jupyter/notebook/issues/5897>`__.
 
         Args:
@@ -444,10 +464,16 @@ class Model:
         """
         Trains the network on a dataset using a generator.
 
+        .. note:: With **Jupyter Notebooks**, a great number of displays per second (around > 200) seems to slow down
+            Jupyter Notebook. In which cases, we suggest to pass
+            ``progress_options={'show_every_n_train_steps': 100, 'show_on_valid': False}`` so that the number of
+            displays per second is at an acceptable level.
+
         .. warning:: With **Jupyter Notebooks in Firefox**, if ``colorama`` is installed and colors are enabled (as it
             is by default), a great number of epochs and steps per epoch can cause a spike in memory usage in Firefox.
-            The problem does not occur in Google Chrome/Chromium. To avoid this problem, you can disable the colors by
-            passing ``progress_options={'coloring': False}``. See
+            The problem does not occur in Google Chrome/Chromium. To avoid this problem, you can decrease the number of
+            steps shown by passing ``progress_options={'show_every_n_train_steps': 100, 'show_on_valid': False}`` or you
+            can disable the colors by passing ``progress_options={'coloring': False}``. See
             `this Github issue for details <https://github.com/jupyter/notebook/issues/5897>`__.
 
         Args:
@@ -1411,7 +1437,7 @@ class Model:
                 for param_name, optim_param in zip(param_name_group, optim_group['params'])
             ]
 
-        self.optimizer.state = defaultdict(dict, {name_to_param[name]: state for name, state in named_state})
+        self.optimizer.state = defaultdict(dict, {name_to_param[name]: state for name, state in named_state.items()})
 
     @contextlib.contextmanager
     def _update_optim_device(self):
