@@ -163,6 +163,7 @@ Training
 
     # Poutyne Model on GPU
     model = Model(network, optimizer, criterion, device=device)
+
     # Train
     model.fit_generator(train_dataloader, valid_dataloader, epochs=num_epochs, callbacks=callbacks)
 
