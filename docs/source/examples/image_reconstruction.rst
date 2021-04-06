@@ -62,6 +62,7 @@ The MNIST dataset is directly downloaded from the ``torchvision.datasets`` packa
     np.random.shuffle(indices)
     train_indices = indices[math.floor(full_dataset_length * valid_split_percent):]
     valid_indices = indices[:math.floor(full_dataset_length * valid_split_percent)]
+
     train_dataset = Subset(full_train_dataset, train_indices)
     valid_dataset = Subset(full_train_dataset, valid_indices)
 
