@@ -55,14 +55,12 @@ The MNIST dataset is directly downloaded from the ``torchvision.datasets`` packa
 
     full_train_dataset = datasets.MNIST('./datasets/', train=True, download=True, transform=tfms.ToTensor())
     test_dataset = datasets.MNIST('./datasets/', train=False, download=True, transform=tfms.ToTensor())
-    
     # Selecting and seperating a proportion of the full_train_dataset to create the validation dataset.
     full_dataset_length = len(full_train_dataset)
     indices = list(np.arange(full_dataset_length))
     np.random.shuffle(indices)
     train_indices = indices[math.floor(full_dataset_length * valid_split_percent):]
     valid_indices = indices[:math.floor(full_dataset_length * valid_split_percent)]
-    
     train_dataset = Subset(full_train_dataset, train_indices)
     valid_dataset = Subset(full_train_dataset, valid_indices)
 
@@ -71,18 +69,18 @@ The downloaded MNIST dataset format is for classification, which means each samp
 .. code-block:: python
 
     class ImageReconstructionDataset(Dataset):
-    
+
         def __init__(self, dataset):
             self.dataset = dataset
-              
+
         def __getitem__(self, index):
             input_image = self.dataset[index][0]
             target_image = input_image  # In image reconstruction, input and target images are the same.
-              
+
             return input_image, target_image
-          
-        def __len__(self):              
-            return len(self.dataset)  
+
+        def __len__(self):
+            return len(self.dataset)
 
 Finally, in the section below, we wrap the MNIST datasets into our wrapper and create data loaders for them.
 
@@ -91,7 +89,6 @@ Finally, in the section below, we wrap the MNIST datasets into our wrapper and c
     train_dataset_new = ImageReconstructionDataset(train_dataset)
     valid_dataset_new = ImageReconstructionDataset(valid_dataset)
     test_dataset_new = ImageReconstructionDataset(test_dataset)
-    
     train_dataloader = DataLoader(train_dataset_new, batch_size=batch_size, shuffle=True)
     valid_dataloader = DataLoader(valid_dataset_new, batch_size=batch_size, shuffle=False)
     test_dataloader = DataLoader(test_dataset_new, batch_size=1, shuffle=False)
@@ -106,16 +103,16 @@ The most frequently used network for image reconstruction is the autoencoder. In
     class ConvAutoencoder(nn.Module):
         def __init__(self):
             super(ConvAutoencoder, self).__init__()
-          
+
             #encoder
-            self.conv1 = nn.Conv2d(1, 32, 3, padding=1)  
+            self.conv1 = nn.Conv2d(1, 32, 3, padding=1)
             self.conv2 = nn.Conv2d(32, 4, 3, padding=1)
             self.pool = nn.MaxPool2d(2, 2)
-          
+
             #decoder
             self.t_conv1 = nn.ConvTranspose2d(4, 32, 2, stride=2)
             self.t_conv2 = nn.ConvTranspose2d(32, 1, 2, stride=2)
-    
+
         def forward(self, x):
             x = torch.relu(self.conv1(x))
             x = self.pool(x)
@@ -123,28 +120,28 @@ The most frequently used network for image reconstruction is the autoencoder. In
             x = self.pool(x)  # compressed representation
             x = torch.relu(self.t_conv1(x))
             x = torch.sigmoid(self.t_conv2(x))
-                  
+
             return x
-    
+
     network = ConvAutoencoder()
-    
+
 In order to interact with the optimization process, `callbacks <https://poutyne.org/callbacks.html>`_ are defined and added to a list using the code below. They will save the last weights, best weights and the logs, respectively.
 
 .. code-block:: python
 
     save_path = 'saves'
-    
-    # Creating saving directory 
+
+    # Creating saving directory
     os.makedirs(save_path, exist_ok=True)
-    
+
     callbacks = [
         # Save the latest weights to be able to continue the optimization at the end for more epochs.
         ModelCheckpoint(os.path.join(save_path, 'last_weights.ckpt')),
-    
+
         # Save the weights in a new file when the current model is better than all previous models.
         ModelCheckpoint(os.path.join(save_path, 'best_weight.ckpt'),
                         save_best_only=True, verbose=True),
-    
+
         # Save the losses for each epoch in a TSV.
         CSVLogger(os.path.join(save_path, 'log.tsv'), separator='\t'),
     ]
@@ -163,7 +160,6 @@ Training
 
     # Poutyne Model on GPU
     model = Model(network, optimizer, criterion, device=device)
-    
     # Train
     model.fit_generator(train_dataloader, valid_dataloader, epochs=num_epochs, callbacks=callbacks)
 
@@ -215,18 +211,18 @@ In most computer vision applications, such as image reconstruction, it is impera
 .. code-block:: python
 
     sample_number = 2   # a sample from test dataset
-    
+
     sample = ground_truth[sample_number][0]
     sample_prediction_result_3epochs = predictions[sample_number][0]
-    
+
     recunstruction_error_map_3epochs = sample - sample_prediction_result_3epochs  #reconstruction error map
     fig, (ax1, ax2, ax3) = plt.subplots(1,3)
     ax1.imshow(sample)
     ax1.set_title('sample')
-    
+
     ax2.imshow(sample_prediction_result_3epochs)
     ax2.set_title('prediction')
-    
+
     ax3.imshow(np.abs(recunstruction_error_map_3epochs))
     ax3.set_title('reconstruction error')
     plt.show()
@@ -236,18 +232,18 @@ In most computer vision applications, such as image reconstruction, it is impera
 Resuming the training for more epochs
 =====================================
 
-If we find the previous epochs' results not enough, Poutyne allows you to resume the last done epoch's training, as shown below. Please note that in the ``callbacks`` that we defined before since we did not set the ``restore_best`` argument in ``ModelCheckpoint`` to ``True``, our model stays at the last epoch after finishing the first part of the training. Hence, by setting the ``initial_epoch`` to the last epoch of the previous training, we can resume our training to train for more epochs, using the last state of the neural network.    
+If we find the previous epochs' results not enough, Poutyne allows you to resume the last done epoch's training, as shown below. Please note that in the ``callbacks`` that we defined before since we did not set the ``restore_best`` argument in ``ModelCheckpoint`` to ``True``, our model stays at the last epoch after finishing the first part of the training. Hence, by setting the ``initial_epoch + 1`` to the last epoch of the previous training, we can resume our training to train for more epochs, using the last state of the neural network.
 
-.. code-block:: python    
-    
-    model.fit_generator(train_dataloader, valid_dataloader, epochs=13, callbacks=callbacks, initial_epoch=num_epochs)    
+.. code-block:: python
+
+    model.fit_generator(train_dataloader, valid_dataloader, epochs=13, callbacks=callbacks, initial_epoch=num_epochs + 1)
 
 Reconstructed images after the second training process
 ======================================================
 
 Now let's visualize the quality of the results after the second training.
 
-.. code-block:: python  
+.. code-block:: python
 
     outputs = torch.tensor(model.predict_on_batch(inputs))
     output_grid = make_grid(outputs)
@@ -266,30 +262,30 @@ Here, we compare the reconstruction accuracy of the network after 3 epochs and 1
 
 .. code-block:: python
 
-    sample_number = 2 
+    sample_number = 2
     sample = ground_truth[sample_number][0]
     sample_prediction_result_13epochs = predictions[sample_number][0]
     recunstruction_error_map_13epochs = sample - sample_prediction_result_13epochs  #reconstruction error map
-    
+
     fig, axs = plt.subplots(2, 3, sharex=True, sharey=True)
     axs[0, 0].imshow(sample)
     axs[0, 0].set_title('sample')
-    
+
     axs[0, 1].imshow(sample_prediction_result_3epochs)
     axs[0, 1].set_title('prediction')
-    
+
     axs[0, 2].imshow(np.abs(recunstruction_error_map_3epochs))
     axs[0, 2].set_title('rec_error epoch3')
-    
+
     axs[1, 0].imshow(sample)
     axs[1, 0].set_title('sample')
-    
+
     axs[1, 1].imshow(sample_prediction_result_13epochs)
     axs[1, 1].set_title('prediction')
-    
+
     axs[1, 2].imshow(np.abs(recunstruction_error_map_13epochs))
     axs[1, 2].set_title('rec_error epoch13')
-    
+
     plt.show()
 
 .. image:: /_static/img/image_reconstruction/mnist_compare.png

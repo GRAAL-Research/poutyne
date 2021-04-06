@@ -271,7 +271,9 @@ class GetGitCommitTest(TestCase):
 
     @patch("poutyne.framework.mlflow_logger.git", None)
     def test_whenGitNotInstall_givenARepositoryPathToGetGitCommit_thenGitCommitIsNone(self):
-        self.assertIsNone(_get_git_commit(self.a_fake_path))
+        with self.assertWarns(UserWarning):
+            commit = _get_git_commit(self.a_fake_path)
+        self.assertIsNone(commit)
 
     @patch("poutyne.framework.mlflow_logger.git.Repo")
     def test_whenGitInstalled_givenARepositoryPathToGetGitCommitButNotAGitRepo_thenRaiseWarning(self, git_repo_patch):

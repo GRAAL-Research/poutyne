@@ -3,7 +3,6 @@
 import warnings
 from collections import OrderedDict
 from math import ceil
-from tempfile import TemporaryDirectory
 from unittest import skipIf, main
 from unittest.mock import MagicMock, ANY
 
@@ -11,7 +10,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch.utils.data import DataLoader, random_split, Dataset
+from torch.utils.data import DataLoader, Dataset
 
 from poutyne import Model, warning_settings, TensorDataset
 from tests.framework.tools import some_data_tensor_generator, SomeDataGeneratorUsingStopIteration, \
@@ -19,12 +18,6 @@ from tests.framework.tools import some_data_tensor_generator, SomeDataGeneratorU
     some_metric_1_value, some_metric_2_value, repeat_batch_metric_value, some_constant_epoch_metric_value, \
     SomeEpochMetric
 from .base import ModelFittingTestCase
-
-try:
-    from torchvision.datasets import MNIST
-    from torchvision.transforms import ToTensor
-except ImportError:
-    MNIST = None
 
 warning_settings['concatenate_returns'] = 'ignore'
 
@@ -34,12 +27,6 @@ def some_ndarray_generator(batch_size):
         x = np.random.rand(batch_size, 1).astype(np.float32)
         y = np.random.rand(batch_size, 1).astype(np.float32)
         yield x, y
-
-
-def some_mocked_optimizer():
-    optim = MagicMock()
-
-    return optim
 
 
 class IterableMock:
@@ -71,7 +58,7 @@ class ModelTest(ModelFittingTestCase):
         torch.manual_seed(42)
         self.pytorch_network = nn.Linear(1, 1)
         self.loss_function = nn.MSELoss()
-        self.optimizer = torch.optim.SGD(self.pytorch_network.parameters(), lr=1e-3)
+        self.optimizer = torch.optim.Adam(self.pytorch_network.parameters(), lr=1e-3)
         self.batch_metrics = [
             some_batch_metric_1, ('custom_name', some_batch_metric_2), repeat_batch_metric, repeat_batch_metric
         ]
@@ -120,7 +107,7 @@ class ModelTest(ModelFittingTestCase):
     def test_correct_optim_calls_1_batch_per_step(self):
         train_generator = some_data_tensor_generator(ModelTest.batch_size)
 
-        mocked_optimizer = some_mocked_optimizer()
+        mocked_optimizer = MagicMock(self.optimizer)
         mocked_optim_model = Model(self.pytorch_network,
                                    mocked_optimizer,
                                    self.loss_function,
@@ -138,7 +125,7 @@ class ModelTest(ModelFittingTestCase):
         x = torch.rand(n_batches, items_per_batch, 1)
         y = torch.rand(n_batches, items_per_batch, 1)
 
-        mocked_optimizer = some_mocked_optimizer()
+        mocked_optimizer = MagicMock(self.optimizer)
         mocked_optim_model = Model(self.pytorch_network,
                                    mocked_optimizer,
                                    self.loss_function,
@@ -159,7 +146,7 @@ class ModelTest(ModelFittingTestCase):
 
         self.model.fit_generator(list(zip(x, y)), None, epochs=1, batches_per_step=1)
 
-        expected_params = list(self.model.get_weight_copies().values())
+        expected_params = self.model.get_weight_copies()
 
         for mini_batch_size in [1, 2, 5]:
             self.model.set_weights(initial_params)
@@ -171,9 +158,11 @@ class ModelTest(ModelFittingTestCase):
 
             self.model.fit_generator(list(zip(x, y)), None, epochs=1, batches_per_step=n_batches_per_step)
 
-            returned_params = list(self.model.get_weight_copies().values())
+            returned_params = self.model.get_weight_copies()
 
-            np.testing.assert_almost_equal(returned_params, expected_params, decimal=4)
+            self.assertEqual(returned_params.keys(), expected_params.keys())
+            for k in expected_params.keys():
+                np.testing.assert_almost_equal(returned_params[k].numpy(), expected_params[k].numpy(), decimal=4)
 
     def test_fitting_generator_n_batches_per_step_higher_than_num_batches(self):
         total_batch_size = 6
@@ -185,15 +174,17 @@ class ModelTest(ModelFittingTestCase):
 
         self.model.fit_generator(list(zip(x, y)), None, epochs=1, batches_per_step=1)
 
-        expected_params = list(self.model.get_weight_copies().values())
+        expected_params = self.model.get_weight_copies()
 
         self.model.set_weights(initial_params)
 
         self.model.fit_generator(list(zip(x, y)), None, epochs=1, batches_per_step=2)
 
-        returned_params = list(self.model.get_weight_copies().values())
+        returned_params = self.model.get_weight_copies()
 
-        np.testing.assert_almost_equal(returned_params, expected_params, decimal=4)
+        self.assertEqual(returned_params.keys(), expected_params.keys())
+        for k in expected_params.keys():
+            np.testing.assert_almost_equal(returned_params[k].numpy(), expected_params[k].numpy(), decimal=4)
 
     def test_fitting_generator_n_batches_per_step_uneven_batches(self):
         total_batch_size = 6
@@ -205,7 +196,7 @@ class ModelTest(ModelFittingTestCase):
 
         self.model.fit_generator(list(zip(x, y)), None, epochs=1, batches_per_step=1)
 
-        expected_params = list(self.model.get_weight_copies().values())
+        expected_params = self.model.get_weight_copies()
 
         x.squeeze_(dim=0)
         y.squeeze_(dim=0)
@@ -225,9 +216,11 @@ class ModelTest(ModelFittingTestCase):
                                      epochs=1,
                                      batches_per_step=n_batches_per_step)
 
-            returned_params = list(self.model.get_weight_copies().values())
+            returned_params = self.model.get_weight_copies()
 
-            np.testing.assert_almost_equal(returned_params, expected_params, decimal=4)
+            self.assertEqual(returned_params.keys(), expected_params.keys())
+            for k in expected_params.keys():
+                np.testing.assert_almost_equal(returned_params[k].numpy(), expected_params[k].numpy(), decimal=4)
 
     def test_fitting_ndarray_generator(self):
         train_generator = some_ndarray_generator(ModelTest.batch_size)
@@ -842,24 +835,29 @@ class ModelTest(ModelFittingTestCase):
             self.assertEqual(len(w), 0)
 
 
-@skipIf(MNIST is None, "Unable to import MNIST")
+class SomeDataset(Dataset):
+
+    def __init__(self, length):
+        super().__init__()
+        self.length = length
+        self.x = torch.rand(length, 1, 28, 28)  # Something like MNIST
+        self.y = torch.randint(10, size=(length, ))
+
+    def __getitem__(self, index):
+        return self.x[index], self.y[index]
+
+    def __len__(self):
+        return self.length
+
+
 class ModelDatasetMethodsTest(ModelFittingTestCase):
-
-    @classmethod
-    def setUpClass(cls):
-        cls.temp_dir_obj = TemporaryDirectory()
-        cls.train_dataset = MNIST(cls.temp_dir_obj.name, train=True, download=True, transform=ToTensor())
-        cls.test_dataset = MNIST(cls.temp_dir_obj.name, train=False, download=True, transform=ToTensor())
-        cls.train_sub_dataset, cls.valid_sub_dataset = random_split(cls.train_dataset, [50_000, 10_000],
-                                                                    generator=torch.Generator().manual_seed(42))
-
-    @classmethod
-    def tearDownClass(cls):
-        cls.temp_dir_obj.cleanup()
 
     def setUp(self):
         super().setUp()
         torch.manual_seed(42)
+        self.train_dataset = SomeDataset(5000)
+        self.valid_dataset = SomeDataset(1000)
+        self.test_dataset = SomeDataset(1500)
         self.pytorch_network = nn.Sequential(nn.Flatten(), nn.Linear(28 * 28, 10))
         self.batch_metrics = ['accuracy']
         self.batch_metrics_names = ['acc']
@@ -878,8 +876,8 @@ class ModelDatasetMethodsTest(ModelFittingTestCase):
             self.assertIn(value, self.test_out.getvalue().strip())
 
     def test_fitting_mnist(self):
-        logs = self.model.fit_dataset(self.train_sub_dataset,
-                                      self.valid_sub_dataset,
+        logs = self.model.fit_dataset(self.train_dataset,
+                                      self.valid_dataset,
                                       epochs=ModelTest.epochs,
                                       steps_per_epoch=ModelTest.steps_per_epoch,
                                       validation_steps=ModelTest.steps_per_epoch,
