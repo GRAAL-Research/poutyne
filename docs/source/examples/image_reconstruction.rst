@@ -91,6 +91,7 @@ Finally, in the section below, we wrap the MNIST datasets into our wrapper and c
     train_dataset_new = ImageReconstructionDataset(train_dataset)
     valid_dataset_new = ImageReconstructionDataset(valid_dataset)
     test_dataset_new = ImageReconstructionDataset(test_dataset)
+
     train_dataloader = DataLoader(train_dataset_new, batch_size=batch_size, shuffle=True)
     valid_dataloader = DataLoader(valid_dataset_new, batch_size=batch_size, shuffle=False)
     test_dataloader = DataLoader(test_dataset_new, batch_size=1, shuffle=False)
