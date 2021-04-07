@@ -3,6 +3,8 @@
 * Add the following flags in [`ProgressionCallback`](https://poutyne.org/callbacks.html#poutyne.ProgressionCallback):
   `show_every_n_train_steps`, `show_every_n_valid_steps`, `show_every_n_test_steps`. They allow to show only certain
   steps instead of all steps.
+* Add the flag `restore_best` in Experiment training methods to allow a user to restore the best model after the 
+  training of a model. 
 
 # v1.3.1
 

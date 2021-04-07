@@ -469,6 +469,8 @@ class Experiment:
                 (Default value = False)
             seed (int, optional): Seed used to make the sampling deterministic.
                 (Default value = 42)
+            restore_best (bool): Either or not to restore the best model after training.
+                (Default value = False)
             kwargs: Any keyword arguments to pass to :func:`~Model.fit_generator()`.
 
         Returns:
@@ -510,6 +512,8 @@ class Experiment:
                 (Default value = False)
             seed (int, optional): Seed used to make the sampling deterministic.
                 (Default value = 42)
+            restore_best (bool): Either or not to restore the best model after training.
+                (Default value = False)
             kwargs: Any keyword arguments to pass to :func:`~Model.fit_dataset()`.
 
         Returns:
@@ -560,6 +564,8 @@ class Experiment:
                 (Default value = False)
             seed (int, optional): Seed used to make the sampling deterministic.
                 (Default value = 42)
+            restore_best (bool): Either or not to restore the best model after training.
+                (Default value = False)
             kwargs: Any keyword arguments to pass to :func:`~Model.fit()`.
 
         Returns:
@@ -576,6 +582,7 @@ class Experiment:
                save_every_epoch: bool = False,
                disable_tensorboard: bool = False,
                seed: int = 42,
+               restore_best: bool = False,
                **kwargs) -> List[Dict]:
         set_seeds(seed)
 
@@ -595,7 +602,8 @@ class Experiment:
             expt_callbacks += [AtomicCSVLogger(self.log_filename, separator='\t', append=initial_epoch != 1)]
 
             expt_callbacks += self._init_model_restoring_callbacks(initial_epoch, keep_only_last_best, save_every_epoch)
-            expt_callbacks += [ModelCheckpoint(self.model_checkpoint_filename, verbose=False)]
+            expt_callbacks += [
+                ModelCheckpoint(self.model_checkpoint_filename, verbose=False, restore_best=restore_best)]
             expt_callbacks += [OptimizerCheckpoint(self.optimizer_checkpoint_filename, verbose=False)]
 
             # We save the last epoch number after the end of the epoch so that the
