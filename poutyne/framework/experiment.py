@@ -603,7 +603,8 @@ class Experiment:
 
             expt_callbacks += self._init_model_restoring_callbacks(initial_epoch, keep_only_last_best, save_every_epoch)
             expt_callbacks += [
-                ModelCheckpoint(self.model_checkpoint_filename, verbose=False, restore_best=restore_best)]
+                ModelCheckpoint(self.model_checkpoint_filename, verbose=False, restore_best=restore_best)
+            ]
             expt_callbacks += [OptimizerCheckpoint(self.optimizer_checkpoint_filename, verbose=False)]
 
             # We save the last epoch number after the end of the epoch so that the
