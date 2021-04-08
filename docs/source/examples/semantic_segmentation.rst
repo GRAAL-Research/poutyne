@@ -129,13 +129,7 @@ It is worth mentioning that, as we have approached the segmentation task as an i
     network = smp.Unet('resnet34', encoder_weights='imagenet')
     
     # specifying optimizer
-    optimizer = optim.Adam (network.parameters(), lr=learning_rate)
-
-We can see the architecture of the ResNet-34-U-Net below. As noticed in the section above, this network is imported from the segmentation-models-pytorch library which contains many other architectures as well. You can import and use other available networks to try to increase the accuracy.
-
-.. code-block:: python
-
-    print(network)  
+    optimizer = optim.Adam (network.parameters(), lr=learning_rate)  
 
 Training deep neural networks is a challenging task, especially when we are dealing with data with big sizes or numbers. There are numerous factors and hyperparameters which play an important role in the success of the network. One of these determining factors is the number of epochs. The right number of epochs would help your network train well. However, lower and higher numbers would make your network underfit or overfit, respectively. With some types of data (such as images or videos), it is very time-consuming to repeat the training for different numbers of epochs to find the best one. Poutyne library has provided some fascinating tools to address this problem.
 
