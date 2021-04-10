@@ -620,7 +620,11 @@ class Experiment:
             if tensorboard_writer is not None:
                 tensorboard_writer.close()
 
-    def load_checkpoint(self, checkpoint: Union[int, str], *, verbose: bool = False, strict: bool = True) -> Union[Dict, None]:
+    def load_checkpoint(self,
+                        checkpoint: Union[int, str],
+                        *,
+                        verbose: bool = False,
+                        strict: bool = True) -> Union[Dict, None]:
         """
         Loads the attribute model's weights with the weights at a given checkpoint epoch.
 
@@ -654,11 +658,13 @@ class Experiment:
             incompatible_keys = self._load_path_checkpoint(path=checkpoint, verbose=verbose, strict=strict)
 
         if len(incompatible_keys.unexpected_keys) > 0:
-            warnings.warn('Unexpected key(s): {}.'.format(
-                          ', '.join('"{}"'.format(k) for k in incompatible_keys.unexpected_keys)), stacklevel=2)
+            warnings.warn('Unexpected key(s): {}.'.format(', '.join('"{}"'.format(k)
+                                                                    for k in incompatible_keys.unexpected_keys)),
+                          stacklevel=2)
         if len(incompatible_keys.missing_keys) > 0:
-            warnings.warn('Missing key(s): {}.'.format(
-                          ', '.join('"{}"'.format(k) for k in incompatible_keys.missing_keys)), stacklevel=2)
+            warnings.warn('Missing key(s): {}.'.format(', '.join('"{}"'.format(k)
+                                                                 for k in incompatible_keys.missing_keys)),
+                          stacklevel=2)
 
         return best_epoch_stats
 
