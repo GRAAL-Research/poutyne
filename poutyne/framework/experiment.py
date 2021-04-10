@@ -620,7 +620,7 @@ class Experiment:
             if tensorboard_writer is not None:
                 tensorboard_writer.close()
 
-    def load_checkpoint(self, checkpoint: Union[int, str], *, verbose: bool = False) -> Union[Dict, None]:
+    def load_checkpoint(self, checkpoint: Union[int, str], *, verbose: bool = False, strict: bool = True) -> Union[Dict, None]:
         """
         Loads the attribute model's weights with the weights at a given checkpoint epoch.
 
@@ -645,17 +645,24 @@ class Experiment:
         best_epoch_stats = None
 
         if isinstance(checkpoint, int):
-            self._load_epoch_checkpoint(checkpoint, verbose=verbose)
+            incompatible_keys = self._load_epoch_checkpoint(checkpoint, verbose=verbose, strict=strict)
         elif checkpoint == 'best':
-            best_epoch_stats = self._load_best_checkpoint(verbose=verbose)
+            best_epoch_stats, incompatible_keys = self._load_best_checkpoint(verbose=verbose, strict=strict)
         elif checkpoint == 'last':
-            self._load_last_checkpoint(verbose=verbose)
+            incompatible_keys = self._load_last_checkpoint(verbose=verbose, strict=strict)
         else:
-            self._load_path_checkpoint(path=checkpoint, verbose=verbose)
+            incompatible_keys = self._load_path_checkpoint(path=checkpoint, verbose=verbose, strict=strict)
+
+        if len(incompatible_keys.unexpected_keys) > 0:
+            warnings.warn('Unexpected key(s): {}.'.format(
+                          ', '.join('"{}"'.format(k) for k in incompatible_keys.unexpected_keys)), stacklevel=2)
+        if len(incompatible_keys.missing_keys) > 0:
+            warnings.warn('Missing key(s): {}.'.format(
+                          ', '.join('"{}"'.format(k) for k in incompatible_keys.missing_keys)), stacklevel=2)
 
         return best_epoch_stats
 
-    def _load_epoch_checkpoint(self, epoch: int, *, verbose: bool = False) -> None:
+    def _load_epoch_checkpoint(self, epoch: int, *, verbose: bool = False, strict: bool = True) -> None:
         ckpt_filename = self.best_checkpoint_filename.format(epoch=epoch)
 
         if verbose:
@@ -664,9 +671,9 @@ class Experiment:
         if not os.path.isfile(ckpt_filename):
             raise ValueError(f"No checkpoint found for epoch {epoch}")
 
-        self.model.load_weights(ckpt_filename)
+        return self.model.load_weights(ckpt_filename, strict=strict)
 
-    def _load_best_checkpoint(self, *, verbose: bool = False) -> Dict:
+    def _load_best_checkpoint(self, *, verbose: bool = False, strict: bool = True) -> Dict:
         best_epoch_stats = self.get_best_epoch_stats()
         best_epoch = best_epoch_stats['epoch'].item()
 
@@ -676,20 +683,20 @@ class Experiment:
             print(f"Found best checkpoint at epoch: {best_epoch}")
             print(metrics_str)
 
-        self._load_epoch_checkpoint(best_epoch, verbose=verbose)
-        return best_epoch_stats
+        incompatible_keys = self._load_epoch_checkpoint(best_epoch, verbose=verbose, strict=strict)
+        return best_epoch_stats, incompatible_keys
 
-    def _load_last_checkpoint(self, *, verbose: bool = False) -> None:
+    def _load_last_checkpoint(self, *, verbose: bool = False, strict: bool = True) -> None:
         if verbose:
             print(f"Loading checkpoint {self.model_checkpoint_filename}")
 
-        self.model.load_weights(self.model_checkpoint_filename)
+        return self.model.load_weights(self.model_checkpoint_filename, strict=strict)
 
-    def _load_path_checkpoint(self, path, verbose: bool = False) -> None:
+    def _load_path_checkpoint(self, path, verbose: bool = False, strict: bool = True) -> None:
         if verbose:
             print(f"Loading checkpoint {path}")
 
-        self.model.load_weights(path)
+        return self.model.load_weights(path, strict=strict)
 
     def test(self, test_generator, **kwargs):
         """
