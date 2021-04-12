@@ -15,9 +15,9 @@ Semantic segmentation refers to the process of linking each pixel in an image to
 
 `Source <https://www.jeremyjordan.me/semantic-segmentation/>`_
 
-In this example, we are going to use and train a convolutional U-Net in order to design a network for semantic segmentation. In other words, we formulate the task of semantic segmentation as an image translation problem. We download and use the VOCSegmentation 2007 dataset for this purpose.
+In this example, we will use and train a convolutional U-Net to design a network for semantic segmentation. In other words, we formulate the task of semantic segmentation as an image translation problem. We download and use the VOCSegmentation 2007 dataset for this purpose.
 
-U-Net (the network we use in this example) is a convolutional neural network similar to convolutional autoencoders. However, U-Net takes advantage of shortcuts between the encoder (contraction path) and decoder (expanding path) which helps it handle the vanishing gradient problem. In the following sections, we are going to install and import the segmentation-models-Pytorch library which contains different architectures of U-Net.
+U-Net is a convolutional neural network similar to convolutional autoencoders. However, U-Net takes advantage of shortcuts between the encoder (contraction path) and decoder (expanding path), which helps it handle the vanishing gradient problem. In the following sections, we will install and import the segmentation-models-Pytorch library, which contains different U-Net architectures.
 
 .. code-block:: python
 
@@ -59,7 +59,7 @@ Training constants
 Loading the VOCSegmentation dataset    
 ===================================
 
-The VOCSegmentation dataset can be easily downloaded from ``torchvision.datasets``. This dataset allows you to apply the needed transformations on the ground-truth directly in addition to defining the proper transformations for the input images. To do so, it's enough to use the ``target_transfrom`` argument and set it to your transformation function of interest. 
+The VOCSegmentation dataset can be easily downloaded from ``torchvision.datasets``. This dataset allows you to apply the needed transformations on the ground-truth directly and define the proper transformations for the input images. To do so, we use the ``target_transfrom`` argument and set it to your transformation function of interest.
 
 .. code-block:: python
 
@@ -131,9 +131,9 @@ It is worth mentioning that, as we have approached the segmentation task as an i
     # specifying optimizer
     optimizer = optim.Adam (network.parameters(), lr=learning_rate)  
 
-Training deep neural networks is a challenging task, especially when we are dealing with data with big sizes or numbers. There are numerous factors and hyperparameters which play an important role in the success of the network. One of these determining factors is the number of epochs. The right number of epochs would help your network train well. However, lower and higher numbers would make your network underfit or overfit, respectively. With some types of data (such as images or videos), it is very time-consuming to repeat the training for different numbers of epochs to find the best one. Poutyne library has provided some fascinating tools to address this problem.
+Training deep neural networks is a challenging task, especially when we are dealing with data with big sizes or numbers. There are numerous factors and hyperparameters which play an important role in the success of the network. One of these determining factors is the number of epochs. The right number of epochs would help your network train well. However, lower and higher numbers would make your network underfit or overfit, respectively. With some data types (such as images or videos), it is very time-consuming to repeat the training for different numbers of epochs to find the best one. Poutyne library has provided some fascinating tools to address this problem.
 
-As you would notice in the following sections, by the use of `callbacks <https://poutyne.org/callbacks.html>`_, you would be able to record and retrieve the best parameters (weights) through your rather big number of epochs without needing to repeat the training process again and again. Moreover, Poutyne also gives you the possibility to resume your training, from the last done epoch, if you feel the need for even more iterations.
+As you would notice in the following sections, by the use of `callbacks <https://poutyne.org/callbacks.html>`_, you would be able to record and retrieve the best parameters (weights) through your rather big number of epochs without needing to repeat the training process again and again. Moreover, Poutyne also gives you the possibility to resume your training from the last done epoch if you feel the need for even more iterations.
 
 .. code-block:: python
 
@@ -170,7 +170,7 @@ Training
 Calculation of the scores and visualization of results
 ======================================================
 
-There is one more surprising facility in Poutyne which makes the evaluation task more easy and straight forward. Usually, computer vision researchers try to evaluate their trained networks on validation/test datasets by obtaining the scores (accuracy or loss usually), ground truths, and computed results simultaneously. The `evaluate` methods in Poutyne not only provides you with the scores but also have made the other two items ready for further analysis and visualization. In the next few blocks of code, you will see some examples.
+There is one more helpful feature in Poutyne, which makes the evaluation task more easy and straight forward. Usually, computer vision researchers try to evaluate their trained networks on validation/test datasets by obtaining the scores (accuracy or loss usually), ground truths, and computed results simultaneously. The ``evaluate`` methods in Poutyne provides you with the scores but also have made the other two items ready for further analysis and visualization. In the next few blocks of code, you will see some examples.
 
 .. code-block:: python
 
@@ -220,4 +220,4 @@ Here, we show one of the input samples along with its segmentation ground truth 
 Last note
 =========
 
-This example shows you how to simply design and train your own segmentation network. However, to get better results you can play with hyperparameters and do further finetuning to increase the accuracy.
+This example shows you how to design and train your own segmentation network simply. However, to get better results, you can play with the hyperparameters and do further finetuning to increase the accuracy.
