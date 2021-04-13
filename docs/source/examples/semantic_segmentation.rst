@@ -75,8 +75,8 @@ The VOCSegmentation dataset can be easily downloaded from ``torchvision.datasets
     ])
     
     # Creating the dataset
-    train_dataset = datasets.VOCSegmentation('./dataset/', year='2007', download=True, image_set='train', transform=input_transform, target_transform= target_transform)
-    valid_dataset = datasets.VOCSegmentation('./dataset/', year='2007', download=True, image_set='val', transform=input_transform, target_transform= target_transform )
+    train_dataset = datasets.VOCSegmentation('./datasets/', year='2007', download=True, image_set='train', transform=input_transform, target_transform=target_transform)
+    valid_dataset = datasets.VOCSegmentation('./datasets/', year='2007', download=True, image_set='val', transform=input_transform, target_transform=target_transform)
     
     # Creating the dataloader
     train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
@@ -118,7 +118,7 @@ The ground-truth (segmentation map) for the image grid shown above is as below.
     
 .. image:: /_static/img/semantic_segmentation/voc_segment_batch_gt.png 
 
-It is worth mentioning that, as we have approached the segmentation task as an image translation problem, we take advantage of MSELoss for the training. Moreover, we believe that using the U-Net with a pre-trained encoder would help the network converge sooner and better. As this convolutional encoder is previously trained on the ImageNet, it is able to recognize low-level features (such as edge, color, etc.) and high-level features at its beginning and final layers respectively.
+It is worth mentioning that, as we have approached the segmentation task as an image translation problem, we take advantage of MSELoss for the training. Moreover, we believe that using the U-Net with a pre-trained encoder would help the network converge sooner and better. As this convolutional encoder is previously trained on the ImageNet, it is able to recognize low-level features (such as edge, color, etc.) and high-level features at its first and final layers, respectively.
 
 .. code-block:: python
 
@@ -130,6 +130,8 @@ It is worth mentioning that, as we have approached the segmentation task as an i
     
     # specifying optimizer
     optimizer = optim.Adam (network.parameters(), lr=learning_rate)  
+
+As noticed in the section above, the ResNet-34-U-Net network is imported from the segmentation-models-pytorch library which contains many other architectures as well. You can import and use other available networks to try to increase the accuracy.
 
 Training deep neural networks is a challenging task, especially when we are dealing with data with big sizes or numbers. There are numerous factors and hyperparameters which play an important role in the success of the network. One of these determining factors is the number of epochs. The right number of epochs would help your network train well. However, lower and higher numbers would make your network underfit or overfit, respectively. With some data types (such as images or videos), it is very time-consuming to repeat the training for different numbers of epochs to find the best one. Poutyne library has provided some fascinating tools to address this problem.
 
@@ -183,7 +185,7 @@ We show some of the segmentation results in the image below (grayscale):
     outputs = torch.tensor(model.predict_on_batch(inputs))
     output_grid = make_grid(outputs)
     out = output_grid.numpy().transpose((1, 2, 0))
-    out=np.clip(out, 0, 1)
+    out = np.clip(out, 0, 1)
     
     fig = plt.figure(figsize=(10, 10))
     plt.imshow((out))
