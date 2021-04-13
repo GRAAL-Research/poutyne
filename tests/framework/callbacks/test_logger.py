@@ -108,14 +108,39 @@ class BaseCSVLoggerTest:
                                            callbacks=[logger])
         self._test_logging(history)
 
-    def _test_logging(self, history):
+    def test_multiple_learning_rates(self):
+        train_gen = some_data_generator(20)
+        valid_gen = some_data_generator(20)
+        logger = self.CSVLogger(self.csv_filename)
+        lrs = [BaseCSVLoggerTest.lr, BaseCSVLoggerTest.lr / 2]
+        optimizer = torch.optim.SGD([
+            dict(params=[self.pytorch_network.weight], lr=lrs[0]),
+            dict(params=[self.pytorch_network.bias], lr=lrs[1])
+        ])
+        model = Model(self.pytorch_network, optimizer, self.loss_function)
+        history = model.fit_generator(train_gen,
+                                      valid_gen,
+                                      epochs=self.num_epochs,
+                                      steps_per_epoch=5,
+                                      callbacks=[logger])
+        self._test_logging(history, lrs=lrs)
+
+    def _test_logging(self, history, lrs=None):
+        if lrs is None:
+            lrs = [BaseCSVLoggerTest.lr]
         with open(self.csv_filename) as csvfile:
             reader = csv.DictReader(csvfile)
             rows = []
             for row in reader:
                 if row['epoch'] != '':
-                    self.assertAlmostEqual(float(row['lr']), BaseCSVLoggerTest.lr)
-                del row['lr']
+                    if len(lrs) == 1:
+                        self.assertAlmostEqual(float(row['lr']), lrs[0])
+                        del row['lr']
+                    else:
+                        for i, lr in enumerate(lrs):
+                            self.assertAlmostEqual(float(row[f'lr_group_{i}']), lr)
+                            del row[f'lr_group_{i}']
+
                 rows.append(row)
         self.assertEqual(len(rows), len(history))
         for row, hist_entry in zip(rows, history):
@@ -167,11 +192,33 @@ class BaseTensorBoardLoggerTest:
                                            callbacks=[logger])
         self._test_logging(history)
 
-    def _test_logging(self, history):
+    def test_multiple_learning_rates(self):
+        train_gen = some_data_generator(20)
+        valid_gen = some_data_generator(20)
+        logger = TensorBoardLogger(self.writer)
+        lrs = [BaseCSVLoggerTest.lr, BaseCSVLoggerTest.lr / 2]
+        optimizer = torch.optim.SGD([
+            dict(params=[self.pytorch_network.weight], lr=lrs[0]),
+            dict(params=[self.pytorch_network.bias], lr=lrs[1])
+        ])
+        model = Model(self.pytorch_network, optimizer, self.loss_function)
+        history = model.fit_generator(train_gen,
+                                      valid_gen,
+                                      epochs=self.num_epochs,
+                                      steps_per_epoch=5,
+                                      callbacks=[logger])
+        self._test_logging(history, lrs=lrs)
+
+    def _test_logging(self, history, lrs=None):
+        if lrs is None:
+            lrs = [BaseCSVLoggerTest.lr]
         calls = list()
         for h in history:
             calls.append(call('loss', {'loss': h['loss'], 'val_loss': h['val_loss']}, h['epoch']))
-            calls.append(call('lr', {'lr': self.lr}, h['epoch']))
+            if len(lrs) == 1:
+                calls.append(call('lr', {'lr': self.lr}, h['epoch']))
+            else:
+                calls.append(call('lr', {f'lr_group_{i}': lr for i, lr in enumerate(lrs)}, h['epoch']))
         self.writer.add_scalars.assert_has_calls(calls, any_order=True)
 
 

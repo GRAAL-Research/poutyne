@@ -6,6 +6,8 @@
 * Fix bug where all warnings were silenced.
 * Add `strict` flag when loading checkpoints. In Model, a NamedTuple is returned as in PyTorch's `load_state_dict`. In
   Experiment, a warning is raised when there are missing or unexpected keys in the checkpoint.
+* In CSVLogger, when multiple learning rates are used, we use the column names `lr_group_0`, `lr_group_1`, etc. instead
+  of `lr`.
 
 # v1.3.1
 
