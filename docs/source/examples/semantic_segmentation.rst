@@ -118,7 +118,7 @@ The ground-truth (segmentation map) for the image grid shown above is as below.
     
 .. image:: /_static/img/semantic_segmentation/voc_segment_batch_gt.png 
 
-It is worth mentioning that, as we have approached the segmentation task as an image translation problem, we take advantage of MSELoss for the training. Moreover, we believe that using the U-Net with a pre-trained encoder would help the network converge sooner and better since a pre-trained CNN (trained on the ImageNet dataset) is already familiar with some of the object classes and also some low-level image features (such as edge, texture, etc).
+It is worth mentioning that, as we have approached the segmentation task as an image translation problem, we take advantage of MSELoss for the training. Moreover, we believe that using the U-Net with a pre-trained encoder would help the network converge sooner and better. As this convolutional encoder is previously trained on the ImageNet, it is able to recognize low-level features (such as edge, color, etc.) and high-level features at its beginning and final layers respectively.
 
 .. code-block:: python
 
