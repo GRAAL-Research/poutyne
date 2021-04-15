@@ -190,7 +190,7 @@ or in ``Google Colab``:
 - `policy_cifar_example.ipynb <https://colab.research.google.com/github/GRAAL-Research/poutyne/blob/master/examples/policy_cifar_example.ipynb>`__ - policies API, FastAI-like learning rate policies
 - `policy_interface.ipynb <https://colab.research.google.com/github/GRAAL-Research/poutyne/blob/master/examples/policy_interface.ipynb>`__ - example of policies
 - `image_reconstruction.ipynb <https://colab.research.google.com/github/GRAAL-Research/poutyne/blob/master/examples/image_reconstruction.ipynb>`__ - example of image reconstruction
-- `semantic_segmentation.ipynb <https://colab.research.google.com/github/GRAAL-Research/poutyne/blob/master/examples/semantic_segmentation.ipynb>`__ - example of semantic_segmentation
+- `semantic_segmentation.ipynb <https://colab.research.google.com/github/GRAAL-Research/poutyne/blob/master/examples/semantic_segmentation.ipynb>`__ - example of semantic segmentation
 
 Videos
 ------
