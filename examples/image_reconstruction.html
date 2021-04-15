@@ -1,0 +1,507 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Image Reconstruction Using Poutyne &mdash; Poutyne 1.4 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Semantic segmentation using Poutyne" href="semantic_segmentation.html" />
+    <link rel="prev" title="Transfer learning example" href="transfer_learning.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html">
+          
+
+          
+            
+            <img src="../_static/poutyne-light.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.4
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../model.html">Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../experiment.html">Experiment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../metrics.html">Metrics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../callbacks.html">Callbacks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../layers.html">Layers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../utils.html">Utils</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Examples</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction to PyTorch and Poutyne</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tips_and_tricks.html">Tips and Tricks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="policy_interface.html">Interface of <code class="docutils literal notranslate"><span class="pre">policy</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="train_with_policy_module.html">Train CIFAR with the <code class="docutils literal notranslate"><span class="pre">policy</span></code> module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="transfer_learning.html">Transfer learning example</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Image Reconstruction Using Poutyne</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#training-constants">Training Constants</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#loading-the-mnist-dataset">Loading the MNIST Dataset</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#convolutional-autoencoder">Convolutional Autoencoder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#training">Training</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#a-random-batch-of-the-mnist-dataset-images">A Random Batch of the MNIST Dataset Images</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#reconstructed-images-after-3-epochs-of-training">Reconstructed Images after 3 Epochs of Training</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#evaluation">Evaluation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#resuming-the-training-for-more-epochs">Resuming the training for more epochs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#reconstructed-images-after-the-second-training-process">Reconstructed images after the second training process</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="semantic_segmentation.html">Semantic segmentation using Poutyne</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Poutyne</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>Image Reconstruction Using Poutyne</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../_sources/examples/image_reconstruction.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="image-reconstruction-using-poutyne">
+<h1>Image Reconstruction Using Poutyne<a class="headerlink" href="#image-reconstruction-using-poutyne" title="Permalink to this headline">¶</a></h1>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<ul class="simple">
+<li><p>See the notebook <a class="reference external" href="https://github.com/GRAAL-Research/poutyne/blob/master/examples/image_reconstruction.ipynb">here</a></p></li>
+<li><p>Run in <a class="reference external" href="https://colab.research.google.com/github/GRAAL-Research/poutyne/blob/master/examples/image_reconstruction.ipynb">Google Colab</a></p></li>
+</ul>
+</div>
+<p>In this example, we train a simple convolutional autoencoder (Conv-AE) on the MNIST dataset to learn image reconstruction. The Conv-AE is composed of two parts: an encoder and a decoder. The encoder encodes the input images to extract compact image features. The decoder, on the other hand, decodes the extracted features to reconstruct the input images.</p>
+<img alt="../_images/AE.png" src="../_images/AE.png" />
+<p><a class="reference external" href="https://blog.keras.io/building-autoencoders-in-keras.html">Source</a></p>
+<p>Let’s import all the needed packages.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
+<span class="kn">import</span> <span class="nn">torchvision.datasets</span> <span class="k">as</span> <span class="nn">datasets</span>
+<span class="kn">import</span> <span class="nn">torchvision.transforms</span> <span class="k">as</span> <span class="nn">tfms</span>
+<span class="kn">from</span> <span class="nn">poutyne</span> <span class="kn">import</span> <span class="n">set_seeds</span><span class="p">,</span> <span class="n">Model</span><span class="p">,</span> <span class="n">ModelCheckpoint</span><span class="p">,</span> <span class="n">CSVLogger</span>
+<span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="kn">import</span> <span class="n">DataLoader</span><span class="p">,</span> <span class="n">Subset</span><span class="p">,</span> <span class="n">Dataset</span>
+<span class="kn">from</span> <span class="nn">torchvision.utils</span> <span class="kn">import</span> <span class="n">make_grid</span>
+</pre></div>
+</div>
+<div class="section" id="training-constants">
+<h2>Training Constants<a class="headerlink" href="#training-constants" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">num_epochs</span> <span class="o">=</span> <span class="mi">3</span>
+<span class="n">learning_rate</span> <span class="o">=</span> <span class="mf">0.001</span>
+<span class="n">batch_size</span> <span class="o">=</span> <span class="mi">32</span>
+<span class="n">image_size</span> <span class="o">=</span> <span class="mi">224</span>
+<span class="n">valid_split_percent</span> <span class="o">=</span> <span class="mf">0.2</span>
+<span class="n">momentum</span> <span class="o">=</span> <span class="mf">0.5</span>
+<span class="n">device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s1">&#39;cuda&#39;</span> <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span> <span class="k">else</span> <span class="s1">&#39;cpu&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;The running processor is...&#39;</span><span class="p">,</span> <span class="n">device</span><span class="p">)</span>
+<span class="n">set_seeds</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="loading-the-mnist-dataset">
+<h2>Loading the MNIST Dataset<a class="headerlink" href="#loading-the-mnist-dataset" title="Permalink to this headline">¶</a></h2>
+<p>The MNIST dataset is directly downloaded from the <code class="docutils literal notranslate"><span class="pre">torchvision.datasets</span></code> package. The training dataset contains 60,000 images of digits of size 28x28. However, we separate 20% of the full train dataset as a validation dataset. Also, by setting the <code class="docutils literal notranslate"><span class="pre">train</span></code> argument to <code class="docutils literal notranslate"><span class="pre">False</span></code>, the test dataset containing 10,000 images is downloaded and saved in the “datasets” directory.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">full_train_dataset</span> <span class="o">=</span> <span class="n">datasets</span><span class="o">.</span><span class="n">MNIST</span><span class="p">(</span><span class="s1">&#39;./datasets/&#39;</span><span class="p">,</span> <span class="n">train</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">download</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">tfms</span><span class="o">.</span><span class="n">ToTensor</span><span class="p">())</span>
+<span class="n">test_dataset</span> <span class="o">=</span> <span class="n">datasets</span><span class="o">.</span><span class="n">MNIST</span><span class="p">(</span><span class="s1">&#39;./datasets/&#39;</span><span class="p">,</span> <span class="n">train</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">download</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">tfms</span><span class="o">.</span><span class="n">ToTensor</span><span class="p">())</span>
+
+<span class="c1"># Selecting and seperating a proportion of the full_train_dataset to create the validation dataset.</span>
+<span class="n">full_dataset_length</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">full_train_dataset</span><span class="p">)</span>
+<span class="n">indices</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">full_dataset_length</span><span class="p">))</span>
+<span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">shuffle</span><span class="p">(</span><span class="n">indices</span><span class="p">)</span>
+<span class="n">train_indices</span> <span class="o">=</span> <span class="n">indices</span><span class="p">[</span><span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">full_dataset_length</span> <span class="o">*</span> <span class="n">valid_split_percent</span><span class="p">):]</span>
+<span class="n">valid_indices</span> <span class="o">=</span> <span class="n">indices</span><span class="p">[:</span><span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">full_dataset_length</span> <span class="o">*</span> <span class="n">valid_split_percent</span><span class="p">)]</span>
+
+<span class="n">train_dataset</span> <span class="o">=</span> <span class="n">Subset</span><span class="p">(</span><span class="n">full_train_dataset</span><span class="p">,</span> <span class="n">train_indices</span><span class="p">)</span>
+<span class="n">valid_dataset</span> <span class="o">=</span> <span class="n">Subset</span><span class="p">(</span><span class="n">full_train_dataset</span><span class="p">,</span> <span class="n">valid_indices</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The downloaded MNIST dataset format is for classification, which means each sample contains an image and a label (the digit drawn in the image). However, for image reconstruction, the dataset should contain an input image and a target image, which are simply the same. Hence, using the code below, we define a new dataset that wraps an MNIST dataset and provides an image as an input and sets that image as its target. In other words, we change the format of each dataset sample from (image, label) to the (image, image).</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">ImageReconstructionDataset</span><span class="p">(</span><span class="n">Dataset</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dataset</span> <span class="o">=</span> <span class="n">dataset</span>
+
+    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
+        <span class="n">input_image</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dataset</span><span class="p">[</span><span class="n">index</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">target_image</span> <span class="o">=</span> <span class="n">input_image</span>  <span class="c1"># In image reconstruction, input and target images are the same.</span>
+
+        <span class="k">return</span> <span class="n">input_image</span><span class="p">,</span> <span class="n">target_image</span>
+
+    <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dataset</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Finally, in the section below, we wrap the MNIST datasets into our wrapper and create data loaders for them.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">train_dataset_new</span> <span class="o">=</span> <span class="n">ImageReconstructionDataset</span><span class="p">(</span><span class="n">train_dataset</span><span class="p">)</span>
+<span class="n">valid_dataset_new</span> <span class="o">=</span> <span class="n">ImageReconstructionDataset</span><span class="p">(</span><span class="n">valid_dataset</span><span class="p">)</span>
+<span class="n">test_dataset_new</span> <span class="o">=</span> <span class="n">ImageReconstructionDataset</span><span class="p">(</span><span class="n">test_dataset</span><span class="p">)</span>
+
+<span class="n">train_dataloader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">train_dataset_new</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">valid_dataloader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">valid_dataset_new</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">test_dataloader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">test_dataset_new</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="convolutional-autoencoder">
+<h2>Convolutional Autoencoder<a class="headerlink" href="#convolutional-autoencoder" title="Permalink to this headline">¶</a></h2>
+<p>The most frequently used network for image reconstruction is the autoencoder. In this section, we are going to define our own autoencoder. The encoder section tries to encode the input image into features and consequently, the decoder tries to decode the features and reconstruct the original image. As our input dataset (MNIST) contains images with low resolution and low complexity, we preferred not to design a complex network in order to avoid overfitting.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">ConvAutoencoder</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ConvAutoencoder</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+        <span class="c1">#encoder</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conv1</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conv2</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="mi">32</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pool</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">MaxPool2d</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+
+        <span class="c1">#decoder</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">t_conv1</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ConvTranspose2d</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">t_conv2</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ConvTranspose2d</span><span class="p">(</span><span class="mi">32</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">conv1</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pool</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">conv2</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pool</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>  <span class="c1"># compressed representation</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">t_conv1</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">t_conv2</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">x</span>
+
+<span class="n">network</span> <span class="o">=</span> <span class="n">ConvAutoencoder</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>In order to interact with the optimization process, <a class="reference external" href="https://poutyne.org/callbacks.html">callbacks</a> are defined and added to a list using the code below. They will save the last weights, best weights and the logs, respectively.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">save_path</span> <span class="o">=</span> <span class="s1">&#39;saves&#39;</span>
+
+<span class="c1"># Creating saving directory</span>
+<span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">save_path</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="n">callbacks</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="c1"># Save the latest weights to be able to continue the optimization at the end for more epochs.</span>
+    <span class="n">ModelCheckpoint</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">save_path</span><span class="p">,</span> <span class="s1">&#39;last_weights.ckpt&#39;</span><span class="p">)),</span>
+
+    <span class="c1"># Save the weights in a new file when the current model is better than all previous models.</span>
+    <span class="n">ModelCheckpoint</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">save_path</span><span class="p">,</span> <span class="s1">&#39;best_weight.ckpt&#39;</span><span class="p">),</span>
+                    <span class="n">save_best_only</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+
+    <span class="c1"># Save the losses for each epoch in a TSV.</span>
+    <span class="n">CSVLogger</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">save_path</span><span class="p">,</span> <span class="s1">&#39;log.tsv&#39;</span><span class="p">),</span> <span class="n">separator</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">),</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+<p>Let’s specify the loss and the optimization function.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">criterion</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">MSELoss</span><span class="p">()</span>
+<span class="n">optimizer</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Adam</span><span class="p">(</span><span class="n">network</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="n">learning_rate</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="training">
+<h2>Training<a class="headerlink" href="#training" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Poutyne Model on GPU</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span><span class="n">network</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">criterion</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+
+<span class="c1"># Train</span>
+<span class="n">model</span><span class="o">.</span><span class="n">fit_generator</span><span class="p">(</span><span class="n">train_dataloader</span><span class="p">,</span> <span class="n">valid_dataloader</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="n">num_epochs</span><span class="p">,</span> <span class="n">callbacks</span><span class="o">=</span><span class="n">callbacks</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="a-random-batch-of-the-mnist-dataset-images">
+<h2>A Random Batch of the MNIST Dataset Images<a class="headerlink" href="#a-random-batch-of-the-mnist-dataset-images" title="Permalink to this headline">¶</a></h2>
+<p>Let’s see some of the input samples inside the training dataset.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">inputs</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="n">train_dataloader</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">input_grid</span> <span class="o">=</span> <span class="n">make_grid</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
+<span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
+<span class="n">inp</span> <span class="o">=</span> <span class="n">input_grid</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">transpose</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">inp</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<img alt="../_images/mnist_batch.png" src="../_images/mnist_batch.png" />
+</div>
+<div class="section" id="reconstructed-images-after-3-epochs-of-training">
+<h2>Reconstructed Images after 3 Epochs of Training<a class="headerlink" href="#reconstructed-images-after-3-epochs-of-training" title="Permalink to this headline">¶</a></h2>
+<p>Here, we show the reconstruction results of the samples shown above to visually evaluate the quality of the results.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Calculating predictions of the trained network on a batch</span>
+<span class="n">outputs</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">predict_on_batch</span><span class="p">(</span><span class="n">inputs</span><span class="p">))</span>
+<span class="n">output_grid</span> <span class="o">=</span> <span class="n">make_grid</span><span class="p">(</span><span class="n">outputs</span><span class="p">)</span>
+<span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
+<span class="n">out</span> <span class="o">=</span> <span class="n">output_grid</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">transpose</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<img alt="../_images/mnist_3epoch.png" src="../_images/mnist_3epoch.png" />
+</div>
+<div class="section" id="evaluation">
+<h2>Evaluation<a class="headerlink" href="#evaluation" title="Permalink to this headline">¶</a></h2>
+<p>One of the useful tools of Poutyne is the <code class="docutils literal notranslate"><span class="pre">evaluate</span></code> methods, which provide you with the evaluation metrics and the ground truths and the predictions if the related arguments have been set to True (as below).</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># evaluating the trained network on test data</span>
+<span class="n">loss</span><span class="p">,</span> <span class="n">predictions</span><span class="p">,</span> <span class="n">ground_truth</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">evaluate_generator</span><span class="p">(</span><span class="n">test_dataloader</span><span class="p">,</span> <span class="n">return_pred</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">return_ground_truth</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>In most computer vision applications, such as image reconstruction, it is imperative to check the network’s failures (or abilities, vice versa). The following part shows an example of an input and the reconstructed image, as well as its reconstruction error map. The reconstruction error map shows which part of the image has not been reconstructed accurately.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">sample_number</span> <span class="o">=</span> <span class="mi">2</span>   <span class="c1"># a sample from test dataset</span>
+
+<span class="n">sample</span> <span class="o">=</span> <span class="n">ground_truth</span><span class="p">[</span><span class="n">sample_number</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">sample_prediction_result_3epochs</span> <span class="o">=</span> <span class="n">predictions</span><span class="p">[</span><span class="n">sample_number</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+
+<span class="n">recunstruction_error_map_3epochs</span> <span class="o">=</span> <span class="n">sample</span> <span class="o">-</span> <span class="n">sample_prediction_result_3epochs</span>  <span class="c1">#reconstruction error map</span>
+<span class="n">fig</span><span class="p">,</span> <span class="p">(</span><span class="n">ax1</span><span class="p">,</span> <span class="n">ax2</span><span class="p">,</span> <span class="n">ax3</span><span class="p">)</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">sample</span><span class="p">)</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;sample&#39;</span><span class="p">)</span>
+
+<span class="n">ax2</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">sample_prediction_result_3epochs</span><span class="p">)</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;prediction&#39;</span><span class="p">)</span>
+
+<span class="n">ax3</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">recunstruction_error_map_3epochs</span><span class="p">))</span>
+<span class="n">ax3</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;reconstruction error&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<img alt="../_images/rec_error_3epoch.png" src="../_images/rec_error_3epoch.png" />
+</div>
+<div class="section" id="resuming-the-training-for-more-epochs">
+<h2>Resuming the training for more epochs<a class="headerlink" href="#resuming-the-training-for-more-epochs" title="Permalink to this headline">¶</a></h2>
+<p>If we find the previous epochs’ results not enough, Poutyne allows you to resume the last done epoch’s training, as shown below. Please note that in the <code class="docutils literal notranslate"><span class="pre">callbacks</span></code> that we defined before since we did not set the <code class="docutils literal notranslate"><span class="pre">restore_best</span></code> argument in <code class="docutils literal notranslate"><span class="pre">ModelCheckpoint</span></code> to <code class="docutils literal notranslate"><span class="pre">True</span></code>, our model stays at the last epoch after finishing the first part of the training. Hence, by setting the <code class="docutils literal notranslate"><span class="pre">initial_epoch</span> <span class="pre">+</span> <span class="pre">1</span></code> to the last epoch of the previous training, we can resume our training to train for more epochs, using the last state of the neural network.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="o">.</span><span class="n">fit_generator</span><span class="p">(</span><span class="n">train_dataloader</span><span class="p">,</span> <span class="n">valid_dataloader</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">13</span><span class="p">,</span> <span class="n">callbacks</span><span class="o">=</span><span class="n">callbacks</span><span class="p">,</span> <span class="n">initial_epoch</span><span class="o">=</span><span class="n">num_epochs</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="reconstructed-images-after-the-second-training-process">
+<h2>Reconstructed images after the second training process<a class="headerlink" href="#reconstructed-images-after-the-second-training-process" title="Permalink to this headline">¶</a></h2>
+<p>Now let’s visualize the quality of the results after the second training.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">outputs</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">predict_on_batch</span><span class="p">(</span><span class="n">inputs</span><span class="p">))</span>
+<span class="n">output_grid</span> <span class="o">=</span> <span class="n">make_grid</span><span class="p">(</span><span class="n">outputs</span><span class="p">)</span>
+<span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
+<span class="n">out</span> <span class="o">=</span> <span class="n">output_grid</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">transpose</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<img alt="../_images/mnist_13epoch.png" src="../_images/mnist_13epoch.png" />
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">loss</span><span class="p">,</span> <span class="n">predictions</span><span class="p">,</span> <span class="n">ground_truth</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">evaluate_generator</span><span class="p">(</span><span class="n">test_dataloader</span><span class="p">,</span> <span class="n">return_pred</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">return_ground_truth</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Here, we compare the reconstruction accuracy of the network after 3 epochs and 13 epochs of training.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">sample_number</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="n">sample</span> <span class="o">=</span> <span class="n">ground_truth</span><span class="p">[</span><span class="n">sample_number</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">sample_prediction_result_13epochs</span> <span class="o">=</span> <span class="n">predictions</span><span class="p">[</span><span class="n">sample_number</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">recunstruction_error_map_13epochs</span> <span class="o">=</span> <span class="n">sample</span> <span class="o">-</span> <span class="n">sample_prediction_result_13epochs</span>  <span class="c1">#reconstruction error map</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">axs</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">sharex</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">sharey</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">sample</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;sample&#39;</span><span class="p">)</span>
+
+<span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">sample_prediction_result_3epochs</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;prediction&#39;</span><span class="p">)</span>
+
+<span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">recunstruction_error_map_3epochs</span><span class="p">))</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;rec_error epoch3&#39;</span><span class="p">)</span>
+
+<span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">sample</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;sample&#39;</span><span class="p">)</span>
+
+<span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">sample_prediction_result_13epochs</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;prediction&#39;</span><span class="p">)</span>
+
+<span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">recunstruction_error_map_13epochs</span><span class="p">))</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;rec_error epoch13&#39;</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<img alt="../_images/mnist_compare.png" src="../_images/mnist_compare.png" />
+<p>You can also try finetuning the model to obtain better performance. Such as changing the hyperparameters (network capacity, epochs, etc.).</p>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="semantic_segmentation.html" class="btn btn-neutral float-right" title="Semantic segmentation using Poutyne" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="transfer_learning.html" class="btn btn-neutral float-left" title="Transfer learning example" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2018-2021, Frédérik Paradis.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+  
+ 
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-177874682-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-177874682-1');
+</script>
+
+
+</body>
+</html>

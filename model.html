@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>Model &mdash; Poutyne 1.3.1 documentation</title>
+  <title>Model &mdash; Poutyne 1.4 documentation</title>
   
 
   
@@ -66,7 +66,7 @@
             
             
               <div class="version">
-                1.3.1
+                1.4
               </div>
             
           
@@ -107,6 +107,8 @@
 <li class="toctree-l1"><a class="reference internal" href="examples/policy_interface.html">Interface of <code class="docutils literal notranslate"><span class="pre">policy</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="examples/train_with_policy_module.html">Train CIFAR with the <code class="docutils literal notranslate"><span class="pre">policy</span></code> module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="examples/transfer_learning.html">Transfer learning example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples/image_reconstruction.html">Image Reconstruction Using Poutyne</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples/semantic_segmentation.html">Semantic segmentation using Poutyne</a></li>
 </ul>
 
             
@@ -358,12 +360,20 @@ Epoch 3/5 0.03s Step 25/25: loss: 6.158523, acc: 2.125000, val_loss: 5.985811, v
 <code class="sig-name descname"><span class="pre">fit</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validation_data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">32</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epochs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">steps_per_epoch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validation_steps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batches_per_step</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_epoch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress_options</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">callbacks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataloader_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poutyne/framework/model.html#Model.fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.Model.fit" title="Permalink to this definition">¶</a></dt>
 <dd><p>Trains the network on a dataset. This method creates generators and calls
 the <a class="reference internal" href="#poutyne.Model.fit_generator" title="poutyne.Model.fit_generator"><code class="xref py py-func docutils literal notranslate"><span class="pre">fit_generator()</span></code></a> method.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>With <strong>Jupyter Notebooks</strong>, a great number of displays per second (around &gt; 200) seems to slow down
+Jupyter Notebook. In which cases, we suggest to pass
+<code class="docutils literal notranslate"><span class="pre">progress_options={'show_every_n_train_steps':</span> <span class="pre">100,</span> <span class="pre">'show_on_valid':</span> <span class="pre">False}</span></code> so that the number of
+displays per second is at an acceptable level.</p>
+</div>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
 <p>With <strong>Jupyter Notebooks in Firefox</strong>, if <code class="docutils literal notranslate"><span class="pre">colorama</span></code> is installed and colors are enabled (as it
 is by default), a great number of epochs and steps per epoch can cause a spike in memory usage in Firefox.
-The problem does not occur in Google Chrome/Chromium. To avoid this problem, you can disable the colors by
-passing <code class="docutils literal notranslate"><span class="pre">progress_options={'coloring':</span> <span class="pre">False}</span></code>. See
+The problem does not occur in Google Chrome/Chromium. To avoid this problem, you can decrease the number of
+steps shown by passing <code class="docutils literal notranslate"><span class="pre">progress_options={'show_every_n_train_steps':</span> <span class="pre">100,</span> <span class="pre">'show_on_valid':</span> <span class="pre">False}</span></code> or you
+can disable the colors by passing <code class="docutils literal notranslate"><span class="pre">progress_options={'coloring':</span> <span class="pre">False}</span></code>. See
 <a class="reference external" href="https://github.com/jupyter/notebook/issues/5897">this Github issue for details</a>.</p>
 </div>
 <dl class="field-list simple">
@@ -435,12 +445,20 @@ overriden by using this argument.</p></li>
 <code class="sig-name descname"><span class="pre">fit_dataset</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">train_dataset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">valid_dataset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">32</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epochs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">steps_per_epoch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validation_steps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batches_per_step</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_epoch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress_options</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">callbacks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_workers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">collate_fn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataloader_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poutyne/framework/model.html#Model.fit_dataset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.Model.fit_dataset" title="Permalink to this definition">¶</a></dt>
 <dd><p>Trains the network on a dataset. This method creates dataloaders and calls the
 <a class="reference internal" href="#poutyne.Model.fit_generator" title="poutyne.Model.fit_generator"><code class="xref py py-func docutils literal notranslate"><span class="pre">fit_generator()</span></code></a> method.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>With <strong>Jupyter Notebooks</strong>, a great number of displays per second (around &gt; 200) seems to slow down
+Jupyter Notebook. In which cases, we suggest to pass
+<code class="docutils literal notranslate"><span class="pre">progress_options={'show_every_n_train_steps':</span> <span class="pre">100,</span> <span class="pre">'show_on_valid':</span> <span class="pre">False}</span></code> so that the number of
+displays per second is at an acceptable level.</p>
+</div>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
 <p>With <strong>Jupyter Notebooks in Firefox</strong>, if <code class="docutils literal notranslate"><span class="pre">colorama</span></code> is installed and colors are enabled (as it
 is by default), a great number of epochs and steps per epoch can cause a spike in memory usage in Firefox.
-The problem does not occur in Google Chrome/Chromium. To avoid this problem, you can disable the colors by
-passing <code class="docutils literal notranslate"><span class="pre">progress_options={'coloring':</span> <span class="pre">False}</span></code>. See
+The problem does not occur in Google Chrome/Chromium. To avoid this problem, you can decrease the number of
+steps shown by passing <code class="docutils literal notranslate"><span class="pre">progress_options={'show_every_n_train_steps':</span> <span class="pre">100,</span> <span class="pre">'show_on_valid':</span> <span class="pre">False}</span></code> or you
+can disable the colors by passing <code class="docutils literal notranslate"><span class="pre">progress_options={'coloring':</span> <span class="pre">False}</span></code>. See
 <a class="reference external" href="https://github.com/jupyter/notebook/issues/5897">this Github issue for details</a>.</p>
 </div>
 <dl class="field-list simple">
@@ -514,12 +532,20 @@ overriden by using this argument.</p></li>
 <dt id="poutyne.Model.fit_generator">
 <code class="sig-name descname"><span class="pre">fit_generator</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">train_generator</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">valid_generator</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epochs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">steps_per_epoch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validation_steps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batches_per_step</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_epoch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress_options</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">callbacks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poutyne/framework/model.html#Model.fit_generator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.Model.fit_generator" title="Permalink to this definition">¶</a></dt>
 <dd><p>Trains the network on a dataset using a generator.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>With <strong>Jupyter Notebooks</strong>, a great number of displays per second (around &gt; 200) seems to slow down
+Jupyter Notebook. In which cases, we suggest to pass
+<code class="docutils literal notranslate"><span class="pre">progress_options={'show_every_n_train_steps':</span> <span class="pre">100,</span> <span class="pre">'show_on_valid':</span> <span class="pre">False}</span></code> so that the number of
+displays per second is at an acceptable level.</p>
+</div>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
 <p>With <strong>Jupyter Notebooks in Firefox</strong>, if <code class="docutils literal notranslate"><span class="pre">colorama</span></code> is installed and colors are enabled (as it
 is by default), a great number of epochs and steps per epoch can cause a spike in memory usage in Firefox.
-The problem does not occur in Google Chrome/Chromium. To avoid this problem, you can disable the colors by
-passing <code class="docutils literal notranslate"><span class="pre">progress_options={'coloring':</span> <span class="pre">False}</span></code>. See
+The problem does not occur in Google Chrome/Chromium. To avoid this problem, you can decrease the number of
+steps shown by passing <code class="docutils literal notranslate"><span class="pre">progress_options={'show_every_n_train_steps':</span> <span class="pre">100,</span> <span class="pre">'show_on_valid':</span> <span class="pre">False}</span></code> or you
+can disable the colors by passing <code class="docutils literal notranslate"><span class="pre">progress_options={'coloring':</span> <span class="pre">False}</span></code>. See
 <a class="reference external" href="https://github.com/jupyter/notebook/issues/5897">this Github issue for details</a>.</p>
 </div>
 <dl class="field-list simple">
@@ -983,7 +1009,7 @@ case, a warning is also raised. To disable this warning, set</p>
 
 <dl class="py method">
 <dt id="poutyne.Model.load_weights">
-<code class="sig-name descname"><span class="pre">load_weights</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">f</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poutyne/framework/model.html#Model.load_weights"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.Model.load_weights" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">load_weights</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">f</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strict</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poutyne/framework/model.html#Model.load_weights"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.Model.load_weights" title="Permalink to this definition">¶</a></dt>
 <dd><p>Loads the weights saved using the <a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.save.html#torch.save" title="(in PyTorch v1.8.0a0+56b43f4)"><code class="xref py py-func docutils literal notranslate"><span class="pre">torch.save()</span></code></a> method or the <a class="reference internal" href="#poutyne.Model.save_weights" title="poutyne.Model.save_weights"><code class="xref py py-func docutils literal notranslate"><span class="pre">save_weights()</span></code></a> method
 of this class. Contrary to <a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.load.html#torch.load" title="(in PyTorch v1.8.0a0+56b43f4)"><code class="xref py py-func docutils literal notranslate"><span class="pre">torch.load()</span></code></a>, the weights are not transfered to the device
 from which they were saved from. In other words, the PyTorch module will stay on the same
@@ -992,6 +1018,16 @@ device it already is on.</p>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>f</strong> – File-like object (has to implement fileno that returns a file descriptor) or string
 containing a file name.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>missing_keys</strong> is a list of str containing the missing keys</p></li>
+<li><p><strong>unexpected_keys</strong> is a list of str containing the unexpected keys</p></li>
+</ul>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">NamedTuple</span></code> with <code class="docutils literal notranslate"><span class="pre">missing_keys</span></code> and <code class="docutils literal notranslate"><span class="pre">unexpected_keys</span></code> fields</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1049,11 +1085,21 @@ method.</p>
 
 <dl class="py method">
 <dt id="poutyne.Model.set_weights">
-<code class="sig-name descname"><span class="pre">set_weights</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">weights</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poutyne/framework/model.html#Model.set_weights"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.Model.set_weights" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname"><span class="pre">set_weights</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">weights</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strict</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poutyne/framework/model.html#Model.set_weights"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.Model.set_weights" title="Permalink to this definition">¶</a></dt>
 <dd><p>Modifies the weights of the network with the given weights.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>weights</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.9)"><em>dict</em></a>) – Weights returned by either <a class="reference internal" href="#poutyne.Model.get_weights" title="poutyne.Model.get_weights"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_weights()</span></code></a> or <a class="reference internal" href="#poutyne.Model.get_weight_copies" title="poutyne.Model.get_weight_copies"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_weight_copies()</span></code></a>.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>missing_keys</strong> is a list of str containing the missing keys</p></li>
+<li><p><strong>unexpected_keys</strong> is a list of str containing the unexpected keys</p></li>
+</ul>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">NamedTuple</span></code> with <code class="docutils literal notranslate"><span class="pre">missing_keys</span></code> and <code class="docutils literal notranslate"><span class="pre">unexpected_keys</span></code> fields</p>
 </dd>
 </dl>
 </dd></dl>

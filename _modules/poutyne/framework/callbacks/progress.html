@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>poutyne.framework.callbacks.progress &mdash; Poutyne 1.3.1 documentation</title>
+  <title>poutyne.framework.callbacks.progress &mdash; Poutyne 1.4 documentation</title>
   
 
   
@@ -64,7 +64,7 @@
             
             
               <div class="version">
-                1.3.1
+                1.4
               </div>
             
           
@@ -105,6 +105,8 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../examples/policy_interface.html">Interface of <code class="docutils literal notranslate"><span class="pre">policy</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../examples/train_with_policy_module.html">Train CIFAR with the <code class="docutils literal notranslate"><span class="pre">policy</span></code> module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../examples/transfer_learning.html">Transfer learning example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../examples/image_reconstruction.html">Image Reconstruction Using Poutyne</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../examples/semantic_segmentation.html">Semantic segmentation using Poutyne</a></li>
 </ul>
 
             
@@ -201,15 +203,44 @@
 <span class="sd">            older step times. Set this to true to have equal weighting instead.</span>
 <span class="sd">        show_on_valid (bool): Whether or not to display the progression during the validation phase.</span>
 <span class="sd">            (Default value = True)</span>
+<span class="sd">        show_every_n_train_steps (Union[str, int]): Show a subset of the training steps. If ``&#39;all&#39;``, show all steps.</span>
+<span class="sd">            If ``&#39;none&#39;``, do not show the steps (i.e. only show the stats at the end of the epoch). If an integer</span>
+<span class="sd">            ``n``, only show every n-th steps. (Default value = &#39;all&#39;).</span>
+<span class="sd">        show_every_n_valid_steps (Union[str, int]): Show a subset of the validation steps. If ``&#39;all&#39;``, show all steps.</span>
+<span class="sd">            If ``&#39;none&#39;``, do not show the steps (i.e. only show the stats at the end of the epoch). If an integer</span>
+<span class="sd">            ``n``, only show every n-th steps. (Default value = &#39;all&#39;).</span>
+<span class="sd">        show_every_n_test_steps (Union[str, int]): Show a subset of the testing steps. If ``&#39;all&#39;``, show all steps.</span>
+<span class="sd">            If ``&#39;none&#39;``, do not show the steps (i.e. only show the stats at the end of the testing). If an integer</span>
+<span class="sd">            ``n``, show only every n-th steps. (Default value = &#39;all&#39;).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">coloring</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">progress_bar</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">equal_weights</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">show_on_valid</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="n">EVERY_N_STEPS_CHOICES</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="s1">&#39;none&#39;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="o">*</span><span class="p">,</span>
+                 <span class="n">coloring</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                 <span class="n">progress_bar</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                 <span class="n">equal_weights</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">show_on_valid</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                 <span class="n">show_every_n_train_steps</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span>
+                 <span class="n">show_every_n_valid_steps</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span>
+                 <span class="n">show_every_n_test_steps</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">color_progress</span> <span class="o">=</span> <span class="n">ColorProgress</span><span class="p">(</span><span class="n">coloring</span><span class="o">=</span><span class="n">coloring</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">progress_bar</span> <span class="o">=</span> <span class="n">progress_bar</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">equal_weights</span> <span class="o">=</span> <span class="n">equal_weights</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">show_on_valid</span> <span class="o">=</span> <span class="n">show_on_valid</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">step_times_weighted_sum</span> <span class="o">=</span> <span class="mf">0.</span>
+
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">show_every_n_train_steps</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">or</span> \
+            <span class="n">show_every_n_train_steps</span> <span class="ow">in</span> <span class="n">ProgressionCallback</span><span class="o">.</span><span class="n">EVERY_N_STEPS_CHOICES</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">show_every_n_valid_steps</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">or</span> \
+            <span class="n">show_every_n_valid_steps</span> <span class="ow">in</span> <span class="n">ProgressionCallback</span><span class="o">.</span><span class="n">EVERY_N_STEPS_CHOICES</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">show_every_n_test_steps</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">or</span> \
+            <span class="n">show_every_n_test_steps</span> <span class="ow">in</span> <span class="n">ProgressionCallback</span><span class="o">.</span><span class="n">EVERY_N_STEPS_CHOICES</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">show_every_n_train_steps</span> <span class="o">=</span> <span class="n">show_every_n_train_steps</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">show_every_n_valid_steps</span> <span class="o">=</span> <span class="n">show_every_n_valid_steps</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">show_every_n_test_steps</span> <span class="o">=</span> <span class="n">show_every_n_test_steps</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">train_last_step</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">valid_last_step</span> <span class="o">=</span> <span class="kc">None</span>
@@ -233,8 +264,6 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;loss&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">metrics_names</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">epochs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;epochs&#39;</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">steps</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_train_steps</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">_set_progress_bar</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">on_valid_begin</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">show_on_valid</span><span class="p">:</span>
@@ -282,11 +311,20 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_end_progress</span><span class="p">(</span><span class="n">logs</span><span class="p">,</span> <span class="n">test_total_time</span><span class="p">,</span> <span class="n">progress_fun</span><span class="p">)</span>
 
+    <span class="k">def</span> <span class="nf">_test_show_batch_end</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">show_every_n_steps_flag</span><span class="p">,</span> <span class="n">batch_number</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">show_every_n_steps_flag</span> <span class="o">==</span> <span class="s1">&#39;all&#39;</span> <span class="ow">or</span> \
+            <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">show_every_n_steps_flag</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">and</span> <span class="n">batch_number</span> <span class="o">%</span> <span class="n">show_every_n_steps_flag</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
+
     <span class="k">def</span> <span class="nf">on_train_batch_end</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch_number</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">logs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">train_step_times_rate</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_step_times_rate</span><span class="p">(</span><span class="n">batch_number</span><span class="p">,</span> <span class="n">logs</span><span class="p">)</span>
         <span class="n">progress_batch_end_fun</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">color_progress</span><span class="o">.</span><span class="n">on_train_batch_end</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_batch_end_progress</span><span class="p">(</span><span class="n">logs</span><span class="p">,</span> <span class="n">train_step_times_rate</span><span class="p">,</span> <span class="n">batch_number</span><span class="p">,</span> <span class="n">progress_batch_end_fun</span><span class="p">)</span>
+        <span class="n">do_print</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_test_show_batch_end</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">show_every_n_train_steps</span><span class="p">,</span> <span class="n">batch_number</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_batch_end_progress</span><span class="p">(</span><span class="n">logs</span><span class="o">=</span><span class="n">logs</span><span class="p">,</span>
+                                 <span class="n">step_times_rate</span><span class="o">=</span><span class="n">train_step_times_rate</span><span class="p">,</span>
+                                 <span class="n">batch_number</span><span class="o">=</span><span class="n">batch_number</span><span class="p">,</span>
+                                 <span class="n">func</span><span class="o">=</span><span class="n">progress_batch_end_fun</span><span class="p">,</span>
+                                 <span class="n">do_print</span><span class="o">=</span><span class="n">do_print</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">train_last_step</span> <span class="o">=</span> <span class="n">batch_number</span>
 
     <span class="k">def</span> <span class="nf">on_valid_batch_end</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch_number</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">logs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -294,14 +332,25 @@
             <span class="n">valid_step_times_rate</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_step_times_rate</span><span class="p">(</span><span class="n">batch_number</span><span class="p">,</span> <span class="n">logs</span><span class="p">)</span>
             <span class="n">progress_batch_end_fun</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">color_progress</span><span class="o">.</span><span class="n">on_valid_batch_end</span>
 
-            <span class="bp">self</span><span class="o">.</span><span class="n">_batch_end_progress</span><span class="p">(</span><span class="n">logs</span><span class="p">,</span> <span class="n">valid_step_times_rate</span><span class="p">,</span> <span class="n">batch_number</span><span class="p">,</span> <span class="n">progress_batch_end_fun</span><span class="p">)</span>
+            <span class="n">do_print</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_test_show_batch_end</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">show_every_n_valid_steps</span><span class="p">,</span> <span class="n">batch_number</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_batch_end_progress</span><span class="p">(</span><span class="n">logs</span><span class="o">=</span><span class="n">logs</span><span class="p">,</span>
+                                     <span class="n">step_times_rate</span><span class="o">=</span><span class="n">valid_step_times_rate</span><span class="p">,</span>
+                                     <span class="n">batch_number</span><span class="o">=</span><span class="n">batch_number</span><span class="p">,</span>
+                                     <span class="n">func</span><span class="o">=</span><span class="n">progress_batch_end_fun</span><span class="p">,</span>
+                                     <span class="n">do_print</span><span class="o">=</span><span class="n">do_print</span><span class="p">)</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">valid_last_step</span> <span class="o">=</span> <span class="n">batch_number</span>
 
     <span class="k">def</span> <span class="nf">on_test_batch_end</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch_number</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">logs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">test_step_times_rate</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_step_times_rate</span><span class="p">(</span><span class="n">batch_number</span><span class="p">,</span> <span class="n">logs</span><span class="p">)</span>
         <span class="n">progress_batch_end_fun</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">color_progress</span><span class="o">.</span><span class="n">on_test_batch_end</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_batch_end_progress</span><span class="p">(</span><span class="n">logs</span><span class="p">,</span> <span class="n">test_step_times_rate</span><span class="p">,</span> <span class="n">batch_number</span><span class="p">,</span> <span class="n">progress_batch_end_fun</span><span class="p">)</span>
+        <span class="n">do_print</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_test_show_batch_end</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">show_every_n_test_steps</span><span class="p">,</span> <span class="n">batch_number</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_batch_end_progress</span><span class="p">(</span><span class="n">logs</span><span class="o">=</span><span class="n">logs</span><span class="p">,</span>
+                                 <span class="n">step_times_rate</span><span class="o">=</span><span class="n">test_step_times_rate</span><span class="p">,</span>
+                                 <span class="n">batch_number</span><span class="o">=</span><span class="n">batch_number</span><span class="p">,</span>
+                                 <span class="n">func</span><span class="o">=</span><span class="n">progress_batch_end_fun</span><span class="p">,</span>
+                                 <span class="n">do_print</span><span class="o">=</span><span class="n">do_print</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_get_metrics_string</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="n">train_metrics_str_gen</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">: </span><span class="si">{:f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">logs</span><span class="p">[</span><span class="n">k</span><span class="p">])</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span> <span class="k">if</span> <span class="n">logs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">k</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span>
@@ -331,16 +380,21 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">func</span><span class="p">(</span><span class="n">total_time</span><span class="o">=</span><span class="n">total_time</span><span class="p">,</span> <span class="n">steps</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">last_step</span><span class="p">,</span> <span class="n">metrics_str</span><span class="o">=</span><span class="n">metrics_str</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_batch_end_progress</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">step_times_rate</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">batch_number</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">_batch_end_progress</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">logs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">step_times_rate</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">batch_number</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span>
+                            <span class="n">do_print</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Update the progress at the end of train, valid or test batch.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">metrics_str</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_metrics_string</span><span class="p">(</span><span class="n">logs</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">steps</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">remaining_time</span> <span class="o">=</span> <span class="n">step_times_rate</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">steps</span> <span class="o">-</span> <span class="n">batch_number</span><span class="p">)</span>
-            <span class="n">func</span><span class="p">(</span><span class="n">remaining_time</span><span class="o">=</span><span class="n">remaining_time</span><span class="p">,</span> <span class="n">batch_number</span><span class="o">=</span><span class="n">batch_number</span><span class="p">,</span> <span class="n">metrics_str</span><span class="o">=</span><span class="n">metrics_str</span><span class="p">,</span> <span class="n">steps</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">steps</span><span class="p">)</span>
+            <span class="n">func</span><span class="p">(</span><span class="n">remaining_time</span><span class="o">=</span><span class="n">remaining_time</span><span class="p">,</span>
+                 <span class="n">batch_number</span><span class="o">=</span><span class="n">batch_number</span><span class="p">,</span>
+                 <span class="n">metrics_str</span><span class="o">=</span><span class="n">metrics_str</span><span class="p">,</span>
+                 <span class="n">steps</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">steps</span><span class="p">,</span>
+                 <span class="n">do_print</span><span class="o">=</span><span class="n">do_print</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">func</span><span class="p">(</span><span class="n">remaining_time</span><span class="o">=</span><span class="n">step_times_rate</span><span class="p">,</span> <span class="n">batch_number</span><span class="o">=</span><span class="n">batch_number</span><span class="p">,</span> <span class="n">metrics_str</span><span class="o">=</span><span class="n">metrics_str</span><span class="p">)</span>
+            <span class="n">func</span><span class="p">(</span><span class="n">remaining_time</span><span class="o">=</span><span class="n">step_times_rate</span><span class="p">,</span> <span class="n">batch_number</span><span class="o">=</span><span class="n">batch_number</span><span class="p">,</span> <span class="n">metrics_str</span><span class="o">=</span><span class="n">metrics_str</span><span class="p">,</span> <span class="n">do_print</span><span class="o">=</span><span class="n">do_print</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">last_step</span> <span class="o">=</span> <span class="n">batch_number</span></div>
 </pre></div>
 
