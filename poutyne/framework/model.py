@@ -558,7 +558,8 @@ class Model:
 
         self.stop_training = False
 
-        epoch_iterator = EpochIterator(train_generator,
+        epoch_iterator = EpochIterator(self,
+                                       train_generator,
                                        valid_generator,
                                        epochs=epochs,
                                        steps_per_epoch=steps_per_epoch,
@@ -611,8 +612,6 @@ class Model:
                 valid_metrics_log.update(valid_step_iterator.metrics_logs)
 
                 callback_list.on_valid_end(valid_metrics_log)
-
-            epoch_iterator.stop_training = self.stop_training
 
     def _fit_batch_n_batches_per_step(self,
                                       x,
@@ -668,8 +667,6 @@ class Model:
                 valid_metrics_log.update(valid_step_iterator.metrics_logs)
 
                 callback_list.on_valid_end(valid_metrics_log)
-
-            epoch_iterator.stop_training = self.stop_training
 
     def _fit_batch(self, x, y, *, callback=Callback(), step=None, return_pred=False):
         self.optimizer.zero_grad()

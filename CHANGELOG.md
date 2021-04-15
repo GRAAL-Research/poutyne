@@ -8,6 +8,7 @@
   Experiment, a warning is raised when there are missing or unexpected keys in the checkpoint.
 * In CSVLogger, when multiple learning rates are used, we use the column names `lr_group_0`, `lr_group_1`, etc. instead
   of `lr`.
+* Fix bug where EarlyStopping would be one epoch late and would anyway disregard the monitored metric at the last epoch.
 
 # v1.3.1
 
