@@ -1,5 +1,10 @@
 # v1.x.x
 
+*
+
+# v1.4
+
+* Add examples for image reconstruction and semantic segmentation with Poutyne.
 * Add the following flags in [`ProgressionCallback`](https://poutyne.org/callbacks.html#poutyne.ProgressionCallback):
   `show_every_n_train_steps`, `show_every_n_valid_steps`, `show_every_n_test_steps`. They allow to show only certain
   steps instead of all steps.
