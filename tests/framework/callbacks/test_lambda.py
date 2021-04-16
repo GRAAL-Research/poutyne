@@ -9,7 +9,6 @@ from tests.framework.model.base import ModelFittingTestCase
 
 
 class LambdaTest(ModelFittingTestCase):
-    # pylint: disable=too-many-public-methods
 
     def setUp(self):
         super().setUp()
@@ -61,11 +60,9 @@ class LambdaTest(ModelFittingTestCase):
         lambda_callback, mock_calls = self._get_lambda_callback_with_mock_args()
         num_steps = 10
         generator = some_data_tensor_generator(LambdaTest.batch_size)
-        self.model.evaluate_generator(generator, steps=num_steps, callbacks=[lambda_callback])
+        self.model.evaluate_generator(generator, steps=num_steps, callbacks=[lambda_callback, self.mock_callback])
 
-        params = {'steps': LambdaTest.epochs}
-        expected_calls = self._get_callback_expected_on_calls_when_testing(params)
-
+        expected_calls = self.mock_callback.method_calls[2:]
         actual_calls = mock_calls.method_calls
         self.assertEqual(len(expected_calls), len(actual_calls))
         self.assertEqual(expected_calls, actual_calls)
@@ -74,20 +71,14 @@ class LambdaTest(ModelFittingTestCase):
         lambda_callback, mock_calls = self._get_lambda_callback_with_mock_args()
         train_generator = some_data_tensor_generator(LambdaTest.batch_size)
         valid_generator = some_data_tensor_generator(LambdaTest.batch_size)
-        logs = self.model.fit_generator(train_generator,
-                                        valid_generator,
-                                        epochs=LambdaTest.epochs,
-                                        steps_per_epoch=LambdaTest.steps_per_epoch,
-                                        validation_steps=LambdaTest.steps_per_epoch,
-                                        callbacks=[lambda_callback])
-        params = {
-            'epochs': LambdaTest.epochs,
-            'steps': LambdaTest.steps_per_epoch,
-            'valid_steps': LambdaTest.steps_per_epoch
-        }
-        expected_calls = self._get_callback_expected_on_calls_when_training(params,
-                                                                            logs,
-                                                                            valid_steps=LambdaTest.steps_per_epoch)
+        self.model.fit_generator(train_generator,
+                                 valid_generator,
+                                 epochs=LambdaTest.epochs,
+                                 steps_per_epoch=LambdaTest.steps_per_epoch,
+                                 validation_steps=LambdaTest.steps_per_epoch,
+                                 callbacks=[lambda_callback, self.mock_callback])
+
+        expected_calls = self.mock_callback.method_calls[2:]
         actual_calls = mock_calls.method_calls
         self.assertEqual(len(expected_calls), len(actual_calls))
         self.assertEqual(expected_calls, actual_calls)
