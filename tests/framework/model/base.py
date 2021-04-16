@@ -34,11 +34,11 @@ class ModelFittingTestCase(TestCase):
         self.pytorch_network = None
         self.optimizer = None
 
-    def _test_callbacks_train(self, params, logs, has_valid=True, steps=None, valid_steps=10):
+    def _get_callback_expected_on_calls_when_training(self, params, logs, has_valid=True, steps=None, valid_steps=10):
         # pylint: disable=too-many-arguments
         if steps is None:
             steps = params['steps']
-        self.assertEqual(len(logs), params['epochs'])
+
         train_batch_dict = dict(zip(self.batch_metrics_names, self.batch_metrics_values), time=ANY, loss=ANY)
         train_epochs_dict = dict(zip(self.epoch_metrics_names, self.epoch_metrics_values))
         log_dict = {**train_batch_dict, **train_epochs_dict}
@@ -75,6 +75,12 @@ class ModelFittingTestCase(TestCase):
             call_list.append(call.on_epoch_end(epoch, logs[epoch - 1]))
 
         call_list.append(call.on_train_end({}))
+        return call_list
+
+    def _test_callbacks_train(self, params, logs, *args, **kwargs):
+        self.assertEqual(len(logs), params['epochs'])
+
+        call_list = self._get_callback_expected_on_calls_when_training(params, logs, *args, **kwargs)
 
         method_calls = self.mock_callback.method_calls
         self.assertIn(call.set_model(self.model), method_calls[:2])  # skip set_model and set param call

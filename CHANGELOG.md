@@ -1,5 +1,7 @@
 # v1.x.x
 
+* Add [`LambdaCallback`](https://poutyne.org/callbacks.html#poutyne.LambdaCallback) to more easily define a callback
+  from lambdas or functions.
 *
 
 # v1.4

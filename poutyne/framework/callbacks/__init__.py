@@ -1,5 +1,6 @@
 # pylint: disable=wildcard-import
 from .callbacks import *
+from .lambda_ import *
 from .best_model_restore import *
 from .checkpoint import *
 from .clip_grad import *
