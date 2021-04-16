@@ -89,7 +89,7 @@ class ModelFittingTestCase(TestCase):
         self.assertEqual(len(method_calls), len(call_list) + 2)  # for set_model and set param
         self.assertEqual(method_calls[2:], call_list)
 
-    def _test_callbacks_test(self, params):
+    def _get_callback_expected_on_calls_when_testing(self, params):
         test_batch_dict = {"time": ANY, "test_loss": ANY}
         test_batch_dict.update({
             "test_" + metric_name: metric
@@ -107,6 +107,10 @@ class ModelFittingTestCase(TestCase):
             for metric_name, metric in zip(self.epoch_metrics_names, self.epoch_metrics_values)
         })
         call_list.append(call.on_test_end({"time": ANY, "test_loss": ANY, **test_batch_dict}))
+        return call_list
+
+    def _test_callbacks_test(self, params):
+        call_list = self._get_callback_expected_on_calls_when_testing(params)
 
         method_calls = self.mock_callback.method_calls
         self.assertEqual(call.set_model(self.model), method_calls[0])  # skip set_model and set param call
