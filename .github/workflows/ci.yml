@@ -53,3 +53,37 @@ jobs:
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         publish_dir: ./docs/_build/html/
+
+  windowsbuild:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        python-version: ['3.8']
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt
+        pip install -r docs/requirements.txt
+        pip install -r tests/requirements.txt
+        pip install -r styling_requirements.txt
+        python setup.py develop
+    - name: Linting
+      run: |
+        yapf --diff --recursive poutyne/
+        yapf --diff --recursive tests/
+        pylint poutyne/
+        pylint tests/
+    - name: Test with pytest
+      run: |
+        pytest tests/
+    - name: Building doc
+      run: |
+        cd docs
+        ./rebuild_html_doc.bat
+        cd ..
