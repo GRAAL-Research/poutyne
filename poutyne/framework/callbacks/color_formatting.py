@@ -85,18 +85,19 @@ class ColorProgress:
                 raise KeyError("The key(s) {} are not supported color attributes.".format(', '.join(invalid_keys)))
 
             color_settings.update(coloring)
-        elif coloring:
+        elif coloring is True and colorama is not None:
             color_settings = default_color_settings
 
         if color_settings is not None:
+            self.coloring_enabled = True
             self.style_reset = True
             self.text_color = getattr(Fore, color_settings["text_color"])
             self.ratio_color = getattr(Fore, color_settings["ratio_color"])
             self.metric_value_color = getattr(Fore, color_settings["metric_value_color"])
             self.time_color = getattr(Fore, color_settings["time_color"])
             self.progress_bar_color = getattr(Fore, color_settings["progress_bar_color"])
-
         else:
+            self.coloring_enabled = False
             self.style_reset = False
             self.text_color = ""
             self.ratio_color = ""
@@ -307,7 +308,8 @@ class ColorProgress:
         """
         message = self._pad_length(message)
         sys.stdout.write(message)
-        sys.stdout.flush()
+        if not jupyter or not self.coloring_enabled:
+            sys.stdout.flush()
 
     def _end_print(self, message: str) -> None:
         """

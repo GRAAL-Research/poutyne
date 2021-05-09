@@ -2,7 +2,8 @@
 
 * Add [`LambdaCallback`](https://poutyne.org/callbacks.html#poutyne.LambdaCallback) to more easily define a callback
   from lambdas or functions.
-*
+* In Jupyter Notebooks, when coloring is enabled, `stdout` is not flushed anymore. This solves the slowness problem (and
+  the memory problem on Firefox) when there is a great number of steps per epoch.
 
 # v1.4
 
