@@ -221,3 +221,45 @@ class ProgressionCallback(Callback):
         else:
             func(remaining_time=step_times_rate, batch_number=batch_number, metrics_str=metrics_str, do_print=do_print)
             self.last_step = batch_number
+
+
+class EpochProgressionCallback(Callback):
+    EVERY_N_EPOCHS_CHOICES = ['all', 'none']
+
+    def __init__(self, *, coloring=True, show_every_n_epochs='all') -> None:
+        super().__init__()
+        self.color_progress = ColorProgress(coloring=coloring)
+
+        assert isinstance(show_every_n_epochs, int) or \
+            show_every_n_epochs in EpochProgressionCallback.EVERY_N_EPOCHS_CHOICES
+        self.show_every_n_epochs = show_every_n_epochs
+
+    def set_params(self, params: Dict):
+        super().set_params(params)
+        self._train_steps = self.params['steps']
+        self._valid_steps = self.params.get('valid_steps')
+
+    def on_train_begin(self, logs: Dict) -> None:
+        self.metrics = ['loss'] + self.model.metrics_names
+        self.epochs = self.params['epochs']
+
+    def _test_show_epoch(self, epoch_number):
+        return self.show_every_n_epochs != 'none' and \
+            (self.show_every_n_epochs == 'all' or epoch_number % self.show_every_n_epochs == 0)
+
+    def on_epoch_begin(self, epoch_number: int, logs: Dict) -> None:
+        if self._test_show_epoch(epoch_number):
+            self.color_progress.on_epoch_begin(epoch_number=epoch_number, epochs=self.epochs)
+
+    def on_epoch_end(self, epoch_number: int, logs: Dict) -> None:
+        if self._test_show_epoch(epoch_number):
+            self.color_progress.on_epoch_end(total_time=logs['time'],
+                                             train_last_steps=self._train_steps,
+                                             valid_last_steps=self._valid_steps,
+                                             metrics_str=self._get_metrics_string(logs))
+
+    def _get_metrics_string(self, logs: Dict) -> str:
+        train_metrics_str_gen = ('{}: {:f}'.format(k, logs[k]) for k in self.metrics if logs.get(k) is not None)
+        val_metrics_str_gen = ('{}: {:f}'.format('val_' + k, logs['val_' + k]) for k in self.metrics
+                               if logs.get('val_' + k) is not None)
+        return ', '.join(itertools.chain(train_metrics_str_gen, val_metrics_str_gen))

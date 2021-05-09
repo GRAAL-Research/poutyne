@@ -105,6 +105,7 @@ class EpochIterator:
     """
 
     def __init__(self,
+                 model,
                  train_generator,
                  valid_generator,
                  *,
@@ -115,6 +116,7 @@ class EpochIterator:
                  callback,
                  batch_metrics_names,
                  epoch_metrics_names):
+        self.model = model
         self.train_generator = train_generator
         self.valid_generator = valid_generator
         self.epochs = epochs
@@ -125,7 +127,6 @@ class EpochIterator:
         self.batch_metrics_names = batch_metrics_names
         self.epoch_metrics_names = epoch_metrics_names
         self.epoch_logs = []
-        self.stop_training = False
 
         params = {'epochs': self.epochs, 'steps': self.steps_per_epoch}
         if self.validation_steps is not None:
@@ -184,7 +185,7 @@ class EpochIterator:
 
             self.epoch_logs.append(epoch_log)
 
-            if self.stop_training:
+            if self.model.stop_training:
                 break
 
         self.callback.on_train_end({})
