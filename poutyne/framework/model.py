@@ -558,7 +558,8 @@ class Model:
 
         self.stop_training = False
 
-        epoch_iterator = EpochIterator(train_generator,
+        epoch_iterator = EpochIterator(self,
+                                       train_generator,
                                        valid_generator,
                                        epochs=epochs,
                                        steps_per_epoch=steps_per_epoch,
@@ -611,8 +612,6 @@ class Model:
                 valid_metrics_log.update(valid_step_iterator.metrics_logs)
 
                 callback_list.on_valid_end(valid_metrics_log)
-
-            epoch_iterator.stop_training = self.stop_training
 
     def _fit_batch_n_batches_per_step(self,
                                       x,
@@ -668,8 +667,6 @@ class Model:
                 valid_metrics_log.update(valid_step_iterator.metrics_logs)
 
                 callback_list.on_valid_end(valid_metrics_log)
-
-            epoch_iterator.stop_training = self.stop_training
 
     def _fit_batch(self, x, y, *, callback=Callback(), step=None, return_pred=False):
         self.optimizer.zero_grad()
@@ -1358,7 +1355,7 @@ class Model:
                           "tensor or a Numpy array.\n")
         return 1
 
-    def load_weights(self, f):
+    def load_weights(self, f, strict=True):
         """
         Loads the weights saved using the :func:`torch.save()` method or the :func:`save_weights()` method
         of this class. Contrary to :func:`torch.load()`, the weights are not transfered to the device
@@ -1368,8 +1365,13 @@ class Model:
         Args:
             f: File-like object (has to implement fileno that returns a file descriptor) or string
                 containing a file name.
+
+        Returns:
+            ``NamedTuple`` with ``missing_keys`` and ``unexpected_keys`` fields:
+                * **missing_keys** is a list of str containing the missing keys
+                * **unexpected_keys** is a list of str containing the unexpected keys
         """
-        self.set_weights(torch.load(f, map_location='cpu'))
+        return self.set_weights(torch.load(f, map_location='cpu'), strict=strict)
 
     def save_weights(self, f):
         """
@@ -1468,14 +1470,19 @@ class Model:
             weights[k] = weights[k].cpu().clone()
         return weights
 
-    def set_weights(self, weights):
+    def set_weights(self, weights, strict=True):
         """
         Modifies the weights of the network with the given weights.
 
         Args:
             weights (dict): Weights returned by either :func:`get_weights()` or :func:`get_weight_copies()`.
+
+        Returns:
+            ``NamedTuple`` with ``missing_keys`` and ``unexpected_keys`` fields:
+                * **missing_keys** is a list of str containing the missing keys
+                * **unexpected_keys** is a list of str containing the unexpected keys
         """
-        self.network.load_state_dict(weights)
+        return self.network.load_state_dict(weights, strict=strict)
 
     def cuda(self, *args, **kwargs):
         """

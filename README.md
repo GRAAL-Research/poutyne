@@ -168,6 +168,7 @@ Look at notebook files with full working [examples](https://github.com/GRAAL-Res
 * [policy_interface.ipynb](https://github.com/GRAAL-Research/poutyne/blob/master/examples/policy_interface.ipynb) - example of policies
 * [image_reconstruction.ipynb](https://github.com/GRAAL-Research/poutyne/blob/master/examples/image_reconstruction.ipynb) - example of image reconstruction
 * [classification_and_regression.ipynb](https://github.com/GRAAL-Research/poutyne/blob/master/examples/classification_and_regression.ipynb) - example of classification and regression
+* [semantic_segmentation.ipynb](https://github.com/GRAAL-Research/poutyne/blob/master/examples/semantic_segmentation.ipynb) - example of semantic segmentation
 
 or in ``Google Colab``:
 
@@ -178,6 +179,7 @@ or in ``Google Colab``:
 * [policy_interface.ipynb](https://colab.research.google.com/github/GRAAL-Research/poutyne/blob/master/examples/policy_interface.ipynb) - example of policies
 * [image_reconstruction.ipynb](https://colab.research.google.com/github/GRAAL-Research/poutyne/blob/master/examples/image_reconstruction.ipynb) - example of image reconstruction
 * [classification_and_regression.ipynb](https://colab.research.google.com/github/GRAAL-Research/poutyne/blob/master/examples/classification_and_regression.ipynb) - example of classification and regression
+* [semantic_segmentation.ipynb](https://colab.research.google.com/github/GRAAL-Research/poutyne/blob/master/examples/semantic_segmentation.ipynb) - example of semantic segmentation
 
 ### Videos
 

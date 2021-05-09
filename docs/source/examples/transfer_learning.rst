@@ -12,21 +12,20 @@ But first, let's import all the needed packages.
 
 .. code-block:: python
 
-    import math
     import os
     import tarfile
     import urllib.request
-    from shutil import copyfile
 
     import matplotlib.pyplot as plt
     import numpy as np
     import pandas as pd
+    from sklearn.model_selection import train_test_split
     import torch
     import torch.nn as nn
     import torch.optim as optim
     import torchvision.models as models
     from torch.utils import model_zoo
-    from torch.utils.data import DataLoader
+    from torch.utils.data import Subset, DataLoader
     from torchvision import transforms
     from torchvision.datasets import ImageFolder
 
@@ -39,6 +38,7 @@ Also, we need to set Pythons's, NumPy's and PyTorch's seeds by using Poutyne fun
 
     set_seeds(42)
 
+We download the dataset.
 
 .. code-block:: python
 
@@ -54,54 +54,46 @@ Also, we need to set Pythons's, NumPy's and PyTorch's seeds by using Poutyne fun
 
 .. code-block:: python
 
-    def copy(source_path, filenames, dest_path):
-        for filename in filenames:
-            source = os.path.join(source_path, filename)
-            dest = os.path.join(dest_path, filename)
-            copyfile(source, dest)
+        base_path = './datasets/CUB200'
+        extract_dest = os.path.join(base_path, 'images')
+        download_and_extract_dataset(base_path)
 
-    def split_train_valid_test(dataset_path, train_path, valid_path, test_path, train_split=0.6, valid_split=0.2): # test_split=0.2
-        for classname in sorted(os.listdir(dataset_path)):
-            if classname.startswith('.'):
-                continue
-            train_class_path = os.path.join(train_path, classname)
-            valid_class_path = os.path.join(valid_path, classname)
-            test_class_path = os.path.join(test_path, classname)
-
-            os.makedirs(train_class_path, exist_ok=True)
-            os.makedirs(valid_class_path, exist_ok=True)
-            os.makedirs(test_class_path, exist_ok=True)
-
-            dataset_class_path = os.path.join(dataset_path, classname)
-            filenames = sorted(filename for filename in os.listdir(dataset_class_path) if not filename.startswith('.'))
-            np.random.shuffle(filenames)
-
-            num_examples = len(filenames)
-            train_last_idx = math.ceil(num_examples*train_split)
-            valid_last_idx = train_last_idx + math.floor(num_examples*valid_split)
-            train_filenames = filenames[0:train_last_idx]
-            valid_filenames = filenames[train_last_idx:valid_last_idx]
-            test_filenames = filenames[valid_last_idx:]
-            copy(dataset_class_path, train_filenames, train_class_path)
-            copy(dataset_class_path, valid_filenames, valid_class_path)
-            copy(dataset_class_path, test_filenames, test_class_path)
-
-
-We do the split train/valid/test.
+We create our dataset object.
 
 .. code-block:: python
 
-    base_path = './datasets/CUB200'
-    dataset_path = os.path.join(base_path, 'images')
-    train_path = os.path.join(base_path, 'train')
-    valid_path = os.path.join(base_path, 'valid')
-    test_path = os.path.join(base_path, 'test')
+    norm_coefs = {}
+    norm_coefs['cub200'] = [(0.47421962,  0.4914721 ,  0.42382449), (0.22846779,  0.22387765,  0.26495799)]
+    norm_coefs['imagenet'] = [(0.485, 0.456, 0.406), (0.229, 0.224, 0.225)]
+    transform = transforms.Compose([
+        transforms.Resize((224,224)),
+        transforms.ToTensor(),
+        transforms.Normalize(*norm_coefs['cub200'])
+    ])
+
+    # is_valid_file removes hidden files from the dataset.
+    dataset = ImageFolder(extract_dest, transform=transform,
+                        is_valid_file=lambda path: not os.path.split(path)[1].startswith('.'))
+
+We do the split train/valid/test with a 60/20/20 split respectively. We do a *stratified* split with scikit-learn in order to get examples of every class in every split.
 
 .. code-block:: python
 
-    download_and_extract_dataset(base_path)
-    split_train_valid_test(dataset_path, train_path, valid_path, test_path)
+    # We take 60% of the dataset for the training dataset
+    train_indices, valid_test_indices = train_test_split(np.arange(len(dataset)),
+                                                        train_size=0.6,
+                                                        stratify=dataset.targets,
+                                                        random_state=42)
+    # We take 20% for the validation dataset and 20% for the test dataset
+    # (i.e. 50% of the remaining 40%).
+    valid_indices, test_indices = train_test_split(valid_test_indices,
+                                                train_size=0.5,
+                                                stratify=np.asarray(dataset.targets)[valid_test_indices],
+                                                random_state=42)
 
+    train_dataset = Subset(dataset, train_indices)
+    valid_dataset = Subset(dataset, valid_indices)
+    test_dataset = Subset(dataset, test_indices)
 
 Now, let's set our training constants. We first have the CUDA device used for training if one is present. Second, we set the number of classes (i.e. one for each number). Finally, we set the batch size (i.e. the number of elements to see before updating the model), the learning rate for the optimizer, and the number of epochs (i.e. the number of times we see the full dataset).
 
@@ -116,27 +108,13 @@ Now, let's set our training constants. We first have the CUDA device used for tr
     n_epoch = 30
 
 
-Creation of the PyTorch's datasets for our problem.
+Creation of the PyTorch's dataloader to split our data into batches.
 
 .. code-block:: python
 
-    norm_coefs = {}
-    norm_coefs['cub200'] = [(0.47421962,  0.4914721 ,  0.42382449), (0.22846779,  0.22387765,  0.26495799)]
-    norm_coefs['imagenet'] = [(0.485, 0.456, 0.406), (0.229, 0.224, 0.225)]
-    transform = transforms.Compose([
-        transforms.Resize((224,224)),
-        transforms.ToTensor(),
-        transforms.Normalize(*norm_coefs['cub200'])
-    ])
-
-    train_set = ImageFolder(train_path, transform=transform)
-    valid_set = ImageFolder(valid_path, transform=transform)
-    test_set = ImageFolder(test_path, transform=transform)
-
-    train_loader = DataLoader(train_set, batch_size=batch_size, num_workers=8, shuffle=True)
-    valid_loader = DataLoader(valid_set, batch_size=batch_size, num_workers=8)
-    test_loader = DataLoader(test_set, batch_size=batch_size, num_workers=8)
-
+    train_loader = DataLoader(train_dataset, batch_size=batch_size, num_workers=8, shuffle=True)
+    valid_loader = DataLoader(valid_dataset, batch_size=batch_size, num_workers=8)
+    test_loader = DataLoader(test_dataset, batch_size=batch_size, num_workers=8)
 
 We load a pretrained ``ResNet-18`` networks and replace the head with the number of neurons equal to our number of classes.
 

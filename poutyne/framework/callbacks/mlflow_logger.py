@@ -17,8 +17,6 @@ try:
 except ImportError:
     git = None
 
-warnings.filterwarnings("ignore")
-
 
 class MLFlowLogger(Logger):
     """

@@ -17,9 +17,13 @@ class Logger(Callback):
         metrics = ['loss'] + self.model.metrics_names
 
         if self.batch_granularity:
-            self.fieldnames = ['epoch', 'batch', 'size', 'time', 'lr']
+            self.fieldnames = ['epoch', 'batch', 'size', 'time']
         else:
-            self.fieldnames = ['epoch', 'time', 'lr']
+            self.fieldnames = ['epoch', 'time']
+        if len(self.model.optimizer.param_groups) > 1:
+            self.fieldnames += [f'lr_group_{i}' for i in range(len(self.model.optimizer.param_groups))]
+        else:
+            self.fieldnames += ['lr']
         self.fieldnames += metrics
         self.fieldnames += ['val_' + metric for metric in metrics]
         self._on_train_begin_write(logs)
@@ -59,8 +63,14 @@ class Logger(Callback):
         return {k: logs[k] for k in self.fieldnames if logs.get(k) is not None}
 
     def _get_current_learning_rates(self):
-        learning_rates = [param_group['lr'] for param_group in self.model.optimizer.param_groups]
-        return learning_rates[0] if len(learning_rates) == 1 else learning_rates
+        if len(self.model.optimizer.param_groups) > 1:
+            learning_rates = {
+                f'lr_group_{i}': param_group['lr']
+                for i, param_group in enumerate(self.model.optimizer.param_groups)
+            }
+        else:
+            learning_rates = {'lr': self.model.optimizer.param_groups[0]['lr']}
+        return learning_rates
 
 
 class CSVLogger(Logger):
@@ -96,7 +106,7 @@ class CSVLogger(Logger):
         self.csvfile.flush()
 
     def _on_epoch_end_write(self, epoch_number: int, logs: Dict):
-        self.writer.writerow(dict(logs, lr=self._get_current_learning_rates()))
+        self.writer.writerow({**logs, **self._get_current_learning_rates()})
         self.csvfile.flush()
 
     def _on_train_end_write(self, logs: Dict):
@@ -155,7 +165,7 @@ class AtomicCSVLogger(Logger):
         atomic_lambda_save(self.filename, self._save_log, (logs, ), temporary_filename=self.temporary_filename)
 
     def _on_epoch_end_write(self, epoch_number: int, logs: Dict):
-        logs = dict(logs, lr=self._get_current_learning_rates())
+        logs = {**logs, **self._get_current_learning_rates()}
         atomic_lambda_save(self.filename, self._save_log, (logs, ), temporary_filename=self.temporary_filename)
 
 
@@ -204,10 +214,7 @@ class TensorBoardLogger(Logger):
         for k, v in grouped_items.items():
             self.writer.add_scalars(k, v, epoch_number)
         lr = self._get_current_learning_rates()
-        if isinstance(lr, (list, )):
-            self.writer.add_scalars('lr', {str(i): v for i, v in enumerate(lr)}, epoch_number)
-        else:
-            self.writer.add_scalars('lr', {'lr': lr}, epoch_number)
+        self.writer.add_scalars('lr', lr, epoch_number)
 
     def _on_train_end_write(self, logs: Dict):
         self.writer.close()

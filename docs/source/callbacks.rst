@@ -22,6 +22,8 @@ Callback class
 .. autoclass:: Callback
     :members:
 
+.. autoclass:: LambdaCallback
+
 Poutyne's Callbacks
 -------------------
 
