@@ -80,9 +80,8 @@ The section below consists of a few lines of codes that help us download celebA 
     attr_path = f'{data_root}/list_attr_celeba.txt'
 
     # Create required directories 
-    if not os.path.exists(data_root):
-    os.makedirs(data_root)
-    os.makedirs(dataset_folder)
+    os.makedirs(data_root, exist_ok=True)
+    os.makedirs(dataset_folder, exist_ok=True)
 
     # Download the dataset from the source
     gdown.download(url, download_path, quiet=False)
@@ -91,7 +90,7 @@ The section below consists of a few lines of codes that help us download celebA 
 
     # Unzip the downloaded file 
     with zipfile.ZipFile(download_path, 'r') as ziphandler:
-    ziphandler.extractall(dataset_folder)
+        ziphandler.extractall(dataset_folder)
    
 Create a custom dataset class
 =============================
@@ -176,8 +175,8 @@ Here, we can see an example from the training dataset. It shows an image of a pe
     (x2, y2) = train_dataset[sample_number][1][1][2:4]
     x1, x2 = int(x1*h), int(x2*h)
     y1, y2 = int(y1*w), int(y2*w)
-    image_rgb	=	cv2.drawMarker(image_rgb, (x1,y1), (0,255,0))
-    image_rgb	=	cv2.drawMarker(image_rgb, (x2,y2), (0,255,0))
+    image_rgb = cv2.drawMarker(image_rgb, (x1,y1), (0,255,0))
+    image_rgb = cv2.drawMarker(image_rgb, (x2,y2), (0,255,0))
     image_rgb = np.clip(image_rgb , 0, 1)
     plt.imshow(image_rgb)
     plt.axis('off')
@@ -236,9 +235,9 @@ As we discussed before, we have two different tasks in this example. These tasks
 
 .. code-block:: python
 
-    class classification_regression_Loss(nn.Module):
+    class ClassificationRegressionLoss(nn.Module):
         def __init__(self):
-            super(classification_regression_Loss, self).__init__()
+            super(ClassificationRegressionLoss, self).__init__()
             self.ce_loss = nn.CrossEntropyLoss() # size_average=False
             self.mse_loss = nn.MSELoss()
             
@@ -254,7 +253,7 @@ Training
 .. code-block:: python
 
     optimizer = optim.Adam(network.parameters(), lr=0.0001, weight_decay=0)
-    loss_function = classification_regression_Loss()
+    loss_function = ClassificationRegressionLoss()
     #Step_Learning_Rate = StepLR(step_size=2 , gamma=0.1, last_epoch=-1, verbose=False)
     exp = Experiment('./two_task_example', network, optimizer=optimizer, loss_function=loss_function, device="all")
     exp.train(train_dataloader, valid_dataloader, callbacks=callbacks, epochs=num_epochs)
@@ -314,8 +313,8 @@ Now let's evaluate the performance of the network visually.
     (x2, y2) = predictions[1][sample_number][2:4]
     x1, x2 = int(x1*h), int(x2*h)
     y1, y2 = int(y1*w), int(y2*w)
-    image_rgb	=	cv2.drawMarker(image_rgb, (x1,y1), (0,255,0))
-    image_rgb	=	cv2.drawMarker(image_rgb, (x2,y2), (0,255,0))
+    image_rgb = cv2.drawMarker(image_rgb, (x1,y1), (0,255,0))
+    image_rgb = cv2.drawMarker(image_rgb, (x2,y2), (0,255,0))
     image_rgb = np.clip(image_rgb , 0, 1)
     plt.imshow(image_rgb)
     plt.axis('off')
