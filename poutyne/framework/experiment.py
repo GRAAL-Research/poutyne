@@ -818,10 +818,8 @@ class Experiment:
               name='test',
               verbose=True,
               **kwargs) -> Dict:
-        if kwargs.get('return_ground_truth') is True or kwargs.get('return_pred') is True:
-            raise ValueError("This method does not return predictions or ground truth data.")
         if kwargs.get('return_dict_format') is False:
-            raise ValueError("This method return a dict.")
+            raise ValueError("This method only returns a dict.")
         kwargs['return_dict_format'] = True
 
         set_seeds(seed)
@@ -831,9 +829,10 @@ class Experiment:
 
         if verbose:
             print(f"Running {name}")
-        test_metrics_dict = evaluate_func(*args, **kwargs, verbose=verbose)
+        ret = evaluate_func(*args, **kwargs, verbose=verbose)
 
         if self.logging:
+            test_metrics_dict = ret[0] if isinstance(ret, tuple) else ret
             test_stats = pd.DataFrame([list(test_metrics_dict.values())], columns=list(test_metrics_dict.keys()))
             test_stats.drop(['time'], axis=1, inplace=True)
             if best_epoch_stats is not None:
@@ -841,4 +840,4 @@ class Experiment:
                 test_stats = best_epoch_stats.join(test_stats)
             test_stats.to_csv(self.test_log_filename.format(name=name), sep='\t', index=False)
 
-        return test_metrics_dict
+        return ret

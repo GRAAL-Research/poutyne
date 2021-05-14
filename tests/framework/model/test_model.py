@@ -461,6 +461,19 @@ class ModelTest(ModelFittingTestCase):
         self.assertEqual(type(metrics), np.ndarray)
         self.assertEqual(metrics.tolist(), self.batch_metrics_values)
 
+    def test_train_on_batch_with_return_dict(self):
+        x = torch.rand(ModelTest.batch_size, 1)
+        y = torch.rand(ModelTest.batch_size, 1)
+        logs = self.model.train_on_batch(x, y, return_dict_format=True)
+        self.assertEqual(set(logs.keys()), set(['loss'] + self.batch_metrics_names))
+
+    def test_train_on_batch_with_return_dict_and_pred(self):
+        x = torch.rand(ModelTest.batch_size, 1)
+        y = torch.rand(ModelTest.batch_size, 1)
+        logs, pred_y = self.model.train_on_batch(x, y, return_dict_format=True, return_pred=True)
+        self.assertEqual(set(logs.keys()), set(['loss'] + self.batch_metrics_names))
+        self.assertEqual(pred_y.shape, (ModelTest.batch_size, 1))
+
     def test_evaluate(self):
         x = torch.rand(ModelTest.evaluate_dataset_len, 1)
         y = torch.rand(ModelTest.evaluate_dataset_len, 1)
@@ -493,6 +506,18 @@ class ModelTest(ModelFittingTestCase):
         logs = self.model.evaluate(x, y, batch_size=ModelTest.batch_size, return_dict_format=True)
 
         self._test_return_dict_logs(logs)
+
+    def test_evaluate_with_return_dict_and_pred(self):
+        x = torch.rand(ModelTest.evaluate_dataset_len, 1)
+        y = torch.rand(ModelTest.evaluate_dataset_len, 1)
+        logs, pred_y = self.model.evaluate(x,
+                                           y,
+                                           batch_size=ModelTest.batch_size,
+                                           return_dict_format=True,
+                                           return_pred=True)
+
+        self._test_return_dict_logs(logs)
+        self.assertEqual(pred_y.shape, (ModelTest.evaluate_dataset_len, 1))
 
     def test_evaluate_with_np_array(self):
         x = np.random.rand(ModelTest.evaluate_dataset_len, 1).astype(np.float32)
@@ -545,6 +570,45 @@ class ModelTest(ModelFittingTestCase):
         logs = self.model.evaluate_generator(generator, steps=num_steps, return_dict_format=True)
 
         self._test_return_dict_logs(logs)
+
+    def test_evaluate_generator_with_return_dict_and_pred(self):
+        num_steps = 10
+        generator = some_data_tensor_generator(ModelTest.batch_size)
+        logs, pred_y = self.model.evaluate_generator(generator,
+                                                     steps=num_steps,
+                                                     return_dict_format=True,
+                                                     return_pred=True)
+
+        self._test_return_dict_logs(logs)
+        self.assertEqual(type(pred_y), np.ndarray)
+        self.assertEqual(pred_y.shape, (num_steps * ModelTest.batch_size, 1))
+
+    def test_evaluate_generator_with_return_dict_and_ground_truth(self):
+        num_steps = 10
+        generator = some_data_tensor_generator(ModelTest.batch_size)
+        logs, true_y = self.model.evaluate_generator(generator,
+                                                     steps=num_steps,
+                                                     return_dict_format=True,
+                                                     return_ground_truth=True)
+
+        self._test_return_dict_logs(logs)
+        self.assertEqual(type(true_y), np.ndarray)
+        self.assertEqual(true_y.shape, (num_steps * ModelTest.batch_size, 1))
+
+    def test_evaluate_generator_with_return_dict_and_pred_and_ground_truth(self):
+        num_steps = 10
+        generator = some_data_tensor_generator(ModelTest.batch_size)
+        logs, pred_y, true_y = self.model.evaluate_generator(generator,
+                                                             steps=num_steps,
+                                                             return_dict_format=True,
+                                                             return_pred=True,
+                                                             return_ground_truth=True)
+
+        self._test_return_dict_logs(logs)
+        self.assertEqual(type(pred_y), np.ndarray)
+        self.assertEqual(type(true_y), np.ndarray)
+        self.assertEqual(pred_y.shape, (num_steps * ModelTest.batch_size, 1))
+        self.assertEqual(true_y.shape, (num_steps * ModelTest.batch_size, 1))
 
     def test_evaluate_generator_with_ground_truth(self):
         num_steps = 10
@@ -653,6 +717,19 @@ class ModelTest(ModelFittingTestCase):
         self.assertEqual(type(loss), float)
         self.assertEqual(type(metrics), np.ndarray)
         self.assertEqual(metrics.tolist(), self.batch_metrics_values)
+
+    def test_evaluate_on_batch_with_return_dict(self):
+        x = torch.rand(ModelTest.batch_size, 1)
+        y = torch.rand(ModelTest.batch_size, 1)
+        logs = self.model.evaluate_on_batch(x, y, return_dict_format=True)
+        self.assertEqual(set(logs.keys()), set(['loss'] + self.batch_metrics_names))
+
+    def test_evaluate_on_batch_with_return_dict_and_pred(self):
+        x = torch.rand(ModelTest.batch_size, 1)
+        y = torch.rand(ModelTest.batch_size, 1)
+        logs, pred_y = self.model.evaluate_on_batch(x, y, return_dict_format=True, return_pred=True)
+        self.assertEqual(set(logs.keys()), set(['loss'] + self.batch_metrics_names))
+        self.assertEqual(pred_y.shape, (ModelTest.batch_size, 1))
 
     def test_predict(self):
         x = torch.rand(ModelTest.evaluate_dataset_len, 1)
@@ -937,6 +1014,45 @@ class ModelDatasetMethodsTest(ModelFittingTestCase):
                                            batch_size=ModelTest.batch_size,
                                            steps=num_steps,
                                            return_dict_format=True)
+        self._test_return_dict_logs(logs)
+
+    def test_evaluate_dataset_with_return_dict_and_pred(self):
+        num_steps = 10
+        logs, pred_y = self.model.evaluate_dataset(self.test_dataset,
+                                                   batch_size=ModelTest.batch_size,
+                                                   steps=num_steps,
+                                                   return_dict_format=True,
+                                                   return_pred=True)
+
+        self.assertEqual(type(pred_y), np.ndarray)
+        self.assertEqual(pred_y.shape, (num_steps * ModelTest.batch_size, 10))
+        self._test_return_dict_logs(logs)
+
+    def test_evaluate_dataset_with_return_dict_and_ground_truth(self):
+        num_steps = 10
+        logs, true_y = self.model.evaluate_dataset(self.test_dataset,
+                                                   batch_size=ModelTest.batch_size,
+                                                   steps=num_steps,
+                                                   return_dict_format=True,
+                                                   return_ground_truth=True)
+
+        self.assertEqual(type(true_y), np.ndarray)
+        self.assertEqual(true_y.shape, (num_steps * ModelTest.batch_size, ))
+        self._test_return_dict_logs(logs)
+
+    def test_evaluate_dataset_with_return_dict_and_pred_and_ground_truth(self):
+        num_steps = 10
+        logs, pred_y, true_y = self.model.evaluate_dataset(self.test_dataset,
+                                                           batch_size=ModelTest.batch_size,
+                                                           steps=num_steps,
+                                                           return_dict_format=True,
+                                                           return_pred=True,
+                                                           return_ground_truth=True)
+
+        self.assertEqual(type(pred_y), np.ndarray)
+        self.assertEqual(type(true_y), np.ndarray)
+        self.assertEqual(pred_y.shape, (num_steps * ModelTest.batch_size, 10))
+        self.assertEqual(true_y.shape, (num_steps * ModelTest.batch_size, ))
         self._test_return_dict_logs(logs)
 
     def test_evaluate_dataset_with_ground_truth(self):

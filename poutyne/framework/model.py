@@ -668,7 +668,7 @@ class Model:
 
         return (x, y) if y is not None else x
 
-    def train_on_batch(self, x, y, return_pred=False):
+    def train_on_batch(self, x, y, return_pred=False, return_dict_format=False):
         """
         Trains the network for the batch ``(x, y)`` and computes the loss and the metrics, and
         optionally returns the predictions.
@@ -677,6 +677,8 @@ class Model:
             x: Input data as a batch.
             y: Target data as a batch.
             return_pred (bool, optional): Whether to return the predictions.
+                (Default value = False)
+            return_dict_format (bool, optional): Whether to return the loss and metrics in a dict format or not.
                 (Default value = False)
 
         Returns:
@@ -690,6 +692,9 @@ class Model:
             Tuple ``(loss, metrics, pred_y)`` if ``return_pred`` is true where
             ``pred_y`` is the predictions with tensors converted into Numpy
             arrays.
+
+            If ``return_dict_format`` is True, then ``loss, metrics`` are replaced by a
+            dictionnary.
         """
         if self.optimizer is None:
             raise ValueError("Impossible to fit when optimizer is None.")
@@ -697,21 +702,32 @@ class Model:
         with self._set_training_mode(True):
             self._transfer_optimizer_state_to_right_device()
             loss, metrics, pred_y = self._fit_batch(x, y, return_pred=return_pred)
-        return self._format_return(loss, metrics, pred_y, return_pred)
 
-    def _format_return(self, loss, metrics, pred_y, return_pred, true_y=None, return_ground_truth=False):
+        if return_dict_format:
+            logs = dict(loss=loss)
+            logs.update(zip(self.batch_metrics_names, metrics))
+
+            return self._format_truth_pred_return((logs, ), pred_y, return_pred)
+
+        return self._format_loss_metrics_return(loss, metrics, pred_y, return_pred)
+
+    def _format_loss_metrics_return(self, loss, metrics, pred_y, return_pred, true_y=None, return_ground_truth=False):
         # pylint: disable=too-many-arguments
         ret = (loss, )
 
         ret += tuple(metrics.tolist()) if len(metrics) <= 1 else (metrics, )
 
+        return self._format_truth_pred_return(ret, pred_y, return_pred, true_y, return_ground_truth)
+
+    def _format_truth_pred_return(self, init, pred_y, return_pred, true_y=None, return_ground_truth=False):
+        # pylint: disable=too-many-arguments
         if return_pred:
-            ret += (pred_y, )
+            init += (pred_y, )
 
         if return_ground_truth:
-            ret += (true_y, )
+            init += (true_y, )
 
-        return ret[0] if len(ret) == 1 else ret
+        return init[0] if len(init) == 1 else init
 
     def predict(self, x, *, batch_size=32, dataloader_kwargs=None):
         """
@@ -1150,12 +1166,13 @@ class Model:
         callback_list.on_test_end(test_metrics_log)
 
         if return_dict_format:
-            return test_metrics_log
+            return self._format_truth_pred_return((test_metrics_log, ), pred_y, return_pred, true_y,
+                                                  return_ground_truth)
 
         metrics = np.concatenate((batch_metrics, step_iterator.epoch_metrics))
-        return self._format_return(loss, metrics, pred_y, return_pred, true_y, return_ground_truth)
+        return self._format_loss_metrics_return(loss, metrics, pred_y, return_pred, true_y, return_ground_truth)
 
-    def evaluate_on_batch(self, x, y, *, return_pred=False):
+    def evaluate_on_batch(self, x, y, *, return_pred=False, return_dict_format=False):
         """
         Computes the loss and the metrics of the network on a single batch of samples and optionally
         returns the predictions.
@@ -1164,6 +1181,8 @@ class Model:
             x: Input data as a batch.
             y: Target data as a batch.
             return_pred (bool, optional): Whether to return the predictions for ``batch``.
+                (Default value = False)
+            return_dict_format (bool, optional): Whether to return the loss and metrics in a dict format or not.
                 (Default value = False)
 
         Returns:
@@ -1176,10 +1195,20 @@ class Model:
 
             If ``return_pred`` is True, ``pred_y`` is the list of the predictions
             of each batch with tensors converted into Numpy arrays. It is otherwise ommited.
+
+            If ``return_dict_format`` is True, then ``loss, metrics`` are replaced by a
+            dictionnary.
         """
         with self._set_training_mode(False):
             loss, metrics, pred_y = self._compute_loss_and_metrics(x, y, return_pred=return_pred)
-        return self._format_return(loss, metrics, pred_y, return_pred)
+
+        if return_dict_format:
+            logs = dict(loss=loss)
+            logs.update(zip(self.batch_metrics_names, metrics))
+
+            return self._format_truth_pred_return((logs, ), pred_y, return_pred)
+
+        return self._format_loss_metrics_return(loss, metrics, pred_y, return_pred)
 
     def _validate(self, step_iterator, return_pred=False, return_ground_truth=False):
         pred_list = None

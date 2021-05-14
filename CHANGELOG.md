@@ -4,6 +4,9 @@
   from lambdas or functions.
 * In Jupyter Notebooks, when coloring is enabled, `stdout` is not flushed anymore. This solves the slowness problem (and
   the memory problem on Firefox) when there is a great number of steps per epoch.
+* Add `return_dict_format` argument to `train_on_batch` and `evaluate_on_batch` and allows to return predictions and
+  ground truths in `evaluate_*` even when `return_dict_format=True`. Furthermore, `experiment.test*` now support
+  `return_pred=True` and `return_ground_truth=True`.
 
 # v1.4
 
