@@ -18,6 +18,7 @@ def get_optimizer(optimizer, module):
     if isinstance(optimizer, (str, dict)):
         kwargs = {}
         if isinstance(optimizer, dict):
+            optimizer = dict(optimizer)
             kwargs = optimizer
             optimizer = optimizer.pop('optim')
 
