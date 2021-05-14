@@ -301,12 +301,9 @@ class ColorProgress:
         if not jupyter or not self.coloring_enabled:
             return True
 
-        if self.prev_print_time is None:
-            self.prev_print_time = time.time()
-            return True
-
         new_time = time.time()
-        if new_time - self.prev_print_time >= ColorProgress.JUPYTER_COLORING_PRINT_RATE:
+        if self.prev_print_time is None or \
+                new_time - self.prev_print_time >= ColorProgress.JUPYTER_COLORING_PRINT_RATE:
             self.prev_print_time = new_time
             return True
 
@@ -336,4 +333,5 @@ class ColorProgress:
         message = self._pad_length(message)
         print(message)
         sys.stdout.flush()
+        self.prev_print_time = None
         self.prev_message_length = 0
