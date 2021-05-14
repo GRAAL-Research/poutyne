@@ -1,3 +1,4 @@
+import time
 import math
 import sys
 import warnings
@@ -52,6 +53,7 @@ default_color_settings = {
 
 
 class ColorProgress:
+    JUPYTER_COLORING_PRINT_RATE = 0.1
     """
     Class to managed the color templating of the training progress.
 
@@ -109,6 +111,7 @@ class ColorProgress:
         self.steps_progress_bar = None
         self.formatted_text = "\r"
         self.bar_format = f"{self.text_color}{{percentage}} |{self.progress_bar_color}{{bar}}{self.text_color}|"
+        self.prev_print_time = None
         self.prev_message_length = 0
 
     def on_valid_begin(self) -> None:
@@ -235,11 +238,11 @@ class ColorProgress:
     def _get_formatted_total_time(self, total_time: float) -> str:
         return f"{self.time_color}{total_time:.2f}s "
 
-    def _get_formatted_time(self, time: float, steps: Union[int, None]) -> str:
+    def _get_formatted_time(self, duration: float, steps: Union[int, None]) -> str:
         if steps is None:
-            formatted_time = f"{self.time_color}{time:.2f}s/step "
+            formatted_time = f"{self.time_color}{duration:.2f}s/step "
         else:
-            formatted_time = f"{self.text_color}ETA: {self.time_color}{time:.2f}s "
+            formatted_time = f"{self.text_color}ETA: {self.time_color}{duration:.2f}s "
         return formatted_time
 
     def _get_formatted_step(self,
@@ -294,6 +297,21 @@ class ColorProgress:
 
         return update
 
+    def _do_update(self):
+        if not jupyter or not self.coloring_enabled:
+            return True
+
+        if self.prev_print_time is None:
+            self.prev_print_time = time.time()
+            return True
+
+        new_time = time.time()
+        if new_time - self.prev_print_time >= ColorProgress.JUPYTER_COLORING_PRINT_RATE:
+            self.prev_print_time = new_time
+            return True
+
+        return False
+
     def _pad_length(self, message):
         new_message_length = len(message)
         if new_message_length < self.prev_message_length:
@@ -306,9 +324,9 @@ class ColorProgress:
         """
         Print a update message.
         """
-        message = self._pad_length(message)
-        sys.stdout.write(message)
-        if not jupyter or not self.coloring_enabled:
+        if self._do_update():
+            message = self._pad_length(message)
+            sys.stdout.write(message)
             sys.stdout.flush()
 
     def _end_print(self, message: str) -> None:
