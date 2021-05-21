@@ -242,7 +242,6 @@ API Reference
   examples/introduction
   examples/tips_and_tricks
   examples/policy_interface
-  examples/train_with_policy_module
   examples/transfer_learning
   examples/image_reconstruction
   examples/semantic_segmentation
