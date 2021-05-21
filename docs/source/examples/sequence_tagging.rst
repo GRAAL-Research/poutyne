@@ -322,8 +322,8 @@ Now that we have all the components for the network let's train our model.
     loss_function = nn.CrossEntropyLoss()
 
     model = Model(full_network, optimizer, loss_function,
-                batch_metrics=['accuracy'],
-                device=device)
+                  batch_metrics=['accuracy'],
+                  device=device)
 
     model.fit_generator(train_loader, valid_loader, epochs=10)
 
@@ -390,23 +390,25 @@ We need to change a little the ``pad_collate_fn`` since we also pad the labels.
     predict_loader = DataLoader(predict_data_vectorized,
                                 batch_size=batch_size,
                                 collate_fn=pad_collate_fn_predict,
-                            num_workers=2)
+                                num_workers=2)
 
-Now, let's predict using the ``predict_generator`` but without concatenating the returns since batches are not always the same size.
+Now, let's predict using the :meth:`predict_generator <poutyne.Model.predict_generator>` but without concatenating the returns since batches are not always the same size.
 
 .. code-block:: python
 
     predictions = model.predict_generator(predict_loader, concatenate_returns=False)
 
-    # or using the predict dataset
+Or using the :meth:`predict_dataset <poutyne.Model.predict_dataset>` method:
 
-    # predictions = model.predict_dataset(predict_data_vectorized,
-    #                                     batch_size=batch_size,
-    #                                     collate_fn=pad_collate_fn_predict,
-    #                                     num_workers=2,
-    #                                     concatenate_returns=False)
+.. code-block:: python
 
-But, as you can see, we have log probabilities of our model, so we need to take the topk probability per address element.
+    predictions = model.predict_dataset(predict_data_vectorized,
+                                        batch_size=batch_size,
+                                        collate_fn=pad_collate_fn_predict,
+                                        num_workers=2,
+                                        concatenate_returns=False)
+
+But, as you can see, we have log probabilities of our model, so we need to take the highest probability per address element.
 
 .. code-block:: python
 
