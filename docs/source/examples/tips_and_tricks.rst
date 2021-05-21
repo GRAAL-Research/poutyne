@@ -4,15 +4,13 @@
 .. _tips_and_tricks:
 
 Tips and Tricks
-*************************
+***************
 
 .. note::
     - See the notebook `here <https://github.com/GRAAL-Research/poutyne/blob/master/examples/tips_and_tricks.ipynb>`_
     - Run in `Google Colab <https://colab.research.google.com/github/GRAAL-Research/poutyne/blob/master/examples/tips_and_tricks.ipynb>`_
 
-Poutyne also over a variety of tools for fine-tuning the information generated during the training, such as colouring the training update message, a progress bar, multi-GPUs, user callbacks interface and a user naming interface for the metrics' names.
-
-We will explore those tools using a different problem than the one presented in :ref:`intro`
+Poutyne over a variety of tools for fine-tuning the information generated during the training, such as colouring the training update message, a progress bar, multi-GPUs, user callbacks interface and a user naming interface for the metrics' names.
 
 Let's import all the needed packages.
 
@@ -34,287 +32,165 @@ Let's import all the needed packages.
     from poutyne import set_seeds, Model, ModelCheckpoint, CSVLogger, Callback, SKLearnMetrics
 
 
-Also, we need to set Pythons's, NumPy's and PyTorch's seeds by using Poutyne function so that our training is (almost) reproducible.
+Hyperparameters, Dataset and Network
+====================================
 
-.. code-block:: python
+In this section, we setup the hyperparameters, dataset and network we will use throughout these tips and tricks.
 
-    set_seeds(42)
+Training Constants
+------------------
 
-
-Train a Recurrent Neural Network (RNN)
-======================================
-
-In this notebook, we train an RNN, or more precisely, an LSTM, to predict the sequence of tags associated with a given address, known as parsing address.
-
-This task consists of detecting, by tagging, the different parts of an address such as the civic number, the street name or the postal code (or zip code). The following figure shows an example of such a tagging.
-
-.. image:: /_static/img/address_parsing.png
-
-Since addresses are written in a predetermined sequence, RNN is the best way to crack this problem. For our architecture, we will use two components, an RNN and a fully-connected layer.
-
-Now, let's set our training constants. We first have the CUDA device used for training if one is present. Second, we set the batch size (i.e. the number of elements to see before updating the model) and the learning rate for the optimizer.
+Now, let's set our training constants. We first have the CUDA device used for training if one is present. Second, we set the ``train_split`` to 0.8 (80%) to use 80% of the dataset for training and 20% for testing the trained model. Third, we set the number of classes (i.e. one for each digit). Finally, we set the batch size (i.e. the number of elements to see before updating the model), the learning rate for the optimizer, and the number of epochs (i.e. the number of times we see the full dataset).
 
 .. code-block:: python
 
     cuda_device = 0
     device = torch.device("cuda:%d" % cuda_device if torch.cuda.is_available() else "cpu")
 
+    train_split_percent = 0.8
+
+    num_classes = 10
+
     batch_size = 32
-    lr = 0.1
+    learning_rate = 0.1
+    num_epochs = 5
 
+In Poutyne, as we will see in the following sections, you can define your own loss functions and optimizers. However, we can also pass magic strings to use PyTorch's standard optimizers and loss functions. Furthermore, for the optimizer, we can also use a dictionary to set other parameters as the learning rate, for instance, if we don't want the default learning rate.
 
-RNN
----
-For the first component, instead of using a vanilla RNN, we use a variant of it, known as a long short-term memory (LSTM) (to learn more about `LSTM <http://colah.github.io/posts/2015-08-Understanding-LSTMs/>`_. For now, we use a single-layer unidirectional LSTM.
-
-Also, since our data is textual, we will use the well-known word embeddings to encode the textual information. The LSTM input and hidden state dimensions will be of the same size. This size corresponds to the word embeddings dimension, which in our case will be the `French pre trained <https://fasttext.cc/docs/en/crawl-vectors.html>`_ fastText embeddings of dimension ``300``.
-
-.. Note:: See this `discussion <https://discuss.pytorch.org/t/could-someone-explain-batch-first-true-in-lstm/15402>`_ for the explanation why we use the ``batch_first`` argument.
+Here, we initialize the dictionary for our optimizer as well as the string for our loss function. We thus use SGD with the specified learning rate and the cross-entropy loss.
 
 .. code-block:: python
 
-    dimension = 300
-    num_layer = 1
-    bidirectional = False
+    optimizer = dict(optim='sgd', lr=learning_rate) # Could be 'sgd' if we didn't need to change the learning rate.
+    loss_function = 'cross_entropy'
 
-    lstm_network = nn.LSTM(input_size=dimension,
-                           hidden_size=dimension,
-                           num_layers=num_layer,
-                           bidirectional=bidirectional,
-                           batch_first=True)
+Loading the Dataset
+-------------------
 
-
-Fully-connected Layer
----------------------
-
-We use this layer to map the representation of the LSTM (``300``) to the tag space (8, the number of tags) and predict the most likely tag using a softmax.
+The following code helps load the MNIST dataset and creates the PyTorch DataLoaders that split our datasets into batches. Then, the train DataLoader shuffles the examples of the training dataset to draw the examples without replacement.
 
 .. code-block:: python
 
-    input_dim = dimension # the output of the LSTM
-    tag_dimension = 8
+    full_train_dataset = MNIST('./datasets', train=True, download=True, transform=transforms.ToTensor())
+    test_dataset = MNIST('./datasets', train=False, download=True, transform=transforms.ToTensor())
 
-    fully_connected_network = nn.Linear(input_dim, tag_dimension)
+    num_data = len(full_train_dataset)
+    train_length = int(math.floor(train_split_percent * num_data))
+    valid_length = num_data - train_length
 
-The Dataset
------------
+    train_dataset, valid_dataset = random_split(full_train_dataset,
+                                                [train_length, valid_length],
+                                                generator=torch.Generator().manual_seed(42))
 
-Now let's download our dataset; it's already split into a train, valid and test set using the following.
+    train_loader = DataLoader(train_dataset, batch_size=batch_size, num_workers=2, shuffle=True)
+    valid_loader = DataLoader(valid_dataset, batch_size=batch_size, num_workers=2)
+    test_loader = DataLoader(test_dataset, batch_size=batch_size, num_workers=2)
 
-.. code-block:: python
+Initializing the Network
+------------------------
 
-    def download_data(saving_dir, data_type):
-    """
-    Function to download the dataset using data_type to specify if we want the train, valid or test.
-    """
-        root_url = "https://graal-research.github.io/poutyne-external-assets/tips_and_tricks_assets/{}.p"
-
-        url = root_url.format(data_type)
-        r = requests.get(url)
-        os.makedirs(saving_dir, exist_ok=True)
-
-        open(os.path.join(saving_dir, f"{data_type}.p"), 'wb').write(r.content)
-
-    download_data('./datasets/addresses/', "train")
-    download_data('./datasets/addresses/', "valid")
-    download_data('./datasets/addresses/', "test")
-
-
-Now let's load in memory the data.
+We create a fonction to initialize a simple convolutional neural network.
 
 .. code-block:: python
 
-    train_data = pickle.load(open("./datasets/addresses/train.p", "rb"))  # 80,000 examples
-    valid_data = pickle.load(open("./datasets/addresses/valid.p", "rb"))  # 20,000 examples
-    test_data = pickle.load(open("./datasets/addresses/test.p", "rb"))  # 30,000 examples
+    def create_network():
+        return nn.Sequential(
+            nn.Conv2d(in_channels=1, out_channels=16, kernel_size=3, padding=1),
+            nn.ReLU(),
+            nn.MaxPool2d(2),
+            nn.Conv2d(in_channels=16, out_channels=32, kernel_size=3, padding=1),
+            nn.ReLU(),
+            nn.MaxPool2d(2),
+            nn.Dropout(0.25),
+            nn.Flatten(),
+            nn.Linear(32*7*7, 128),
+            nn.ReLU(),
+            nn.Dropout(0.5),
+            nn.Linear(128, num_classes)
+        )
 
-If we take a look at the training dataset, it's a list of ``80,000`` tuples where the first element is the full address, and the second element is a list of the tag (the ground truth).
+Vanilla Usage
+=============
 
-.. code-block:: python
-
-    train_data[0:2]
-
-Here a snapshot of the output
-
-.. image:: /_static/img/data_snapshot.png
-
-Since the address is a text, we need to *convert* it into categorical value, such as word embeddings, for that we will use a vectorizer. This embedding vectorizer will be able to extract for every word embedding value.
-
-.. code-block:: python
-
-    class EmbeddingVectorizer:
-        def __init__(self):
-            """
-            Embedding vectorizer
-            """
-
-            fasttext.util.download_model('fr', if_exists='ignore')
-            self.embedding_model = fasttext.load_model("./cc.fr.``300``.bin")
-
-        def __call__(self, address):
-            """
-            Convert address to embedding vectors
-            :param address: The address to convert
-            :return: The embeddings vectors
-            """
-            embeddings = []
-            for word in address.split():
-                embeddings.append(self.embedding_model[word])
-            return embeddings
-
-    embedding_model = EmbeddingVectorizer()
-
-We also need a vectorizer to convert the address tag (e.g. StreeNumber, StreetName) into categorical values. So we will use a Vectorizer class that can use the embedding vectorizer and convert the address tag.
+The following code trains our network in the simplest way possible with Poutyne. We use the accuracy metric so that we can see the performance during training.
 
 .. code-block:: python
 
-    class Vectorizer:
-        def __init__(self, dataset, embedding_model):
-            self.data = dataset
-            self.embedding_model = embedding_model
-            self.tags_set = {
-                "StreetNumber": 0,
-                "StreetName": 1,
-                "Unit": 2,
-                "Municipality": 3,
-                "Province": 4,
-                "PostalCode": 5,
-                "Orientation": 6,
-                "GeneralDelivery": 7
-            }
+    # Instantiating our network
+    network = create_network()
 
-        def __len__(self):
-            # for the dataloader
-            return len(self.data)
+    # Poutyne Model on GPU
+    model = Model(network, optimizer, loss_function,
+                  batch_metrics=['accuracy'],
+                  device=device)
 
-        def __getitem__(self, item):
-            data = self.data[item]
-            address = data[0]
-            address_vector = self.embedding_model(address)
+    # Train
+    model.fit_generator(train_loader, valid_loader, epochs=num_epochs)
 
-            tags = data[1]
-            idx_tags = self._convert_tags_to_idx(tags)
+    # Test
+    test_loss, test_acc = model.evaluate_generator(test_loader)
 
-            return address_vector, idx_tags
+Initilalizing Your Optimizer and Loss Function Yourself
+=======================================================
 
-        def _convert_tags_to_idx(self, tags):
-            idx_tags = []
-            for tag in tags:
-                idx_tags.append(self.tags_set[tag])
-            return idx_tags
-
+Instead of using magic strings for the optimizer and the loss function, it's quite easy to initialize your own and pass them to Poutyne.
 
 .. code-block:: python
 
-    train_data_vectorize = Vectorizer(train_data, embedding_model)
-    valid_data_vectorize = Vectorizer(valid_data, embedding_model)
-    test_data_vectorize = Vectorizer(test_data, embedding_model)
+    # Instantiating our network
+    network = create_network()
 
-DataLoader
-^^^^^^^^^^
+    # Instantiating our loss function and optimizer
+    own_optimizer = optim.SGD(network.parameters(), lr=learning_rate)
+    own_loss_function = nn.CrossEntropyLoss()
 
-Now, since all the addresses are not of the same size, it is impossible to batch them together since all elements of a tensor must have the same lengths. But there is a trick, padding!
+    # Poutyne Model on GPU
+    model = Model(network, own_optimizer, own_loss_function,
+                  batch_metrics=['accuracy'],
+                  device=device)
 
-The idea is simple. We add *empty* tokens at the end of each sequence up to the longest one in a batch. For the word vectors, we add vectors of 0 as padding. For the tag indices, we pad with -100s. We do so because of the :class:`~torch.nn.CrossEntropyLoss`, the accuracy metric and the :class:`~poutyne.F1` metric all ignore targets with values of ``-100``.
+    # Train
+    model.fit_generator(train_loader, valid_loader, epochs=num_epochs)
 
-To do this padding, we use the ``collate_fn`` argument of the PyTorch :class:`~torch.utils.data.DataLoader` and on running time, that process will be done. One thing to take into account, since we pad the sequence, we need each sequence's lengths to unpad them in the forward pass. That way, we can pad and pack the sequence to minimize the training time (read `this good explanation <https://stackoverflow.com/questions/51030782/why-do-we-pack-the-sequences-in-pytorch>`_ of why we pad and pack sequences).
+    # Test
+    test_loss, test_acc = model.evaluate_generator(test_loader)
 
-.. code-block:: python
+Bypassing PyTorch DataLoaders
+=============================
 
-    def pad_collate_fn(batch):
-        """
-        The collate_fn that can add padding to the sequences so all can have
-        the same length as the longest one.
-
-        Args:
-            batch (List[List, List]): The batch data, where the first element
-            of the tuple are the word idx and the second element are the target
-            label.
-
-        Returns:
-            A tuple (x, y). The element x is a tuple containing (1) a tensor of padded
-            word vectors and (2) their respective lengths of the sequences. The element
-            y is a tensor of padded tag indices. The word vectors are padded with vectors
-            of 0s and the tag indices are padded with -100s. Padding with -100 is done
-            because the cross-entropy loss, the accuracy metric and the F1 metric ignores
-            the targets with values -100.
-        """
-
-        # This gets us two lists of tensors and a list of integer.
-        # Each tensor in the first list is a sequence of word vectors.
-        # Each tensor in the second list is a sequence of tag indices.
-        # The list of integer consist of the lengths of the sequences in order.
-        sequences_vectors, sequences_labels, lengths = zip(*[
-            (torch.FloatTensor(seq_vectors), torch.LongTensor(labels), len(seq_vectors))
-            for (seq_vectors, labels) in sorted(batch, key=lambda x: len(x[0]), reverse=True)
-        ])
-
-        lengths = torch.LongTensor(lengths)
-
-        padded_sequences_vectors = pad_sequence(sequences_vectors, batch_first=True, padding_value=0)
-
-        padded_sequences_labels = pad_sequence(sequences_labels, batch_first=True, padding_value=-100)
-
-        return (padded_sequences_vectors, lengths), padded_sequences_labels
-
+Above, we defined DataLoaders for our datasets. However, with Poutyne, it is not strictly necessary since it provides the :meth:`fit_dataset <poutyne.Model.fit_dataset>` and :meth:`evaluate_dataset <poutyne.Model.evaluate_dataset>` methods to which you can pass the necessary parameters such as the batch size. Under the hood, Poutyne initializes the DataLoaders for you.
 
 .. code-block:: python
 
-    train_loader = DataLoader(train_data_vectorize, batch_size=batch_size, shuffle=True, collate_fn=pad_collate_fn)
-    valid_loader = DataLoader(valid_data_vectorize, batch_size=batch_size, collate_fn=pad_collate_fn)
-    test_loader = DataLoader(test_data_vectorize, batch_size=batch_size, collate_fn=pad_collate_fn)
+    # Instantiating our network
+    network = create_network()
 
-Full Network
-^^^^^^^^^^^^
+    # Poutyne Model on GPU
+    model = Model(network, optimizer, loss_function,
+                  batch_metrics=['accuracy'],
+                  device=device)
 
-Now, since we have packed the sequence, we cannot use the PyTorch :class:`~torch.nn.Sequential` constructor to define our model, so we will define the forward pass for it to unpack the sequences (again, read `this good explanation <https://stackoverflow.com/questions/51030782/why-do-we-pack-the-sequences-in-pytorch>`_ of why we pad and pack sequences).
+    # Train
+    model.fit_dataset(train_dataset,
+                      valid_dataset,
+                      epochs=num_epochs,
+                      batch_size=batch_size,
+                      num_workers=2)
 
-.. code-block:: python
+    # Test
+    test_loss, test_acc = model.evaluate_dataset(test_dataset,
+                                                 batch_size=batch_size,
+                                                 num_workers=2)
 
-    class FullNetWork(nn.Module):
-        def __init__(self, lstm_network, fully_connected_network):
-            super().__init__()
-            self.hidden_state = None
+Using Callbacks
+===============
 
-            self.lstm_network = lstm_network
-            self.fully_connected_network = fully_connected_network
-
-        def forward(self, padded_sequences_vectors, lengths):
-            """
-                Defines the computation performed at every call.
-            """
-            total_length = padded_sequences_vectors.shape[1]
-
-            pack_padded_sequences_vectors = pack_padded_sequence(padded_sequences_vectors, lengths.cpu(), batch_first=True)
-
-            lstm_out, self.hidden_state = self.lstm_network(pack_padded_sequences_vectors)
-            lstm_out, _ = pad_packed_sequence(lstm_out, batch_first=True, total_length=total_length)
-
-            tag_space = self.fully_connected_network(lstm_out)
-            return tag_space.transpose(-1, 1) # we need to transpose since it's a sequence
-
-    full_network = FullNetWork(lstm_network, fully_connected_network)
-
-Summary
--------
-
-So we have created an LSTM network (``lstm_network``), a fully connected network (``fully_connected_network``), those two components are used in the full network. This full network used padded, packed sequences (defined in the forward pass), so we created the ``pad_collate_fn`` function to process the needed work. The DataLoader will conduct that process. Finally, when we load the data, this will be done using the vectorizer, so the address will be represented using word embeddings. Also, the address components will be converted into categorical value (from 0 to 7).
-
-Now that we have all the components for the network let's define our SGD optimizer.
+One nice feature of Poutyne is :class:`callbacks <poutyne.Callback>`. Callbacks allow doing actions during the training of the neural network. In the following example, we use three callbacks. The first that saves the latest weights in a file to be able to continue the optimization at the end of training if more epochs are needed. The second that saves the best weights according to the performance on the validation dataset. The last that saves the displayed logs into a TSV file.
 
 .. code-block:: python
 
-    optimizer = optim.SGD(full_network.parameters(), lr)
-
-Poutyne Callbacks
-=================
-
-One nice feature of Poutyne is :class:`callbacks <poutyne.Callback>`. Callbacks allow doing actions during the training of the neural network. In the following example, we use three callbacks. One that saves the latest weights in a file to be able to continue the optimization at the end of training if more epochs are needed. Another one that saves the best weights according to the performance on the validation dataset. Finally, another one that saves the displayed logs into a TSV file.
-
-.. code-block:: python
-
-    # Saves everything into saves/lstm_unidirectional
-    save_path = "saves/lstm_unidirectional"
+    # Saves everything into saves/convnet_mnist
+    save_path = "saves/convnet_mnist"
     os.makedirs(save_path, exist_ok=True)
 
     callbacks = [
@@ -329,9 +205,28 @@ One nice feature of Poutyne is :class:`callbacks <poutyne.Callback>`. Callbacks 
         CSVLogger(os.path.join(save_path, 'log.tsv'), separator='\t'),
     ]
 
+.. code-block:: python
+
+    # Instantiating our network
+    network = create_network()
+
+    # Poutyne Model on GPU
+    model = Model(network, optimizer, loss_function,
+                  batch_metrics=['accuracy'],
+                  device=device)
+
+    # Train
+    model.fit_generator(train_loader,
+                        valid_loader,
+                        epochs=num_epochs,
+                        callbacks=callbacks)
+
+    # Test
+    test_loss, test_acc = model.evaluate_generator(test_loader)
+
 .. _making_your_own_callback:
 
-Making Your own Callback
+Making Your Own Callback
 ========================
 
 While Poutyne provides a great number of :class:`predefined callbacks <poutyne.Callback>`, it is sometimes useful to make your own callback.
@@ -358,7 +253,6 @@ In the following example, we want to see the effect of temperature on the optimi
         def forward(self, y_pred, y_true):
             y_pred = y_pred / self.temperature
             return self.celoss(y_pred, y_true)
-
 
     class TemperatureCallback(Callback):
         """
@@ -388,29 +282,107 @@ Now let's test our training loop for one epoch using the accuracy as the batch m
 
 .. code-block:: python
 
-    model = Model(full_network, optimizer, loss_function, batch_metrics=['accuracy'], device=device)
+    # Instantiating our network
+    network = create_network()
+
+    # Poutyne Model on GPU
+    model = Model(network, optimizer, custom_loss_function,
+                  batch_metrics=['accuracy'],
+                  device=device)
+
+    # Train
     model.fit_generator(train_loader,
                         valid_loader,
-                        epochs=1,
+                        epochs=num_epochs,
                         callbacks=callbacks)
+
+    # Test
+    test_loss, test_acc = model.evaluate_generator(test_loader)
+
+
+Using Experiment
+================
+
+Most of the time, when using Poutyne (or even Pytorch in general), we will find ourselves in an iterative model hyperparameters finetuning loop. For efficient model search, we will usually wish to save our best performing models, their training and testing statistics and even sometimes wish to retrain an already trained model for further tuning. All of the above can be easily implemented with the flexibility of Poutyne Callbacks, but having to define and initialize each and every Callback object we wish for our model quickly feels cumbersome.
+
+This is why Poutyne provides an :class:`~poutyne.Experiment` class, which aims specifically at enabling quick model iteration search, while not sacrificing the quality of a single experiment - statistics logging, best models saving, etc. Experiment is actually a simple wrapper between a PyTorch network and Poutyne's core Callback objects for logging and saving. Given a working directory where to output the various logging files and a PyTorch network, the Experiment class reduces the whole training loop to a single line.
+
+The following code uses Poutyne's :class:`~poutyne.Experiment` class to train a network for 5 epochs. The code is quite simpler than the code in the Poutyne Callbacks section while doing more (only a few lines). Once trained for 5 epochs, it is then possible to resume the optimization at the 5th epoch for 5 more epochs until the 10th epoch using the same function.
+
+.. code-block:: python
+
+    def experiment_train(network, name, epochs=5):
+        """
+        This function creates a Poutyne Experiment, trains the input module
+        on the train loader and then tests its performance on the test loader.
+        All training and testing statistics are saved, as well as best model
+        checkpoints.
+
+        Args:
+            network (torch.nn.Module): The neural network to train.
+            working_directory (str): The directory where to output files to save.
+            epochs (int): The number of epochs. (Default: 5)
+        """
+        # Everything is going to be saved in ./saves/{name}.
+        save_path = os.path.join('saves', name)
+
+        # Poutyne Experiment
+        expt = Experiment(save_path, network, optimizer=optimizer, task='classif', device=device)
+
+        # Train
+        expt.train(train_loader, valid_loader, epochs=epochs)
+
+        # Test
+        expt.test(test_loader)
+
+.. code-block:: python
+
+    network = create_network()
+    experiment_train(network, 'convnet_mnist_experiment', epochs=5)
+
+Notice how setting ``task='classif'`` when instantiating :class:`~poutyne.Experiment` adds for use our loss function, the batch metric accuracy, the epoch metric F1 and set up callbacks that use them. If you wish, you still can use your own loss function and metrics instead of passing this argument.
+
+We have trained for 5 epochs, let's now resume training for another 5 epochs for a total of 10 epochs. Notice that we reinstantiate the network. Experiment will load back the weights for us and resume training.
+
+.. code-block:: python
+
+    network = create_network()
+    experiment_train(network, 'convnet_mnist_experiment', epochs=10)
 
 Coloring
 ========
 
-Also, Poutyne use by default a coloring template of the training step when the package ``colorama`` is installed.
+Also, Poutyne use by default a coloring template of the training step when the package `colorama` is installed.
 One could either remove the coloring (``progress_options=dict(coloring=False)``) or set a different coloring template using the fields:
 ``text_color``, ``ratio_color``, ``metric_value_color``, ``time_color`` and ``progress_bar_color``.
-If a field is not specified, the default color will be used. `See available colors in colorama's source code <https://github.com/tartley/colorama/blob/9946cfb/colorama/ansi.py#L49>`__.
+If a field is not specified, the default color will be used.
+`See available colors in colorama's source code <https://github.com/tartley/colorama/blob/9946cfb/colorama/ansi.py#L49>`__.
 
 Here an example where we set the ``text_color`` to RED and the ``progress_bar_color`` to LIGHTGREEN_EX.
 
 .. code-block:: python
 
+    progress_options = dict(
+        coloring=dict(text_color="RED", progress_bar_color="LIGHTGREEN_EX")
+    )
+
+    # Instantiating our network
+    network = create_network()
+
+    # Poutyne Model on GPU
+    model = Model(network, optimizer, loss_function,
+                  batch_metrics=['accuracy'],
+                  device=device)
+
+    # Train
     model.fit_generator(train_loader,
                         valid_loader,
-                        epochs=1,
-                        callbacks=callbacks,
-                        progress_options=dict(coloring={"text_color": "RED", "progress_bar_color": "LIGHTGREEN_EX"}))
+                        epochs=num_epochs,
+                        progress_options=progress_options)
+
+    # Test
+    test_loss, test_acc = model.evaluate_generator(test_loader,
+                                                   progress_options=progress_options)
 
 Epoch metrics
 =============
@@ -419,59 +391,82 @@ It's also possible to used epoch metrics such as :class:`~poutyne.F1`. You could
 
 .. code-block:: python
 
-    model = Model(full_network,
-                  optimizer,
-                  loss_function,
+    # Instantiating our network
+    network = create_network()
+
+    # Poutyne Model on GPU
+    model = Model(network, optimizer, loss_function,
                   batch_metrics=['accuracy'],
                   epoch_metrics=['f1'],
                   device=device)
-    model.fit_generator(train_loader,
-                        valid_loader,
-                        epochs=1,
-                        callbacks=callbacks)
 
+    # Train
+    model.fit_generator(train_loader, valid_loader, epochs=num_epochs)
 
-Furthermore, you could also use the :class:`~poutyne.SKLearnMetrics` wrapper to wrap a Scikit-learn metric as an epoch metric. Below, we show how to compute the AUC ROC using the :class:`~poutyne.SKLearnMetrics` class. We have to inherit the class so that the data is passed into the right format for the scikit-learn ``roc_auc_score`` function.
+    # Test
+    test_loss, (test_acc, test_f1) = model.evaluate_generator(test_loader)
+
+Furthermore, you could also use the :class:`~poutyne.SKLearnMetrics` wrapper to wrap a Scikit-learn metric as an epoch metric. Below, we show how to compute the AUC ROC using the :class:`~poutyne.SKLearnMetrics` class.
 
 .. code-block:: python
 
-    class FlattenSKLearnMetrics(SKLearnMetrics):
-        def forward(self, y_pred, y_true):
-            y_pred = y_pred.softmax(1)
-            y_pred = y_pred.transpose(2, 1).flatten(0, 1)
-            y_true = y_true.flatten()
-            return super().forward(y_pred, y_true)
+    def softmax(x, axis=1):
+        """
+        Compute softmax function.
+        """
+        e_x = np.exp(x - x.max(axis=axis, keepdims=True))
+        return e_x / e_x.sum(axis=axis, keepdims=True)
 
-    roc_epoch_metric = FlattenSKLearnMetrics(roc_auc_score,
-                                             kwargs=dict(multi_class='ovr', average='macro'))
-    model = Model(full_network,
-                  optimizer,
-                  loss_function,
+    def roc_auc(y_true, y_pred, **kwargs):
+        """
+        Since the `roc_auc_score` from Scikit-learn requires normalized probabilities,
+        we use the softmax function on the predictions.
+        """
+        y_pred = softmax(y_pred)
+        return roc_auc_score(y_true, y_pred, **kwargs)
+
+    # kwargs are keyword arguments we wish to pass to roc_auc.
+    roc_epoch_metric = SKLearnMetrics(roc_auc,
+                                      kwargs=dict(multi_class='ovr', average='macro'))
+
+.. code-block:: python
+
+    # Instantiating our network
+    network = create_network()
+
+    # Poutyne Model on GPU
+    model = Model(network, optimizer, loss_function,
                   batch_metrics=['accuracy'],
                   epoch_metrics=['f1', roc_epoch_metric],
                   device=device)
-    model.fit_generator(train_loader,
-                        valid_loader,
-                        epochs=1,
-                        callbacks=callbacks)
 
+    # Train
+    model.fit_generator(train_loader, valid_loader, epochs=num_epochs)
 
-Metric naming
-=============
+    # Test
+    test_loss, (test_acc, test_f1, test_roc) = model.evaluate_generator(test_loader)
+
+Custom Metric Names
+===================
 
 It's also possible to name the metric using a tuple format ``(<metric name>, metric)``. That way, it's possible to use multiple times the same metric type (i.e. having micro and macro F1-score).
 
 .. code-block:: python
 
-    model = Model(full_network,
-                  optimizer,
-                  loss_function,
-                  batch_metrics=[("My accuracy name", accuracy)],
-                  epoch_metrics=[("My metric name", F1())],
+    # Instantiating our network
+    network = create_network()
+
+    # Poutyne Model on GPU
+    model = Model(network, optimizer, loss_function,
+                  batch_metrics=[("My accuracy name", 'accuracy')],
+                  epoch_metrics=[("My f1 name", 'f1')],
                   device=device)
-    model.fit_generator(train_loader,
-                        valid_loader,
-                        epochs=1)
+
+    # Train
+    model.fit_generator(train_loader, valid_loader, epochs=num_epochs)
+
+    # Test
+    test_loss, (test_acc, test_f1) = model.evaluate_generator(test_loader)
 
 Multi-GPUs
 ==========
@@ -480,15 +475,17 @@ Finally, it's also possible to use multi-GPUs for your training either by specif
 
 .. Note:: Obviously, you need more than one GPUs for that option.
 
+In our case here, multi-gpus takes more time because the task is not big enough to profit from multi-gpus.
 
 .. code-block:: python
 
-    model = Model(full_network,
-                  optimizer,
-                  loss_function,
-                  batch_metrics=[("My accuracy name", accuracy)],
-                  epoch_metrics=[("My metric name", F1())],
+    # Instantiating our network
+    network = create_network()
+
+    # Poutyne Model on GPU
+    model = Model(network, optimizer, loss_function,
+                  batch_metrics=['accuracy'],
                   device="all")
-    model.fit_generator(train_loader,
-                        valid_loader,
-                        epochs=1)
+
+    # Train
+    model.fit_generator(train_loader, valid_loader, epochs=num_epochs)
