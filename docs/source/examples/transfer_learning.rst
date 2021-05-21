@@ -185,10 +185,10 @@ Finally, we start the training and output its final test loss, accuracy, and mic
     print("Best epoch: %d" % best_epoch)
 
 
-.. image:: /_static/img/logs.png
+.. image:: /_static/img/transfer_learning/logs.png
 
 
-.. image:: /_static/img/best.png
+.. image:: /_static/img/transfer_learning/best.png
 
 .. code-block:: python
 
@@ -197,7 +197,7 @@ Finally, we start the training and output its final test loss, accuracy, and mic
     plt.legend(metrics)
     plt.show()
 
-.. image:: /_static/img/loss.png
+.. image:: /_static/img/transfer_learning/loss.png
 
 
 .. code-block:: python
@@ -208,7 +208,7 @@ Finally, we start the training and output its final test loss, accuracy, and mic
     plt.show()
 
 
-.. image:: /_static/img/acc.png
+.. image:: /_static/img/transfer_learning/acc.png
 
 
 Since we have created checkpoints using callbacks, we can restore the best model from those checkpoints and test it.
