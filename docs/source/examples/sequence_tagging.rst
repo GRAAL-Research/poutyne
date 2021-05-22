@@ -169,7 +169,7 @@ Since the address is a text, we need to *convert* it into categorical value, suc
 
     embedding_model = EmbeddingVectorizer()
 
-We also need a vectorizer to convert the address tag (e.g. StreeNumber, StreetName) into categorical values. So we will use a Vectorizer class that can use the embedding vectorizer and convert the address tag. We will explain and use the argument ``predict`` later.
+We also need a vectorizer to convert the address tag (e.g. StreetNumber, StreetName) into categorical values. So we will use a Vectorizer class that can use the embedding vectorizer and convert the address tag. We will explain and use the argument ``predict`` later.
 
 .. code-block:: python
 
