@@ -1,13 +1,23 @@
 # v1.x.x
 
+*
+
+# v1.5
+
 * Add [`LambdaCallback`](https://poutyne.org/callbacks.html#poutyne.LambdaCallback) to more easily define a callback
   from lambdas or functions.
 * In Jupyter Notebooks, when coloring is enabled, the print rate of progress output is limited to one output every
   0.1 seconds. This solves the slowness problem (and the memory problem on Firefox) when there is a great number of
   steps per epoch.
-* Add `return_dict_format` argument to `train_on_batch` and `evaluate_on_batch` and allows to return predictions and
-  ground truths in `evaluate_*` even when `return_dict_format=True`. Furthermore, `experiment.test*` now support
-  `return_pred=True` and `return_ground_truth=True`.
+* Add `return_dict_format` argument to [`train_on_batch`](https://poutyne.org/model.html#poutyne.Model.train_on_batch)
+  and [`evaluate_on_batch`](https://poutyne.org/model.html#poutyne.Model.evaluate_on_batch) and allows to return
+  predictions and ground truths in [`evaluate_*`](https://poutyne.org/model.html#poutyne.Model.evaluate) even when
+  `return_dict_format=True`. Furthermore,
+  [`Experiment.test*`](https://poutyne.org/experiment.html#poutyne.Experiment.test_data) now support `return_pred=True`
+  and `return_ground_truth=True`.
+* Split [Tips and Tricks](https://poutyne.org/examples/tips_and_tricks.html) example into two examples:
+  [Tips and Tricks](https://poutyne.org/examples/tips_and_tricks.html) and
+  [Sequence Tagging With an RNN](https://poutyne.org/examples/sequence_tagging.html).
 
 # v1.4
 
