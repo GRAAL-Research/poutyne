@@ -241,6 +241,7 @@ API Reference
 
   examples/introduction
   examples/tips_and_tricks
+  examples/sequence_tagging
   examples/policy_interface
   examples/transfer_learning
   examples/image_reconstruction
