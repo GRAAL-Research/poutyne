@@ -7,12 +7,14 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>Tips and Tricks &mdash; Poutyne 1.4 documentation</title>
+  <title>Tips and Tricks &mdash; Poutyne 1.5 documentation</title>
   
 
   
   <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
 
   
   
@@ -29,6 +31,7 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
         <script src="../_static/doctools.js"></script>
@@ -38,7 +41,7 @@
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Interface of policy" href="policy_interface.html" />
+    <link rel="next" title="Sequence Tagging With an RNN" href="sequence_tagging.html" />
     <link rel="prev" title="Introduction to PyTorch and Poutyne" href="introduction.html" /> 
 </head>
 
@@ -66,7 +69,7 @@
             
             
               <div class="version">
-                1.4
+                1.5
               </div>
             
           
@@ -104,27 +107,26 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction to PyTorch and Poutyne</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Tips and Tricks</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#train-a-recurrent-neural-network-rnn">Train a Recurrent Neural Network (RNN)</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#rnn">RNN</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#fully-connected-layer">Fully-connected Layer</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#the-dataset">The Dataset</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#dataloader">DataLoader</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#full-network">Full Network</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#hyperparameters-dataset-and-network">Hyperparameters, Dataset and Network</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#training-constants">Training Constants</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#loading-the-dataset">Loading the Dataset</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#initializing-the-network">Initializing the Network</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#summary">Summary</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#poutyne-callbacks">Poutyne Callbacks</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#making-your-own-callback">Making Your own Callback</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#vanilla-usage">Vanilla Usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#initilalizing-your-optimizer-and-loss-function-yourself">Initilalizing Your Optimizer and Loss Function Yourself</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#bypassing-pytorch-dataloaders">Bypassing PyTorch DataLoaders</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#using-callbacks">Using Callbacks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#making-your-own-callback">Making Your Own Callback</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#using-experiment">Using Experiment</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#coloring">Coloring</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#epoch-metrics">Epoch metrics</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#metric-naming">Metric naming</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#custom-metric-names">Custom Metric Names</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#multi-gpus">Multi-GPUs</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="sequence_tagging.html">Sequence Tagging With an RNN</a></li>
 <li class="toctree-l1"><a class="reference internal" href="policy_interface.html">Interface of <code class="docutils literal notranslate"><span class="pre">policy</span></code></a></li>
-<li class="toctree-l1"><a class="reference internal" href="train_with_policy_module.html">Train CIFAR with the <code class="docutils literal notranslate"><span class="pre">policy</span></code> module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="transfer_learning.html">Transfer learning example</a></li>
 <li class="toctree-l1"><a class="reference internal" href="image_reconstruction.html">Image Reconstruction Using Poutyne</a></li>
 <li class="toctree-l1"><a class="reference internal" href="semantic_segmentation.html">Semantic segmentation using Poutyne</a></li>
@@ -204,8 +206,7 @@
 <li><p>Run in <a class="reference external" href="https://colab.research.google.com/github/GRAAL-Research/poutyne/blob/master/examples/tips_and_tricks.ipynb">Google Colab</a></p></li>
 </ul>
 </div>
-<p>Poutyne also over a variety of tools for fine-tuning the information generated during the training, such as colouring the training update message, a progress bar, multi-GPUs, user callbacks interface and a user naming interface for the metrics’ names.</p>
-<p>We will explore those tools using a different problem than the one presented in <a class="reference internal" href="introduction.html#intro"><span class="std std-ref">Introduction to PyTorch and Poutyne</span></a></p>
+<p>Poutyne over a variety of tools for fine-tuning the information generated during the training, such as colouring the training update message, a progress bar, multi-GPUs, user callbacks interface and a user naming interface for the metrics’ names.</p>
 <p>Let’s import all the needed packages.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">pickle</span>
@@ -223,244 +224,145 @@
 <span class="kn">from</span> <span class="nn">poutyne</span> <span class="kn">import</span> <span class="n">set_seeds</span><span class="p">,</span> <span class="n">Model</span><span class="p">,</span> <span class="n">ModelCheckpoint</span><span class="p">,</span> <span class="n">CSVLogger</span><span class="p">,</span> <span class="n">Callback</span><span class="p">,</span> <span class="n">SKLearnMetrics</span>
 </pre></div>
 </div>
-<p>Also, we need to set Pythons’s, NumPy’s and PyTorch’s seeds by using Poutyne function so that our training is (almost) reproducible.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">set_seeds</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
-</pre></div>
-</div>
-<div class="section" id="train-a-recurrent-neural-network-rnn">
-<h2>Train a Recurrent Neural Network (RNN)<a class="headerlink" href="#train-a-recurrent-neural-network-rnn" title="Permalink to this headline">¶</a></h2>
-<p>In this notebook, we train an RNN, or more precisely, an LSTM, to predict the sequence of tags associated with a given address, known as parsing address.</p>
-<p>This task consists of detecting, by tagging, the different parts of an address such as the civic number, the street name or the postal code (or zip code). The following figure shows an example of such a tagging.</p>
-<img alt="../_images/address_parsing.png" src="../_images/address_parsing.png" />
-<p>Since addresses are written in a predetermined sequence, RNN is the best way to crack this problem. For our architecture, we will use two components, an RNN and a fully-connected layer.</p>
-<p>Now, let’s set our training constants. We first have the CUDA device used for training if one is present. Second, we set the batch size (i.e. the number of elements to see before updating the model) and the learning rate for the optimizer.</p>
+<div class="section" id="hyperparameters-dataset-and-network">
+<h2>Hyperparameters, Dataset and Network<a class="headerlink" href="#hyperparameters-dataset-and-network" title="Permalink to this headline">¶</a></h2>
+<p>In this section, we setup the hyperparameters, dataset and network we will use throughout these tips and tricks.</p>
+<div class="section" id="training-constants">
+<h3>Training Constants<a class="headerlink" href="#training-constants" title="Permalink to this headline">¶</a></h3>
+<p>Now, let’s set our training constants. We first have the CUDA device used for training if one is present. Second, we set the <code class="docutils literal notranslate"><span class="pre">train_split</span></code> to 0.8 (80%) to use 80% of the dataset for training and 20% for testing the trained model. Third, we set the number of classes (i.e. one for each digit). Finally, we set the batch size (i.e. the number of elements to see before updating the model), the learning rate for the optimizer, and the number of epochs (i.e. the number of times we see the full dataset).</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">cuda_device</span> <span class="o">=</span> <span class="mi">0</span>
 <span class="n">device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">&quot;cuda:</span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">cuda_device</span> <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span> <span class="k">else</span> <span class="s2">&quot;cpu&quot;</span><span class="p">)</span>
 
+<span class="n">train_split_percent</span> <span class="o">=</span> <span class="mf">0.8</span>
+
+<span class="n">num_classes</span> <span class="o">=</span> <span class="mi">10</span>
+
 <span class="n">batch_size</span> <span class="o">=</span> <span class="mi">32</span>
-<span class="n">lr</span> <span class="o">=</span> <span class="mf">0.1</span>
+<span class="n">learning_rate</span> <span class="o">=</span> <span class="mf">0.1</span>
+<span class="n">num_epochs</span> <span class="o">=</span> <span class="mi">5</span>
 </pre></div>
 </div>
-<div class="section" id="rnn">
-<h3>RNN<a class="headerlink" href="#rnn" title="Permalink to this headline">¶</a></h3>
-<p>For the first component, instead of using a vanilla RNN, we use a variant of it, known as a long short-term memory (LSTM) (to learn more about <a class="reference external" href="http://colah.github.io/posts/2015-08-Understanding-LSTMs/">LSTM</a>. For now, we use a single-layer unidirectional LSTM.</p>
-<p>Also, since our data is textual, we will use the well-known word embeddings to encode the textual information. The LSTM input and hidden state dimensions will be of the same size. This size corresponds to the word embeddings dimension, which in our case will be the <a class="reference external" href="https://fasttext.cc/docs/en/crawl-vectors.html">French pre trained</a> fastText embeddings of dimension <code class="docutils literal notranslate"><span class="pre">300</span></code>.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>See this <a class="reference external" href="https://discuss.pytorch.org/t/could-someone-explain-batch-first-true-in-lstm/15402">discussion</a> for the explanation why we use the <code class="docutils literal notranslate"><span class="pre">batch_first</span></code> argument.</p>
-</div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">dimension</span> <span class="o">=</span> <span class="mi">300</span>
-<span class="n">num_layer</span> <span class="o">=</span> <span class="mi">1</span>
-<span class="n">bidirectional</span> <span class="o">=</span> <span class="kc">False</span>
-
-<span class="n">lstm_network</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">LSTM</span><span class="p">(</span><span class="n">input_size</span><span class="o">=</span><span class="n">dimension</span><span class="p">,</span>
-                       <span class="n">hidden_size</span><span class="o">=</span><span class="n">dimension</span><span class="p">,</span>
-                       <span class="n">num_layers</span><span class="o">=</span><span class="n">num_layer</span><span class="p">,</span>
-                       <span class="n">bidirectional</span><span class="o">=</span><span class="n">bidirectional</span><span class="p">,</span>
-                       <span class="n">batch_first</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<p>In Poutyne, as we will see in the following sections, you can define your own loss functions and optimizers. However, we can also pass magic strings to use PyTorch’s standard optimizers and loss functions. Furthermore, for the optimizer, we can also use a dictionary to set other parameters as the learning rate, for instance, if we don’t want the default learning rate.</p>
+<p>Here, we initialize the dictionary for our optimizer as well as the string for our loss function. We thus use SGD with the specified learning rate and the cross-entropy loss.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">optimizer</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">optim</span><span class="o">=</span><span class="s1">&#39;sgd&#39;</span><span class="p">,</span> <span class="n">lr</span><span class="o">=</span><span class="n">learning_rate</span><span class="p">)</span> <span class="c1"># Could be &#39;sgd&#39; if we didn&#39;t need to change the learning rate.</span>
+<span class="n">loss_function</span> <span class="o">=</span> <span class="s1">&#39;cross_entropy&#39;</span>
 </pre></div>
 </div>
 </div>
-<div class="section" id="fully-connected-layer">
-<h3>Fully-connected Layer<a class="headerlink" href="#fully-connected-layer" title="Permalink to this headline">¶</a></h3>
-<p>We use this layer to map the representation of the LSTM (<code class="docutils literal notranslate"><span class="pre">300</span></code>) to the tag space (8, the number of tags) and predict the most likely tag using a softmax.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">input_dim</span> <span class="o">=</span> <span class="n">dimension</span> <span class="c1"># the output of the LSTM</span>
-<span class="n">tag_dimension</span> <span class="o">=</span> <span class="mi">8</span>
+<div class="section" id="loading-the-dataset">
+<h3>Loading the Dataset<a class="headerlink" href="#loading-the-dataset" title="Permalink to this headline">¶</a></h3>
+<p>The following code helps load the MNIST dataset and creates the PyTorch DataLoaders that split our datasets into batches. Then, the train DataLoader shuffles the examples of the training dataset to draw the examples without replacement.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">full_train_dataset</span> <span class="o">=</span> <span class="n">MNIST</span><span class="p">(</span><span class="s1">&#39;./datasets&#39;</span><span class="p">,</span> <span class="n">train</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">download</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">transforms</span><span class="o">.</span><span class="n">ToTensor</span><span class="p">())</span>
+<span class="n">test_dataset</span> <span class="o">=</span> <span class="n">MNIST</span><span class="p">(</span><span class="s1">&#39;./datasets&#39;</span><span class="p">,</span> <span class="n">train</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">download</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">transforms</span><span class="o">.</span><span class="n">ToTensor</span><span class="p">())</span>
 
-<span class="n">fully_connected_network</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">input_dim</span><span class="p">,</span> <span class="n">tag_dimension</span><span class="p">)</span>
+<span class="n">num_data</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">full_train_dataset</span><span class="p">)</span>
+<span class="n">train_length</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">train_split_percent</span> <span class="o">*</span> <span class="n">num_data</span><span class="p">))</span>
+<span class="n">valid_length</span> <span class="o">=</span> <span class="n">num_data</span> <span class="o">-</span> <span class="n">train_length</span>
+
+<span class="n">train_dataset</span><span class="p">,</span> <span class="n">valid_dataset</span> <span class="o">=</span> <span class="n">random_split</span><span class="p">(</span><span class="n">full_train_dataset</span><span class="p">,</span>
+                                            <span class="p">[</span><span class="n">train_length</span><span class="p">,</span> <span class="n">valid_length</span><span class="p">],</span>
+                                            <span class="n">generator</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">Generator</span><span class="p">()</span><span class="o">.</span><span class="n">manual_seed</span><span class="p">(</span><span class="mi">42</span><span class="p">))</span>
+
+<span class="n">train_loader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">train_dataset</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">num_workers</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">valid_loader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">valid_dataset</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">num_workers</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">test_loader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">test_dataset</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">num_workers</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
-<div class="section" id="the-dataset">
-<h3>The Dataset<a class="headerlink" href="#the-dataset" title="Permalink to this headline">¶</a></h3>
-<p>Now let’s download our dataset; it’s already split into a train, valid and test set using the following.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">download_data</span><span class="p">(</span><span class="n">saving_dir</span><span class="p">,</span> <span class="n">data_type</span><span class="p">):</span>
-<span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">Function to download the dataset using data_type to specify if we want the train, valid or test.</span>
-<span class="sd">&quot;&quot;&quot;</span>
-    <span class="n">root_url</span> <span class="o">=</span> <span class="s2">&quot;https://graal-research.github.io/poutyne-external-assets/tips_and_tricks_assets/</span><span class="si">{}</span><span class="s2">.p&quot;</span>
-
-    <span class="n">url</span> <span class="o">=</span> <span class="n">root_url</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">data_type</span><span class="p">)</span>
-    <span class="n">r</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
-    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">saving_dir</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-
-    <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">saving_dir</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">data_type</span><span class="si">}</span><span class="s2">.p&quot;</span><span class="p">),</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">content</span><span class="p">)</span>
-
-<span class="n">download_data</span><span class="p">(</span><span class="s1">&#39;./datasets/addresses/&#39;</span><span class="p">,</span> <span class="s2">&quot;train&quot;</span><span class="p">)</span>
-<span class="n">download_data</span><span class="p">(</span><span class="s1">&#39;./datasets/addresses/&#39;</span><span class="p">,</span> <span class="s2">&quot;valid&quot;</span><span class="p">)</span>
-<span class="n">download_data</span><span class="p">(</span><span class="s1">&#39;./datasets/addresses/&#39;</span><span class="p">,</span> <span class="s2">&quot;test&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>Now let’s load in memory the data.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">train_data</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="s2">&quot;./datasets/addresses/train.p&quot;</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">))</span>  <span class="c1"># 80,000 examples</span>
-<span class="n">valid_data</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="s2">&quot;./datasets/addresses/valid.p&quot;</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">))</span>  <span class="c1"># 20,000 examples</span>
-<span class="n">test_data</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="s2">&quot;./datasets/addresses/test.p&quot;</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">))</span>  <span class="c1"># 30,000 examples</span>
-</pre></div>
-</div>
-<p>If we take a look at the training dataset, it’s a list of <code class="docutils literal notranslate"><span class="pre">80,000</span></code> tuples where the first element is the full address, and the second element is a list of the tag (the ground truth).</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">train_data</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">]</span>
-</pre></div>
-</div>
-<p>Here a snapshot of the output</p>
-<img alt="../_images/data_snapshot.png" src="../_images/data_snapshot.png" />
-<p>Since the address is a text, we need to <em>convert</em> it into categorical value, such as word embeddings, for that we will use a vectorizer. This embedding vectorizer will be able to extract for every word embedding value.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">EmbeddingVectorizer</span><span class="p">:</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Embedding vectorizer</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="n">fasttext</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">download_model</span><span class="p">(</span><span class="s1">&#39;fr&#39;</span><span class="p">,</span> <span class="n">if_exists</span><span class="o">=</span><span class="s1">&#39;ignore&#39;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">embedding_model</span> <span class="o">=</span> <span class="n">fasttext</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="s2">&quot;./cc.fr.``300``.bin&quot;</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">address</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Convert address to embedding vectors</span>
-<span class="sd">        :param address: The address to convert</span>
-<span class="sd">        :return: The embeddings vectors</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">embeddings</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">address</span><span class="o">.</span><span class="n">split</span><span class="p">():</span>
-            <span class="n">embeddings</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">embedding_model</span><span class="p">[</span><span class="n">word</span><span class="p">])</span>
-        <span class="k">return</span> <span class="n">embeddings</span>
-
-<span class="n">embedding_model</span> <span class="o">=</span> <span class="n">EmbeddingVectorizer</span><span class="p">()</span>
-</pre></div>
-</div>
-<p>We also need a vectorizer to convert the address tag (e.g. StreeNumber, StreetName) into categorical values. So we will use a Vectorizer class that can use the embedding vectorizer and convert the address tag.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Vectorizer</span><span class="p">:</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">embedding_model</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">dataset</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">embedding_model</span> <span class="o">=</span> <span class="n">embedding_model</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">tags_set</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s2">&quot;StreetNumber&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-            <span class="s2">&quot;StreetName&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
-            <span class="s2">&quot;Unit&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
-            <span class="s2">&quot;Municipality&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
-            <span class="s2">&quot;Province&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>
-            <span class="s2">&quot;PostalCode&quot;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span>
-            <span class="s2">&quot;Orientation&quot;</span><span class="p">:</span> <span class="mi">6</span><span class="p">,</span>
-            <span class="s2">&quot;GeneralDelivery&quot;</span><span class="p">:</span> <span class="mi">7</span>
-        <span class="p">}</span>
-
-    <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="c1"># for the dataloader</span>
-        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
-        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">item</span><span class="p">]</span>
-        <span class="n">address</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="n">address_vector</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">embedding_model</span><span class="p">(</span><span class="n">address</span><span class="p">)</span>
-
-        <span class="n">tags</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-        <span class="n">idx_tags</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_convert_tags_to_idx</span><span class="p">(</span><span class="n">tags</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="n">address_vector</span><span class="p">,</span> <span class="n">idx_tags</span>
-
-    <span class="k">def</span> <span class="nf">_convert_tags_to_idx</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tags</span><span class="p">):</span>
-        <span class="n">idx_tags</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">tag</span> <span class="ow">in</span> <span class="n">tags</span><span class="p">:</span>
-            <span class="n">idx_tags</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tags_set</span><span class="p">[</span><span class="n">tag</span><span class="p">])</span>
-        <span class="k">return</span> <span class="n">idx_tags</span>
-</pre></div>
-</div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">train_data_vectorize</span> <span class="o">=</span> <span class="n">Vectorizer</span><span class="p">(</span><span class="n">train_data</span><span class="p">,</span> <span class="n">embedding_model</span><span class="p">)</span>
-<span class="n">valid_data_vectorize</span> <span class="o">=</span> <span class="n">Vectorizer</span><span class="p">(</span><span class="n">valid_data</span><span class="p">,</span> <span class="n">embedding_model</span><span class="p">)</span>
-<span class="n">test_data_vectorize</span> <span class="o">=</span> <span class="n">Vectorizer</span><span class="p">(</span><span class="n">test_data</span><span class="p">,</span> <span class="n">embedding_model</span><span class="p">)</span>
-</pre></div>
-</div>
-<div class="section" id="dataloader">
-<h4>DataLoader<a class="headerlink" href="#dataloader" title="Permalink to this headline">¶</a></h4>
-<p>Now, since all the addresses are not of the same size, it is impossible to batch them together since all elements of a tensor must have the same lengths. But there is a trick, padding!</p>
-<p>The idea is simple. We add <em>empty</em> tokens at the end of each sequence up to the longest one in a batch. For the word vectors, we add vectors of 0 as padding. For the tag indices, we pad with -100s. We do so because of the <a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html#torch.nn.CrossEntropyLoss" title="(in PyTorch v1.8.0a0+56b43f4)"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrossEntropyLoss</span></code></a>, the accuracy metric and the <a class="reference internal" href="../metrics.html#poutyne.F1" title="poutyne.F1"><code class="xref py py-class docutils literal notranslate"><span class="pre">F1</span></code></a> metric all ignore targets with values of <code class="docutils literal notranslate"><span class="pre">-100</span></code>.</p>
-<p>To do this padding, we use the <code class="docutils literal notranslate"><span class="pre">collate_fn</span></code> argument of the PyTorch <a class="reference external" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader" title="(in PyTorch v1.8.0a0+56b43f4)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataLoader</span></code></a> and on running time, that process will be done. One thing to take into account, since we pad the sequence, we need each sequence’s lengths to unpad them in the forward pass. That way, we can pad and pack the sequence to minimize the training time (read <a class="reference external" href="https://stackoverflow.com/questions/51030782/why-do-we-pack-the-sequences-in-pytorch">this good explanation</a> of why we pad and pack sequences).</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">pad_collate_fn</span><span class="p">(</span><span class="n">batch</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    The collate_fn that can add padding to the sequences so all can have</span>
-<span class="sd">    the same length as the longest one.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        batch (List[List, List]): The batch data, where the first element</span>
-<span class="sd">        of the tuple are the word idx and the second element are the target</span>
-<span class="sd">        label.</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">        A tuple (x, y). The element x is a tuple containing (1) a tensor of padded</span>
-<span class="sd">        word vectors and (2) their respective lengths of the sequences. The element</span>
-<span class="sd">        y is a tensor of padded tag indices. The word vectors are padded with vectors</span>
-<span class="sd">        of 0s and the tag indices are padded with -100s. Padding with -100 is done</span>
-<span class="sd">        because the cross-entropy loss, the accuracy metric and the F1 metric ignores</span>
-<span class="sd">        the targets with values -100.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="c1"># This gets us two lists of tensors and a list of integer.</span>
-    <span class="c1"># Each tensor in the first list is a sequence of word vectors.</span>
-    <span class="c1"># Each tensor in the second list is a sequence of tag indices.</span>
-    <span class="c1"># The list of integer consist of the lengths of the sequences in order.</span>
-    <span class="n">sequences_vectors</span><span class="p">,</span> <span class="n">sequences_labels</span><span class="p">,</span> <span class="n">lengths</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="p">[</span>
-        <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">FloatTensor</span><span class="p">(</span><span class="n">seq_vectors</span><span class="p">),</span> <span class="n">torch</span><span class="o">.</span><span class="n">LongTensor</span><span class="p">(</span><span class="n">labels</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">seq_vectors</span><span class="p">))</span>
-        <span class="k">for</span> <span class="p">(</span><span class="n">seq_vectors</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="p">])</span>
-
-    <span class="n">lengths</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">LongTensor</span><span class="p">(</span><span class="n">lengths</span><span class="p">)</span>
-
-    <span class="n">padded_sequences_vectors</span> <span class="o">=</span> <span class="n">pad_sequence</span><span class="p">(</span><span class="n">sequences_vectors</span><span class="p">,</span> <span class="n">batch_first</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">padding_value</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-
-    <span class="n">padded_sequences_labels</span> <span class="o">=</span> <span class="n">pad_sequence</span><span class="p">(</span><span class="n">sequences_labels</span><span class="p">,</span> <span class="n">batch_first</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">padding_value</span><span class="o">=-</span><span class="mi">100</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="p">(</span><span class="n">padded_sequences_vectors</span><span class="p">,</span> <span class="n">lengths</span><span class="p">),</span> <span class="n">padded_sequences_labels</span>
-</pre></div>
-</div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">train_loader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">train_data_vectorize</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">collate_fn</span><span class="o">=</span><span class="n">pad_collate_fn</span><span class="p">)</span>
-<span class="n">valid_loader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">valid_data_vectorize</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">collate_fn</span><span class="o">=</span><span class="n">pad_collate_fn</span><span class="p">)</span>
-<span class="n">test_loader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">test_data_vectorize</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">collate_fn</span><span class="o">=</span><span class="n">pad_collate_fn</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="section" id="full-network">
-<h4>Full Network<a class="headerlink" href="#full-network" title="Permalink to this headline">¶</a></h4>
-<p>Now, since we have packed the sequence, we cannot use the PyTorch <a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.Sequential.html#torch.nn.Sequential" title="(in PyTorch v1.8.0a0+56b43f4)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Sequential</span></code></a> constructor to define our model, so we will define the forward pass for it to unpack the sequences (again, read <a class="reference external" href="https://stackoverflow.com/questions/51030782/why-do-we-pack-the-sequences-in-pytorch">this good explanation</a> of why we pad and pack sequences).</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">FullNetWork</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lstm_network</span><span class="p">,</span> <span class="n">fully_connected_network</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">hidden_state</span> <span class="o">=</span> <span class="kc">None</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">lstm_network</span> <span class="o">=</span> <span class="n">lstm_network</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">fully_connected_network</span> <span class="o">=</span> <span class="n">fully_connected_network</span>
-
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">padded_sequences_vectors</span><span class="p">,</span> <span class="n">lengths</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">            Defines the computation performed at every call.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">total_length</span> <span class="o">=</span> <span class="n">padded_sequences_vectors</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-
-        <span class="n">pack_padded_sequences_vectors</span> <span class="o">=</span> <span class="n">pack_padded_sequence</span><span class="p">(</span><span class="n">padded_sequences_vectors</span><span class="p">,</span> <span class="n">lengths</span><span class="o">.</span><span class="n">cpu</span><span class="p">(),</span> <span class="n">batch_first</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-
-        <span class="n">lstm_out</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">hidden_state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lstm_network</span><span class="p">(</span><span class="n">pack_padded_sequences_vectors</span><span class="p">)</span>
-        <span class="n">lstm_out</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">pad_packed_sequence</span><span class="p">(</span><span class="n">lstm_out</span><span class="p">,</span> <span class="n">batch_first</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">total_length</span><span class="o">=</span><span class="n">total_length</span><span class="p">)</span>
-
-        <span class="n">tag_space</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fully_connected_network</span><span class="p">(</span><span class="n">lstm_out</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">tag_space</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="c1"># we need to transpose since it&#39;s a sequence</span>
-
-<span class="n">full_network</span> <span class="o">=</span> <span class="n">FullNetWork</span><span class="p">(</span><span class="n">lstm_network</span><span class="p">,</span> <span class="n">fully_connected_network</span><span class="p">)</span>
+<div class="section" id="initializing-the-network">
+<h3>Initializing the Network<a class="headerlink" href="#initializing-the-network" title="Permalink to this headline">¶</a></h3>
+<p>We create a fonction to initialize a simple convolutional neural network.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">create_network</span><span class="p">():</span>
+    <span class="k">return</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
+        <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">in_channels</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">out_channels</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+        <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(),</span>
+        <span class="n">nn</span><span class="o">.</span><span class="n">MaxPool2d</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span>
+        <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">in_channels</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span> <span class="n">out_channels</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+        <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(),</span>
+        <span class="n">nn</span><span class="o">.</span><span class="n">MaxPool2d</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span>
+        <span class="n">nn</span><span class="o">.</span><span class="n">Dropout</span><span class="p">(</span><span class="mf">0.25</span><span class="p">),</span>
+        <span class="n">nn</span><span class="o">.</span><span class="n">Flatten</span><span class="p">(),</span>
+        <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">32</span><span class="o">*</span><span class="mi">7</span><span class="o">*</span><span class="mi">7</span><span class="p">,</span> <span class="mi">128</span><span class="p">),</span>
+        <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(),</span>
+        <span class="n">nn</span><span class="o">.</span><span class="n">Dropout</span><span class="p">(</span><span class="mf">0.5</span><span class="p">),</span>
+        <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="n">num_classes</span><span class="p">)</span>
+    <span class="p">)</span>
 </pre></div>
 </div>
 </div>
 </div>
-<div class="section" id="summary">
-<h3>Summary<a class="headerlink" href="#summary" title="Permalink to this headline">¶</a></h3>
-<p>So we have created an LSTM network (<code class="docutils literal notranslate"><span class="pre">lstm_network</span></code>), a fully connected network (<code class="docutils literal notranslate"><span class="pre">fully_connected_network</span></code>), those two components are used in the full network. This full network used padded, packed sequences (defined in the forward pass), so we created the <code class="docutils literal notranslate"><span class="pre">pad_collate_fn</span></code> function to process the needed work. The DataLoader will conduct that process. Finally, when we load the data, this will be done using the vectorizer, so the address will be represented using word embeddings. Also, the address components will be converted into categorical value (from 0 to 7).</p>
-<p>Now that we have all the components for the network let’s define our SGD optimizer.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">optimizer</span> <span class="o">=</span> <span class="n">optim</span><span class="o">.</span><span class="n">SGD</span><span class="p">(</span><span class="n">full_network</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="p">)</span>
+<div class="section" id="vanilla-usage">
+<h2>Vanilla Usage<a class="headerlink" href="#vanilla-usage" title="Permalink to this headline">¶</a></h2>
+<p>The following code trains our network in the simplest way possible with Poutyne. We use the accuracy metric so that we can see the performance during training.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Instantiating our network</span>
+<span class="n">network</span> <span class="o">=</span> <span class="n">create_network</span><span class="p">()</span>
+
+<span class="c1"># Poutyne Model on GPU</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span><span class="n">network</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">loss_function</span><span class="p">,</span>
+              <span class="n">batch_metrics</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;accuracy&#39;</span><span class="p">],</span>
+              <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+
+<span class="c1"># Train</span>
+<span class="n">model</span><span class="o">.</span><span class="n">fit_generator</span><span class="p">(</span><span class="n">train_loader</span><span class="p">,</span> <span class="n">valid_loader</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="n">num_epochs</span><span class="p">)</span>
+
+<span class="c1"># Test</span>
+<span class="n">test_loss</span><span class="p">,</span> <span class="n">test_acc</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">evaluate_generator</span><span class="p">(</span><span class="n">test_loader</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
+<div class="section" id="initilalizing-your-optimizer-and-loss-function-yourself">
+<h2>Initilalizing Your Optimizer and Loss Function Yourself<a class="headerlink" href="#initilalizing-your-optimizer-and-loss-function-yourself" title="Permalink to this headline">¶</a></h2>
+<p>Instead of using magic strings for the optimizer and the loss function, it’s quite easy to initialize your own and pass them to Poutyne.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Instantiating our network</span>
+<span class="n">network</span> <span class="o">=</span> <span class="n">create_network</span><span class="p">()</span>
+
+<span class="c1"># Instantiating our loss function and optimizer</span>
+<span class="n">own_optimizer</span> <span class="o">=</span> <span class="n">optim</span><span class="o">.</span><span class="n">SGD</span><span class="p">(</span><span class="n">network</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="n">learning_rate</span><span class="p">)</span>
+<span class="n">own_loss_function</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">CrossEntropyLoss</span><span class="p">()</span>
+
+<span class="c1"># Poutyne Model on GPU</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span><span class="n">network</span><span class="p">,</span> <span class="n">own_optimizer</span><span class="p">,</span> <span class="n">own_loss_function</span><span class="p">,</span>
+              <span class="n">batch_metrics</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;accuracy&#39;</span><span class="p">],</span>
+              <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+
+<span class="c1"># Train</span>
+<span class="n">model</span><span class="o">.</span><span class="n">fit_generator</span><span class="p">(</span><span class="n">train_loader</span><span class="p">,</span> <span class="n">valid_loader</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="n">num_epochs</span><span class="p">)</span>
+
+<span class="c1"># Test</span>
+<span class="n">test_loss</span><span class="p">,</span> <span class="n">test_acc</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">evaluate_generator</span><span class="p">(</span><span class="n">test_loader</span><span class="p">)</span>
+</pre></div>
 </div>
-<div class="section" id="poutyne-callbacks">
-<h2>Poutyne Callbacks<a class="headerlink" href="#poutyne-callbacks" title="Permalink to this headline">¶</a></h2>
-<p>One nice feature of Poutyne is <a class="reference internal" href="../callbacks.html#poutyne.Callback" title="poutyne.Callback"><code class="xref py py-class docutils literal notranslate"><span class="pre">callbacks</span></code></a>. Callbacks allow doing actions during the training of the neural network. In the following example, we use three callbacks. One that saves the latest weights in a file to be able to continue the optimization at the end of training if more epochs are needed. Another one that saves the best weights according to the performance on the validation dataset. Finally, another one that saves the displayed logs into a TSV file.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Saves everything into saves/lstm_unidirectional</span>
-<span class="n">save_path</span> <span class="o">=</span> <span class="s2">&quot;saves/lstm_unidirectional&quot;</span>
+</div>
+<div class="section" id="bypassing-pytorch-dataloaders">
+<h2>Bypassing PyTorch DataLoaders<a class="headerlink" href="#bypassing-pytorch-dataloaders" title="Permalink to this headline">¶</a></h2>
+<p>Above, we defined DataLoaders for our datasets. However, with Poutyne, it is not strictly necessary since it provides the <a class="reference internal" href="../model.html#poutyne.Model.fit_dataset" title="poutyne.Model.fit_dataset"><code class="xref py py-meth docutils literal notranslate"><span class="pre">fit_dataset</span></code></a> and <a class="reference internal" href="../model.html#poutyne.Model.evaluate_dataset" title="poutyne.Model.evaluate_dataset"><code class="xref py py-meth docutils literal notranslate"><span class="pre">evaluate_dataset</span></code></a> methods to which you can pass the necessary parameters such as the batch size. Under the hood, Poutyne initializes the DataLoaders for you.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Instantiating our network</span>
+<span class="n">network</span> <span class="o">=</span> <span class="n">create_network</span><span class="p">()</span>
+
+<span class="c1"># Poutyne Model on GPU</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span><span class="n">network</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">loss_function</span><span class="p">,</span>
+              <span class="n">batch_metrics</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;accuracy&#39;</span><span class="p">],</span>
+              <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+
+<span class="c1"># Train</span>
+<span class="n">model</span><span class="o">.</span><span class="n">fit_dataset</span><span class="p">(</span><span class="n">train_dataset</span><span class="p">,</span>
+                  <span class="n">valid_dataset</span><span class="p">,</span>
+                  <span class="n">epochs</span><span class="o">=</span><span class="n">num_epochs</span><span class="p">,</span>
+                  <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span>
+                  <span class="n">num_workers</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+<span class="c1"># Test</span>
+<span class="n">test_loss</span><span class="p">,</span> <span class="n">test_acc</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">evaluate_dataset</span><span class="p">(</span><span class="n">test_dataset</span><span class="p">,</span>
+                                             <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span>
+                                             <span class="n">num_workers</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="using-callbacks">
+<h2>Using Callbacks<a class="headerlink" href="#using-callbacks" title="Permalink to this headline">¶</a></h2>
+<p>One nice feature of Poutyne is <a class="reference internal" href="../callbacks.html#poutyne.Callback" title="poutyne.Callback"><code class="xref py py-class docutils literal notranslate"><span class="pre">callbacks</span></code></a>. Callbacks allow doing actions during the training of the neural network. In the following example, we use three callbacks. The first that saves the latest weights in a file to be able to continue the optimization at the end of training if more epochs are needed. The second that saves the best weights according to the performance on the validation dataset. The last that saves the displayed logs into a TSV file.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Saves everything into saves/convnet_mnist</span>
+<span class="n">save_path</span> <span class="o">=</span> <span class="s2">&quot;saves/convnet_mnist&quot;</span>
 <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">save_path</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
 <span class="n">callbacks</span> <span class="o">=</span> <span class="p">[</span>
@@ -476,9 +378,27 @@
 <span class="p">]</span>
 </pre></div>
 </div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Instantiating our network</span>
+<span class="n">network</span> <span class="o">=</span> <span class="n">create_network</span><span class="p">()</span>
+
+<span class="c1"># Poutyne Model on GPU</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span><span class="n">network</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">loss_function</span><span class="p">,</span>
+              <span class="n">batch_metrics</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;accuracy&#39;</span><span class="p">],</span>
+              <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+
+<span class="c1"># Train</span>
+<span class="n">model</span><span class="o">.</span><span class="n">fit_generator</span><span class="p">(</span><span class="n">train_loader</span><span class="p">,</span>
+                    <span class="n">valid_loader</span><span class="p">,</span>
+                    <span class="n">epochs</span><span class="o">=</span><span class="n">num_epochs</span><span class="p">,</span>
+                    <span class="n">callbacks</span><span class="o">=</span><span class="n">callbacks</span><span class="p">)</span>
+
+<span class="c1"># Test</span>
+<span class="n">test_loss</span><span class="p">,</span> <span class="n">test_acc</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">evaluate_generator</span><span class="p">(</span><span class="n">test_loader</span><span class="p">)</span>
+</pre></div>
+</div>
 </div>
 <div class="section" id="making-your-own-callback">
-<span id="id3"></span><h2>Making Your own Callback<a class="headerlink" href="#making-your-own-callback" title="Permalink to this headline">¶</a></h2>
+<span id="id2"></span><h2>Making Your Own Callback<a class="headerlink" href="#making-your-own-callback" title="Permalink to this headline">¶</a></h2>
 <p>While Poutyne provides a great number of <a class="reference internal" href="../callbacks.html#poutyne.Callback" title="poutyne.Callback"><code class="xref py py-class docutils literal notranslate"><span class="pre">predefined</span> <span class="pre">callbacks</span></code></a>, it is sometimes useful to make your own callback.</p>
 <p>In the following example, we want to see the effect of temperature on the optimization of our neural network. To do so, we either increase or decrease the temperature during the optimization. As one can see in the result, temperature either as no effect or has a detrimental effect on the performance of the neural network. This is so because the temperature has for effect to artificially changing the learning rates. Since we have found the right learning rate, increasing or decreasing, it shows no improvement on the results.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">CrossEntropyLossWithTemperature</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
@@ -499,7 +419,6 @@
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">y_true</span><span class="p">):</span>
         <span class="n">y_pred</span> <span class="o">=</span> <span class="n">y_pred</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">temperature</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">celoss</span><span class="p">(</span><span class="n">y_pred</span><span class="p">,</span> <span class="n">y_true</span><span class="p">)</span>
-
 
 <span class="k">class</span> <span class="nc">TemperatureCallback</span><span class="p">(</span><span class="n">Callback</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -525,79 +444,172 @@
 </pre></div>
 </div>
 <p>Now let’s test our training loop for one epoch using the accuracy as the batch metric.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span><span class="n">full_network</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">loss_function</span><span class="p">,</span> <span class="n">batch_metrics</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;accuracy&#39;</span><span class="p">],</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Instantiating our network</span>
+<span class="n">network</span> <span class="o">=</span> <span class="n">create_network</span><span class="p">()</span>
+
+<span class="c1"># Poutyne Model on GPU</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span><span class="n">network</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">custom_loss_function</span><span class="p">,</span>
+              <span class="n">batch_metrics</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;accuracy&#39;</span><span class="p">],</span>
+              <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+
+<span class="c1"># Train</span>
 <span class="n">model</span><span class="o">.</span><span class="n">fit_generator</span><span class="p">(</span><span class="n">train_loader</span><span class="p">,</span>
                     <span class="n">valid_loader</span><span class="p">,</span>
-                    <span class="n">epochs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                    <span class="n">epochs</span><span class="o">=</span><span class="n">num_epochs</span><span class="p">,</span>
                     <span class="n">callbacks</span><span class="o">=</span><span class="n">callbacks</span><span class="p">)</span>
+
+<span class="c1"># Test</span>
+<span class="n">test_loss</span><span class="p">,</span> <span class="n">test_acc</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">evaluate_generator</span><span class="p">(</span><span class="n">test_loader</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="using-experiment">
+<h2>Using Experiment<a class="headerlink" href="#using-experiment" title="Permalink to this headline">¶</a></h2>
+<p>Most of the time, when using Poutyne (or even PyTorch in general), we will find ourselves in an iterative model hyperparameters finetuning loop. For efficient model search, we will usually wish to save our best performing models, their training and testing statistics and even sometimes wish to retrain an already trained model for further tuning. All of the above can be easily implemented with the flexibility of Poutyne Callbacks, but having to define and initialize each and every Callback object we wish for our model quickly feels cumbersome.</p>
+<p>This is why Poutyne provides an <a class="reference internal" href="../experiment.html#poutyne.Experiment" title="poutyne.Experiment"><code class="xref py py-class docutils literal notranslate"><span class="pre">Experiment</span></code></a> class, which aims specifically at enabling quick model iteration search, while not sacrificing the quality of a single experiment - statistics logging, best models saving, etc. Experiment is actually a simple wrapper between a PyTorch network and Poutyne’s core Callback objects for logging and saving. Given a working directory where to output the various logging files and a PyTorch network, the Experiment class reduces the whole training loop to a single line.</p>
+<p>The following code uses Poutyne’s <a class="reference internal" href="../experiment.html#poutyne.Experiment" title="poutyne.Experiment"><code class="xref py py-class docutils literal notranslate"><span class="pre">Experiment</span></code></a> class to train a network for 5 epochs. The code is quite simpler than the code in the Poutyne Callbacks section while doing more (only a few lines). Once trained for 5 epochs, it is then possible to resume the optimization at the 5th epoch for 5 more epochs until the 10th epoch using the same function.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">experiment_train</span><span class="p">(</span><span class="n">network</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function creates a Poutyne Experiment, trains the input module</span>
+<span class="sd">    on the train loader and then tests its performance on the test loader.</span>
+<span class="sd">    All training and testing statistics are saved, as well as best model</span>
+<span class="sd">    checkpoints.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        network (torch.nn.Module): The neural network to train.</span>
+<span class="sd">        working_directory (str): The directory where to output files to save.</span>
+<span class="sd">        epochs (int): The number of epochs. (Default: 5)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Everything is going to be saved in ./saves/{name}.</span>
+    <span class="n">save_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s1">&#39;saves&#39;</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+
+    <span class="c1"># Poutyne Experiment</span>
+    <span class="n">expt</span> <span class="o">=</span> <span class="n">Experiment</span><span class="p">(</span><span class="n">save_path</span><span class="p">,</span> <span class="n">network</span><span class="p">,</span> <span class="n">optimizer</span><span class="o">=</span><span class="n">optimizer</span><span class="p">,</span> <span class="n">task</span><span class="o">=</span><span class="s1">&#39;classif&#39;</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+
+    <span class="c1"># Train</span>
+    <span class="n">expt</span><span class="o">.</span><span class="n">train</span><span class="p">(</span><span class="n">train_loader</span><span class="p">,</span> <span class="n">valid_loader</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="n">epochs</span><span class="p">)</span>
+
+    <span class="c1"># Test</span>
+    <span class="n">expt</span><span class="o">.</span><span class="n">test</span><span class="p">(</span><span class="n">test_loader</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">network</span> <span class="o">=</span> <span class="n">create_network</span><span class="p">()</span>
+<span class="n">experiment_train</span><span class="p">(</span><span class="n">network</span><span class="p">,</span> <span class="s1">&#39;convnet_mnist_experiment&#39;</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Notice how setting <code class="docutils literal notranslate"><span class="pre">task='classif'</span></code> when instantiating <a class="reference internal" href="../experiment.html#poutyne.Experiment" title="poutyne.Experiment"><code class="xref py py-class docutils literal notranslate"><span class="pre">Experiment</span></code></a> adds for use our loss function, the batch metric accuracy, the epoch metric F1 and set up callbacks that use them. If you wish, you still can use your own loss function and metrics instead of passing this argument.</p>
+<p>We have trained for 5 epochs, let’s now resume training for another 5 epochs for a total of 10 epochs. Notice that we reinstantiate the network. Experiment will load back the weights for us and resume training.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">network</span> <span class="o">=</span> <span class="n">create_network</span><span class="p">()</span>
+<span class="n">experiment_train</span><span class="p">(</span><span class="n">network</span><span class="p">,</span> <span class="s1">&#39;convnet_mnist_experiment&#39;</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="coloring">
 <h2>Coloring<a class="headerlink" href="#coloring" title="Permalink to this headline">¶</a></h2>
-<p>Also, Poutyne use by default a coloring template of the training step when the package <code class="docutils literal notranslate"><span class="pre">colorama</span></code> is installed.
+<p>Also, Poutyne use by default a coloring template of the training step when the package <cite>colorama</cite> is installed.
 One could either remove the coloring (<code class="docutils literal notranslate"><span class="pre">progress_options=dict(coloring=False)</span></code>) or set a different coloring template using the fields:
 <code class="docutils literal notranslate"><span class="pre">text_color</span></code>, <code class="docutils literal notranslate"><span class="pre">ratio_color</span></code>, <code class="docutils literal notranslate"><span class="pre">metric_value_color</span></code>, <code class="docutils literal notranslate"><span class="pre">time_color</span></code> and <code class="docutils literal notranslate"><span class="pre">progress_bar_color</span></code>.
-If a field is not specified, the default color will be used. <a class="reference external" href="https://github.com/tartley/colorama/blob/9946cfb/colorama/ansi.py#L49">See available colors in colorama’s source code</a>.</p>
+If a field is not specified, the default color will be used.
+<a class="reference external" href="https://github.com/tartley/colorama/blob/9946cfb/colorama/ansi.py#L49">See available colors in colorama’s source code</a>.</p>
 <p>Here an example where we set the <code class="docutils literal notranslate"><span class="pre">text_color</span></code> to RED and the <code class="docutils literal notranslate"><span class="pre">progress_bar_color</span></code> to LIGHTGREEN_EX.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="o">.</span><span class="n">fit_generator</span><span class="p">(</span><span class="n">train_loader</span><span class="p">,</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">progress_options</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+    <span class="n">coloring</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">text_color</span><span class="o">=</span><span class="s2">&quot;RED&quot;</span><span class="p">,</span> <span class="n">progress_bar_color</span><span class="o">=</span><span class="s2">&quot;LIGHTGREEN_EX&quot;</span><span class="p">)</span>
+<span class="p">)</span>
+
+<span class="c1"># Instantiating our network</span>
+<span class="n">network</span> <span class="o">=</span> <span class="n">create_network</span><span class="p">()</span>
+
+<span class="c1"># Poutyne Model on GPU</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span><span class="n">network</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">loss_function</span><span class="p">,</span>
+              <span class="n">batch_metrics</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;accuracy&#39;</span><span class="p">],</span>
+              <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+
+<span class="c1"># Train</span>
+<span class="n">model</span><span class="o">.</span><span class="n">fit_generator</span><span class="p">(</span><span class="n">train_loader</span><span class="p">,</span>
                     <span class="n">valid_loader</span><span class="p">,</span>
-                    <span class="n">epochs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-                    <span class="n">callbacks</span><span class="o">=</span><span class="n">callbacks</span><span class="p">,</span>
-                    <span class="n">progress_options</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">coloring</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;text_color&quot;</span><span class="p">:</span> <span class="s2">&quot;RED&quot;</span><span class="p">,</span> <span class="s2">&quot;progress_bar_color&quot;</span><span class="p">:</span> <span class="s2">&quot;LIGHTGREEN_EX&quot;</span><span class="p">}))</span>
+                    <span class="n">epochs</span><span class="o">=</span><span class="n">num_epochs</span><span class="p">,</span>
+                    <span class="n">progress_options</span><span class="o">=</span><span class="n">progress_options</span><span class="p">)</span>
+
+<span class="c1"># Test</span>
+<span class="n">test_loss</span><span class="p">,</span> <span class="n">test_acc</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">evaluate_generator</span><span class="p">(</span><span class="n">test_loader</span><span class="p">,</span>
+                                               <span class="n">progress_options</span><span class="o">=</span><span class="n">progress_options</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="epoch-metrics">
 <h2>Epoch metrics<a class="headerlink" href="#epoch-metrics" title="Permalink to this headline">¶</a></h2>
 <p>It’s also possible to used epoch metrics such as <a class="reference internal" href="../metrics.html#poutyne.F1" title="poutyne.F1"><code class="xref py py-class docutils literal notranslate"><span class="pre">F1</span></code></a>. You could also define your own epoch metric using the <a class="reference internal" href="../metrics.html#poutyne.EpochMetric" title="poutyne.EpochMetric"><code class="xref py py-class docutils literal notranslate"><span class="pre">EpochMetric</span></code></a> interface.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span><span class="n">full_network</span><span class="p">,</span>
-              <span class="n">optimizer</span><span class="p">,</span>
-              <span class="n">loss_function</span><span class="p">,</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Instantiating our network</span>
+<span class="n">network</span> <span class="o">=</span> <span class="n">create_network</span><span class="p">()</span>
+
+<span class="c1"># Poutyne Model on GPU</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span><span class="n">network</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">loss_function</span><span class="p">,</span>
               <span class="n">batch_metrics</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;accuracy&#39;</span><span class="p">],</span>
               <span class="n">epoch_metrics</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;f1&#39;</span><span class="p">],</span>
               <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
-<span class="n">model</span><span class="o">.</span><span class="n">fit_generator</span><span class="p">(</span><span class="n">train_loader</span><span class="p">,</span>
-                    <span class="n">valid_loader</span><span class="p">,</span>
-                    <span class="n">epochs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-                    <span class="n">callbacks</span><span class="o">=</span><span class="n">callbacks</span><span class="p">)</span>
+
+<span class="c1"># Train</span>
+<span class="n">model</span><span class="o">.</span><span class="n">fit_generator</span><span class="p">(</span><span class="n">train_loader</span><span class="p">,</span> <span class="n">valid_loader</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="n">num_epochs</span><span class="p">)</span>
+
+<span class="c1"># Test</span>
+<span class="n">test_loss</span><span class="p">,</span> <span class="p">(</span><span class="n">test_acc</span><span class="p">,</span> <span class="n">test_f1</span><span class="p">)</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">evaluate_generator</span><span class="p">(</span><span class="n">test_loader</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Furthermore, you could also use the <a class="reference internal" href="../metrics.html#poutyne.SKLearnMetrics" title="poutyne.SKLearnMetrics"><code class="xref py py-class docutils literal notranslate"><span class="pre">SKLearnMetrics</span></code></a> wrapper to wrap a Scikit-learn metric as an epoch metric. Below, we show how to compute the AUC ROC using the <a class="reference internal" href="../metrics.html#poutyne.SKLearnMetrics" title="poutyne.SKLearnMetrics"><code class="xref py py-class docutils literal notranslate"><span class="pre">SKLearnMetrics</span></code></a> class. We have to inherit the class so that the data is passed into the right format for the scikit-learn <code class="docutils literal notranslate"><span class="pre">roc_auc_score</span></code> function.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">FlattenSKLearnMetrics</span><span class="p">(</span><span class="n">SKLearnMetrics</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">y_true</span><span class="p">):</span>
-        <span class="n">y_pred</span> <span class="o">=</span> <span class="n">y_pred</span><span class="o">.</span><span class="n">softmax</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-        <span class="n">y_pred</span> <span class="o">=</span> <span class="n">y_pred</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-        <span class="n">y_true</span> <span class="o">=</span> <span class="n">y_true</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
-        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="n">y_pred</span><span class="p">,</span> <span class="n">y_true</span><span class="p">)</span>
+<p>Furthermore, you could also use the <a class="reference internal" href="../metrics.html#poutyne.SKLearnMetrics" title="poutyne.SKLearnMetrics"><code class="xref py py-class docutils literal notranslate"><span class="pre">SKLearnMetrics</span></code></a> wrapper to wrap a Scikit-learn metric as an epoch metric. Below, we show how to compute the AUC ROC using the <a class="reference internal" href="../metrics.html#poutyne.SKLearnMetrics" title="poutyne.SKLearnMetrics"><code class="xref py py-class docutils literal notranslate"><span class="pre">SKLearnMetrics</span></code></a> class.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">softmax</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute softmax function.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">e_x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">x</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="n">axis</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">e_x</span> <span class="o">/</span> <span class="n">e_x</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="n">axis</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-<span class="n">roc_epoch_metric</span> <span class="o">=</span> <span class="n">FlattenSKLearnMetrics</span><span class="p">(</span><span class="n">roc_auc_score</span><span class="p">,</span>
-                                         <span class="n">kwargs</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">multi_class</span><span class="o">=</span><span class="s1">&#39;ovr&#39;</span><span class="p">,</span> <span class="n">average</span><span class="o">=</span><span class="s1">&#39;macro&#39;</span><span class="p">))</span>
-<span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span><span class="n">full_network</span><span class="p">,</span>
-              <span class="n">optimizer</span><span class="p">,</span>
-              <span class="n">loss_function</span><span class="p">,</span>
+<span class="k">def</span> <span class="nf">roc_auc</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Since the `roc_auc_score` from Scikit-learn requires normalized probabilities,</span>
+<span class="sd">    we use the softmax function on the predictions.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">y_pred</span> <span class="o">=</span> <span class="n">softmax</span><span class="p">(</span><span class="n">y_pred</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">roc_auc_score</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<span class="c1"># kwargs are keyword arguments we wish to pass to roc_auc.</span>
+<span class="n">roc_epoch_metric</span> <span class="o">=</span> <span class="n">SKLearnMetrics</span><span class="p">(</span><span class="n">roc_auc</span><span class="p">,</span>
+                                  <span class="n">kwargs</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">multi_class</span><span class="o">=</span><span class="s1">&#39;ovr&#39;</span><span class="p">,</span> <span class="n">average</span><span class="o">=</span><span class="s1">&#39;macro&#39;</span><span class="p">))</span>
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Instantiating our network</span>
+<span class="n">network</span> <span class="o">=</span> <span class="n">create_network</span><span class="p">()</span>
+
+<span class="c1"># Poutyne Model on GPU</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span><span class="n">network</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">loss_function</span><span class="p">,</span>
               <span class="n">batch_metrics</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;accuracy&#39;</span><span class="p">],</span>
               <span class="n">epoch_metrics</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;f1&#39;</span><span class="p">,</span> <span class="n">roc_epoch_metric</span><span class="p">],</span>
               <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
-<span class="n">model</span><span class="o">.</span><span class="n">fit_generator</span><span class="p">(</span><span class="n">train_loader</span><span class="p">,</span>
-                    <span class="n">valid_loader</span><span class="p">,</span>
-                    <span class="n">epochs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-                    <span class="n">callbacks</span><span class="o">=</span><span class="n">callbacks</span><span class="p">)</span>
+
+<span class="c1"># Train</span>
+<span class="n">model</span><span class="o">.</span><span class="n">fit_generator</span><span class="p">(</span><span class="n">train_loader</span><span class="p">,</span> <span class="n">valid_loader</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="n">num_epochs</span><span class="p">)</span>
+
+<span class="c1"># Test</span>
+<span class="n">test_loss</span><span class="p">,</span> <span class="p">(</span><span class="n">test_acc</span><span class="p">,</span> <span class="n">test_f1</span><span class="p">,</span> <span class="n">test_roc</span><span class="p">)</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">evaluate_generator</span><span class="p">(</span><span class="n">test_loader</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
-<div class="section" id="metric-naming">
-<h2>Metric naming<a class="headerlink" href="#metric-naming" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="custom-metric-names">
+<h2>Custom Metric Names<a class="headerlink" href="#custom-metric-names" title="Permalink to this headline">¶</a></h2>
 <p>It’s also possible to name the metric using a tuple format <code class="docutils literal notranslate"><span class="pre">(&lt;metric</span> <span class="pre">name&gt;,</span> <span class="pre">metric)</span></code>. That way, it’s possible to use multiple times the same metric type (i.e. having micro and macro F1-score).</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span><span class="n">full_network</span><span class="p">,</span>
-              <span class="n">optimizer</span><span class="p">,</span>
-              <span class="n">loss_function</span><span class="p">,</span>
-              <span class="n">batch_metrics</span><span class="o">=</span><span class="p">[(</span><span class="s2">&quot;My accuracy name&quot;</span><span class="p">,</span> <span class="n">accuracy</span><span class="p">)],</span>
-              <span class="n">epoch_metrics</span><span class="o">=</span><span class="p">[(</span><span class="s2">&quot;My metric name&quot;</span><span class="p">,</span> <span class="n">F1</span><span class="p">())],</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Instantiating our network</span>
+<span class="n">network</span> <span class="o">=</span> <span class="n">create_network</span><span class="p">()</span>
+
+<span class="c1"># Poutyne Model on GPU</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span><span class="n">network</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">loss_function</span><span class="p">,</span>
+              <span class="n">batch_metrics</span><span class="o">=</span><span class="p">[(</span><span class="s2">&quot;My accuracy name&quot;</span><span class="p">,</span> <span class="s1">&#39;accuracy&#39;</span><span class="p">)],</span>
+              <span class="n">epoch_metrics</span><span class="o">=</span><span class="p">[(</span><span class="s2">&quot;My f1 name&quot;</span><span class="p">,</span> <span class="s1">&#39;f1&#39;</span><span class="p">)],</span>
               <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
-<span class="n">model</span><span class="o">.</span><span class="n">fit_generator</span><span class="p">(</span><span class="n">train_loader</span><span class="p">,</span>
-                    <span class="n">valid_loader</span><span class="p">,</span>
-                    <span class="n">epochs</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="c1"># Train</span>
+<span class="n">model</span><span class="o">.</span><span class="n">fit_generator</span><span class="p">(</span><span class="n">train_loader</span><span class="p">,</span> <span class="n">valid_loader</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="n">num_epochs</span><span class="p">)</span>
+
+<span class="c1"># Test</span>
+<span class="n">test_loss</span><span class="p">,</span> <span class="p">(</span><span class="n">test_acc</span><span class="p">,</span> <span class="n">test_f1</span><span class="p">)</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">evaluate_generator</span><span class="p">(</span><span class="n">test_loader</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -608,15 +620,17 @@ If a field is not specified, the default color will be used. <a class="reference
 <p class="admonition-title">Note</p>
 <p>Obviously, you need more than one GPUs for that option.</p>
 </div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span><span class="n">full_network</span><span class="p">,</span>
-              <span class="n">optimizer</span><span class="p">,</span>
-              <span class="n">loss_function</span><span class="p">,</span>
-              <span class="n">batch_metrics</span><span class="o">=</span><span class="p">[(</span><span class="s2">&quot;My accuracy name&quot;</span><span class="p">,</span> <span class="n">accuracy</span><span class="p">)],</span>
-              <span class="n">epoch_metrics</span><span class="o">=</span><span class="p">[(</span><span class="s2">&quot;My metric name&quot;</span><span class="p">,</span> <span class="n">F1</span><span class="p">())],</span>
+<p>In our case here, multi-gpus takes more time because the task is not big enough to profit from multi-gpus.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Instantiating our network</span>
+<span class="n">network</span> <span class="o">=</span> <span class="n">create_network</span><span class="p">()</span>
+
+<span class="c1"># Poutyne Model on GPU</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span><span class="n">network</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">loss_function</span><span class="p">,</span>
+              <span class="n">batch_metrics</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;accuracy&#39;</span><span class="p">],</span>
               <span class="n">device</span><span class="o">=</span><span class="s2">&quot;all&quot;</span><span class="p">)</span>
-<span class="n">model</span><span class="o">.</span><span class="n">fit_generator</span><span class="p">(</span><span class="n">train_loader</span><span class="p">,</span>
-                    <span class="n">valid_loader</span><span class="p">,</span>
-                    <span class="n">epochs</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="c1"># Train</span>
+<span class="n">model</span><span class="o">.</span><span class="n">fit_generator</span><span class="p">(</span><span class="n">train_loader</span><span class="p">,</span> <span class="n">valid_loader</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="n">num_epochs</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -628,7 +642,7 @@ If a field is not specified, the default color will be used. <a class="reference
           </div>
           <footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-        <a href="policy_interface.html" class="btn btn-neutral float-right" title="Interface of policy" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="sequence_tagging.html" class="btn btn-neutral float-right" title="Sequence Tagging With an RNN" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
         <a href="introduction.html" class="btn btn-neutral float-left" title="Introduction to PyTorch and Poutyne" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
 

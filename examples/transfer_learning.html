@@ -7,12 +7,14 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>Transfer learning example &mdash; Poutyne 1.4 documentation</title>
+  <title>Transfer learning example &mdash; Poutyne 1.5 documentation</title>
   
 
   
   <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
 
   
   
@@ -29,6 +31,7 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
         <script src="../_static/doctools.js"></script>
@@ -39,7 +42,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Image Reconstruction Using Poutyne" href="image_reconstruction.html" />
-    <link rel="prev" title="Train CIFAR with the policy module" href="train_with_policy_module.html" /> 
+    <link rel="prev" title="Interface of policy" href="policy_interface.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -66,7 +69,7 @@
             
             
               <div class="version">
-                1.4
+                1.5
               </div>
             
           
@@ -104,8 +107,8 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction to PyTorch and Poutyne</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tips_and_tricks.html">Tips and Tricks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sequence_tagging.html">Sequence Tagging With an RNN</a></li>
 <li class="toctree-l1"><a class="reference internal" href="policy_interface.html">Interface of <code class="docutils literal notranslate"><span class="pre">policy</span></code></a></li>
-<li class="toctree-l1"><a class="reference internal" href="train_with_policy_module.html">Train CIFAR with the <code class="docutils literal notranslate"><span class="pre">policy</span></code> module</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Transfer learning example</a></li>
 <li class="toctree-l1"><a class="reference internal" href="image_reconstruction.html">Image Reconstruction Using Poutyne</a></li>
 <li class="toctree-l1"><a class="reference internal" href="semantic_segmentation.html">Semantic segmentation using Poutyne</a></li>
@@ -186,21 +189,20 @@
 </ul>
 </div>
 <p>But first, let’s import all the needed packages.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">math</span>
-<span class="kn">import</span> <span class="nn">os</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">tarfile</span>
 <span class="kn">import</span> <span class="nn">urllib.request</span>
-<span class="kn">from</span> <span class="nn">shutil</span> <span class="kn">import</span> <span class="n">copyfile</span>
 
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <span class="n">train_test_split</span>
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
 <span class="kn">import</span> <span class="nn">torch.optim</span> <span class="k">as</span> <span class="nn">optim</span>
 <span class="kn">import</span> <span class="nn">torchvision.models</span> <span class="k">as</span> <span class="nn">models</span>
 <span class="kn">from</span> <span class="nn">torch.utils</span> <span class="kn">import</span> <span class="n">model_zoo</span>
-<span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="kn">import</span> <span class="n">DataLoader</span>
+<span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="kn">import</span> <span class="n">Subset</span><span class="p">,</span> <span class="n">DataLoader</span>
 <span class="kn">from</span> <span class="nn">torchvision</span> <span class="kn">import</span> <span class="n">transforms</span>
 <span class="kn">from</span> <span class="nn">torchvision.datasets</span> <span class="kn">import</span> <span class="n">ImageFolder</span>
 
@@ -211,6 +213,7 @@
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">set_seeds</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
 </pre></div>
 </div>
+<p>We download the dataset.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">download_and_extract_dataset</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
     <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="n">tgz_filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s2">&quot;images.tgz&quot;</span><span class="p">)</span>
@@ -222,49 +225,42 @@
     <span class="n">archive</span><span class="o">.</span><span class="n">extractall</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">copy</span><span class="p">(</span><span class="n">source_path</span><span class="p">,</span> <span class="n">filenames</span><span class="p">,</span> <span class="n">dest_path</span><span class="p">):</span>
-    <span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="n">filenames</span><span class="p">:</span>
-        <span class="n">source</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">source_path</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
-        <span class="n">dest</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">dest_path</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
-        <span class="n">copyfile</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">dest</span><span class="p">)</span>
-
-<span class="k">def</span> <span class="nf">split_train_valid_test</span><span class="p">(</span><span class="n">dataset_path</span><span class="p">,</span> <span class="n">train_path</span><span class="p">,</span> <span class="n">valid_path</span><span class="p">,</span> <span class="n">test_path</span><span class="p">,</span> <span class="n">train_split</span><span class="o">=</span><span class="mf">0.6</span><span class="p">,</span> <span class="n">valid_split</span><span class="o">=</span><span class="mf">0.2</span><span class="p">):</span> <span class="c1"># test_split=0.2</span>
-    <span class="k">for</span> <span class="n">classname</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">dataset_path</span><span class="p">)):</span>
-        <span class="k">if</span> <span class="n">classname</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">):</span>
-            <span class="k">continue</span>
-        <span class="n">train_class_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">train_path</span><span class="p">,</span> <span class="n">classname</span><span class="p">)</span>
-        <span class="n">valid_class_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">valid_path</span><span class="p">,</span> <span class="n">classname</span><span class="p">)</span>
-        <span class="n">test_class_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">test_path</span><span class="p">,</span> <span class="n">classname</span><span class="p">)</span>
-
-        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">train_class_path</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">valid_class_path</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">test_class_path</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-
-        <span class="n">dataset_class_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">dataset_path</span><span class="p">,</span> <span class="n">classname</span><span class="p">)</span>
-        <span class="n">filenames</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">filename</span> <span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">dataset_class_path</span><span class="p">)</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">filename</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">))</span>
-        <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">shuffle</span><span class="p">(</span><span class="n">filenames</span><span class="p">)</span>
-
-        <span class="n">num_examples</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">filenames</span><span class="p">)</span>
-        <span class="n">train_last_idx</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">num_examples</span><span class="o">*</span><span class="n">train_split</span><span class="p">)</span>
-        <span class="n">valid_last_idx</span> <span class="o">=</span> <span class="n">train_last_idx</span> <span class="o">+</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">num_examples</span><span class="o">*</span><span class="n">valid_split</span><span class="p">)</span>
-        <span class="n">train_filenames</span> <span class="o">=</span> <span class="n">filenames</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">train_last_idx</span><span class="p">]</span>
-        <span class="n">valid_filenames</span> <span class="o">=</span> <span class="n">filenames</span><span class="p">[</span><span class="n">train_last_idx</span><span class="p">:</span><span class="n">valid_last_idx</span><span class="p">]</span>
-        <span class="n">test_filenames</span> <span class="o">=</span> <span class="n">filenames</span><span class="p">[</span><span class="n">valid_last_idx</span><span class="p">:]</span>
-        <span class="n">copy</span><span class="p">(</span><span class="n">dataset_class_path</span><span class="p">,</span> <span class="n">train_filenames</span><span class="p">,</span> <span class="n">train_class_path</span><span class="p">)</span>
-        <span class="n">copy</span><span class="p">(</span><span class="n">dataset_class_path</span><span class="p">,</span> <span class="n">valid_filenames</span><span class="p">,</span> <span class="n">valid_class_path</span><span class="p">)</span>
-        <span class="n">copy</span><span class="p">(</span><span class="n">dataset_class_path</span><span class="p">,</span> <span class="n">test_filenames</span><span class="p">,</span> <span class="n">test_class_path</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>We do the split train/valid/test.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">base_path</span> <span class="o">=</span> <span class="s1">&#39;./datasets/CUB200&#39;</span>
-<span class="n">dataset_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">base_path</span><span class="p">,</span> <span class="s1">&#39;images&#39;</span><span class="p">)</span>
-<span class="n">train_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">base_path</span><span class="p">,</span> <span class="s1">&#39;train&#39;</span><span class="p">)</span>
-<span class="n">valid_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">base_path</span><span class="p">,</span> <span class="s1">&#39;valid&#39;</span><span class="p">)</span>
-<span class="n">test_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">base_path</span><span class="p">,</span> <span class="s1">&#39;test&#39;</span><span class="p">)</span>
+<span class="n">extract_dest</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">base_path</span><span class="p">,</span> <span class="s1">&#39;images&#39;</span><span class="p">)</span>
+<span class="n">download_and_extract_dataset</span><span class="p">(</span><span class="n">base_path</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">download_and_extract_dataset</span><span class="p">(</span><span class="n">base_path</span><span class="p">)</span>
-<span class="n">split_train_valid_test</span><span class="p">(</span><span class="n">dataset_path</span><span class="p">,</span> <span class="n">train_path</span><span class="p">,</span> <span class="n">valid_path</span><span class="p">,</span> <span class="n">test_path</span><span class="p">)</span>
+<p>We create our dataset object.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">norm_coefs</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="n">norm_coefs</span><span class="p">[</span><span class="s1">&#39;cub200&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[(</span><span class="mf">0.47421962</span><span class="p">,</span>  <span class="mf">0.4914721</span> <span class="p">,</span>  <span class="mf">0.42382449</span><span class="p">),</span> <span class="p">(</span><span class="mf">0.22846779</span><span class="p">,</span>  <span class="mf">0.22387765</span><span class="p">,</span>  <span class="mf">0.26495799</span><span class="p">)]</span>
+<span class="n">norm_coefs</span><span class="p">[</span><span class="s1">&#39;imagenet&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[(</span><span class="mf">0.485</span><span class="p">,</span> <span class="mf">0.456</span><span class="p">,</span> <span class="mf">0.406</span><span class="p">),</span> <span class="p">(</span><span class="mf">0.229</span><span class="p">,</span> <span class="mf">0.224</span><span class="p">,</span> <span class="mf">0.225</span><span class="p">)]</span>
+<span class="n">transform</span> <span class="o">=</span> <span class="n">transforms</span><span class="o">.</span><span class="n">Compose</span><span class="p">([</span>
+    <span class="n">transforms</span><span class="o">.</span><span class="n">Resize</span><span class="p">((</span><span class="mi">224</span><span class="p">,</span><span class="mi">224</span><span class="p">)),</span>
+    <span class="n">transforms</span><span class="o">.</span><span class="n">ToTensor</span><span class="p">(),</span>
+    <span class="n">transforms</span><span class="o">.</span><span class="n">Normalize</span><span class="p">(</span><span class="o">*</span><span class="n">norm_coefs</span><span class="p">[</span><span class="s1">&#39;cub200&#39;</span><span class="p">])</span>
+<span class="p">])</span>
+
+<span class="c1"># is_valid_file removes hidden files from the dataset.</span>
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">ImageFolder</span><span class="p">(</span><span class="n">extract_dest</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">transform</span><span class="p">,</span>
+                    <span class="n">is_valid_file</span><span class="o">=</span><span class="k">lambda</span> <span class="n">path</span><span class="p">:</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">path</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>We do the split train/valid/test with a 60/20/20 split respectively. We do a <em>stratified</em> split with scikit-learn in order to get examples of every class in every split.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># We take 60% of the dataset for the training dataset</span>
+<span class="n">train_indices</span><span class="p">,</span> <span class="n">valid_test_indices</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">dataset</span><span class="p">)),</span>
+                                                    <span class="n">train_size</span><span class="o">=</span><span class="mf">0.6</span><span class="p">,</span>
+                                                    <span class="n">stratify</span><span class="o">=</span><span class="n">dataset</span><span class="o">.</span><span class="n">targets</span><span class="p">,</span>
+                                                    <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+<span class="c1"># We take 20% for the validation dataset and 20% for the test dataset</span>
+<span class="c1"># (i.e. 50% of the remaining 40%).</span>
+<span class="n">valid_indices</span><span class="p">,</span> <span class="n">test_indices</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">valid_test_indices</span><span class="p">,</span>
+                                            <span class="n">train_size</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+                                            <span class="n">stratify</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">targets</span><span class="p">)[</span><span class="n">valid_test_indices</span><span class="p">],</span>
+                                            <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+
+<span class="n">train_dataset</span> <span class="o">=</span> <span class="n">Subset</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">train_indices</span><span class="p">)</span>
+<span class="n">valid_dataset</span> <span class="o">=</span> <span class="n">Subset</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">valid_indices</span><span class="p">)</span>
+<span class="n">test_dataset</span> <span class="o">=</span> <span class="n">Subset</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">test_indices</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Now, let’s set our training constants. We first have the CUDA device used for training if one is present. Second, we set the number of classes (i.e. one for each number). Finally, we set the batch size (i.e. the number of elements to see before updating the model), the learning rate for the optimizer, and the number of epochs (i.e. the number of times we see the full dataset).</p>
@@ -277,23 +273,10 @@
 <span class="n">n_epoch</span> <span class="o">=</span> <span class="mi">30</span>
 </pre></div>
 </div>
-<p>Creation of the PyTorch’s datasets for our problem.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">norm_coefs</span> <span class="o">=</span> <span class="p">{}</span>
-<span class="n">norm_coefs</span><span class="p">[</span><span class="s1">&#39;cub200&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[(</span><span class="mf">0.47421962</span><span class="p">,</span>  <span class="mf">0.4914721</span> <span class="p">,</span>  <span class="mf">0.42382449</span><span class="p">),</span> <span class="p">(</span><span class="mf">0.22846779</span><span class="p">,</span>  <span class="mf">0.22387765</span><span class="p">,</span>  <span class="mf">0.26495799</span><span class="p">)]</span>
-<span class="n">norm_coefs</span><span class="p">[</span><span class="s1">&#39;imagenet&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[(</span><span class="mf">0.485</span><span class="p">,</span> <span class="mf">0.456</span><span class="p">,</span> <span class="mf">0.406</span><span class="p">),</span> <span class="p">(</span><span class="mf">0.229</span><span class="p">,</span> <span class="mf">0.224</span><span class="p">,</span> <span class="mf">0.225</span><span class="p">)]</span>
-<span class="n">transform</span> <span class="o">=</span> <span class="n">transforms</span><span class="o">.</span><span class="n">Compose</span><span class="p">([</span>
-    <span class="n">transforms</span><span class="o">.</span><span class="n">Resize</span><span class="p">((</span><span class="mi">224</span><span class="p">,</span><span class="mi">224</span><span class="p">)),</span>
-    <span class="n">transforms</span><span class="o">.</span><span class="n">ToTensor</span><span class="p">(),</span>
-    <span class="n">transforms</span><span class="o">.</span><span class="n">Normalize</span><span class="p">(</span><span class="o">*</span><span class="n">norm_coefs</span><span class="p">[</span><span class="s1">&#39;cub200&#39;</span><span class="p">])</span>
-<span class="p">])</span>
-
-<span class="n">train_set</span> <span class="o">=</span> <span class="n">ImageFolder</span><span class="p">(</span><span class="n">train_path</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">transform</span><span class="p">)</span>
-<span class="n">valid_set</span> <span class="o">=</span> <span class="n">ImageFolder</span><span class="p">(</span><span class="n">valid_path</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">transform</span><span class="p">)</span>
-<span class="n">test_set</span> <span class="o">=</span> <span class="n">ImageFolder</span><span class="p">(</span><span class="n">test_path</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">transform</span><span class="p">)</span>
-
-<span class="n">train_loader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">train_set</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">num_workers</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">valid_loader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">valid_set</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">num_workers</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
-<span class="n">test_loader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">test_set</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">num_workers</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+<p>Creation of the PyTorch’s dataloader to split our data into batches.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">train_loader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">train_dataset</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">num_workers</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">valid_loader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">valid_dataset</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">num_workers</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+<span class="n">test_loader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">test_dataset</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">num_workers</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>We load a pretrained <code class="docutils literal notranslate"><span class="pre">ResNet-18</span></code> networks and replace the head with the number of neurons equal to our number of classes.</p>
@@ -423,7 +406,7 @@
           <footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
         <a href="image_reconstruction.html" class="btn btn-neutral float-right" title="Image Reconstruction Using Poutyne" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
-        <a href="train_with_policy_module.html" class="btn btn-neutral float-left" title="Train CIFAR with the policy module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="policy_interface.html" class="btn btn-neutral float-left" title="Interface of policy" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
 
   <hr/>

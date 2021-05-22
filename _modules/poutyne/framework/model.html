@@ -7,12 +7,14 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>poutyne.framework.model &mdash; Poutyne 1.4 documentation</title>
+  <title>poutyne.framework.model &mdash; Poutyne 1.5 documentation</title>
   
 
   
   <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
 
   
   
@@ -29,6 +31,7 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
         <script src="../../../_static/jquery.js"></script>
         <script src="../../../_static/underscore.js"></script>
         <script src="../../../_static/doctools.js"></script>
@@ -64,7 +67,7 @@
             
             
               <div class="version">
-                1.4
+                1.5
               </div>
             
           
@@ -102,8 +105,8 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../examples/introduction.html">Introduction to PyTorch and Poutyne</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../examples/tips_and_tricks.html">Tips and Tricks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/sequence_tagging.html">Sequence Tagging With an RNN</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../examples/policy_interface.html">Interface of <code class="docutils literal notranslate"><span class="pre">policy</span></code></a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../examples/train_with_policy_module.html">Train CIFAR with the <code class="docutils literal notranslate"><span class="pre">policy</span></code> module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../examples/transfer_learning.html">Transfer learning example</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../examples/image_reconstruction.html">Image Reconstruction Using Poutyne</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../examples/semantic_segmentation.html">Semantic segmentation using Poutyne</a></li>
@@ -400,18 +403,6 @@
 <span class="sd">        Trains the network on a dataset. This method creates generators and calls</span>
 <span class="sd">        the :func:`~Model.fit_generator()` method.</span>
 
-<span class="sd">        .. note:: With **Jupyter Notebooks**, a great number of displays per second (around &gt; 200) seems to slow down</span>
-<span class="sd">            Jupyter Notebook. In which cases, we suggest to pass</span>
-<span class="sd">            ``progress_options={&#39;show_every_n_train_steps&#39;: 100, &#39;show_on_valid&#39;: False}`` so that the number of</span>
-<span class="sd">            displays per second is at an acceptable level.</span>
-
-<span class="sd">        .. warning:: With **Jupyter Notebooks in Firefox**, if ``colorama`` is installed and colors are enabled (as it</span>
-<span class="sd">            is by default), a great number of epochs and steps per epoch can cause a spike in memory usage in Firefox.</span>
-<span class="sd">            The problem does not occur in Google Chrome/Chromium. To avoid this problem, you can decrease the number of</span>
-<span class="sd">            steps shown by passing ``progress_options={&#39;show_every_n_train_steps&#39;: 100, &#39;show_on_valid&#39;: False}`` or you</span>
-<span class="sd">            can disable the colors by passing ``progress_options={&#39;coloring&#39;: False}``. See</span>
-<span class="sd">            `this Github issue for details &lt;https://github.com/jupyter/notebook/issues/5897&gt;`__.</span>
-
 <span class="sd">        Args:</span>
 <span class="sd">            x (Union[~torch.Tensor, ~numpy.ndarray] or Union[tuple, list] of Union[~torch.Tensor, ~numpy.ndarray]):</span>
 <span class="sd">                Training dataset. Union[Tensor, ndarray] if the model has a single input.</span>
@@ -523,18 +514,6 @@
 <span class="sd">        Trains the network on a dataset. This method creates dataloaders and calls the</span>
 <span class="sd">        :func:`~Model.fit_generator()` method.</span>
 
-<span class="sd">        .. note:: With **Jupyter Notebooks**, a great number of displays per second (around &gt; 200) seems to slow down</span>
-<span class="sd">            Jupyter Notebook. In which cases, we suggest to pass</span>
-<span class="sd">            ``progress_options={&#39;show_every_n_train_steps&#39;: 100, &#39;show_on_valid&#39;: False}`` so that the number of</span>
-<span class="sd">            displays per second is at an acceptable level.</span>
-
-<span class="sd">        .. warning:: With **Jupyter Notebooks in Firefox**, if ``colorama`` is installed and colors are enabled (as it</span>
-<span class="sd">            is by default), a great number of epochs and steps per epoch can cause a spike in memory usage in Firefox.</span>
-<span class="sd">            The problem does not occur in Google Chrome/Chromium. To avoid this problem, you can decrease the number of</span>
-<span class="sd">            steps shown by passing ``progress_options={&#39;show_every_n_train_steps&#39;: 100, &#39;show_on_valid&#39;: False}`` or you</span>
-<span class="sd">            can disable the colors by passing ``progress_options={&#39;coloring&#39;: False}``. See</span>
-<span class="sd">            `this Github issue for details &lt;https://github.com/jupyter/notebook/issues/5897&gt;`__.</span>
-
 <span class="sd">        Args:</span>
 <span class="sd">            train_dataset (~torch.utils.data.Dataset): Training dataset.</span>
 <span class="sd">            valid_dataset (~torch.utils.data.Dataset): Validation dataset.</span>
@@ -638,18 +617,6 @@
         <span class="c1"># pylint: disable=line-too-long</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Trains the network on a dataset using a generator.</span>
-
-<span class="sd">        .. note:: With **Jupyter Notebooks**, a great number of displays per second (around &gt; 200) seems to slow down</span>
-<span class="sd">            Jupyter Notebook. In which cases, we suggest to pass</span>
-<span class="sd">            ``progress_options={&#39;show_every_n_train_steps&#39;: 100, &#39;show_on_valid&#39;: False}`` so that the number of</span>
-<span class="sd">            displays per second is at an acceptable level.</span>
-
-<span class="sd">        .. warning:: With **Jupyter Notebooks in Firefox**, if ``colorama`` is installed and colors are enabled (as it</span>
-<span class="sd">            is by default), a great number of epochs and steps per epoch can cause a spike in memory usage in Firefox.</span>
-<span class="sd">            The problem does not occur in Google Chrome/Chromium. To avoid this problem, you can decrease the number of</span>
-<span class="sd">            steps shown by passing ``progress_options={&#39;show_every_n_train_steps&#39;: 100, &#39;show_on_valid&#39;: False}`` or you</span>
-<span class="sd">            can disable the colors by passing ``progress_options={&#39;coloring&#39;: False}``. See</span>
-<span class="sd">            `this Github issue for details &lt;https://github.com/jupyter/notebook/issues/5897&gt;`__.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            train_generator: Generator-like object for the training dataset. The generator must</span>
@@ -879,7 +846,7 @@
 
         <span class="k">return</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span> <span class="k">if</span> <span class="n">y</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">x</span>
 
-<div class="viewcode-block" id="Model.train_on_batch"><a class="viewcode-back" href="../../../model.html#poutyne.Model.train_on_batch">[docs]</a>    <span class="k">def</span> <span class="nf">train_on_batch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">return_pred</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="Model.train_on_batch"><a class="viewcode-back" href="../../../model.html#poutyne.Model.train_on_batch">[docs]</a>    <span class="k">def</span> <span class="nf">train_on_batch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">return_pred</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">return_dict_format</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Trains the network for the batch ``(x, y)`` and computes the loss and the metrics, and</span>
 <span class="sd">        optionally returns the predictions.</span>
@@ -888,6 +855,8 @@
 <span class="sd">            x: Input data as a batch.</span>
 <span class="sd">            y: Target data as a batch.</span>
 <span class="sd">            return_pred (bool, optional): Whether to return the predictions.</span>
+<span class="sd">                (Default value = False)</span>
+<span class="sd">            return_dict_format (bool, optional): Whether to return the loss and metrics in a dict format or not.</span>
 <span class="sd">                (Default value = False)</span>
 
 <span class="sd">        Returns:</span>
@@ -901,6 +870,9 @@
 <span class="sd">            Tuple ``(loss, metrics, pred_y)`` if ``return_pred`` is true where</span>
 <span class="sd">            ``pred_y`` is the predictions with tensors converted into Numpy</span>
 <span class="sd">            arrays.</span>
+
+<span class="sd">            If ``return_dict_format`` is True, then ``loss, metrics`` are replaced by a</span>
+<span class="sd">            dictionnary.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Impossible to fit when optimizer is None.&quot;</span><span class="p">)</span>
@@ -908,21 +880,32 @@
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_set_training_mode</span><span class="p">(</span><span class="kc">True</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_transfer_optimizer_state_to_right_device</span><span class="p">()</span>
             <span class="n">loss</span><span class="p">,</span> <span class="n">metrics</span><span class="p">,</span> <span class="n">pred_y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fit_batch</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">return_pred</span><span class="o">=</span><span class="n">return_pred</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_format_return</span><span class="p">(</span><span class="n">loss</span><span class="p">,</span> <span class="n">metrics</span><span class="p">,</span> <span class="n">pred_y</span><span class="p">,</span> <span class="n">return_pred</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">_format_return</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">loss</span><span class="p">,</span> <span class="n">metrics</span><span class="p">,</span> <span class="n">pred_y</span><span class="p">,</span> <span class="n">return_pred</span><span class="p">,</span> <span class="n">true_y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">return_ground_truth</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">return_dict_format</span><span class="p">:</span>
+            <span class="n">logs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">loss</span><span class="o">=</span><span class="n">loss</span><span class="p">)</span>
+            <span class="n">logs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">batch_metrics_names</span><span class="p">,</span> <span class="n">metrics</span><span class="p">))</span>
+
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_format_truth_pred_return</span><span class="p">((</span><span class="n">logs</span><span class="p">,</span> <span class="p">),</span> <span class="n">pred_y</span><span class="p">,</span> <span class="n">return_pred</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_format_loss_metrics_return</span><span class="p">(</span><span class="n">loss</span><span class="p">,</span> <span class="n">metrics</span><span class="p">,</span> <span class="n">pred_y</span><span class="p">,</span> <span class="n">return_pred</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_format_loss_metrics_return</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">loss</span><span class="p">,</span> <span class="n">metrics</span><span class="p">,</span> <span class="n">pred_y</span><span class="p">,</span> <span class="n">return_pred</span><span class="p">,</span> <span class="n">true_y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">return_ground_truth</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="c1"># pylint: disable=too-many-arguments</span>
         <span class="n">ret</span> <span class="o">=</span> <span class="p">(</span><span class="n">loss</span><span class="p">,</span> <span class="p">)</span>
 
         <span class="n">ret</span> <span class="o">+=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">metrics</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">metrics</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">1</span> <span class="k">else</span> <span class="p">(</span><span class="n">metrics</span><span class="p">,</span> <span class="p">)</span>
 
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_format_truth_pred_return</span><span class="p">(</span><span class="n">ret</span><span class="p">,</span> <span class="n">pred_y</span><span class="p">,</span> <span class="n">return_pred</span><span class="p">,</span> <span class="n">true_y</span><span class="p">,</span> <span class="n">return_ground_truth</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_format_truth_pred_return</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">init</span><span class="p">,</span> <span class="n">pred_y</span><span class="p">,</span> <span class="n">return_pred</span><span class="p">,</span> <span class="n">true_y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">return_ground_truth</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="c1"># pylint: disable=too-many-arguments</span>
         <span class="k">if</span> <span class="n">return_pred</span><span class="p">:</span>
-            <span class="n">ret</span> <span class="o">+=</span> <span class="p">(</span><span class="n">pred_y</span><span class="p">,</span> <span class="p">)</span>
+            <span class="n">init</span> <span class="o">+=</span> <span class="p">(</span><span class="n">pred_y</span><span class="p">,</span> <span class="p">)</span>
 
         <span class="k">if</span> <span class="n">return_ground_truth</span><span class="p">:</span>
-            <span class="n">ret</span> <span class="o">+=</span> <span class="p">(</span><span class="n">true_y</span><span class="p">,</span> <span class="p">)</span>
+            <span class="n">init</span> <span class="o">+=</span> <span class="p">(</span><span class="n">true_y</span><span class="p">,</span> <span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">ret</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">ret</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">ret</span>
+        <span class="k">return</span> <span class="n">init</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">init</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">init</span>
 
 <div class="viewcode-block" id="Model.predict"><a class="viewcode-back" href="../../../model.html#poutyne.Model.predict">[docs]</a>    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">dataloader_kwargs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -1361,12 +1344,13 @@
         <span class="n">callback_list</span><span class="o">.</span><span class="n">on_test_end</span><span class="p">(</span><span class="n">test_metrics_log</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">return_dict_format</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">test_metrics_log</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_format_truth_pred_return</span><span class="p">((</span><span class="n">test_metrics_log</span><span class="p">,</span> <span class="p">),</span> <span class="n">pred_y</span><span class="p">,</span> <span class="n">return_pred</span><span class="p">,</span> <span class="n">true_y</span><span class="p">,</span>
+                                                  <span class="n">return_ground_truth</span><span class="p">)</span>
 
         <span class="n">metrics</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">batch_metrics</span><span class="p">,</span> <span class="n">step_iterator</span><span class="o">.</span><span class="n">epoch_metrics</span><span class="p">))</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_format_return</span><span class="p">(</span><span class="n">loss</span><span class="p">,</span> <span class="n">metrics</span><span class="p">,</span> <span class="n">pred_y</span><span class="p">,</span> <span class="n">return_pred</span><span class="p">,</span> <span class="n">true_y</span><span class="p">,</span> <span class="n">return_ground_truth</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_format_loss_metrics_return</span><span class="p">(</span><span class="n">loss</span><span class="p">,</span> <span class="n">metrics</span><span class="p">,</span> <span class="n">pred_y</span><span class="p">,</span> <span class="n">return_pred</span><span class="p">,</span> <span class="n">true_y</span><span class="p">,</span> <span class="n">return_ground_truth</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Model.evaluate_on_batch"><a class="viewcode-back" href="../../../model.html#poutyne.Model.evaluate_on_batch">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate_on_batch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">return_pred</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="Model.evaluate_on_batch"><a class="viewcode-back" href="../../../model.html#poutyne.Model.evaluate_on_batch">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate_on_batch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">return_pred</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">return_dict_format</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Computes the loss and the metrics of the network on a single batch of samples and optionally</span>
 <span class="sd">        returns the predictions.</span>
@@ -1375,6 +1359,8 @@
 <span class="sd">            x: Input data as a batch.</span>
 <span class="sd">            y: Target data as a batch.</span>
 <span class="sd">            return_pred (bool, optional): Whether to return the predictions for ``batch``.</span>
+<span class="sd">                (Default value = False)</span>
+<span class="sd">            return_dict_format (bool, optional): Whether to return the loss and metrics in a dict format or not.</span>
 <span class="sd">                (Default value = False)</span>
 
 <span class="sd">        Returns:</span>
@@ -1387,10 +1373,20 @@
 
 <span class="sd">            If ``return_pred`` is True, ``pred_y`` is the list of the predictions</span>
 <span class="sd">            of each batch with tensors converted into Numpy arrays. It is otherwise ommited.</span>
+
+<span class="sd">            If ``return_dict_format`` is True, then ``loss, metrics`` are replaced by a</span>
+<span class="sd">            dictionnary.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_set_training_mode</span><span class="p">(</span><span class="kc">False</span><span class="p">):</span>
             <span class="n">loss</span><span class="p">,</span> <span class="n">metrics</span><span class="p">,</span> <span class="n">pred_y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_loss_and_metrics</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">return_pred</span><span class="o">=</span><span class="n">return_pred</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_format_return</span><span class="p">(</span><span class="n">loss</span><span class="p">,</span> <span class="n">metrics</span><span class="p">,</span> <span class="n">pred_y</span><span class="p">,</span> <span class="n">return_pred</span><span class="p">)</span></div>
+
+        <span class="k">if</span> <span class="n">return_dict_format</span><span class="p">:</span>
+            <span class="n">logs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">loss</span><span class="o">=</span><span class="n">loss</span><span class="p">)</span>
+            <span class="n">logs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">batch_metrics_names</span><span class="p">,</span> <span class="n">metrics</span><span class="p">))</span>
+
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_format_truth_pred_return</span><span class="p">((</span><span class="n">logs</span><span class="p">,</span> <span class="p">),</span> <span class="n">pred_y</span><span class="p">,</span> <span class="n">return_pred</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_format_loss_metrics_return</span><span class="p">(</span><span class="n">loss</span><span class="p">,</span> <span class="n">metrics</span><span class="p">,</span> <span class="n">pred_y</span><span class="p">,</span> <span class="n">return_pred</span><span class="p">)</span></div>
 
     <span class="k">def</span> <span class="nf">_validate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step_iterator</span><span class="p">,</span> <span class="n">return_pred</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">return_ground_truth</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="n">pred_list</span> <span class="o">=</span> <span class="kc">None</span>

@@ -7,12 +7,14 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>Utils &mdash; Poutyne 1.4 documentation</title>
+  <title>Utils &mdash; Poutyne 1.5 documentation</title>
   
 
   
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
 
   
   
@@ -29,6 +31,7 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
@@ -66,7 +69,7 @@
             
             
               <div class="version">
-                1.4
+                1.5
               </div>
             
           
@@ -104,8 +107,8 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="examples/introduction.html">Introduction to PyTorch and Poutyne</a></li>
 <li class="toctree-l1"><a class="reference internal" href="examples/tips_and_tricks.html">Tips and Tricks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples/sequence_tagging.html">Sequence Tagging With an RNN</a></li>
 <li class="toctree-l1"><a class="reference internal" href="examples/policy_interface.html">Interface of <code class="docutils literal notranslate"><span class="pre">policy</span></code></a></li>
-<li class="toctree-l1"><a class="reference internal" href="examples/train_with_policy_module.html">Train CIFAR with the <code class="docutils literal notranslate"><span class="pre">policy</span></code> module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="examples/transfer_learning.html">Transfer learning example</a></li>
 <li class="toctree-l1"><a class="reference internal" href="examples/image_reconstruction.html">Image Reconstruction Using Poutyne</a></li>
 <li class="toctree-l1"><a class="reference internal" href="examples/semantic_segmentation.html">Semantic segmentation using Poutyne</a></li>
@@ -181,8 +184,8 @@
 <p>These utils functions only support the following basic Python types: tuple,
 list and dict.</p>
 <dl class="py function">
-<dt id="poutyne.torch_to_numpy">
-<code class="sig-prename descclassname"><span class="pre">poutyne.</span></code><code class="sig-name descname"><span class="pre">torch_to_numpy</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">copy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poutyne/utils.html#torch_to_numpy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.torch_to_numpy" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="poutyne.torch_to_numpy">
+<span class="sig-prename descclassname"><span class="pre">poutyne.</span></span><span class="sig-name descname"><span class="pre">torch_to_numpy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">copy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poutyne/utils.html#torch_to_numpy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.torch_to_numpy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert to Numpy arrays all tensors inside a Python object composed of the supported types.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -218,8 +221,8 @@ arrays. Not supported type are left as reference in the new object.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="poutyne.numpy_to_torch">
-<code class="sig-prename descclassname"><span class="pre">poutyne.</span></code><code class="sig-name descname"><span class="pre">numpy_to_torch</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poutyne/utils.html#numpy_to_torch"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.numpy_to_torch" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="poutyne.numpy_to_torch">
+<span class="sig-prename descclassname"><span class="pre">poutyne.</span></span><span class="sig-name descname"><span class="pre">numpy_to_torch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poutyne/utils.html#numpy_to_torch"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.numpy_to_torch" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert to tensors all Numpy arrays inside a Python object composed of the supported types.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -247,8 +250,8 @@ tensors. Not supported type are left as reference in the new object.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="poutyne.torch_apply">
-<code class="sig-prename descclassname"><span class="pre">poutyne.</span></code><code class="sig-name descname"><span class="pre">torch_apply</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">func</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poutyne/utils.html#torch_apply"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.torch_apply" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="poutyne.torch_apply">
+<span class="sig-prename descclassname"><span class="pre">poutyne.</span></span><span class="sig-name descname"><span class="pre">torch_apply</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">func</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poutyne/utils.html#torch_apply"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.torch_apply" title="Permalink to this definition">¶</a></dt>
 <dd><p>Apply a function to all tensors inside a Python object composed of the supported types.</p>
 <p>Supported types are: list, tuple and dict.</p>
 <dl class="field-list simple">
@@ -266,8 +269,8 @@ the function <cite>func</cite>. Not supported type are left as reference in the 
 </dd></dl>
 
 <dl class="py function">
-<dt id="poutyne.set_seeds">
-<code class="sig-prename descclassname"><span class="pre">poutyne.</span></code><code class="sig-name descname"><span class="pre">set_seeds</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seed</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poutyne/utils.html#set_seeds"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.set_seeds" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="poutyne.set_seeds">
+<span class="sig-prename descclassname"><span class="pre">poutyne.</span></span><span class="sig-name descname"><span class="pre">set_seeds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seed</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poutyne/utils.html#set_seeds"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.set_seeds" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set Python, Numpy and Pytorch’s random seeds in order to make
 the random number generation procedure deterministic and reproducible.</p>
 <dl class="field-list simple">

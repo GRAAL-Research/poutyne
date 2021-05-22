@@ -7,12 +7,14 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>poutyne.framework.callbacks.progress &mdash; Poutyne 1.4 documentation</title>
+  <title>poutyne.framework.callbacks.progress &mdash; Poutyne 1.5 documentation</title>
   
 
   
   <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
 
   
   
@@ -29,6 +31,7 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
         <script src="../../../../_static/jquery.js"></script>
         <script src="../../../../_static/underscore.js"></script>
         <script src="../../../../_static/doctools.js"></script>
@@ -64,7 +67,7 @@
             
             
               <div class="version">
-                1.4
+                1.5
               </div>
             
           
@@ -102,8 +105,8 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../../examples/introduction.html">Introduction to PyTorch and Poutyne</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../examples/tips_and_tricks.html">Tips and Tricks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../examples/sequence_tagging.html">Sequence Tagging With an RNN</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../examples/policy_interface.html">Interface of <code class="docutils literal notranslate"><span class="pre">policy</span></code></a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../examples/train_with_policy_module.html">Train CIFAR with the <code class="docutils literal notranslate"><span class="pre">policy</span></code> module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../examples/transfer_learning.html">Transfer learning example</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../examples/image_reconstruction.html">Image Reconstruction Using Poutyne</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../examples/semantic_segmentation.html">Semantic segmentation using Poutyne</a></li>
@@ -396,6 +399,48 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">func</span><span class="p">(</span><span class="n">remaining_time</span><span class="o">=</span><span class="n">step_times_rate</span><span class="p">,</span> <span class="n">batch_number</span><span class="o">=</span><span class="n">batch_number</span><span class="p">,</span> <span class="n">metrics_str</span><span class="o">=</span><span class="n">metrics_str</span><span class="p">,</span> <span class="n">do_print</span><span class="o">=</span><span class="n">do_print</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">last_step</span> <span class="o">=</span> <span class="n">batch_number</span></div>
+
+
+<span class="k">class</span> <span class="nc">EpochProgressionCallback</span><span class="p">(</span><span class="n">Callback</span><span class="p">):</span>
+    <span class="n">EVERY_N_EPOCHS_CHOICES</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="s1">&#39;none&#39;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">coloring</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">show_every_n_epochs</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">color_progress</span> <span class="o">=</span> <span class="n">ColorProgress</span><span class="p">(</span><span class="n">coloring</span><span class="o">=</span><span class="n">coloring</span><span class="p">)</span>
+
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">show_every_n_epochs</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">or</span> \
+            <span class="n">show_every_n_epochs</span> <span class="ow">in</span> <span class="n">EpochProgressionCallback</span><span class="o">.</span><span class="n">EVERY_N_EPOCHS_CHOICES</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">show_every_n_epochs</span> <span class="o">=</span> <span class="n">show_every_n_epochs</span>
+
+    <span class="k">def</span> <span class="nf">set_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">params</span><span class="p">:</span> <span class="n">Dict</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">set_params</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_train_steps</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;steps&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_valid_steps</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;valid_steps&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">on_train_begin</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;loss&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">metrics_names</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">epochs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;epochs&#39;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">_test_show_epoch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">epoch_number</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">show_every_n_epochs</span> <span class="o">!=</span> <span class="s1">&#39;none&#39;</span> <span class="ow">and</span> \
+            <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">show_every_n_epochs</span> <span class="o">==</span> <span class="s1">&#39;all&#39;</span> <span class="ow">or</span> <span class="n">epoch_number</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">show_every_n_epochs</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">on_epoch_begin</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">epoch_number</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">logs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_test_show_epoch</span><span class="p">(</span><span class="n">epoch_number</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">color_progress</span><span class="o">.</span><span class="n">on_epoch_begin</span><span class="p">(</span><span class="n">epoch_number</span><span class="o">=</span><span class="n">epoch_number</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">epochs</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">on_epoch_end</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">epoch_number</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">logs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_test_show_epoch</span><span class="p">(</span><span class="n">epoch_number</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">color_progress</span><span class="o">.</span><span class="n">on_epoch_end</span><span class="p">(</span><span class="n">total_time</span><span class="o">=</span><span class="n">logs</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">],</span>
+                                             <span class="n">train_last_steps</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_train_steps</span><span class="p">,</span>
+                                             <span class="n">valid_last_steps</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_valid_steps</span><span class="p">,</span>
+                                             <span class="n">metrics_str</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_metrics_string</span><span class="p">(</span><span class="n">logs</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">_get_metrics_string</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="n">train_metrics_str_gen</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">: </span><span class="si">{:f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">logs</span><span class="p">[</span><span class="n">k</span><span class="p">])</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span> <span class="k">if</span> <span class="n">logs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">k</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">val_metrics_str_gen</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">: </span><span class="si">{:f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s1">&#39;val_&#39;</span> <span class="o">+</span> <span class="n">k</span><span class="p">,</span> <span class="n">logs</span><span class="p">[</span><span class="s1">&#39;val_&#39;</span> <span class="o">+</span> <span class="n">k</span><span class="p">])</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span>
+                               <span class="k">if</span> <span class="n">logs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;val_&#39;</span> <span class="o">+</span> <span class="n">k</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">return</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">itertools</span><span class="o">.</span><span class="n">chain</span><span class="p">(</span><span class="n">train_metrics_str_gen</span><span class="p">,</span> <span class="n">val_metrics_str_gen</span><span class="p">))</span>
 </pre></div>
 
            </div>

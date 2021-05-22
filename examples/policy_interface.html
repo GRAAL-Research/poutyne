@@ -7,12 +7,14 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>Interface of policy &mdash; Poutyne 1.4 documentation</title>
+  <title>Interface of policy &mdash; Poutyne 1.5 documentation</title>
   
 
   
   <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
 
   
   
@@ -29,6 +31,7 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
         <script src="../_static/doctools.js"></script>
@@ -38,8 +41,8 @@
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Train CIFAR with the policy module" href="train_with_policy_module.html" />
-    <link rel="prev" title="Tips and Tricks" href="tips_and_tricks.html" /> 
+    <link rel="next" title="Transfer learning example" href="transfer_learning.html" />
+    <link rel="prev" title="Sequence Tagging With an RNN" href="sequence_tagging.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -66,7 +69,7 @@
             
             
               <div class="version">
-                1.4
+                1.5
               </div>
             
           
@@ -104,6 +107,7 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction to PyTorch and Poutyne</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tips_and_tricks.html">Tips and Tricks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sequence_tagging.html">Sequence Tagging With an RNN</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Interface of <code class="docutils literal notranslate"><span class="pre">policy</span></code></a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#about-policy">About <code class="docutils literal notranslate"><span class="pre">policy</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#parameter-spaces-and-phases">Parameter Spaces and Phases</a></li>
@@ -115,9 +119,16 @@
 <li class="toctree-l3"><a class="reference internal" href="#use-already-defined-complex-policies">Use Already Defined Complex Policies</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="#train-cifar-with-the-policy-module">Train CIFAR With the <code class="docutils literal notranslate"><span class="pre">policy</span></code> Module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#training-constants">Training Constants</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#load-the-data">Load the Data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#the-model">The Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#training-without-the-policies-module">Training Without the <code class="docutils literal notranslate"><span class="pre">policies</span></code> Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#training-with-the-policies-module">Training With the <code class="docutils literal notranslate"><span class="pre">policies</span></code> Module</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="train_with_policy_module.html">Train CIFAR with the <code class="docutils literal notranslate"><span class="pre">policy</span></code> module</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="transfer_learning.html">Transfer learning example</a></li>
 <li class="toctree-l1"><a class="reference internal" href="image_reconstruction.html">Image Reconstruction Using Poutyne</a></li>
 <li class="toctree-l1"><a class="reference internal" href="semantic_segmentation.html">Semantic segmentation using Poutyne</a></li>
@@ -197,6 +208,19 @@
 <li><p>Run in <a class="reference external" href="https://colab.research.google.com/github/GRAAL-Research/poutyne/blob/master/examples/policy_interface.ipynb">Google Colab</a></p></li>
 </ul>
 </div>
+<p>Let’s install the latest version of Poutyne (if it’s not already) and import all the needed packages.
+For the first section discussing the <code class="docutils literal notranslate"><span class="pre">policy</span></code> API, only the Poutyne import is necessary.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
+<span class="kn">import</span> <span class="nn">torch.optim</span> <span class="k">as</span> <span class="nn">optim</span>
+<span class="kn">import</span> <span class="nn">torchvision.datasets</span> <span class="k">as</span> <span class="nn">datasets</span>
+<span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="kn">import</span> <span class="n">DataLoader</span>
+<span class="kn">from</span> <span class="nn">torchvision</span> <span class="kn">import</span> <span class="n">transforms</span>
+<span class="kn">from</span> <span class="nn">torchvision.models</span> <span class="kn">import</span> <span class="n">resnet18</span>
+
+<span class="kn">from</span> <span class="nn">poutyne</span> <span class="kn">import</span> <span class="n">Model</span><span class="p">,</span> <span class="n">OptimizerPolicy</span><span class="p">,</span> <span class="n">linspace</span><span class="p">,</span> <span class="n">cosinespace</span><span class="p">,</span> <span class="n">one_cycle_phases</span>
+</pre></div>
+</div>
 <div class="section" id="about-policy">
 <h2>About <code class="docutils literal notranslate"><span class="pre">policy</span></code><a class="headerlink" href="#about-policy" title="Permalink to this headline">¶</a></h2>
 <p>Policies give you fine-grained control over the training process.
@@ -240,14 +264,15 @@ This example demonstrates how policies work and how you can create your own poli
 <p>Phases can have multiple parameters:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">phase</span> <span class="o">=</span> <span class="n">Phase</span><span class="p">(</span>
     <span class="n">lr</span><span class="o">=</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span>
-    <span class="n">momentum</span><span class="o">=</span><span class="n">cosinespace</span><span class="p">(</span><span class="o">.</span><span class="mi">99</span><span class="p">,</span> <span class="o">.</span><span class="mi">9</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span>
+    <span class="n">momentum</span><span class="o">=</span><span class="n">cosinespace</span><span class="p">(</span><span class="mf">.99</span><span class="p">,</span> <span class="mf">.9</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span>
 <span class="p">)</span>
 
 <span class="n">phase</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="s2">&quot;lr&quot;</span><span class="p">);</span>
 <span class="n">phase</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="s2">&quot;momentum&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="../_images/phase_multiple_viz.png" src="../_images/phase_multiple_viz.png" />
+<img alt="../_images/phase_multiple_viz_lin.png" src="../_images/phase_multiple_viz_lin.png" />
+<img alt="../_images/phase_multiple_viz_cos.png" src="../_images/phase_multiple_viz_cos.png" />
 </div>
 <div class="section" id="visualize-different-phases">
 <h3>Visualize Different Phases<a class="headerlink" href="#visualize-different-phases" title="Permalink to this headline">¶</a></h3>
@@ -255,7 +280,7 @@ This example demonstrates how policies work and how you can create your own poli
 
 <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
 <span class="c1"># Constant value</span>
-<span class="n">Phase</span><span class="p">(</span><span class="n">lr</span><span class="o">=</span><span class="n">linspace</span><span class="p">(</span><span class="o">.</span><span class="mi">7</span><span class="p">,</span> <span class="o">.</span><span class="mi">7</span><span class="p">,</span> <span class="n">steps</span><span class="p">))</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">)</span>
+<span class="n">Phase</span><span class="p">(</span><span class="n">lr</span><span class="o">=</span><span class="n">linspace</span><span class="p">(</span><span class="mf">.7</span><span class="p">,</span> <span class="mf">.7</span><span class="p">,</span> <span class="n">steps</span><span class="p">))</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">)</span>
 <span class="c1"># Linear</span>
 <span class="n">Phase</span><span class="p">(</span><span class="n">lr</span><span class="o">=</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">steps</span><span class="p">))</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">)</span>
 <span class="c1"># Cosine</span>
@@ -267,7 +292,7 @@ This example demonstrates how policies work and how you can create your own poli
 <div class="section" id="visualize-multiple-parameters-in-one-phase">
 <h3>Visualize Multiple Parameters in One Phase<a class="headerlink" href="#visualize-multiple-parameters-in-one-phase" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">steps</span> <span class="o">=</span> <span class="mi">100</span>
-<span class="n">phase</span> <span class="o">=</span> <span class="n">Phase</span><span class="p">(</span><span class="n">lr</span><span class="o">=</span><span class="n">linspace</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">steps</span><span class="p">),</span> <span class="n">momentum</span><span class="o">=</span><span class="n">cosinespace</span><span class="p">(</span><span class="o">.</span><span class="mi">8</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">steps</span><span class="p">))</span>
+<span class="n">phase</span> <span class="o">=</span> <span class="n">Phase</span><span class="p">(</span><span class="n">lr</span><span class="o">=</span><span class="n">linspace</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">steps</span><span class="p">),</span> <span class="n">momentum</span><span class="o">=</span><span class="n">cosinespace</span><span class="p">(</span><span class="mf">.8</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">steps</span><span class="p">))</span>
 
 <span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
 <span class="n">phase</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="s2">&quot;lr&quot;</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
@@ -285,8 +310,8 @@ This example demonstrates how policies work and how you can create your own poli
 <span class="n">policy</span> <span class="o">=</span> <span class="n">OptimizerPolicy</span><span class="p">([</span>
     <span class="n">Phase</span><span class="p">(</span><span class="n">lr</span><span class="o">=</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">100</span><span class="p">)),</span>
     <span class="n">Phase</span><span class="p">(</span><span class="n">lr</span><span class="o">=</span><span class="n">cosinespace</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">200</span><span class="p">)),</span>
-    <span class="n">Phase</span><span class="p">(</span><span class="n">lr</span><span class="o">=</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="o">.</span><span class="mi">5</span><span class="p">,</span> <span class="mi">100</span><span class="p">)),</span>
-    <span class="n">Phase</span><span class="p">(</span><span class="n">lr</span><span class="o">=</span><span class="n">linspace</span><span class="p">(</span><span class="o">.</span><span class="mi">5</span><span class="p">,</span> <span class="o">.</span><span class="mi">1</span><span class="p">,</span> <span class="mi">300</span><span class="p">)),</span>
+    <span class="n">Phase</span><span class="p">(</span><span class="n">lr</span><span class="o">=</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">.5</span><span class="p">,</span> <span class="mi">100</span><span class="p">)),</span>
+    <span class="n">Phase</span><span class="p">(</span><span class="n">lr</span><span class="o">=</span><span class="n">linspace</span><span class="p">(</span><span class="mf">.5</span><span class="p">,</span> <span class="mf">.1</span><span class="p">,</span> <span class="mi">300</span><span class="p">)),</span>
 <span class="p">])</span>
 
 <span class="n">policy</span><span class="o">.</span><span class="n">plot</span><span class="p">();</span>
@@ -325,7 +350,123 @@ This example demonstrates how policies work and how you can create your own poli
 <span class="n">tp</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="s2">&quot;momentum&quot;</span><span class="p">);</span>
 </pre></div>
 </div>
-<img alt="../_images/phase_cycle.png" src="../_images/phase_cycle.png" />
+<img alt="../_images/phase_cycle_lr.png" src="../_images/phase_cycle_lr.png" />
+<img alt="../_images/phase_cycle_momentum.png" src="../_images/phase_cycle_momentum.png" />
+</div>
+</div>
+<div class="section" id="train-cifar-with-the-policy-module">
+<h2>Train CIFAR With the <code class="docutils literal notranslate"><span class="pre">policy</span></code> Module<a class="headerlink" href="#train-cifar-with-the-policy-module" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="training-constants">
+<h3>Training Constants<a class="headerlink" href="#training-constants" title="Permalink to this headline">¶</a></h3>
+<p>But first, let’s set the training constants, the CUDA device used for training if one is present, we set the batch size (i.e. the number of elements to see before updating the model) and the number of epochs (i.e. the number of times we see the full dataset).</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">cuda_device</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">&quot;cuda:</span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">cuda_device</span> <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span> <span class="k">else</span> <span class="s2">&quot;cpu&quot;</span><span class="p">)</span>
+
+<span class="n">batch_size</span> <span class="o">=</span> <span class="mi">1024</span>
+<span class="n">epochs</span> <span class="o">=</span> <span class="mi">5</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="load-the-data">
+<h3>Load the Data<a class="headerlink" href="#load-the-data" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">imagenet_mean</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.485</span><span class="p">,</span> <span class="mf">0.456</span><span class="p">,</span> <span class="mf">0.406</span><span class="p">]</span>
+<span class="n">imagenet_std</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.229</span><span class="p">,</span> <span class="mf">0.224</span><span class="p">,</span> <span class="mf">0.225</span><span class="p">]</span>
+
+<span class="n">train_transform</span> <span class="o">=</span> <span class="n">transforms</span><span class="o">.</span><span class="n">Compose</span><span class="p">([</span>
+    <span class="n">transforms</span><span class="o">.</span><span class="n">RandomHorizontalFlip</span><span class="p">(),</span>
+    <span class="n">transforms</span><span class="o">.</span><span class="n">ColorJitter</span><span class="p">(</span><span class="mf">.3</span><span class="p">,</span> <span class="mf">.3</span><span class="p">,</span> <span class="mf">.3</span><span class="p">),</span>
+    <span class="n">transforms</span><span class="o">.</span><span class="n">ToTensor</span><span class="p">(),</span>
+    <span class="n">transforms</span><span class="o">.</span><span class="n">Normalize</span><span class="p">(</span><span class="n">imagenet_mean</span><span class="p">,</span> <span class="n">imagenet_std</span><span class="p">),</span>
+<span class="p">])</span>
+<span class="n">valid_transform</span> <span class="o">=</span> <span class="n">transforms</span><span class="o">.</span><span class="n">Compose</span><span class="p">([</span>
+    <span class="n">transforms</span><span class="o">.</span><span class="n">ToTensor</span><span class="p">(),</span>
+    <span class="n">transforms</span><span class="o">.</span><span class="n">Normalize</span><span class="p">(</span><span class="n">imagenet_mean</span><span class="p">,</span> <span class="n">imagenet_std</span><span class="p">),</span>
+<span class="p">])</span>
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">root</span> <span class="o">=</span> <span class="s2">&quot;datasets&quot;</span>
+<span class="n">train_dataset</span> <span class="o">=</span> <span class="n">datasets</span><span class="o">.</span><span class="n">CIFAR10</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">train</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">train_transform</span><span class="p">,</span> <span class="n">download</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">valid_dataset</span> <span class="o">=</span> <span class="n">datasets</span><span class="o">.</span><span class="n">CIFAR10</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">train</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">valid_transform</span><span class="p">,</span> <span class="n">download</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">train_loader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span>
+    <span class="n">train_dataset</span><span class="p">,</span>
+    <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span>
+    <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">num_workers</span><span class="o">=</span><span class="mi">8</span>
+<span class="p">)</span>
+<span class="n">valid_loader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span>
+    <span class="n">valid_dataset</span><span class="p">,</span>
+    <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span>
+    <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">num_workers</span><span class="o">=</span><span class="mi">8</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="the-model">
+<h3>The Model<a class="headerlink" href="#the-model" title="Permalink to this headline">¶</a></h3>
+<p>We’ll train a simple <code class="docutils literal notranslate"><span class="pre">ResNet-18</span></code> network.
+This takes a while without GPU but is pretty quick with GPU.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">get_network</span><span class="p">():</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">resnet18</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">avgpool</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">AdaptiveAvgPool2d</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">fc</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">512</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">model</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="training-without-the-policies-module">
+<h3>Training Without the <code class="docutils literal notranslate"><span class="pre">policies</span></code> Module<a class="headerlink" href="#training-without-the-policies-module" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">network</span> <span class="o">=</span> <span class="n">get_network</span><span class="p">()</span>
+<span class="n">criterion</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">CrossEntropyLoss</span><span class="p">()</span>
+<span class="n">optimizer</span> <span class="o">=</span> <span class="n">optim</span><span class="o">.</span><span class="n">SGD</span><span class="p">(</span><span class="n">network</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.01</span><span class="p">)</span>
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span>
+    <span class="n">network</span><span class="p">,</span>
+    <span class="n">optimizer</span><span class="p">,</span>
+    <span class="n">criterion</span><span class="p">,</span>
+    <span class="n">batch_metrics</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;acc&quot;</span><span class="p">],</span>
+    <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">history</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">fit_generator</span><span class="p">(</span>
+    <span class="n">train_loader</span><span class="p">,</span>
+    <span class="n">valid_loader</span><span class="p">,</span>
+    <span class="n">epochs</span><span class="o">=</span><span class="n">epochs</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="training-with-the-policies-module">
+<h3>Training With the <code class="docutils literal notranslate"><span class="pre">policies</span></code> Module<a class="headerlink" href="#training-with-the-policies-module" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">steps_per_epoch</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">train_loader</span><span class="p">)</span>
+<span class="n">steps_per_epoch</span>
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">network</span> <span class="o">=</span> <span class="n">get_network</span><span class="p">()</span>
+<span class="n">criterion</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">CrossEntropyLoss</span><span class="p">()</span>
+<span class="n">optimizer</span> <span class="o">=</span> <span class="n">optim</span><span class="o">.</span><span class="n">SGD</span><span class="p">(</span><span class="n">network</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.01</span><span class="p">)</span>
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span>
+    <span class="n">network</span><span class="p">,</span>
+    <span class="n">optimizer</span><span class="p">,</span>
+    <span class="n">criterion</span><span class="p">,</span>
+    <span class="n">batch_metrics</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;acc&quot;</span><span class="p">],</span>
+    <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">policy</span> <span class="o">=</span> <span class="n">OptimizerPolicy</span><span class="p">(</span>
+    <span class="n">one_cycle_phases</span><span class="p">(</span><span class="n">epochs</span> <span class="o">*</span> <span class="n">steps_per_epoch</span><span class="p">,</span> <span class="n">lr</span><span class="o">=</span><span class="p">(</span><span class="mf">0.01</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.008</span><span class="p">)),</span>
+<span class="p">)</span>
+<span class="n">history</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">fit_generator</span><span class="p">(</span>
+    <span class="n">train_loader</span><span class="p">,</span>
+    <span class="n">valid_loader</span><span class="p">,</span>
+    <span class="n">epochs</span><span class="o">=</span><span class="n">epochs</span><span class="p">,</span>
+    <span class="n">callbacks</span><span class="o">=</span><span class="p">[</span><span class="n">policy</span><span class="p">],</span>
+<span class="p">)</span>
+</pre></div>
+</div>
 </div>
 </div>
 </div>
@@ -336,8 +477,8 @@ This example demonstrates how policies work and how you can create your own poli
           </div>
           <footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-        <a href="train_with_policy_module.html" class="btn btn-neutral float-right" title="Train CIFAR with the policy module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
-        <a href="tips_and_tricks.html" class="btn btn-neutral float-left" title="Tips and Tricks" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="transfer_learning.html" class="btn btn-neutral float-right" title="Transfer learning example" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="sequence_tagging.html" class="btn btn-neutral float-left" title="Sequence Tagging With an RNN" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
 
   <hr/>
