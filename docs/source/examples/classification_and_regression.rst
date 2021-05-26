@@ -20,7 +20,7 @@ Let's import all the needed packages.
     import matplotlib.pyplot as plt
     import numpy as np
     import pandas as pd
-    import gdown
+    import wget
     import zipfile
     import cv2
     from natsort import natsorted
@@ -68,6 +68,8 @@ The section below consists of a few lines of codes that help us download celebA 
     data_root = 'data/celeba'
     # Path to folder with the dataset
     dataset_folder = f'{data_root}/img_align_celeba'
+    os.makedirs(data_root, exist_ok=True)
+    os.makedirs(dataset_folder, exist_ok=True)
 
     # URL for the CelebA dataset (aligned images, attributes, landmasrks)
     url = 'https://graal.ift.ulaval.ca/public/celeba/img_align_celeba.zip'
@@ -79,14 +81,14 @@ The section below consists of a few lines of codes that help us download celebA 
     land_mark_path = f'{data_root}/list_landmarks_align_celeba.txt'
     attr_path = f'{data_root}/list_attr_celeba.txt'
 
-    # Create required directories 
-    os.makedirs(data_root, exist_ok=True)
-    os.makedirs(dataset_folder, exist_ok=True)
-
     # Download the dataset from the source
-    gdown.download(url, download_path, quiet=False)
-    gdown.download(land_mark_url, land_mark_path, quiet=False)
-    gdown.download(attr_url, attr_path, quiet=False)
+    wget.download(url,download_path)
+    wget.download(land_mark_url,land_mark_path)
+    wget.download(attr_url,attr_path)
+
+    # Path to folder with the dataset
+    dataset_folder = f'{data_root}/img_align_celeba'
+    os.makedirs(dataset_folder, exist_ok=True)
 
     # Unzip the downloaded file 
     with zipfile.ZipFile(download_path, 'r') as ziphandler:
@@ -168,6 +170,7 @@ Here, we can see an example from the training dataset. It shows an image of a pe
     image = train_dataset[sample_number][0]
     image = image.permute(1,2,0).detach().numpy()
     image_rgb = cv2.cvtColor(np.float32(image), cv2.COLOR_BGR2RGB)
+    image_rgb = image_rgb * imagenet_std + imagenet_mean
     Gender = 'male' if int(train_dataset[sample_number][1][0])==1 else 'female'
     print('Gender is: ', Gender)
     w, h = train_dataset[sample_number][1][2]
@@ -197,7 +200,7 @@ Below, we define a new class, named 'ClassifierLocalizer, which accepts a pre-tr
             self.num_classes = num_classes
             
             # create cnn model
-            model = models.__dict__[model_name](True)
+            model = getattr(models, model_name)(pretrained=True)
             
             # remove fc layers and add a new fc layer
             num_features = model.fc.in_features
@@ -305,7 +308,7 @@ Now let's evaluate the performance of the network visually.
     image = valid_dataset[sample_number][0]
     image = image.permute(1,2,0).detach().numpy()
     image_rgb = cv2.cvtColor(np.float32(image), cv2.COLOR_BGR2RGB)
-    #Gender = 'male' if np.where(predictions[0][sample_number]==max(predictions[0][sample_number]))[0]==0 else 'female'
+    image_rgb = image_rgb * imagenet_std + imagenet_mean
     Gender = 'male' if np.argmax(predictions[0][sample_number])==0 else 'female'
     print('Gender is: ', Gender)
     w, h = valid_dataset[sample_number][1][2]
