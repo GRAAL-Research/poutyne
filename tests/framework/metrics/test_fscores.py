@@ -225,3 +225,7 @@ class FBetaTest(TestCase):
         self.assertEqual('f', fbeta.__name__)
         fbeta = FBeta(average='macro', names=['f', "p", "r"])
         self.assertEqual(["f", "p", "r"], fbeta.__name__)
+        fbeta = FBeta(average='binary')
+        self.assertEqual(['fscore_binary_1', 'precision_binary_1', 'recall_binary_1'], fbeta.__name__)
+        fbeta = FBeta(average='binary', pos_label=0)
+        self.assertEqual(['fscore_binary_0', 'precision_binary_0', 'recall_binary_0'], fbeta.__name__)

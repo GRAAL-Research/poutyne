@@ -64,6 +64,11 @@ class FBeta(EpochMetric):
             If the argument is of type integer, the score for this class (the label number) is calculated.
             Otherwise, this determines the type of averaging performed on the data:
 
+            ``'binary'``:
+                Calculate metrics with regard to a single class identified by the
+                `pos_label` argument. This is equivalent to `average=pos_label` except
+                that the binary mode is enforced, i.e. an exception will be raised if
+                there are more than two prediction scores.
             ``'micro'``:
                 Calculate metrics globally by counting the total true positives,
                 false negatives and false positives.
@@ -74,6 +79,9 @@ class FBeta(EpochMetric):
             (Default value = 'micro')
         beta (float):
             The strength of recall versus precision in the F-score. (Default value = 1.0)
+        pos_label (int):
+            The class with respect to which the metric is computed when `average == 'binary'`. Otherwise, this
+            argument has no effect. (Default value = 1)
         ignore_index (int): Specifies a target value that is ignored. This also works in combination with
             a mask if provided. (Default value = -100)
         names (Optional[Union[str, List[str]]]): The names associated to the metrics. It is a string when
@@ -86,6 +94,7 @@ class FBeta(EpochMetric):
                  metric: Optional[str] = None,
                  average: Union[str, int] = 'micro',
                  beta: float = 1.0,
+                 pos_label: int = 1,
                  ignore_index: int = -100,
                  names: Optional[Union[str, List[str]]] = None) -> None:
         super().__init__()
@@ -93,7 +102,7 @@ class FBeta(EpochMetric):
         if metric is not None and metric not in self.metric_options:
             raise ValueError("`metric` has to be one of {}.".format(self.metric_options))
 
-        average_options = ('micro', 'macro')
+        average_options = ('binary', 'micro', 'macro')
         if average not in average_options and not isinstance(average, int):
             raise ValueError("`average` has to be one of {} or an integer.".format(average_options))
 
@@ -102,10 +111,14 @@ class FBeta(EpochMetric):
 
         self._metric = metric
         self._average = average if average in average_options else None
-        self._label = average if isinstance(average, int) else None
+        self._label = None
+        if isinstance(average, int):
+            self._label = average
+        elif average == 'binary':
+            self._label = pos_label
         self._beta = beta
         self.ignore_index = ignore_index
-        self.__name__ = self._get_name(names)
+        self.__name__ = self._get_names(names)
 
         # statistics
         # the total number of true positive instances under each class
@@ -123,17 +136,19 @@ class FBeta(EpochMetric):
         # Shape: (num_classes, )
         self.register_buffer('_true_sum', None)
 
-    def _get_name(self, names):
+    def _get_name(self, metric):
+        name = metric
+        if self._average is not None:
+            name += '_' + self._average
+        if self._label is not None:
+            name += '_' + str(self._label)
+        return name
+
+    def _get_names(self, names):
         if self._metric is None:
-            if self._average is not None:
-                default_name = [m + '_' + self._average for m in self.metric_options]
-            else:
-                default_name = [m + '_' + str(self._label) for m in self.metric_options]
+            default_name = list(map(self._get_name, self.metric_options))
         else:
-            if self._average is not None:
-                default_name = self._metric + '_' + self._average
-            else:
-                default_name = self._metric + '_' + str(self._label)
+            default_name = self._get_name(self._metric)
 
         if names is not None:
             self._validate_supplied_names(names, default_name)
@@ -145,9 +160,11 @@ class FBeta(EpochMetric):
         names_list = [names] if isinstance(names, str) else names
         default_name = [default_name] if isinstance(default_name, str) else default_name
         if len(names_list) != len(default_name):
-            raise ValueError("`names` should contain names for {} metrics.".format(len(default_name)))
+            raise ValueError("`names` should contain names for the following metrics: {}.".format(
+                ', '.join(default_name)))
 
     def forward(self, y_pred: torch.Tensor, y_true: Union[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]) -> None:
+        # pylint: disable=too-many-branches
         """
         Update the confusion matrix for calculating the F-score.
 
@@ -178,6 +195,9 @@ class FBeta(EpochMetric):
         if (y_true >= num_classes).any():
             raise ValueError("A gold label passed to FBetaMeasure contains "
                              "an id >= {}, the number of classes.".format(num_classes))
+
+        if self._average == 'binary' and num_classes > 2:
+            raise ValueError("When `average` is binary, the number of prediction scores must be 2.")
 
         # It means we call this metric at the first time
         # when `self._true_positive_sum` is None.
