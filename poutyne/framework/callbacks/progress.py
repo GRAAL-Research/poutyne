@@ -8,7 +8,7 @@ from .color_formatting import ColorProgress
 class ProgressionCallback(Callback):
     """
     Default progression callback used in :class:`~poutyne.Model`. You can use the ``progress_options``
-    in :class:`~poutyne.Model` instead of instanciating this callback. If you choose to use this callback
+    in :class:`~poutyne.Model` instead of instantiating this callback. If you choose to use this callback
     anyway, make sure to pass ``verbose=False`` to :func:`~poutyne.Model.fit()` or
     :func:`~poutyne.Model.fit_generator()`.
 

@@ -62,7 +62,7 @@ def acc(y_pred, y_true, *, ignore_index=-100, reduction='mean'):
     """
     Computes the accuracy.
 
-    This is a functionnal version of :class:`~poutyne.Accuracy`.
+    This is a functional version of :class:`~poutyne.Accuracy`.
 
     See :class:`~poutyne.Accuracy` for details.
     """
@@ -123,7 +123,7 @@ def bin_acc(y_pred, y_true, *, threshold=0., reduction='mean'):
     """
     Computes the binary accuracy.
 
-    This is a functionnal version of :class:`~poutyne.BinaryAccuracy`.
+    This is a functional version of :class:`~poutyne.BinaryAccuracy`.
 
     See :class:`~poutyne.BinaryAccuracy` for details.
     """
@@ -188,7 +188,7 @@ def topk(y_pred, y_true, k, *, ignore_index=-100, reduction='mean'):
     """
     Computes the top-k accuracy.
 
-    This is a functionnal version of :class:`~poutyne.TopKAccuracy`.
+    This is a functional version of :class:`~poutyne.TopKAccuracy`.
 
     See :class:`~poutyne.TopKAccuracy` for details.
     """

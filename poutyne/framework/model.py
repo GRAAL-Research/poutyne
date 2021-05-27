@@ -265,7 +265,7 @@ class Model:
                 (Default value = None)
             dataloader_kwargs (dict, optional): Keyword arguments to pass to the PyTorch dataloaders created
                 internally. By default, ``shuffle=True`` is passed for the training dataloader but this can be
-                overriden by using this argument.
+                overridden by using this argument.
 
         Returns:
             List of dict containing the history of each epoch.
@@ -372,7 +372,7 @@ class Model:
                 Used when using batched loading from a map-style dataset.
             dataloader_kwargs (dict, optional): Keyword arguments to pass to the PyTorch dataloaders created
                 internally. By default, ``shuffle=True`` is passed for the training dataloader but this can be
-                overriden by using this argument.
+                overridden by using this argument.
 
         Returns:
             List of dict containing the history of each epoch.
@@ -694,7 +694,7 @@ class Model:
             arrays.
 
             If ``return_dict_format`` is True, then ``loss, metrics`` are replaced by a
-            dictionnary.
+            dictionary.
         """
         if self.optimizer is None:
             raise ValueError("Impossible to fit when optimizer is None.")
@@ -902,7 +902,7 @@ class Model:
             of each batch with tensors converted into Numpy arrays. It is otherwise omitted.
 
             If ``return_dict_format`` is True, then ``loss, metrics`` are replaced by a
-            dictionnary as passed to :func:`~poutyne.Callback.on_test_end()`.
+            dictionary as passed to :func:`~poutyne.Callback.on_test_end()`.
 
         """
         if dataloader_kwargs is None:
@@ -982,7 +982,7 @@ class Model:
             of each batch with tensors converted into Numpy arrays. It is otherwise omitted.
 
             If ``return_dict_format`` is True, then ``loss, metrics`` are replaced by a
-            dictionnary as passed to :func:`~poutyne.Callback.on_test_end()`.
+            dictionary as passed to :func:`~poutyne.Callback.on_test_end()`.
 
         See:
             :class:`~torch.utils.data.DataLoader` for details on ``batch_size``, ``num_workers`` and ``collate_fn``.
@@ -1020,7 +1020,7 @@ class Model:
                            callbacks=None):
         # pylint: disable=too-many-locals
         """
-        Computes the loss and the metrics of the network on batches of samples and optionaly returns
+        Computes the loss and the metrics of the network on batches of samples and optionally returns
         the predictions.
 
         Args:
@@ -1059,10 +1059,10 @@ class Model:
             the :func:`predict_generator()` method. It is otherwise ommited.
 
             If ``return_ground_truth`` is True, ``true_y`` is the ground truths returned
-            as in the :func:`predict_generator()` method. It is otherwise ommited.
+            as in the :func:`predict_generator()` method. It is otherwise omitted.
 
             If ``return_dict_format`` is True, then ``loss, metrics`` are replaced by a
-            dictionnary as passed to :func:`~poutyne.Callback.on_test_end()`.
+            dictionary as passed to :func:`~poutyne.Callback.on_test_end()`.
 
         Example:
             With no metrics:
@@ -1194,10 +1194,10 @@ class Model:
             float. If ``n == 0``, the ``metrics`` is omitted.
 
             If ``return_pred`` is True, ``pred_y`` is the list of the predictions
-            of each batch with tensors converted into Numpy arrays. It is otherwise ommited.
+            of each batch with tensors converted into Numpy arrays. It is otherwise omitted.
 
             If ``return_dict_format`` is True, then ``loss, metrics`` are replaced by a
-            dictionnary.
+            dictionary.
         """
         with self._set_training_mode(False):
             loss, metrics, pred_y = self._compute_loss_and_metrics(x, y, return_pred=return_pred)
@@ -1351,13 +1351,14 @@ class Model:
     def load_weights(self, f, strict=True):
         """
         Loads the weights saved using the :func:`torch.save()` method or the :func:`save_weights()` method
-        of this class. Contrary to :func:`torch.load()`, the weights are not transfered to the device
+        of this class. Contrary to :func:`torch.load()`, the weights are not transferred to the device
         from which they were saved from. In other words, the PyTorch module will stay on the same
         device it already is on.
 
         Args:
             f: File-like object (has to implement fileno that returns a file descriptor) or string
                 containing a file name.
+
 
         Returns:
             ``NamedTuple`` with ``missing_keys`` and ``unexpected_keys`` fields:
@@ -1479,12 +1480,12 @@ class Model:
 
     def cuda(self, *args, **kwargs):
         """
-        Tranfers the network on the GPU. The arguments are passed to the :meth:`torch.nn.Module.cuda()` method.
+        Transfers the network on the GPU. The arguments are passed to the :meth:`torch.nn.Module.cuda()` method.
         Notice that the device is saved so that the batches can send to the right device before passing it to
         the network.
 
         Note:
-            PyTorch optimizers assume that the parameters have been transfered to the right device
+            PyTorch optimizers assume that the parameters have been transferred to the right device
             before their creations. Furthermore, future versions of PyTorch will no longer modify
             the parameters of a PyTorch module in-place when transferring them to another device.
             See this `issue <https://github.com/pytorch/pytorch/issues/7844>`_ and this
@@ -1511,12 +1512,12 @@ class Model:
 
     def cpu(self, *args, **kwargs):
         """
-        Tranfers the network on the CPU. The arguments are passed to the :meth:`torch.nn.Module.cpu()`
+        Transfers the network on the CPU. The arguments are passed to the :meth:`torch.nn.Module.cpu()`
         method. Notice that the device is saved so that the batches can send to the right device
         before passing it to the network.
 
         Note:
-            PyTorch optimizers assume that the parameters have been transfered to the right device
+            PyTorch optimizers assume that the parameters have been transferred to the right device
             before their creations. Furthermore, future versions of PyTorch will no longer modify
             the parameters of a PyTorch module in-place when transferring them to another device.
             See this `issue <https://github.com/pytorch/pytorch/issues/7844>`_ and this
