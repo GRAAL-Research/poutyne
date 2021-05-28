@@ -364,7 +364,7 @@ checkpoint.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="poutyne.Experiment.train">
 <span class="sig-name descname"><span class="pre">train</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">train_generator</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">valid_generator</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">]</span></span><a class="reference internal" href="_modules/poutyne/framework/experiment.html#Experiment.train"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.Experiment.train" title="Permalink to this definition">¶</a></dt>
-<dd><p>Trains or finetunes the attribute model on a dataset using a generator. If a previous training already occured
+<dd><p>Trains or finetunes the model on a dataset using a generator. If a previous training already occurred
 and lasted a total of <cite>n_previous</cite> epochs, then the model’s weights will be set to the last checkpoint and the
 training will be resumed for epochs range (<cite>n_previous</cite>, <cite>epochs</cite>].</p>
 <p>If the Experiment has logging enabled (i.e. self.logging is True), numerous callbacks will be automatically
@@ -419,7 +419,7 @@ callbacks.
 <dl class="py method">
 <dt class="sig sig-object py" id="poutyne.Experiment.train_dataset">
 <span class="sig-name descname"><span class="pre">train_dataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">train_dataset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">valid_dataset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">]</span></span><a class="reference internal" href="_modules/poutyne/framework/experiment.html#Experiment.train_dataset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.Experiment.train_dataset" title="Permalink to this definition">¶</a></dt>
-<dd><p>Trains or finetunes the attribute model on a dataset. If a previous training already occured
+<dd><p>Trains or finetunes the model on a dataset. If a previous training already occurred
 and lasted a total of <cite>n_previous</cite> epochs, then the model’s weights will be set to the last checkpoint and the
 training will be resumed for epochs range (<cite>n_previous</cite>, <cite>epochs</cite>].</p>
 <p>If the Experiment has logging enabled (i.e. self.logging is True), numerous callbacks will be automatically
@@ -463,8 +463,8 @@ callbacks.
 <dl class="py method">
 <dt class="sig sig-object py" id="poutyne.Experiment.train_data">
 <span class="sig-name descname"><span class="pre">train_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validation_data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">]</span></span><a class="reference internal" href="_modules/poutyne/framework/experiment.html#Experiment.train_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.Experiment.train_data" title="Permalink to this definition">¶</a></dt>
-<dd><p>Trains or finetunes the attribute model on data under the form of NumPy arrays or torch tensors. If a previous
-training already occured and lasted a total of <cite>n_previous</cite> epochs, then the model’s weights will be set to the
+<dd><p>Trains or finetunes the model on data under the form of NumPy arrays or torch tensors. If a previous
+training already occurred and lasted a total of <cite>n_previous</cite> epochs, then the model’s weights will be set to the
 last checkpoint and the training will be resumed for epochs range (<cite>n_previous</cite>, <cite>epochs</cite>].</p>
 <p>If the Experiment has logging enabled (i.e. self.logging is True), numerous callbacks will be automatically
 included. Notably, two <a class="reference internal" href="callbacks.html#poutyne.ModelCheckpoint" title="poutyne.ModelCheckpoint"><code class="xref py py-class docutils literal notranslate"><span class="pre">ModelCheckpoint</span></code></a> objects will take care of saving the last and every
@@ -513,7 +513,7 @@ callbacks.
 <dl class="py method">
 <dt class="sig sig-object py" id="poutyne.Experiment.load_checkpoint">
 <span class="sig-name descname"><span class="pre">load_checkpoint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">checkpoint</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><span class="pre">bool</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strict</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><span class="pre">bool</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">]</span></span><a class="reference internal" href="_modules/poutyne/framework/experiment.html#Experiment.load_checkpoint"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.Experiment.load_checkpoint" title="Permalink to this definition">¶</a></dt>
-<dd><p>Loads the attribute model’s weights with the weights at a given checkpoint epoch.</p>
+<dd><p>Loads the model’s weights with the weights at a given checkpoint epoch.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -543,7 +543,7 @@ else None.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="poutyne.Experiment.test">
 <span class="sig-name descname"><span class="pre">test</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">test_generator</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poutyne/framework/experiment.html#Experiment.test"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.Experiment.test" title="Permalink to this definition">¶</a></dt>
-<dd><p>Computes and returns the loss and the metrics of the attribute model on a given test examples
+<dd><p>Computes and returns the loss and the metrics of the model on a given test examples
 generator.</p>
 <p>If the Experiment has logging enabled (i.e. self.logging is True), a checkpoint (the best one by default)
 is loaded and test and validation statistics are saved in a specific test output .tsv file. Otherwise, the
@@ -583,7 +583,7 @@ metrics in an output .tsv file.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="poutyne.Experiment.test_dataset">
 <span class="sig-name descname"><span class="pre">test_dataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">test_dataset</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Dict</span><a class="reference internal" href="_modules/poutyne/framework/experiment.html#Experiment.test_dataset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.Experiment.test_dataset" title="Permalink to this definition">¶</a></dt>
-<dd><p>Computes and returns the loss and the metrics of the attribute model on a given test dataset.</p>
+<dd><p>Computes and returns the loss and the metrics of the model on a given test dataset.</p>
 <p>If the Experiment has logging enabled (i.e. self.logging is True), a checkpoint (the best one by default)
 is loaded and test and validation statistics are saved in a specific test output .tsv file. Otherwise, the
 current weights of the network is used for testing and statistics are only shown in the standard output.</p>
@@ -621,7 +621,7 @@ metrics in an output .tsv file.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="poutyne.Experiment.test_data">
 <span class="sig-name descname"><span class="pre">test_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">Dict</span><a class="reference internal" href="_modules/poutyne/framework/experiment.html#Experiment.test_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.Experiment.test_data" title="Permalink to this definition">¶</a></dt>
-<dd><p>Computes and returns the loss and the metrics of the attribute model on a given test dataset.</p>
+<dd><p>Computes and returns the loss and the metrics of the model on a given test dataset.</p>
 <p>If the Experiment has logging enabled (i.e. self.logging is True), a checkpoint (the best one by default)
 is loaded and test and validation statistics are saved in a specific test output .tsv file. Otherwise, the
 current weights of the network is used for testing and statistics are only shown in the standard output.</p>

@@ -443,7 +443,7 @@
 <span class="sd">                (Default value = None)</span>
 <span class="sd">            dataloader_kwargs (dict, optional): Keyword arguments to pass to the PyTorch dataloaders created</span>
 <span class="sd">                internally. By default, ``shuffle=True`` is passed for the training dataloader but this can be</span>
-<span class="sd">                overriden by using this argument.</span>
+<span class="sd">                overridden by using this argument.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            List of dict containing the history of each epoch.</span>
@@ -550,7 +550,7 @@
 <span class="sd">                Used when using batched loading from a map-style dataset.</span>
 <span class="sd">            dataloader_kwargs (dict, optional): Keyword arguments to pass to the PyTorch dataloaders created</span>
 <span class="sd">                internally. By default, ``shuffle=True`` is passed for the training dataloader but this can be</span>
-<span class="sd">                overriden by using this argument.</span>
+<span class="sd">                overridden by using this argument.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            List of dict containing the history of each epoch.</span>
@@ -872,7 +872,7 @@
 <span class="sd">            arrays.</span>
 
 <span class="sd">            If ``return_dict_format`` is True, then ``loss, metrics`` are replaced by a</span>
-<span class="sd">            dictionnary.</span>
+<span class="sd">            dictionary.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Impossible to fit when optimizer is None.&quot;</span><span class="p">)</span>
@@ -1080,7 +1080,7 @@
 <span class="sd">            of each batch with tensors converted into Numpy arrays. It is otherwise omitted.</span>
 
 <span class="sd">            If ``return_dict_format`` is True, then ``loss, metrics`` are replaced by a</span>
-<span class="sd">            dictionnary as passed to :func:`~poutyne.Callback.on_test_end()`.</span>
+<span class="sd">            dictionary as passed to :func:`~poutyne.Callback.on_test_end()`.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">dataloader_kwargs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -1160,7 +1160,7 @@
 <span class="sd">            of each batch with tensors converted into Numpy arrays. It is otherwise omitted.</span>
 
 <span class="sd">            If ``return_dict_format`` is True, then ``loss, metrics`` are replaced by a</span>
-<span class="sd">            dictionnary as passed to :func:`~poutyne.Callback.on_test_end()`.</span>
+<span class="sd">            dictionary as passed to :func:`~poutyne.Callback.on_test_end()`.</span>
 
 <span class="sd">        See:</span>
 <span class="sd">            :class:`~torch.utils.data.DataLoader` for details on ``batch_size``, ``num_workers`` and ``collate_fn``.</span>
@@ -1198,7 +1198,7 @@
                            <span class="n">callbacks</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="c1"># pylint: disable=too-many-locals</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Computes the loss and the metrics of the network on batches of samples and optionaly returns</span>
+<span class="sd">        Computes the loss and the metrics of the network on batches of samples and optionally returns</span>
 <span class="sd">        the predictions.</span>
 
 <span class="sd">        Args:</span>
@@ -1237,10 +1237,10 @@
 <span class="sd">            the :func:`predict_generator()` method. It is otherwise ommited.</span>
 
 <span class="sd">            If ``return_ground_truth`` is True, ``true_y`` is the ground truths returned</span>
-<span class="sd">            as in the :func:`predict_generator()` method. It is otherwise ommited.</span>
+<span class="sd">            as in the :func:`predict_generator()` method. It is otherwise omitted.</span>
 
 <span class="sd">            If ``return_dict_format`` is True, then ``loss, metrics`` are replaced by a</span>
-<span class="sd">            dictionnary as passed to :func:`~poutyne.Callback.on_test_end()`.</span>
+<span class="sd">            dictionary as passed to :func:`~poutyne.Callback.on_test_end()`.</span>
 
 <span class="sd">        Example:</span>
 <span class="sd">            With no metrics:</span>
@@ -1372,10 +1372,10 @@
 <span class="sd">            float. If ``n == 0``, the ``metrics`` is omitted.</span>
 
 <span class="sd">            If ``return_pred`` is True, ``pred_y`` is the list of the predictions</span>
-<span class="sd">            of each batch with tensors converted into Numpy arrays. It is otherwise ommited.</span>
+<span class="sd">            of each batch with tensors converted into Numpy arrays. It is otherwise omitted.</span>
 
 <span class="sd">            If ``return_dict_format`` is True, then ``loss, metrics`` are replaced by a</span>
-<span class="sd">            dictionnary.</span>
+<span class="sd">            dictionary.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_set_training_mode</span><span class="p">(</span><span class="kc">False</span><span class="p">):</span>
             <span class="n">loss</span><span class="p">,</span> <span class="n">metrics</span><span class="p">,</span> <span class="n">pred_y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_loss_and_metrics</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">return_pred</span><span class="o">=</span><span class="n">return_pred</span><span class="p">)</span>
@@ -1529,13 +1529,14 @@
 <div class="viewcode-block" id="Model.load_weights"><a class="viewcode-back" href="../../../model.html#poutyne.Model.load_weights">[docs]</a>    <span class="k">def</span> <span class="nf">load_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Loads the weights saved using the :func:`torch.save()` method or the :func:`save_weights()` method</span>
-<span class="sd">        of this class. Contrary to :func:`torch.load()`, the weights are not transfered to the device</span>
+<span class="sd">        of this class. Contrary to :func:`torch.load()`, the weights are not transferred to the device</span>
 <span class="sd">        from which they were saved from. In other words, the PyTorch module will stay on the same</span>
 <span class="sd">        device it already is on.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            f: File-like object (has to implement fileno that returns a file descriptor) or string</span>
 <span class="sd">                containing a file name.</span>
+
 
 <span class="sd">        Returns:</span>
 <span class="sd">            ``NamedTuple`` with ``missing_keys`` and ``unexpected_keys`` fields:</span>
@@ -1657,12 +1658,12 @@
 
 <div class="viewcode-block" id="Model.cuda"><a class="viewcode-back" href="../../../model.html#poutyne.Model.cuda">[docs]</a>    <span class="k">def</span> <span class="nf">cuda</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Tranfers the network on the GPU. The arguments are passed to the :meth:`torch.nn.Module.cuda()` method.</span>
+<span class="sd">        Transfers the network on the GPU. The arguments are passed to the :meth:`torch.nn.Module.cuda()` method.</span>
 <span class="sd">        Notice that the device is saved so that the batches can send to the right device before passing it to</span>
 <span class="sd">        the network.</span>
 
 <span class="sd">        Note:</span>
-<span class="sd">            PyTorch optimizers assume that the parameters have been transfered to the right device</span>
+<span class="sd">            PyTorch optimizers assume that the parameters have been transferred to the right device</span>
 <span class="sd">            before their creations. Furthermore, future versions of PyTorch will no longer modify</span>
 <span class="sd">            the parameters of a PyTorch module in-place when transferring them to another device.</span>
 <span class="sd">            See this `issue &lt;https://github.com/pytorch/pytorch/issues/7844&gt;`_ and this</span>
@@ -1689,12 +1690,12 @@
 
 <div class="viewcode-block" id="Model.cpu"><a class="viewcode-back" href="../../../model.html#poutyne.Model.cpu">[docs]</a>    <span class="k">def</span> <span class="nf">cpu</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Tranfers the network on the CPU. The arguments are passed to the :meth:`torch.nn.Module.cpu()`</span>
+<span class="sd">        Transfers the network on the CPU. The arguments are passed to the :meth:`torch.nn.Module.cpu()`</span>
 <span class="sd">        method. Notice that the device is saved so that the batches can send to the right device</span>
 <span class="sd">        before passing it to the network.</span>
 
 <span class="sd">        Note:</span>
-<span class="sd">            PyTorch optimizers assume that the parameters have been transfered to the right device</span>
+<span class="sd">            PyTorch optimizers assume that the parameters have been transferred to the right device</span>
 <span class="sd">            before their creations. Furthermore, future versions of PyTorch will no longer modify</span>
 <span class="sd">            the parameters of a PyTorch module in-place when transferring them to another device.</span>
 <span class="sd">            See this `issue &lt;https://github.com/pytorch/pytorch/issues/7844&gt;`_ and this</span>

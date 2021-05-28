@@ -606,7 +606,7 @@
 
 <div class="viewcode-block" id="Experiment.train"><a class="viewcode-back" href="../../../experiment.html#poutyne.Experiment.train">[docs]</a>    <span class="k">def</span> <span class="nf">train</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">train_generator</span><span class="p">,</span> <span class="n">valid_generator</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">]:</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Trains or finetunes the attribute model on a dataset using a generator. If a previous training already occured</span>
+<span class="sd">        Trains or finetunes the model on a dataset using a generator. If a previous training already occurred</span>
 <span class="sd">        and lasted a total of `n_previous` epochs, then the model&#39;s weights will be set to the last checkpoint and the</span>
 <span class="sd">        training will be resumed for epochs range (`n_previous`, `epochs`].</span>
 
@@ -656,7 +656,7 @@
 
 <div class="viewcode-block" id="Experiment.train_dataset"><a class="viewcode-back" href="../../../experiment.html#poutyne.Experiment.train_dataset">[docs]</a>    <span class="k">def</span> <span class="nf">train_dataset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">train_dataset</span><span class="p">,</span> <span class="n">valid_dataset</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">]:</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Trains or finetunes the attribute model on a dataset. If a previous training already occured</span>
+<span class="sd">        Trains or finetunes the model on a dataset. If a previous training already occurred</span>
 <span class="sd">        and lasted a total of `n_previous` epochs, then the model&#39;s weights will be set to the last checkpoint and the</span>
 <span class="sd">        training will be resumed for epochs range (`n_previous`, `epochs`].</span>
 
@@ -697,8 +697,8 @@
 
 <div class="viewcode-block" id="Experiment.train_data"><a class="viewcode-back" href="../../../experiment.html#poutyne.Experiment.train_data">[docs]</a>    <span class="k">def</span> <span class="nf">train_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">validation_data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">]:</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Trains or finetunes the attribute model on data under the form of NumPy arrays or torch tensors. If a previous</span>
-<span class="sd">        training already occured and lasted a total of `n_previous` epochs, then the model&#39;s weights will be set to the</span>
+<span class="sd">        Trains or finetunes the model on data under the form of NumPy arrays or torch tensors. If a previous</span>
+<span class="sd">        training already occurred and lasted a total of `n_previous` epochs, then the model&#39;s weights will be set to the</span>
 <span class="sd">        last checkpoint and the training will be resumed for epochs range (`n_previous`, `epochs`].</span>
 
 <span class="sd">        If the Experiment has logging enabled (i.e. self.logging is True), numerous callbacks will be automatically</span>
@@ -804,7 +804,7 @@
                         <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
                         <span class="n">strict</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">Dict</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Loads the attribute model&#39;s weights with the weights at a given checkpoint epoch.</span>
+<span class="sd">        Loads the model&#39;s weights with the weights at a given checkpoint epoch.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            checkpoint (Union[int, str]): Which checkpoint to load the model&#39;s weights form.</span>
@@ -884,7 +884,7 @@
 
 <div class="viewcode-block" id="Experiment.test"><a class="viewcode-back" href="../../../experiment.html#poutyne.Experiment.test">[docs]</a>    <span class="k">def</span> <span class="nf">test</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">test_generator</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Computes and returns the loss and the metrics of the attribute model on a given test examples</span>
+<span class="sd">        Computes and returns the loss and the metrics of the model on a given test examples</span>
 <span class="sd">        generator.</span>
 
 <span class="sd">        If the Experiment has logging enabled (i.e. self.logging is True), a checkpoint (the best one by default)</span>
@@ -919,7 +919,7 @@
 
 <div class="viewcode-block" id="Experiment.test_dataset"><a class="viewcode-back" href="../../../experiment.html#poutyne.Experiment.test_dataset">[docs]</a>    <span class="k">def</span> <span class="nf">test_dataset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">test_dataset</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Computes and returns the loss and the metrics of the attribute model on a given test dataset.</span>
+<span class="sd">        Computes and returns the loss and the metrics of the model on a given test dataset.</span>
 
 <span class="sd">        If the Experiment has logging enabled (i.e. self.logging is True), a checkpoint (the best one by default)</span>
 <span class="sd">        is loaded and test and validation statistics are saved in a specific test output .tsv file. Otherwise, the</span>
@@ -952,7 +952,7 @@
 
 <div class="viewcode-block" id="Experiment.test_data"><a class="viewcode-back" href="../../../experiment.html#poutyne.Experiment.test_data">[docs]</a>    <span class="k">def</span> <span class="nf">test_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Computes and returns the loss and the metrics of the attribute model on a given test dataset.</span>
+<span class="sd">        Computes and returns the loss and the metrics of the model on a given test dataset.</span>
 
 <span class="sd">        If the Experiment has logging enabled (i.e. self.logging is True), a checkpoint (the best one by default)</span>
 <span class="sd">        is loaded and test and validation statistics are saved in a specific test output .tsv file. Otherwise, the</span>
