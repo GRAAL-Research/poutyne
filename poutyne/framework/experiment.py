@@ -47,7 +47,7 @@ class Experiment:
         optimizer (Union[torch.optim.Optimizer, str]): If Pytorch Optimizer, must already be initialized.
             If str, should be the optimizer's name in Pytorch (i.e. 'Adam' for torch.optim.Adam).
             (Default value = 'sgd')
-        loss_function(Union[callable, str], optional) It can be any PyTorch
+        loss_function(Union[Callable, str], optional) It can be any PyTorch
             loss layer or custom loss function. It can also be a string with the same name as a PyTorch
             loss function (either the functional or object name). The loss function must have the signature
             ``loss_function(input, target)`` where ``input`` is the prediction of the network and ``target``
