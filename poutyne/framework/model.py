@@ -84,7 +84,7 @@ class Model:
         batch_metrics (list): The associated metric functions for every batch.
         epoch_metrics (list): The associated metric functions for every epoch.
 
-    Example:
+    Examples:
         Using Numpy arrays (or tensors) dataset::
 
             from poutyne import Model
@@ -368,7 +368,7 @@ class Model:
             num_workers (int, optional): how many subprocesses to use for data loading.
                 ``0`` means that the data will be loaded in the main process.
                 (Default value = 0)
-            collate_fn (callable, optional): merges a list of samples to form a mini-batch of Tensor(s).
+            collate_fn (Callable, optional): merges a list of samples to form a mini-batch of Tensor(s).
                 Used when using batched loading from a map-style dataset.
             dataloader_kwargs (dict, optional): Keyword arguments to pass to the PyTorch dataloaders created
                 internally. By default, ``shuffle=True`` is passed for the training dataloader but this can be
@@ -377,8 +377,7 @@ class Model:
         Returns:
             List of dict containing the history of each epoch.
 
-        See:
-            :class:`~torch.utils.data.DataLoader` for details on ``batch_size``, ``num_workers`` and ``collate_fn``.
+        See :class:`~torch.utils.data.DataLoader` for details on ``batch_size``, ``num_workers`` and ``collate_fn``.
 
         Example:
             .. code-block:: python
@@ -779,7 +778,7 @@ class Model:
             num_workers (int, optional): how many subprocesses to use for data loading.
                 ``0`` means that the data will be loaded in the main process.
                 (Default value = 0)
-            collate_fn (callable, optional): merges a list of samples to form a mini-batch of Tensor(s).
+            collate_fn (Callable, optional): merges a list of samples to form a mini-batch of Tensor(s).
                 Used when using batched loading from a map-style dataset.
             dataloader_kwargs (dict, optional): Keyword arguments to pass to the PyTorch dataloaders created
                 internally.
@@ -957,7 +956,7 @@ class Model:
             num_workers (int, optional): how many subprocesses to use for data loading.
                 ``0`` means that the data will be loaded in the main process.
                 (Default value = 0)
-            collate_fn (callable, optional): merges a list of samples to form a mini-batch of Tensor(s).
+            collate_fn (Callable, optional): merges a list of samples to form a mini-batch of Tensor(s).
                 Used when using batched loading from a map-style dataset.
             dataloader_kwargs (dict, optional): Keyword arguments to pass to the PyTorch dataloaders created
                 internally.
