@@ -43,7 +43,8 @@ OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 import os
-from typing import BinaryIO, Dict, Optional, Callable
+import warnings
+from typing import IO, Dict, Optional, Callable
 
 from ._utils import atomic_lambda_save
 from .callbacks import Callback
@@ -75,6 +76,8 @@ class PeriodicSaveCallback(Callback):
         keep_only_last_best (bool): Whether only the last saved best checkpoint is kept. Applies only when
              `save_best_only` is true.
              (Default value = False)
+        restore_best (bool): If `restore_best` is true, the model will be reset to the last best checkpoint done.
+            This option only works when `save_best_only` is also true. (Default value = False)
         mode (str): One of {'min', 'max'}.
             If `save_best_only` is true, the decision to overwrite the current save file is made based
             on either the maximization or the minimization of the monitored quantity. For
@@ -98,24 +101,30 @@ class PeriodicSaveCallback(Callback):
                  mode: str = 'min',
                  save_best_only: bool = False,
                  keep_only_last_best: bool = False,
+                 restore_best: bool = False,
                  period: int = 1,
                  verbose: bool = False,
                  temporary_filename: Optional[str] = None,
                  atomic_write: bool = True,
-                 open_mode: str = 'wb'):
+                 open_mode: str = 'wb',
+                 read_mode: str = 'rb'):
         super().__init__()
         self.filename = filename
         self.monitor = monitor
         self.verbose = verbose
         self.save_best_only = save_best_only
         self.keep_only_last_best = keep_only_last_best
+        self.restore_best = restore_best
         self.temporary_filename = temporary_filename
         self.atomic_write = atomic_write
         self.open_mode = open_mode
+        self.read_mode = read_mode
         self.best_filename = None
 
         if self.keep_only_last_best and not self.save_best_only:
             raise ValueError("The 'keep_only_last_best' argument only works when 'save_best_only' is also true.")
+        if self.restore_best and not self.save_best_only:
+            raise ValueError("The 'restore_best' argument only works when 'save_best_only' is also true.")
 
         if self.save_best_only:
             if mode not in ['min', 'max']:
@@ -129,7 +138,7 @@ class PeriodicSaveCallback(Callback):
 
         self.period = period
 
-    def save_file(self, fd: BinaryIO, epoch_number: int, logs: Dict):
+    def save_file(self, fd: IO, epoch_number: int, logs: Dict):
         raise NotImplementedError
 
     def _save_file(self, filename: str, epoch_number: int, logs: Dict):
@@ -162,6 +171,19 @@ class PeriodicSaveCallback(Callback):
                 print('Epoch %d: saving file to %s' % (epoch_number, filename))
             self._save_file(filename, epoch_number, logs)
 
+    def restore(self, fd: IO):
+        raise NotImplementedError
+
+    def on_train_end(self, logs: Dict):
+        if self.restore_best:
+            if self.best_filename is not None:
+                if self.verbose:
+                    print('Restoring data from %s' % self.best_filename)
+                with open(self.best_filename, self.read_mode) as fd:
+                    self.restore(fd)
+            else:
+                warnings.warn('No data to restore!')
+
 
 class PeriodicSaveLambda(PeriodicSaveCallback):
     """
@@ -171,14 +193,21 @@ class PeriodicSaveLambda(PeriodicSaveCallback):
     Args:
         func (Callable[[fd, int, dict], None]): The lambda that will be called with a file descriptor, the
             epoch number and the epoch logs.
+        restore (Callable[[fd], None]): The lambda that will be called with a file descriptor to restore
+            the state if necessary.
 
     See:
         :class:`~poutyne.PeriodicSaveCallback`
     """
 
-    def __init__(self, func: Callable, *args, **kwargs):
+    def __init__(self, func: Callable, *args, restore: Optional[Callable] = None, **kwargs):
         super().__init__(*args, **kwargs)
         self.func = func
+        self._restore = restore
 
-    def save_file(self, fd: str, epoch_number: int, logs: Dict):
+    def save_file(self, fd: IO, epoch_number: int, logs: Dict):
         self.func(fd, epoch_number, logs)
+
+    def restore(self, fd: IO):
+        if self._restore is not None:
+            self._restore(fd)
