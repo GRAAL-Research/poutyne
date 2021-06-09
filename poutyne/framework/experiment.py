@@ -428,7 +428,7 @@ class Experiment:
 
     def train(self, train_generator, valid_generator=None, **kwargs) -> List[Dict]:
         """
-        Trains or finetunes the model on a dataset using a generator. If a previous training already occurred
+        Trains or finetunes the attribute model on a dataset using a generator. If a previous training already occurred
         and lasted a total of `n_previous` epochs, then the model's weights will be set to the last checkpoint and the
         training will be resumed for epochs range (`n_previous`, `epochs`].
 
@@ -478,7 +478,7 @@ class Experiment:
 
     def train_dataset(self, train_dataset, valid_dataset=None, **kwargs) -> List[Dict]:
         """
-        Trains or finetunes the model on a dataset. If a previous training already occurred
+        Trains or finetunes the attribute model on a dataset. If a previous training already occurred
         and lasted a total of `n_previous` epochs, then the model's weights will be set to the last checkpoint and the
         training will be resumed for epochs range (`n_previous`, `epochs`].
 
@@ -519,7 +519,7 @@ class Experiment:
 
     def train_data(self, x, y, validation_data=None, **kwargs) -> List[Dict]:
         """
-        Trains or finetunes the model on data under the form of NumPy arrays or torch tensors. If a previous
+        Trains or finetunes the attribute model on data under the form of NumPy arrays or torch tensors. If a previous
         training already occurred and lasted a total of `n_previous` epochs, then the model's weights will be set to the
         last checkpoint and the training will be resumed for epochs range (`n_previous`, `epochs`].
 
@@ -626,7 +626,7 @@ class Experiment:
                         verbose: bool = False,
                         strict: bool = True) -> Union[Dict, None]:
         """
-        Loads the model's weights with the weights at a given checkpoint epoch.
+        Loads the attribute model's weights with the weights at a given checkpoint epoch.
 
         Args:
             checkpoint (Union[int, str]): Which checkpoint to load the model's weights form.
@@ -706,7 +706,7 @@ class Experiment:
 
     def test(self, test_generator, **kwargs):
         """
-        Computes and returns the loss and the metrics of the model on a given test examples
+        Computes and returns the loss and the metrics of the attribute model on a given test examples
         generator.
 
         If the Experiment has logging enabled (i.e. self.logging is True), a checkpoint (the best one by default)
@@ -741,7 +741,7 @@ class Experiment:
 
     def test_dataset(self, test_dataset, **kwargs) -> Dict:
         """
-        Computes and returns the loss and the metrics of the model on a given test dataset.
+        Computes and returns the loss and the metrics of the attribute model on a given test dataset.
 
         If the Experiment has logging enabled (i.e. self.logging is True), a checkpoint (the best one by default)
         is loaded and test and validation statistics are saved in a specific test output .tsv file. Otherwise, the
@@ -774,7 +774,7 @@ class Experiment:
 
     def test_data(self, x, y, **kwargs) -> Dict:
         """
-        Computes and returns the loss and the metrics of the model on a given test dataset.
+        Computes and returns the loss and the metrics of the attribute model on a given test dataset.
 
         If the Experiment has logging enabled (i.e. self.logging is True), a checkpoint (the best one by default)
         is loaded and test and validation statistics are saved in a specific test output .tsv file. Otherwise, the
