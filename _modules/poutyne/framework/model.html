@@ -262,7 +262,7 @@
 <span class="sd">        batch_metrics (list): The associated metric functions for every batch.</span>
 <span class="sd">        epoch_metrics (list): The associated metric functions for every epoch.</span>
 
-<span class="sd">    Example:</span>
+<span class="sd">    Examples:</span>
 <span class="sd">        Using Numpy arrays (or tensors) dataset::</span>
 
 <span class="sd">            from poutyne import Model</span>
@@ -546,7 +546,7 @@
 <span class="sd">            num_workers (int, optional): how many subprocesses to use for data loading.</span>
 <span class="sd">                ``0`` means that the data will be loaded in the main process.</span>
 <span class="sd">                (Default value = 0)</span>
-<span class="sd">            collate_fn (callable, optional): merges a list of samples to form a mini-batch of Tensor(s).</span>
+<span class="sd">            collate_fn (Callable, optional): merges a list of samples to form a mini-batch of Tensor(s).</span>
 <span class="sd">                Used when using batched loading from a map-style dataset.</span>
 <span class="sd">            dataloader_kwargs (dict, optional): Keyword arguments to pass to the PyTorch dataloaders created</span>
 <span class="sd">                internally. By default, ``shuffle=True`` is passed for the training dataloader but this can be</span>
@@ -555,8 +555,7 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            List of dict containing the history of each epoch.</span>
 
-<span class="sd">        See:</span>
-<span class="sd">            :class:`~torch.utils.data.DataLoader` for details on ``batch_size``, ``num_workers`` and ``collate_fn``.</span>
+<span class="sd">        See :class:`~torch.utils.data.DataLoader` for details on ``batch_size``, ``num_workers`` and ``collate_fn``.</span>
 
 <span class="sd">        Example:</span>
 <span class="sd">            .. code-block:: python</span>
@@ -957,7 +956,7 @@
 <span class="sd">            num_workers (int, optional): how many subprocesses to use for data loading.</span>
 <span class="sd">                ``0`` means that the data will be loaded in the main process.</span>
 <span class="sd">                (Default value = 0)</span>
-<span class="sd">            collate_fn (callable, optional): merges a list of samples to form a mini-batch of Tensor(s).</span>
+<span class="sd">            collate_fn (Callable, optional): merges a list of samples to form a mini-batch of Tensor(s).</span>
 <span class="sd">                Used when using batched loading from a map-style dataset.</span>
 <span class="sd">            dataloader_kwargs (dict, optional): Keyword arguments to pass to the PyTorch dataloaders created</span>
 <span class="sd">                internally.</span>
@@ -1135,7 +1134,7 @@
 <span class="sd">            num_workers (int, optional): how many subprocesses to use for data loading.</span>
 <span class="sd">                ``0`` means that the data will be loaded in the main process.</span>
 <span class="sd">                (Default value = 0)</span>
-<span class="sd">            collate_fn (callable, optional): merges a list of samples to form a mini-batch of Tensor(s).</span>
+<span class="sd">            collate_fn (Callable, optional): merges a list of samples to form a mini-batch of Tensor(s).</span>
 <span class="sd">                Used when using batched loading from a map-style dataset.</span>
 <span class="sd">            dataloader_kwargs (dict, optional): Keyword arguments to pass to the PyTorch dataloaders created</span>
 <span class="sd">                internally.</span>

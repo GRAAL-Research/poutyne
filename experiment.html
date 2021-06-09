@@ -193,7 +193,7 @@ keep traces of all pertinent information via the automatic logging option.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>directory</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – Path to the experiment’s working directory. Will be used for the automatic logging.</p></li>
 <li><p><strong>network</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="(in PyTorch v1.8.0a0+56b43f4)"><em>torch.nn.Module</em></a>) – A PyTorch network.</p></li>
-<li><p><strong>device</strong> (<em>Union</em><em>[</em><em>torch.device</em><em>, </em><em>List</em><em>[</em><em>torch.device</em><em>]</em><em>, </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a><em>]</em>) – The device to which the model is sent
+<li><p><strong>device</strong> (<em>Union</em><em>[</em><a class="reference external" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.torch.device" title="(in PyTorch v1.8.0a0+56b43f4)"><em>torch.torch.device</em></a><em>, </em><em>List</em><em>[</em><a class="reference external" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.torch.device" title="(in PyTorch v1.8.0a0+56b43f4)"><em>torch.torch.device</em></a><em>]</em><em>, </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.9)"><em>None</em></a><em>]</em>) – The device to which the model is sent
 or for multi-GPUs, the list of devices to which the model is to be sent. When using a string for a multiple
 GPUs the option is “all”, for take them all, by default the current device is use as the main one.
 If None, the model will be kept on its current device.
@@ -242,7 +242,7 @@ the F1 score and the default monitoring will be set on ‘val_acc’ with a ‘m
 </ul>
 </dd>
 </dl>
-<p class="rubric">Example</p>
+<p class="rubric">Examples</p>
 <p>Using a PyTorch DataLoader, on classification task with SGD optimizer:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="kn">import</span> <span class="n">DataLoader</span><span class="p">,</span> <span class="n">TensorDataset</span>

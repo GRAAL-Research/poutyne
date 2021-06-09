@@ -212,7 +212,7 @@
 <span class="sd">    Args:</span>
 <span class="sd">        directory (str): Path to the experiment&#39;s working directory. Will be used for the automatic logging.</span>
 <span class="sd">        network (torch.nn.Module): A PyTorch network.</span>
-<span class="sd">        device (Union[torch.device, List[torch.device], str, None]): The device to which the model is sent</span>
+<span class="sd">        device (Union[torch.torch.device, List[torch.torch.device], str, None]): The device to which the model is sent</span>
 <span class="sd">            or for multi-GPUs, the list of devices to which the model is to be sent. When using a string for a multiple</span>
 <span class="sd">            GPUs the option is &quot;all&quot;, for take them all, by default the current device is use as the main one.</span>
 <span class="sd">            If None, the model will be kept on its current device.</span>
@@ -257,7 +257,7 @@
 <span class="sd">            the F1 score and the default monitoring will be set on &#39;val_acc&#39; with a &#39;max&#39; mode.</span>
 <span class="sd">            (Default value = None)</span>
 
-<span class="sd">    Example:</span>
+<span class="sd">    Examples:</span>
 <span class="sd">        Using a PyTorch DataLoader, on classification task with SGD optimizer::</span>
 
 <span class="sd">            import torch</span>
