@@ -34,7 +34,7 @@ class Experiment:
     Args:
         directory (str): Path to the experiment's working directory. Will be used for the automatic logging.
         network (torch.nn.Module): A PyTorch network.
-        device (Union[torch.device, List[torch.device], str, None]): The device to which the model is sent
+        device (Union[torch.torch.device, List[torch.torch.device], str, None]): The device to which the model is sent
             or for multi-GPUs, the list of devices to which the model is to be sent. When using a string for a multiple
             GPUs the option is "all", for take them all, by default the current device is use as the main one.
             If None, the model will be kept on its current device.
@@ -47,7 +47,7 @@ class Experiment:
         optimizer (Union[torch.optim.Optimizer, str]): If Pytorch Optimizer, must already be initialized.
             If str, should be the optimizer's name in Pytorch (i.e. 'Adam' for torch.optim.Adam).
             (Default value = 'sgd')
-        loss_function(Union[Callable, str], optional) It can be any PyTorch
+        loss_function(Union[callable, str], optional) It can be any PyTorch
             loss layer or custom loss function. It can also be a string with the same name as a PyTorch
             loss function (either the functional or object name). The loss function must have the signature
             ``loss_function(input, target)`` where ``input`` is the prediction of the network and ``target``
@@ -79,7 +79,7 @@ class Experiment:
             the F1 score and the default monitoring will be set on 'val_acc' with a 'max' mode.
             (Default value = None)
 
-    Example:
+    Examples:
         Using a PyTorch DataLoader, on classification task with SGD optimizer::
 
             import torch

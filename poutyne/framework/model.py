@@ -35,7 +35,7 @@ class Model:
             If dict, should contain a key ``'optim'`` with the value be the name of the optimizer; other
             entries are passed to the optimizer as keyword arguments.
             (Default value = None)
-        loss_function(Union[Callable, str]) It can be any PyTorch loss layer or custom loss function. It
+        loss_function(Union[callable, str]) It can be any PyTorch loss layer or custom loss function. It
             can also be a string with the same name as a PyTorch loss function (either the functional or
             object name). The loss function must have the signature ``loss_function(input, target)`` where
             ``input`` is the prediction of the network and ``target`` is the ground truth.
@@ -84,7 +84,7 @@ class Model:
         batch_metrics (list): The associated metric functions for every batch.
         epoch_metrics (list): The associated metric functions for every epoch.
 
-    Example:
+    Examples:
         Using Numpy arrays (or tensors) dataset::
 
             from poutyne import Model
@@ -377,8 +377,7 @@ class Model:
         Returns:
             List of dict containing the history of each epoch.
 
-        See:
-            :class:`~torch.utils.data.DataLoader` for details on ``batch_size``, ``num_workers`` and ``collate_fn``.
+        See :class:`~torch.utils.data.DataLoader` for details on ``batch_size``, ``num_workers`` and ``collate_fn``.
 
         Example:
             .. code-block:: python
