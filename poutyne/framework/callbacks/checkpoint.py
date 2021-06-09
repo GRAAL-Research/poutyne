@@ -1,6 +1,5 @@
 import warnings
-from typing import Dict, IO
-import torch
+from typing import Dict, BinaryIO
 
 from .lr_scheduler import _PyTorchLRSchedulerWrapper, ReduceLROnPlateau
 from .periodic import PeriodicSaveCallback
@@ -11,15 +10,33 @@ class ModelCheckpoint(PeriodicSaveCallback):
     Save the model after every epoch. See
     :class:`~poutyne.PeriodicSaveCallback` for the arguments' descriptions.
 
+    Args:
+        restore_best (bool): If `restore_best` is true, the weights of the network will be reset to
+            the last best checkpoint done. This option only works when `save_best_only` is also true.
+            (Default value = False)
+
     See:
         :class:`~poutyne.PeriodicSaveCallback`
     """
 
-    def save_file(self, fd: IO, epoch_number: int, logs: Dict):
+    def __init__(self, *args, restore_best: bool = False, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.restore_best = restore_best
+        if self.restore_best and not self.save_best_only:
+            raise ValueError("The 'restore_best' argument only works when 'save_best_only' is also true.")
+
+    def save_file(self, fd: BinaryIO, epoch_number: int, logs: Dict):
         self.model.save_weights(fd)
 
-    def restore(self, fd: IO):
-        self.model.load_weights(fd)
+    def on_train_end(self, logs: Dict):
+        if self.restore_best:
+            if self.best_filename is not None:
+                if self.verbose:
+                    print('Restoring model from %s' % self.best_filename)
+                self.model.load_weights(self.best_filename)
+            else:
+                warnings.warn('No  weights to restore!')
 
 
 class OptimizerCheckpoint(PeriodicSaveCallback):
@@ -37,11 +54,8 @@ class OptimizerCheckpoint(PeriodicSaveCallback):
         :class:`~poutyne.PeriodicSaveCallback`
     """
 
-    def save_file(self, fd: IO, epoch_number: int, logs: Dict):
+    def save_file(self, fd: BinaryIO, epoch_number: int, logs: Dict):
         self.model.save_optimizer_state(fd)
-
-    def restore(self, fd: IO):
-        self.model.load_optimizer_state(fd)
 
 
 class LRSchedulerCheckpoint(PeriodicSaveCallback):
@@ -71,11 +85,8 @@ class LRSchedulerCheckpoint(PeriodicSaveCallback):
         if not isinstance(self.lr_scheduler, (_PyTorchLRSchedulerWrapper, ReduceLROnPlateau)):
             raise ValueError("Unknown scheduler callback '%s'." % lr_scheduler)
 
-    def save_file(self, fd: IO, epoch_number: int, logs: Dict):
+    def save_file(self, fd: BinaryIO, epoch_number: int, logs: Dict):
         self.lr_scheduler.save_state(fd)
-
-    def restore(self, fd: IO):
-        self.lr_scheduler.load_state(fd)
 
     def set_params(self, params: Dict):
         self.lr_scheduler.set_params(params)
@@ -112,28 +123,3 @@ class LRSchedulerCheckpoint(PeriodicSaveCallback):
     def on_train_end(self, logs: Dict):
         self.lr_scheduler.on_train_end(logs)
         super().on_train_end(logs)
-
-
-class StateCheckpoint(PeriodicSaveCallback):
-
-    def __init__(self, name_to_stateful, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.name_to_stateful = name_to_stateful
-
-    def save_file(self, fd: IO, epoch_number: int, logs: Dict):
-        states = {k: v.state_dict() for k, v in self.name_to_stateful.items()}
-        torch.save(states, fd)
-
-    def restore(self, fd: IO):
-        states = torch.load(fd, map_location='cpu')
-
-        unexpected_keys = set(states.keys()) - set(self.name_to_stateful)
-        missing_keys = set(self.name_to_stateful) - set(states.keys())
-        if len(unexpected_keys) > 0:
-            warnings.warn('Unexpected key(s): {}.'.format(', '.join('"{}"'.format(*unexpected_keys))))
-        if len(missing_keys) > 0:
-            warnings.warn('Missing key(s): {}.'.format(', '.join('"{}"'.format(*missing_keys))))
-
-        for name, state in states.items():
-            if name in self.name_to_stateful:
-                self.name_to_stateful[name].load_state_dict(state)
