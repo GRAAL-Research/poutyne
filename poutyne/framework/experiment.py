@@ -195,6 +195,7 @@ class Experiment:
                  loss_function: Union[Callable, str] = None,
                  batch_metrics: Union[List, None] = None,
                  epoch_metrics: Union[List, None] = None,
+                 monitoring: bool = True,
                  monitor_metric: Union[str, None] = None,
                  monitor_mode: Union[str, None] = None,
                  task: Union[str, None] = None) -> None:
@@ -210,7 +211,12 @@ class Experiment:
         loss_function = self._get_loss_function(loss_function, network, task)
         batch_metrics = self._get_batch_metrics(batch_metrics, network, task)
         epoch_metrics = self._get_epoch_metrics(epoch_metrics, network, task)
-        self._set_monitor(monitor_metric, monitor_mode, task)
+
+        self.monitoring = monitoring
+        self.monitor_metric = None
+        self.monitor_mode = None
+        if self.monitoring:
+            self._set_monitor(monitor_metric, monitor_mode, task)
 
         self.model = Model(network,
                            optimizer,
@@ -288,6 +294,9 @@ class Experiment:
             dict where each key is a column name in the logging output file
             and values are the ones found at the best epoch.
         """
+        if not self.monitoring:
+            raise ValueError("Monitoring was disabled. Cannot get best epoch.")
+
         if pd is None:
             raise ImportError("pandas needs to be installed to use this function.")
 
@@ -307,6 +316,9 @@ class Experiment:
             pandas DataFrame which each row corresponds to an epoch having a saved
             checkpoint.
         """
+        if not self.monitoring:
+            raise ValueError("Monitoring was disabled. Except the last epoch, no epoch checkpoint were saved.")
+
         if pd is None:
             raise ImportError("pandas needs to be installed to use this function.")
 
@@ -423,7 +435,6 @@ class Experiment:
                 callbacks += [LRSchedulerCheckpoint(lr_scheduler, filename, verbose=False)]
         else:
             callbacks += lr_schedulers
-            callbacks += [BestModelRestore(monitor=self.monitor_metric, mode=self.monitor_mode, verbose=True)]
         return callbacks
 
     def train(self, train_generator, valid_generator=None, **kwargs) -> List[Dict]:
@@ -594,7 +605,9 @@ class Experiment:
 
             expt_callbacks += [AtomicCSVLogger(self.log_filename, separator='\t', append=initial_epoch != 1)]
 
-            expt_callbacks += self._init_model_restoring_callbacks(initial_epoch, keep_only_last_best, save_every_epoch)
+            if self.monitoring:
+                expt_callbacks += self._init_model_restoring_callbacks(initial_epoch, keep_only_last_best,
+                                                                       save_every_epoch)
             expt_callbacks += [ModelCheckpoint(self.model_checkpoint_filename, verbose=False)]
             expt_callbacks += [OptimizerCheckpoint(self.optimizer_checkpoint_filename, verbose=False)]
 
@@ -606,6 +619,9 @@ class Experiment:
 
             tensorboard_writer, cb_list = self._init_tensorboard_callbacks(disable_tensorboard)
             expt_callbacks += cb_list
+        else:
+            if self.monitoring:
+                expt_callbacks += [BestModelRestore(monitor=self.monitor_metric, mode=self.monitor_mode, verbose=True)]
 
         # This method returns callbacks that checkpoints the LR scheduler if logging is enabled.
         # Otherwise, it just returns the list of LR schedulers with a BestModelRestore callback.
@@ -646,14 +662,14 @@ class Experiment:
             epoch number stats, if a path, will return the stats of that specific checkpoint.
             else None.
         """
-        best_epoch_stats = None
 
+        epoch_stats = None
         if isinstance(checkpoint, int):
-            incompatible_keys = self._load_epoch_checkpoint(checkpoint, verbose=verbose, strict=strict)
+            epoch_stats, incompatible_keys = self._load_epoch_checkpoint(checkpoint, verbose=verbose, strict=strict)
         elif checkpoint == 'best':
-            best_epoch_stats, incompatible_keys = self._load_best_checkpoint(verbose=verbose, strict=strict)
+            epoch_stats, incompatible_keys = self._load_best_checkpoint(verbose=verbose, strict=strict)
         elif checkpoint == 'last':
-            incompatible_keys = self._load_last_checkpoint(verbose=verbose, strict=strict)
+            epoch_stats, incompatible_keys = self._load_last_checkpoint(verbose=verbose, strict=strict)
         else:
             incompatible_keys = self._load_path_checkpoint(path=checkpoint, verbose=verbose, strict=strict)
 
@@ -666,37 +682,53 @@ class Experiment:
                                                                  for k in incompatible_keys.missing_keys)),
                           stacklevel=2)
 
-        return best_epoch_stats
+        return epoch_stats
+
+    def _print_epoch_stats(self, epoch_stats):
+        metrics_str = ', '.join('%s: %g' % (metric_name, epoch_stats[metric_name].item())
+                                for metric_name in epoch_stats.columns[2:])
+        print(metrics_str)
 
     def _load_epoch_checkpoint(self, epoch: int, *, verbose: bool = False, strict: bool = True) -> None:
         ckpt_filename = self.best_checkpoint_filename.format(epoch=epoch)
 
+        history = pd.read_csv(self.log_filename, sep='\t')
+        epoch_stats = history.iloc[epoch - 1:epoch]
+
         if verbose:
             print(f"Loading checkpoint {ckpt_filename}")
+            self._print_epoch_stats(epoch_stats)
 
         if not os.path.isfile(ckpt_filename):
             raise ValueError(f"No checkpoint found for epoch {epoch}")
 
-        return self.model.load_weights(ckpt_filename, strict=strict)
+        return epoch_stats, self.model.load_weights(ckpt_filename, strict=strict)
 
     def _load_best_checkpoint(self, *, verbose: bool = False, strict: bool = True) -> Dict:
         best_epoch_stats = self.get_best_epoch_stats()
         best_epoch = best_epoch_stats['epoch'].item()
 
-        if verbose:
-            metrics_str = ', '.join('%s: %g' % (metric_name, best_epoch_stats[metric_name].item())
-                                    for metric_name in best_epoch_stats.columns[2:])
-            print(f"Found best checkpoint at epoch: {best_epoch}")
-            print(metrics_str)
+        ckpt_filename = self.best_checkpoint_filename.format(epoch=best_epoch)
 
-        incompatible_keys = self._load_epoch_checkpoint(best_epoch, verbose=verbose, strict=strict)
-        return best_epoch_stats, incompatible_keys
+        if verbose:
+            print(f"Found best checkpoint at epoch: {best_epoch}")
+            self._print_epoch_stats(best_epoch_stats)
+            print(f"Loading checkpoint {ckpt_filename}")
+
+        if not os.path.isfile(ckpt_filename):
+            raise ValueError(f"No checkpoint found for epoch {best_epoch}")
+
+        return best_epoch_stats, self.model.load_weights(ckpt_filename, strict=strict)
 
     def _load_last_checkpoint(self, *, verbose: bool = False, strict: bool = True) -> None:
+        history = pd.read_csv(self.log_filename, sep='\t')
+        epoch_stats = history.iloc[-1:]
+
         if verbose:
             print(f"Loading checkpoint {self.model_checkpoint_filename}")
+            self._print_epoch_stats(epoch_stats)
 
-        return self.model.load_weights(self.model_checkpoint_filename, strict=strict)
+        return epoch_stats, self.model.load_weights(self.model_checkpoint_filename, strict=strict)
 
     def _load_path_checkpoint(self, path, verbose: bool = False, strict: bool = True) -> None:
         if verbose:
@@ -825,7 +857,9 @@ class Experiment:
         set_seeds(seed)
 
         if self.logging:
-            best_epoch_stats = self.load_checkpoint(checkpoint, verbose=verbose)
+            if not self.monitoring and checkpoint == 'best':
+                checkpoint = 'last'
+            epoch_stats = self.load_checkpoint(checkpoint, verbose=verbose)
 
         if verbose:
             print(f"Running {name}")
@@ -835,9 +869,9 @@ class Experiment:
             test_metrics_dict = ret[0] if isinstance(ret, tuple) else ret
             test_stats = pd.DataFrame([list(test_metrics_dict.values())], columns=list(test_metrics_dict.keys()))
             test_stats.drop(['time'], axis=1, inplace=True)
-            if best_epoch_stats is not None:
-                best_epoch_stats = best_epoch_stats.reset_index(drop=True)
-                test_stats = best_epoch_stats.join(test_stats)
+            if epoch_stats is not None:
+                epoch_stats = epoch_stats.reset_index(drop=True)
+                test_stats = epoch_stats.join(test_stats)
             test_stats.to_csv(self.test_log_filename.format(name=name), sep='\t', index=False)
 
         return ret
