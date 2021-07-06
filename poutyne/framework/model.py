@@ -899,8 +899,8 @@ class Model:
             dictionary as passed to :func:`~poutyne.Callback.on_test_end()`.
 
         """
-        generator = self._dataset_from_data((x, y))
-        return self.evaluate_dataset(generator,
+        dataset = self._dataset_from_data((x, y))
+        return self.evaluate_dataset(dataset,
                                      batch_size=batch_size,
                                      return_pred=return_pred,
                                      return_dict_format=return_dict_format,
