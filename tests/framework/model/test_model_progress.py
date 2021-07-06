@@ -19,7 +19,7 @@ except ImportError:
 class ModelFittingTestCaseProgress(ModelFittingTestCase):
     # pylint: disable=too-many-public-methods
     num_steps = 5
-    TIME_REGEX = r"((([0-9]+ days? )?[0-9]{2}:)?[0-9]{2}:)?[0-9]{1,2}\.[0-9]{2}s?"
+    TIME_REGEX = r"((([0-9]+d)?[0-9]{1,2}h)?[0-9]{1,2}m)?[0-9]{1,2}\.[0-9]{2}s"
 
     def setUp(self):
         super().setUp()

@@ -244,16 +244,12 @@ class ColorProgress:
         minutes = int(minutes)
         ret = ""
         if days > 0:
-            word_end = 's' if days > 1 else ''
-            ret += f"{days} day{word_end} "
+            ret += f"{days}d"
         if days > 0 or hours > 0:
-            ret += f"{hours:0>2}:"
+            ret += f"{hours}h"
         if days > 0 or hours > 0 or minutes > 0:
-            ret += f"{minutes:0>2}:"
-        if seconds != duration:
-            ret += f"{seconds:05.2f}"
-        else:
-            ret = f"{seconds:.2f}s"
+            ret += f"{minutes}m"
+        ret = f"{seconds:.2f}s"
         return ret
 
     def _get_formatted_total_time(self, total_time: float) -> str:
