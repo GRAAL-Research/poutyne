@@ -19,6 +19,7 @@ except ImportError:
 class ModelFittingTestCaseProgress(ModelFittingTestCase):
     # pylint: disable=too-many-public-methods
     num_steps = 5
+    TIME_REGEX = r"((([0-9]+ days? )?[0-9]{2}:)?[0-9]{2}:)?[0-9]{1,2}\.[0-9]{2}s?"
 
     def setUp(self):
         super().setUp()
@@ -427,7 +428,7 @@ class ModelFittingTestCaseProgress(ModelFittingTestCase):
             self.assertRegex(step_update, regex_filled)
 
         # last print update templating different
-        last_print_regex = r".*\[37mTrain steps:.*5.*Val steps:.*5.*[0-9]*\.[0-9][0-9]s"
+        last_print_regex = r".*\[37mTrain steps:.*5.*Val steps:.*5.*" + ModelFittingTestCaseProgress.TIME_REGEX
         self.assertRegex(steps_update[-1], last_print_regex)
 
     def test_fitting_complete_display_test_with_progress_bar_no_coloring(self):
@@ -462,7 +463,7 @@ class ModelFittingTestCaseProgress(ModelFittingTestCase):
             self.assertRegex(step_update, regex_filled)
 
         # last print update templating different
-        last_print_regex = r".*Train steps:.*5.*Val steps:.*5.*[0-9]*\.[0-9][0-9]s"
+        last_print_regex = r".*Train steps:.*5.*Val steps:.*5.*" + ModelFittingTestCaseProgress.TIME_REGEX
         self.assertRegex(steps_update[-1], last_print_regex)
 
     def test_fitting_complete_display_test_with_no_progress_bar_no_coloring(self):
@@ -493,7 +494,7 @@ class ModelFittingTestCaseProgress(ModelFittingTestCase):
             self.assertRegex(step_update, regex_filled)
 
         # last print update templating different
-        last_print_regex = r".*Train steps:.*5.*Val steps:.*5.*[0-9]*\.[0-9][0-9]s"
+        last_print_regex = r".*Train steps:.*5.*Val steps:.*5.*" + ModelFittingTestCaseProgress.TIME_REGEX
         self.assertRegex(steps_update[-1], last_print_regex)
 
     def test_evaluate_complete_display_test_with_progress_bar_coloring(self):
@@ -525,7 +526,7 @@ class ModelFittingTestCaseProgress(ModelFittingTestCase):
             self.assertRegex(step_update, regex_filled)
 
         # last print update templating different
-        last_print_regex = r".*\[37mTest steps:.*5.*[0-9]*\.[0-9][0-9]s"
+        last_print_regex = r".*\[37mTest steps:.*5.*" + ModelFittingTestCaseProgress.TIME_REGEX
         self.assertRegex(steps_update[-1], last_print_regex)
 
     def test_evaluate_complete_display_test_with_progress_bar_no_coloring(self):
@@ -548,7 +549,7 @@ class ModelFittingTestCaseProgress(ModelFittingTestCase):
             self.assertRegex(step_update, regex_filled)
 
         # last print update templating different
-        last_print_regex = r".*Test steps:.*5.*[0-9]*\.[0-9][0-9]s"
+        last_print_regex = r".*Test steps:.*5.*" + ModelFittingTestCaseProgress.TIME_REGEX
         self.assertRegex(steps_update[-1], last_print_regex)
 
     def test_evaluate_complete_display_test_with_no_progress_bar_no_coloring(self):
@@ -569,5 +570,5 @@ class ModelFittingTestCaseProgress(ModelFittingTestCase):
             self.assertRegex(step_update, regex_filled)
 
         # last print update templating different
-        last_print_regex = r".*Test steps:.*5.*[0-9]*\.[0-9][0-9]s"
+        last_print_regex = r".*Test steps:.*5.*" + ModelFittingTestCaseProgress.TIME_REGEX
         self.assertRegex(steps_update[-1], last_print_regex)

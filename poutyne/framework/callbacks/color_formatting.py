@@ -235,14 +235,37 @@ class ColorProgress:
         digits = int(math.log10(epochs)) + 1
         self.epoch_formatted_text = f"\r{self.text_color}Epoch: {self.ratio_color}{epoch_number:{digits}d}/{epochs:d} "
 
+    def _format_duration(self, duration):
+        days, rem = divmod(duration, 60 * 60 * 24)
+        hours, rem = divmod(rem, 60 * 60)
+        minutes, seconds = divmod(rem, 60)
+        days = int(days)
+        hours = int(hours)
+        minutes = int(minutes)
+        ret = ""
+        if days > 0:
+            word_end = 's' if days > 1 else ''
+            ret += f"{days} day{word_end} "
+        if days > 0 or hours > 0:
+            ret += f"{hours:0>2}:"
+        if days > 0 or hours > 0 or minutes > 0:
+            ret += f"{minutes:0>2}:"
+        if seconds != duration:
+            ret += f"{seconds:05.2f}"
+        else:
+            ret = f"{seconds:.2f}s"
+        return ret
+
     def _get_formatted_total_time(self, total_time: float) -> str:
-        return f"{self.time_color}{total_time:.2f}s "
+        total_time_str = self._format_duration(total_time)
+        return f"{self.time_color}{total_time_str} "
 
     def _get_formatted_time(self, duration: float, steps: Union[int, None]) -> str:
+        duration_str = self._format_duration(duration)
         if steps is None:
-            formatted_time = f"{self.time_color}{duration:.2f}s/step "
+            formatted_time = f"{self.time_color}{duration_str}/step "
         else:
-            formatted_time = f"{self.text_color}ETA: {self.time_color}{duration:.2f}s "
+            formatted_time = f"{self.text_color}ETA: {self.time_color}{duration_str} "
         return formatted_time
 
     def _get_formatted_step(self,
