@@ -128,7 +128,7 @@ class Tracker(Callback):
 
         self.tracker = None
 
-    def on_train_batch_end(self, batch: int, logs: Dict):
+    def on_train_batch_end(self, batch_number: int, logs: Dict):
         # pylint: disable=unused-argument
         named_parameters = ((n, p) for n, p in self.model.network.named_parameters() if self._keep_layer(p, n))
         self.tracker.batch_statistic_upgrade(named_parameters)
@@ -138,15 +138,15 @@ class Tracker(Callback):
             self._update_layers_to_track(layer_name, layer_params)
         self.tracker = WeightsGradientsStatsTracker(self.number_layers)
 
-    def on_epoch_end(self, epoch: int, logs: Dict):
-        self._on_epoch_end_log(epoch, logs)
+    def on_epoch_end(self, epoch_number: int, logs: Dict):
+        self._on_epoch_end_log(epoch_number, logs)
 
-    def _on_epoch_end_log(self, epoch: int, logs: Dict):
+    def _on_epoch_end_log(self, epoch_number: int, logs: Dict):
         """
         The method to define the behavior of the logging tracker.
 
         Args:
-            epoch (int): The epoch number.
+            epoch_number (int): The epoch number.
             logs (Dict): The epoch logs dictionary.
         """
         pass
@@ -190,7 +190,7 @@ class TensorBoardGradientTracker(Tracker):
 
         self.writer = writer
 
-    def _on_epoch_end_log(self, epoch: int, logs: Dict) -> None:
+    def _on_epoch_end_log(self, epoch_number: int, logs: Dict) -> None:
         gradient_distributions_stats = ["mean", "mean_std_dev_up", "mean_std_dev_down"]
         other_gradient_stats = ["min", "max"]
 
@@ -200,7 +200,7 @@ class TensorBoardGradientTracker(Tracker):
 
             for gradient_distributions_stat in gradient_distributions_stats:
                 self.writer.add_scalars('gradient_distributions/{}'.format(layer_name),
-                                        {gradient_distributions_stat: stats[gradient_distributions_stat]}, epoch)
+                                        {gradient_distributions_stat: stats[gradient_distributions_stat]}, epoch_number)
             for other_gradient_stat in other_gradient_stats:
                 self.writer.add_scalars('other_gradient_stats/{}'.format(layer_name),
-                                        {other_gradient_stat: stats[other_gradient_stat]}, epoch)
+                                        {other_gradient_stat: stats[other_gradient_stat]}, epoch_number)
