@@ -26,9 +26,9 @@ class MLFlowLogger(Logger):
     Args:
         experiment_name (str): The name of the experiment. Name must be unique and are case sensitive.
         tracking_uri (Union[str, None]): Either the URI tracking path (for server tracking) of the absolute path to
-            the directory to save the files (for file store). For example: http://<ip address>:<port> (remote server) or
-            /home/<user>/mlflow-server (local server). If None, will use the default MLflow file
-            tracking URI "./mlruns".
+            the directory to save the files (for file store). For example: ``http://<ip address>:<port>``
+            (remote server) or ``/home/<user>/mlflow-server`` (local server).
+            If None, will use the default MLflow file tracking URI ``"./mlruns"``.
         batch_granularity (bool): Whether to also output the result of each batch in addition to the epochs.
             (Default value = False)
 
