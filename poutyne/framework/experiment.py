@@ -2,6 +2,8 @@ import os
 import warnings
 from typing import Union, Callable, List, Dict, Tuple
 
+from numpy import ndarray
+
 try:
     import pandas as pd
 except ImportError:
@@ -874,4 +876,84 @@ class Experiment:
                 test_stats = epoch_stats.join(test_stats)
             test_stats.to_csv(self.test_log_filename.format(name=name), sep='\t', index=False)
 
+        return ret
+
+    def predict(self, x, **kwargs) -> ndarray:
+        """
+         Returns the predictions of the network given a dataset ``x``, where the tensors are
+        converted into Numpy arrays.
+
+        Args:
+            x (Union[~torch.Tensor, ~numpy.ndarray] or Union[tuple, list] of Union[~torch.Tensor, ~numpy.ndarray]):
+                Input to the model. Union[Tensor, ndarray] if the model has a single input.
+                Union[tuple, list] of Union[Tensor, ndarray] if the model has multiple inputs.
+            batch_size (int): Number of samples given to the network at one time.
+                (Default value = 32)
+            dataloader_kwargs (dict, optional): Keyword arguments to pass to the PyTorch dataloaders created
+                internally.
+
+        Returns:
+            Numpy arrays of the predictions.
+        """
+        return self._predict(self.model.predict, x, **kwargs)
+
+    def predict_dataset(self, dataset, **kwargs) -> Union[ndarray, List[ndarray]]:
+        """
+        Returns the predictions of the network given a dataset ``x``, where the tensors are
+        converted into Numpy arrays.
+
+        Args:
+            dataset (~torch.utils.data.Dataset): Dataset. Must not return ``y``, just ``x``.
+            batch_size (int): Number of samples given to the network at one time.
+                (Default value = 32)
+            steps (int, optional): Number of iterations done on ``generator``.
+                (Defaults the number of steps needed to see the entire dataset)
+            concatenate_returns (bool, optional): Whether to concatenate the predictions
+                or the ground truths when returning them. See :func:`predict_generator()`
+                for details. (Default value = True)
+            num_workers (int, optional): how many subprocesses to use for data loading.
+                ``0`` means that the data will be loaded in the main process.
+                (Default value = 0)
+            collate_fn (Callable, optional): merges a list of samples to form a mini-batch of Tensor(s).
+                Used when using batched loading from a map-style dataset.
+            dataloader_kwargs (dict, optional): Keyword arguments to pass to the PyTorch dataloaders created
+                internally.
+
+        Returns:
+            Numpy arrays of the predictions.
+
+        See:
+            :class:`~torch.utils.data.DataLoader` for details on ``batch_size``, ``num_workers`` and ``collate_fn``.
+        """
+        return self._predict(self.model.predict, dataset, **kwargs)
+
+    def predict_generator(self, generator, *, kwargs) -> Union[ndarray, List[ndarray]]:
+        """
+        Returns the predictions of the network given batches of samples ``x``, where the tensors are
+        converted into Numpy arrays.
+
+        Args:
+            generator: Generator-like object for the dataset. The generator must yield a batch of
+                samples. See the :func:`fit_generator()` method for details on the types of generators
+                supported. This should only yield input data ``x`` and NOT the target ``y``.
+            steps (int, optional): Number of iterations done on ``generator``.
+                (Defaults the number of steps needed to see the entire dataset)
+            concatenate_returns (bool, optional): Whether to concatenate the predictions
+                or the ground truths when returning them. (Default value = True)
+
+        Returns:
+            Depends on the value of ``concatenate_returns``. By default, (``concatenate_returns`` is true),
+            the data structures (tensor, tuple, list, dict) returned as predictions for the batches are
+            merged together. In the merge, the tensors are converted into Numpy arrays and are then
+            concatenated together. If ``concatenate_returns`` is false, then a list of the predictions
+            for the batches is returned with tensors converted into Numpy arrays.
+        """
+        return self._predict(self.model.predict, generator, **kwargs)
+
+    def _predict(self,
+                 evaluate_func,
+                 *args,
+                 **kwargs) -> Union[ndarray, List[ndarray]]:
+
+        ret = evaluate_func(*args, **kwargs)
         return ret

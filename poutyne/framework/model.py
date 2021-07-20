@@ -10,6 +10,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
+from numpy import ndarray
 from torch.utils.data import DataLoader
 
 from poutyne import torch_to_numpy, numpy_to_torch, torch_to
@@ -663,7 +664,7 @@ class Model:
         else:
             x = self._process_input(x)
 
-        x = x if isinstance(x, (tuple, list)) else (x, )
+        x = x if isinstance(x, (tuple, list)) else (x,)
 
         return (x, y) if y is not None else x
 
@@ -706,29 +707,29 @@ class Model:
             logs = dict(loss=loss)
             logs.update(zip(self.batch_metrics_names, metrics))
 
-            return self._format_truth_pred_return((logs, ), pred_y, return_pred)
+            return self._format_truth_pred_return((logs,), pred_y, return_pred)
 
         return self._format_loss_metrics_return(loss, metrics, pred_y, return_pred)
 
     def _format_loss_metrics_return(self, loss, metrics, pred_y, return_pred, true_y=None, return_ground_truth=False):
         # pylint: disable=too-many-arguments
-        ret = (loss, )
+        ret = (loss,)
 
-        ret += tuple(metrics.tolist()) if len(metrics) <= 1 else (metrics, )
+        ret += tuple(metrics.tolist()) if len(metrics) <= 1 else (metrics,)
 
         return self._format_truth_pred_return(ret, pred_y, return_pred, true_y, return_ground_truth)
 
     def _format_truth_pred_return(self, init, pred_y, return_pred, true_y=None, return_ground_truth=False):
         # pylint: disable=too-many-arguments
         if return_pred:
-            init += (pred_y, )
+            init += (pred_y,)
 
         if return_ground_truth:
-            init += (true_y, )
+            init += (true_y,)
 
         return init[0] if len(init) == 1 else init
 
-    def predict(self, x, *, batch_size=32, dataloader_kwargs=None):
+    def predict(self, x, *, batch_size=32, dataloader_kwargs=None) -> ndarray:
         """
         Returns the predictions of the network given a dataset ``x``, where the tensors are
         converted into Numpy arrays.
@@ -749,7 +750,7 @@ class Model:
             dataloader_kwargs = {}
         dataloader_kwargs = {'batch_size': batch_size, **dataloader_kwargs}
 
-        x = x if isinstance(x, (tuple, list)) else (x, )
+        x = x if isinstance(x, (tuple, list)) else (x,)
         generator = self._dataloader_from_data(x, dataloader_kwargs)
         return self.predict_generator(generator, concatenate_returns=True)
 
@@ -761,7 +762,7 @@ class Model:
                         concatenate_returns=True,
                         num_workers=0,
                         collate_fn=None,
-                        dataloader_kwargs=None):
+                        dataloader_kwargs=None) -> Union[ndarray, List[ndarray]]:
         """
         Returns the predictions of the network given a dataset ``x``, where the tensors are
         converted into Numpy arrays.
@@ -784,7 +785,11 @@ class Model:
                 internally.
 
         Returns:
-            Numpy arrays of the predictions.
+            Depends on the value of ``concatenate_returns``. By default, (``concatenate_returns`` is true),
+            the data structures (tensor, tuple, list, dict) returned as predictions for the batches are
+            merged together. In the merge, the tensors are converted into Numpy arrays and are then
+            concatenated together. If ``concatenate_returns`` is false, then a list of the predictions
+            for the batches is returned with tensors converted into Numpy arrays.
 
         See:
             :class:`~torch.utils.data.DataLoader` for details on ``batch_size``, ``num_workers`` and ``collate_fn``.
@@ -801,7 +806,7 @@ class Model:
         generator = DataLoader(dataset, **dataloader_kwargs)
         return self.predict_generator(generator, steps=steps, concatenate_returns=concatenate_returns)
 
-    def predict_generator(self, generator, *, steps=None, concatenate_returns=True):
+    def predict_generator(self, generator, *, steps=None, concatenate_returns=True) -> Union[ndarray, List[ndarray]]:
         """
         Returns the predictions of the network given batches of samples ``x``, where the tensors are
         converted into Numpy arrays.
@@ -1165,7 +1170,7 @@ class Model:
         callback_list.on_test_end(test_metrics_log)
 
         if return_dict_format:
-            return self._format_truth_pred_return((test_metrics_log, ), pred_y, return_pred, true_y,
+            return self._format_truth_pred_return((test_metrics_log,), pred_y, return_pred, true_y,
                                                   return_ground_truth)
 
         metrics = np.concatenate((batch_metrics, step_iterator.epoch_metrics))
@@ -1205,7 +1210,7 @@ class Model:
             logs = dict(loss=loss)
             logs.update(zip(self.batch_metrics_names, metrics))
 
-            return self._format_truth_pred_return((logs, ), pred_y, return_pred)
+            return self._format_truth_pred_return((logs,), pred_y, return_pred)
 
         return self._format_loss_metrics_return(loss, metrics, pred_y, return_pred)
 
