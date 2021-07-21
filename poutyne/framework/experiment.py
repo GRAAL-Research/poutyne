@@ -905,7 +905,7 @@ class Experiment:
 
     def predict_dataset(self, dataset, **kwargs) -> Union[ndarray, List[ndarray]]:
         """
-        Returns the predictions of the network given a dataset ``x``, where the tensors are
+        Returns the predictions of the network given a dataset, where the tensors are
         converted into Numpy arrays.
 
         Args:
