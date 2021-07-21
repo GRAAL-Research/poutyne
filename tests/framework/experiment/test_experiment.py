@@ -161,8 +161,8 @@ class ExperimentTest(TestCase):
         with patch.object(Experiment, "load_checkpoint") as load_checkpoint_mock:
             mocked_stats = MagicMock(spec=DataFrame)
             series_mock = MagicMock(spec=Series)
-            series_mock.to_numpy.side_effect = [[1], [2]]  # The monitored metric values
-            mocked_stats.get.return_value = series_mock
+            series_mock.item.side_effect = [[1], [2]]  # The monitored metric values
+            mocked_stats.__getitem__.return_value = series_mock
             load_checkpoint_mock.return_value = mocked_stats
 
             self.assertTrue(self.test_experiment_a.is_better_than(self.test_experiment_b))
@@ -173,8 +173,8 @@ class ExperimentTest(TestCase):
         with patch.object(Experiment, "load_checkpoint") as load_checkpoint_mock:
             mocked_stats = MagicMock(spec=DataFrame)
             series_mock = MagicMock(spec=Series)
-            series_mock.to_numpy.side_effect = [[2], [1]]  # The monitored metric values
-            mocked_stats.get.return_value = series_mock
+            series_mock.item.side_effect = [[2], [1]]  # The monitored metric values
+            mocked_stats.__getitem__.return_value = series_mock
             load_checkpoint_mock.return_value = mocked_stats
 
             self.assertFalse(self.test_experiment_a.is_better_than(self.test_experiment_b))
@@ -187,8 +187,8 @@ class ExperimentTest(TestCase):
         with patch.object(Experiment, "load_checkpoint") as load_checkpoint_mock:
             mocked_stats = MagicMock(spec=DataFrame)
             series_mock = MagicMock(spec=Series)
-            series_mock.to_numpy.side_effect = [[1], [2]]  # The monitored metric values
-            mocked_stats.get.return_value = series_mock
+            series_mock.item.side_effect = [[1], [2]]  # The monitored metric values
+            mocked_stats.__getitem__.return_value = series_mock
             load_checkpoint_mock.return_value = mocked_stats
 
             self.assertFalse(self.test_experiment_a.is_better_than(self.test_experiment_b))
@@ -201,8 +201,8 @@ class ExperimentTest(TestCase):
         with patch.object(Experiment, "load_checkpoint") as load_checkpoint_mock:
             mocked_stats = MagicMock(spec=DataFrame)
             series_mock = MagicMock(spec=Series)
-            series_mock.to_numpy.side_effect = [[2], [1]]  # The monitored metric values
-            mocked_stats.get.return_value = series_mock
+            series_mock.item.side_effect = [[2], [1]]  # The monitored metric values
+            mocked_stats.__getitem__.return_value = series_mock
             load_checkpoint_mock.return_value = mocked_stats
 
             self.assertTrue(self.test_experiment_a.is_better_than(self.test_experiment_b))

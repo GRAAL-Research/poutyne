@@ -906,13 +906,13 @@ class Experiment:
 
         checkpoint = 'best' if self.monitoring else 'last'
         self_stats = self.load_checkpoint(checkpoint, verbose=False)
-        self_monitored_metric = self_stats.get(monitored_metric)
-        self_monitored_metric_value = self_monitored_metric.to_numpy()[0]
+        self_monitored_metric = self_stats[monitored_metric]
+        self_monitored_metric_value = self_monitored_metric.item()
 
         other_checkpoint = 'best' if another_experiment.monitoring else 'last'
         other_stats = self.load_checkpoint(other_checkpoint, verbose=False)
-        other_monitored_metric = other_stats.get(monitored_metric)
-        other_monitored_metric_value = other_monitored_metric.to_numpy()[0]
+        other_monitored_metric = other_stats[monitored_metric]
+        other_monitored_metric_value = other_monitored_metric.item()
 
         if monitor_mode == 'min':
             is_better_than = self_monitored_metric_value < other_monitored_metric_value
