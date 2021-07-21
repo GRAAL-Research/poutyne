@@ -887,10 +887,16 @@ class Experiment:
             x (Union[~torch.Tensor, ~numpy.ndarray] or Union[tuple, list] of Union[~torch.Tensor, ~numpy.ndarray]):
                 Input to the model. Union[Tensor, ndarray] if the model has a single input.
                 Union[tuple, list] of Union[Tensor, ndarray] if the model has multiple inputs.
-            batch_size (int): Number of samples given to the network at one time.
-                (Default value = 32)
-            dataloader_kwargs (dict, optional): Keyword arguments to pass to the PyTorch dataloaders created
-                internally.
+            checkpoint (Union[str, int]): Which model checkpoint weights to load for the test evaluation.
+
+                - If 'best', will load the best weights according to ``monitor_metric`` and ``monitor_mode``.
+                - If 'last', will load the last model checkpoint.
+                - If int, will load the checkpoint of the specified epoch.
+                - If a path (str), will load the model pickled state_dict weights (for instance, saved as
+                  ``torch.save(a_pytorch_network.state_dict(), "./a_path.p")``).
+
+                This argument has no effect when logging is disabled. (Default value = 'best')
+            kwargs: Any keyword arguments to pass to :func:`~Model.predict()`.
 
         Returns:
             Numpy arrays of the predictions.
@@ -904,28 +910,21 @@ class Experiment:
 
         Args:
             dataset (~torch.utils.data.Dataset): Dataset. Must not return ``y``, just ``x``.
-            batch_size (int): Number of samples given to the network at one time.
-                (Default value = 32)
-            steps (int, optional): Number of iterations done on ``generator``.
-                (Defaults the number of steps needed to see the entire dataset)
-            concatenate_returns (bool, optional): Whether to concatenate the predictions
-                or the ground truths when returning them. See :func:`predict_generator()`
-                for details. (Default value = True)
-            num_workers (int, optional): how many subprocesses to use for data loading.
-                ``0`` means that the data will be loaded in the main process.
-                (Default value = 0)
-            collate_fn (Callable, optional): merges a list of samples to form a mini-batch of Tensor(s).
-                Used when using batched loading from a map-style dataset.
-            dataloader_kwargs (dict, optional): Keyword arguments to pass to the PyTorch dataloaders created
-                internally.
+            checkpoint (Union[str, int]): Which model checkpoint weights to load for the test evaluation.
+
+                - If 'best', will load the best weights according to ``monitor_metric`` and ``monitor_mode``.
+                - If 'last', will load the last model checkpoint.
+                - If int, will load the checkpoint of the specified epoch.
+                - If a path (str), will load the model pickled state_dict weights (for instance, saved as
+                  ``torch.save(a_pytorch_network.state_dict(), "./a_path.p")``).
+
+                This argument has no effect when logging is disabled. (Default value = 'best')
+            kwargs: Any keyword arguments to pass to :func:`~Model.predict_dataset()`.
 
         Returns:
-            Numpy arrays of the predictions.
-
-        See:
-            :class:`~torch.utils.data.DataLoader` for details on ``batch_size``, ``num_workers`` and ``collate_fn``.
+            Numpy arrays of the predictions or a list of Numpy arrays of the predictions.
         """
-        return self._predict(self.model.predict, dataset, **kwargs)
+        return self._predict(self.model.predict_dataset, dataset, **kwargs)
 
     def predict_generator(self, generator, *, kwargs) -> Union[ndarray, List[ndarray]]:
         """
@@ -936,10 +935,16 @@ class Experiment:
             generator: Generator-like object for the dataset. The generator must yield a batch of
                 samples. See the :func:`fit_generator()` method for details on the types of generators
                 supported. This should only yield input data ``x`` and NOT the target ``y``.
-            steps (int, optional): Number of iterations done on ``generator``.
-                (Defaults the number of steps needed to see the entire dataset)
-            concatenate_returns (bool, optional): Whether to concatenate the predictions
-                or the ground truths when returning them. (Default value = True)
+            checkpoint (Union[str, int]): Which model checkpoint weights to load for the test evaluation.
+
+                - If 'best', will load the best weights according to ``monitor_metric`` and ``monitor_mode``.
+                - If 'last', will load the last model checkpoint.
+                - If int, will load the checkpoint of the specified epoch.
+                - If a path (str), will load the model pickled state_dict weights (for instance, saved as
+                  ``torch.save(a_pytorch_network.state_dict(), "./a_path.p")``).
+
+                This argument has no effect when logging is disabled. (Default value = 'best')
+            kwargs: Any keyword arguments to pass to :func:`~Model.predict_generator()`.
 
         Returns:
             Depends on the value of ``concatenate_returns``. By default, (``concatenate_returns`` is true),
@@ -948,10 +953,33 @@ class Experiment:
             concatenated together. If ``concatenate_returns`` is false, then a list of the predictions
             for the batches is returned with tensors converted into Numpy arrays.
         """
-        return self._predict(self.model.predict, generator, **kwargs)
+        return self._predict(self.model.predict_generator, generator, **kwargs)
+
+    def predict_on_batch(self, x) -> ndarray:
+        """
+        Returns the predictions of the network given a batch ``x``, where the tensors are converted
+        into Numpy arrays.
+
+        Args:
+            x: Input data as a batch.
+            checkpoint (Union[str, int]): Which model checkpoint weights to load for the test evaluation.
+
+                - If 'best', will load the best weights according to ``monitor_metric`` and ``monitor_mode``.
+                - If 'last', will load the last model checkpoint.
+                - If int, will load the checkpoint of the specified epoch.
+                - If a path (str), will load the model pickled state_dict weights (for instance, saved as
+                  ``torch.save(a_pytorch_network.state_dict(), "./a_path.p")``).
+
+                This argument has no effect when logging is disabled. (Default value = 'best')
+            kwargs: Any keyword arguments to pass to :func:`~Model.predict_on_batch()`.
+
+        Returns:
+            The predictions with tensors converted into Numpy arrays.
+        """
+        return self._predict(self.model.predict_on_batch, x)
 
     def _predict(self,
-                 evaluate_func,
+                 evaluate_func: Callable,
                  *args,
                  **kwargs) -> Union[ndarray, List[ndarray]]:
 
