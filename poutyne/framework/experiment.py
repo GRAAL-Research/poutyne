@@ -1,3 +1,4 @@
+from __future__ import annotations  # To allow hint typing of is_better_than methods
 import os
 import warnings
 from typing import Union, Callable, List, Dict, Tuple
@@ -880,7 +881,17 @@ class Experiment:
 
         return ret
 
-    def is_better_than(self, another_experiment) -> bool:
+    def is_better_than(self, another_experiment: Experiment) -> bool:
+        """
+        Compare the results of the Experiment with another experiment. To compare, both Experiments need to be
+        logged, monitor the same metric and the same monitor mod ("min" or "max").
+
+        Args:
+            another_experiment (~poutyne. Experiment): Another Poutyne experiment to compare results with.
+
+        Return:
+            A bool if either or not the Experiment is better than the Experiment to compare with.
+        """
         if not self.logging:
             raise ValueError("The experiment is not logged.")
         if not another_experiment.logging:
