@@ -4,7 +4,7 @@ import numbers
 import timeit
 import warnings
 from collections import defaultdict
-from typing import Iterable, Mapping, List, Union, Any
+from typing import Iterable, Mapping, List, Union, Any, Tuple
 
 import numpy as np
 import torch
@@ -925,7 +925,7 @@ class Model:
                  callbacks=None,
                  verbose=True,
                  progress_options: Union[dict, None] = None,
-                 dataloader_kwargs=None):
+                 dataloader_kwargs=None) -> Tuple:
         """
         Computes the loss and the metrics of the network on batches of samples and optionally
         returns the predictions.
@@ -997,7 +997,7 @@ class Model:
                          collate_fn=None,
                          dataloader_kwargs=None,
                          verbose=True,
-                         progress_options: Union[dict, None] = None):
+                         progress_options: Union[dict, None] = None) -> Tuple:
         """
         Computes the loss and the metrics of the network on batches of samples and optionally
         returns the predictions.
@@ -1081,7 +1081,7 @@ class Model:
                            concatenate_returns=True,
                            verbose=True,
                            progress_options: Union[dict, None] = None,
-                           callbacks=None):
+                           callbacks=None) -> Tuple:
         # pylint: disable=too-many-locals
         """
         Computes the loss and the metrics of the network on batches of samples and optionally returns
@@ -1236,7 +1236,7 @@ class Model:
         metrics = np.concatenate((batch_metrics, step_iterator.epoch_metrics))
         return self._format_loss_metrics_return(loss, metrics, pred_y, return_pred, true_y, return_ground_truth)
 
-    def evaluate_on_batch(self, x, y, *, return_pred=False, return_dict_format=False):
+    def evaluate_on_batch(self, x, y, *, return_pred=False, return_dict_format=False) -> Tuple:
         """
         Computes the loss and the metrics of the network on a single batch of samples and optionally
         returns the predictions.
