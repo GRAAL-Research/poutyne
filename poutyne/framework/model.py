@@ -857,7 +857,7 @@ class Model:
 
                 callback_list.on_predict_batch_end(step, {'batch': step, 'time': batch_total_time})
         if concatenate_returns:
-            return _concat(pred_y)
+            pred_y = _concat(pred_y)
         callback_list.on_predict_end({'time': timeit.default_timer() - predict_begin_time})
         return pred_y
 
