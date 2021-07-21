@@ -147,8 +147,6 @@ class ProgressionCallback(Callback):
 
         self._end_progress(logs, test_total_time, progress_fun)
 
-    # todo missing for validation??
-
     def on_predict_end(self, logs: Dict) -> None:
         predict_total_time = logs['time']
         progress_fun = self.color_progress.on_predict_end

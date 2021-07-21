@@ -46,6 +46,7 @@ from typing import Dict, List
 
 
 class Callback:
+    # pylint: disable=too-many-public-methods
     """
     Attributes:
         params (dict): Contains ``'epoch'`` and ``'steps_per_epoch'`` keys which are passed to the
@@ -322,7 +323,7 @@ class Callback:
 
 
 class CallbackList:
-
+    # pylint: disable=too-many-public-methods
     def __init__(self, callbacks: List[Callback]):
         callbacks = callbacks or []
         self.callbacks = list(callbacks)

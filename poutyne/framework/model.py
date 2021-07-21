@@ -660,7 +660,7 @@ class Model:
         else:
             x = self._process_input(x)
 
-        x = x if isinstance(x, (tuple, list)) else (x,)
+        x = x if isinstance(x, (tuple, list)) else (x, )
 
         return (x, y) if y is not None else x
 
@@ -703,25 +703,25 @@ class Model:
             logs = dict(loss=loss)
             logs.update(zip(self.batch_metrics_names, metrics))
 
-            return self._format_truth_pred_return((logs,), pred_y, return_pred)
+            return self._format_truth_pred_return((logs, ), pred_y, return_pred)
 
         return self._format_loss_metrics_return(loss, metrics, pred_y, return_pred)
 
     def _format_loss_metrics_return(self, loss, metrics, pred_y, return_pred, true_y=None, return_ground_truth=False):
         # pylint: disable=too-many-arguments
-        ret = (loss,)
+        ret = (loss, )
 
-        ret += tuple(metrics.tolist()) if len(metrics) <= 1 else (metrics,)
+        ret += tuple(metrics.tolist()) if len(metrics) <= 1 else (metrics, )
 
         return self._format_truth_pred_return(ret, pred_y, return_pred, true_y, return_ground_truth)
 
     def _format_truth_pred_return(self, init, pred_y, return_pred, true_y=None, return_ground_truth=False):
         # pylint: disable=too-many-arguments
         if return_pred:
-            init += (pred_y,)
+            init += (pred_y, )
 
         if return_ground_truth:
-            init += (true_y,)
+            init += (true_y, )
 
         return init[0] if len(init) == 1 else init
 
@@ -742,7 +742,7 @@ class Model:
         Returns:
             Numpy arrays of the predictions.
         """
-        x = x if isinstance(x, (tuple, list)) else (x,)
+        x = x if isinstance(x, (tuple, list)) else (x, )
         dataset = self._dataset_from_data(x)
         return self.predict_dataset(dataset,
                                     batch_size=batch_size,
@@ -801,7 +801,12 @@ class Model:
         generator = DataLoader(dataset, **dataloader_kwargs)
         return self.predict_generator(generator, steps=steps, concatenate_returns=concatenate_returns)
 
-    def predict_generator(self, generator, *, steps=None, concatenate_returns=True, verbose=True,
+    def predict_generator(self,
+                          generator,
+                          *,
+                          steps=None,
+                          concatenate_returns=True,
+                          verbose=True,
                           progress_options=None,
                           callbacks=None) -> Union[ndarray, List[ndarray]]:
         """
@@ -835,8 +840,7 @@ class Model:
             callbacks = [ProgressionCallback(**progress_options)] + callbacks
         callback_list = CallbackList(callbacks)
         callback_list.set_model(self)
-        params = {'steps': steps}
-        callback_list.set_params(params)
+        callback_list.set_params({'steps': steps})
 
         predict_begin_time = timeit.default_timer()
         with self._set_training_mode(False):
@@ -852,16 +856,10 @@ class Model:
                 batch_total_time = batch_end_time - time_since_last_batch
                 time_since_last_batch = batch_end_time
 
-                batch_logs = {
-                    'batch': step,
-                    'time': batch_total_time,
-                }
-
-                callback_list.on_predict_batch_end(step, batch_logs)
+                callback_list.on_predict_batch_end(step, {'batch': step, 'time': batch_total_time})
         if concatenate_returns:
             return _concat(pred_y)
-        predict_total_time = timeit.default_timer() - predict_begin_time
-        callback_list.on_predict_end({'time': predict_total_time})
+        callback_list.on_predict_end({'time': timeit.default_timer() - predict_begin_time})
         return pred_y
 
     def predict_on_batch(self, x) -> ndarray:
@@ -1193,7 +1191,7 @@ class Model:
         callback_list.on_test_end(test_metrics_log)
 
         if return_dict_format:
-            return self._format_truth_pred_return((test_metrics_log,), pred_y, return_pred, true_y,
+            return self._format_truth_pred_return((test_metrics_log, ), pred_y, return_pred, true_y,
                                                   return_ground_truth)
 
         metrics = np.concatenate((batch_metrics, step_iterator.epoch_metrics))
@@ -1233,7 +1231,7 @@ class Model:
             logs = dict(loss=loss)
             logs.update(zip(self.batch_metrics_names, metrics))
 
-            return self._format_truth_pred_return((logs,), pred_y, return_pred)
+            return self._format_truth_pred_return((logs, ), pred_y, return_pred)
 
         return self._format_loss_metrics_return(loss, metrics, pred_y, return_pred)
 

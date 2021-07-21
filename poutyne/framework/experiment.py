@@ -978,10 +978,7 @@ class Experiment:
         """
         return self._predict(self.model.predict_on_batch, x)
 
-    def _predict(self,
-                 evaluate_func: Callable,
-                 *args,
-                 **kwargs) -> Union[ndarray, List[ndarray]]:
+    def _predict(self, evaluate_func: Callable, *args, **kwargs) -> Union[ndarray, List[ndarray]]:
 
         ret = evaluate_func(*args, **kwargs)
         return ret
