@@ -26,59 +26,61 @@ from .callbacks import ModelCheckpoint, \
 
 class Experiment:
     """
-    The Experiment class provides a straightforward experimentation tool for efficient and entirely
-    customizable finetuning of the whole neural network training procedure with PyTorch. The
-    ``Experiment`` object takes care of the training and testing processes while also managing to
-    keep traces of all pertinent information via the automatic logging option.
+The Experiment class provides a straightforward experimentation tool for efficient and entirely
+customizable finetuning of the whole neural network training procedure with PyTorch. The
+``Experiment`` object takes care of the training and testing processes while also managing to
+keep traces of all pertinent information via the automatic logging option.
 
-    Args:
-        directory (str): Path to the experiment's working directory. Will be used for the automatic logging.
-        network (torch.nn.Module): A PyTorch network.
-        device (Union[torch.torch.device, List[torch.torch.device], str, None]): The device to which the model is sent
-            or for multi-GPUs, the list of devices to which the model is to be sent. When using a string for a multiple
-            GPUs the option is "all", for take them all, by default the current device is use as the main one.
-            If None, the model will be kept on its current device.
-            (Default value = None)
-        logging (bool): Whether or not to log the experiment's progress. If true, various logging
-            callbacks will be inserted to output training and testing stats as well as to automatically
-            save model checkpoints, for example. See :func:`~Experiment.train()` and :func:`~Experiment.test()`
-            for more details.
-            (Default value = True)
-        optimizer (Union[torch.optim.Optimizer, str]): If Pytorch Optimizer, must already be initialized.
-            If str, should be the optimizer's name in Pytorch (i.e. 'Adam' for torch.optim.Adam).
-            (Default value = 'sgd')
-        loss_function(Union[Callable, str], optional) It can be any PyTorch
-            loss layer or custom loss function. It can also be a string with the same name as a PyTorch
-            loss function (either the functional or object name). The loss function must have the signature
-            ``loss_function(input, target)`` where ``input`` is the prediction of the network and ``target``
-            is the ground truth. If ``None``, will default to, in priority order, either the model's own
-            loss function or the default loss function associated with the ``task``.
-            (Default value = None)
-        batch_metrics (List, optional): List of functions with the same signature as the loss function. Each metric
-            can be any PyTorch loss function. It can also be a string with the same name as a PyTorch
-            loss function (either the functional or object name). 'accuracy' (or just 'acc') is also a
-            valid metric. Each metric function is called on each batch of the optimization and on the
-            validation batches at the end of the epoch.
-            (Default value = None)
-        epoch_metrics (List, optional): List of functions with the same signature as
-            :class:`~poutyne.EpochMetric`
-            (Default value = None)
-        monitoring (bool): Whether or not to monitor the training. Will be use to track the best epoch.
-        monitor_metric (str, optional): Which metric to consider for best model performance calculation. Should be in
-            the format '{metric_name}' or 'val_{metric_name}' (i.e. 'val_loss'). If None, will follow the value
-            suggested by ``task`` or default to 'val_loss'.
+Args:
+    directory (str): Path to the experiment's working directory. Will be used for automatic logging.
+    network (torch.nn.Module): A PyTorch network.
+    device (Union[torch.torch.device, List[torch.torch.device], str, None]): The device to which the model is sent
+        or for multi-GPUs, the list of devices to which the model is to be sent. When using a string for a multiple
+        GPUs, the option is "all," for "take them all." By default, the current device is used as the main one.
+        If None, the model will be kept on its current device.
+        (Default value = None)
+    logging (bool): Whether or not to log the experiment's progress. If true, various logging
+        callbacks will be inserted to output training and testing stats as well as to save model checkpoints,
+        for example, automatically. See :func:`~Experiment.train()` and :func:`~Experiment.test()` for more details.
+        (Default value = True)
+    optimizer (Union[torch.optim.Optimizer, str]): If Pytorch Optimizer, must already be initialized.
+        If str, should be the optimizer's name in Pytorch (i.e. 'Adam' for torch.optim.Adam).
+        (Default value = 'sgd')
+    loss_function(Union[Callable, str], optional) It can be any PyTorch
+        loss layer or custom loss function. It can also be a string with the same name as a PyTorch
+        loss function (either the functional or object name). The loss function must have the signature
+        ``loss_function(input, target)`` where ``input`` is the prediction of the network and ``target``
+        is the ground truth. If ``None``, will default to, in priority order, either the model's own
+        loss function or the default loss function associated with the ``task``.
+        (Default value = None)
+    batch_metrics (List, optional): List of functions with the same signature as the loss function. Each metric
+        can be any PyTorch loss function. It can also be a string with the same name as a PyTorch
+        loss function (either the functional or object name). 'accuracy' (or just 'acc') is also a
+        valid metric. Each metric function is called on each batch of the optimization and on the
+        validation batches at the end of the epoch.
+        (Default value = None)
+    epoch_metrics (List, optional): List of functions with the same signature as
+        :class:`~poutyne.EpochMetric`
+        (Default value = None)
+    monitoring (bool): Whether or not to monitor the training. If True will track the best epoch. If False,
+    ``monitor_metric`` and ``monitor_mode`` are not used, and when testing, the last epoch is used to test the
+    model instead of the best epoch. By default, set to True.
+    monitor_metric (str, optional): Which metric to consider for best model performance calculation. Should be in
+        the format '{metric_name}' or 'val_{metric_name}' (i.e. 'val_loss'). If None, will follow the value
+        suggested by ``task`` or default to 'val_loss'.
 
-            .. warning:: If you do not plan on using a validation set, you must set the monitor metric to another
-                value.
-        monitor_mode (str, optional): Which mode, either 'min' or 'max', should be used when considering the
-            ``monitor_metric`` value. If None, will follow the value suggested by ``task`` or default to 'min'.
-        task (str, optional): Any str beginning with either 'classif' or 'reg'. Specifying a ``task``
-            can assign default values to the ``loss_function``, ``batch_metrics``, ``monitor_mode`` and
-            ``monitor_mode``. For ``task`` that begins with 'reg', the only default value is the loss function
-            that is the mean squared error. When beginning with 'classif', the default loss function is the
-            cross-entropy loss, the default batch metrics will be the accuracy, the default epoch metrics will be
-            the F1 score and the default monitoring will be set on 'val_acc' with a 'max' mode.
-            (Default value = None)
+        .. warning:: If you do not plan on using a validation set, you must set the monitor metric to another
+            value.
+    monitor_mode (str, optional): Which mode, either 'min' or 'max', should be used when considering the
+        ``monitor_metric`` value. If None, will follow the value suggested by ``task`` or default to 'min'.
+    task (str, optional): Any str beginning with either 'classif' or 'reg'. Specifying a ``task``
+        can assign default values to the ``loss_function``, ``batch_metrics``, ``monitor_mode`` and
+        ``monitor_mode``. For ``task`` that begins with 'reg', the only default value is the loss function
+        that is the mean squared error. When beginning with 'classif', the default loss function is the
+        cross-entropy loss. The default batch metrics will be the accuracy, the default epoch metrics will be
+        the F1 score and the default monitoring will be set on 'val_acc' with a 'max' mode.
+        (Default value = None)
+
 
     Examples:
         Using a PyTorch DataLoader, on classification task with SGD optimizer::
