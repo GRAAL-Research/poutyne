@@ -1,4 +1,3 @@
-#todo add on predict methods
 # pylint: disable=line-too-long, pointless-string-statement
 import os
 import warnings
