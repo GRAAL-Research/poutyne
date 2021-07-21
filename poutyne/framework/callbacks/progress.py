@@ -1,3 +1,4 @@
+#todo add on predict methods
 import itertools
 from typing import Dict, Callable
 
