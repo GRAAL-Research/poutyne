@@ -883,7 +883,7 @@ class Experiment:
     def is_better_than(self, another_experiment) -> bool:
         """
         Compare the results of the Experiment with another experiment. To compare, both Experiments need to be
-        logged, monitor the same metric and the same monitor mod ("min" or "max").
+        logged, monitor the same metric and the same monitor mode ("min" or "max").
 
         Args:
             another_experiment (~poutyne. Experiment): Another Poutyne experiment to compare results with.
