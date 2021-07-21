@@ -889,7 +889,7 @@ class Experiment:
             another_experiment (~poutyne. Experiment): Another Poutyne experiment to compare results with.
 
         Return:
-            A bool if either or not the Experiment is better than the Experiment to compare with.
+            Whether the Experiment is better than the Experiment to compare with.
         """
         if not self.logging:
             raise ValueError("The experiment is not logged.")
