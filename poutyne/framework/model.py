@@ -833,7 +833,7 @@ class Model:
             return _concat(pred_y)
         return pred_y
 
-    def predict_on_batch(self, x):
+    def predict_on_batch(self, x) -> ndarray:
         """
         Returns the predictions of the network given a batch ``x``, where the tensors are converted
         into Numpy arrays.
