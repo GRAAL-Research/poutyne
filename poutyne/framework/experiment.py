@@ -1,8 +1,6 @@
 import os
 import warnings
-from typing import Union, Callable, List, Dict, Tuple
-
-from numpy import ndarray
+from typing import Union, Callable, List, Dict, Tuple, Any
 
 try:
     import pandas as pd
@@ -878,7 +876,7 @@ class Experiment:
 
         return ret
 
-    def predict(self, x, **kwargs) -> ndarray:
+    def predict(self, x, **kwargs) -> Any:
         """
          Returns the predictions of the network given a dataset ``x``, where the tensors are
         converted into Numpy arrays.
@@ -899,11 +897,11 @@ class Experiment:
             kwargs: Any keyword arguments to pass to :func:`~Model.predict()`.
 
         Returns:
-            Numpy arrays of the predictions.
+            Return the predictions in the format outputted by the model.
         """
         return self._predict(self.model.predict, x, **kwargs)
 
-    def predict_dataset(self, dataset, **kwargs) -> Union[ndarray, List[ndarray]]:
+    def predict_dataset(self, dataset, **kwargs) -> Any:
         """
         Returns the predictions of the network given a dataset, where the tensors are
         converted into Numpy arrays.
@@ -922,11 +920,11 @@ class Experiment:
             kwargs: Any keyword arguments to pass to :func:`~Model.predict_dataset()`.
 
         Returns:
-            Numpy arrays of the predictions or a list of Numpy arrays of the predictions.
+            Return the predictions in the format outputted by the model.
         """
         return self._predict(self.model.predict_dataset, dataset, **kwargs)
 
-    def predict_generator(self, generator, *, kwargs) -> Union[ndarray, List[ndarray]]:
+    def predict_generator(self, generator, *, kwargs) -> Any:
         """
         Returns the predictions of the network given batches of samples ``x``, where the tensors are
         converted into Numpy arrays.
@@ -955,7 +953,7 @@ class Experiment:
         """
         return self._predict(self.model.predict_generator, generator, **kwargs)
 
-    def predict_on_batch(self, x) -> ndarray:
+    def predict_on_batch(self, x) -> Any:
         """
         Returns the predictions of the network given a batch ``x``, where the tensors are converted
         into Numpy arrays.
@@ -974,11 +972,11 @@ class Experiment:
             kwargs: Any keyword arguments to pass to :func:`~Model.predict_on_batch()`.
 
         Returns:
-            The predictions with tensors converted into Numpy arrays.
+            Return the predictions in the format outputted by the model.
         """
         return self._predict(self.model.predict_on_batch, x)
 
-    def _predict(self, evaluate_func: Callable, *args, **kwargs) -> Union[ndarray, List[ndarray]]:
+    def _predict(self, evaluate_func: Callable, *args, **kwargs) -> Any:
 
         ret = evaluate_func(*args, **kwargs)
         return ret

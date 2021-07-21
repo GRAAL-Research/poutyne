@@ -4,13 +4,12 @@ import numbers
 import timeit
 import warnings
 from collections import defaultdict
-from typing import Iterable, Mapping, List, Union
+from typing import Iterable, Mapping, List, Union, Any
 
 import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from numpy import ndarray
 from torch.utils.data import DataLoader
 
 from poutyne import torch_to_numpy, numpy_to_torch, torch_to
@@ -725,7 +724,7 @@ class Model:
 
         return init[0] if len(init) == 1 else init
 
-    def predict(self, x, *, batch_size=32, dataloader_kwargs=None) -> ndarray:
+    def predict(self, x, *, batch_size=32, dataloader_kwargs=None) -> Any:
         """
         Returns the predictions of the network given a dataset ``x``, where the tensors are
         converted into Numpy arrays.
@@ -740,7 +739,7 @@ class Model:
                 internally.
 
         Returns:
-            Numpy arrays of the predictions.
+            Return the predictions in the format outputted by the model.
         """
         x = x if isinstance(x, (tuple, list)) else (x, )
         dataset = self._dataset_from_data(x)
@@ -757,7 +756,7 @@ class Model:
                         concatenate_returns=True,
                         num_workers=0,
                         collate_fn=None,
-                        dataloader_kwargs=None) -> Union[ndarray, List[ndarray]]:
+                        dataloader_kwargs=None) -> Any:
         """
         Returns the predictions of the network given a dataset ``x``, where the tensors are
         converted into Numpy arrays.
@@ -808,7 +807,7 @@ class Model:
                           concatenate_returns=True,
                           verbose=True,
                           progress_options=None,
-                          callbacks=None) -> Union[ndarray, List[ndarray]]:
+                          callbacks=None) -> Any:
         """
         Returns the predictions of the network given batches of samples ``x``, where the tensors are
         converted into Numpy arrays.
@@ -862,15 +861,16 @@ class Model:
         callback_list.on_predict_end({'time': timeit.default_timer() - predict_begin_time})
         return pred_y
 
-    def predict_on_batch(self, x) -> ndarray:
+    def predict_on_batch(self, x) -> Any:
         """
         Returns the predictions of the network given a batch ``x``, where the tensors are converted
         into Numpy arrays.
 
         Args:
             x: Input data as a batch.
+
         Returns:
-            The predictions with tensors converted into Numpy arrays.
+            Return the predictions in the format outputted by the model.
         """
         with self._set_training_mode(False):
             x = self.preprocess_input(x)
