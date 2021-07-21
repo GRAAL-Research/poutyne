@@ -327,6 +327,16 @@ class CallbackList:
         for callback in self.callbacks:
             callback.on_test_batch_end(batch_number, logs)
 
+    def on_predict_batch_begin(self, batch_number: int, logs: Dict):
+        logs = logs or {}
+        for callback in self.callbacks:
+            callback.on_test_batch_begin(batch_number, logs)
+
+    def on_predict_batch_end(self, batch_number: int, logs: Dict):
+        logs = logs or {}
+        for callback in self.callbacks:
+            callback.on_test_batch_end(batch_number, logs)
+
     def on_train_begin(self, logs: Dict):
         logs = logs or {}
         for callback in self.callbacks:
@@ -353,6 +363,16 @@ class CallbackList:
             callback.on_test_begin(logs)
 
     def on_test_end(self, logs: Dict):
+        logs = logs or {}
+        for callback in self.callbacks:
+            callback.on_test_end(logs)
+
+    def on_predict_begin(self, logs: Dict):
+        logs = logs or {}
+        for callback in self.callbacks:
+            callback.on_test_begin(logs)
+
+    def on_predict_end(self, logs: Dict):
         logs = logs or {}
         for callback in self.callbacks:
             callback.on_test_end(logs)

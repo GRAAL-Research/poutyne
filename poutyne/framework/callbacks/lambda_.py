@@ -1,4 +1,5 @@
 from typing import Dict
+
 from .callbacks import Callback
 
 
@@ -35,12 +36,16 @@ class LambdaCallback(Callback):
                  on_valid_batch_end=None,
                  on_test_batch_begin=None,
                  on_test_batch_end=None,
+                 on_predict_batch_begin=None,
+                 on_predict_batch_end=None,
                  on_train_begin=None,
                  on_train_end=None,
                  on_valid_begin=None,
                  on_valid_end=None,
                  on_test_begin=None,
                  on_test_end=None,
+                 on_predict_begin=None,
+                 on_predict_end=None,
                  on_backward_end=None):
         # pylint: disable=too-many-locals
         super().__init__()
@@ -52,12 +57,16 @@ class LambdaCallback(Callback):
         self._on_valid_batch_end = self._set_lambda_for_none(on_valid_batch_end)
         self._on_test_batch_begin = self._set_lambda_for_none(on_test_batch_begin)
         self._on_test_batch_end = self._set_lambda_for_none(on_test_batch_end)
+        self._on_predict_batch_begin = self._set_lambda_for_none(on_predict_batch_begin)
+        self._on_predict_batch_end = self._set_lambda_for_none(on_predict_batch_end)
         self._on_train_begin = self._set_lambda_for_none(on_train_begin)
         self._on_train_end = self._set_lambda_for_none(on_train_end)
         self._on_valid_begin = self._set_lambda_for_none(on_valid_begin)
         self._on_valid_end = self._set_lambda_for_none(on_valid_end)
         self._on_test_begin = self._set_lambda_for_none(on_test_begin)
         self._on_test_end = self._set_lambda_for_none(on_test_end)
+        self._on_predict_begin = self._set_lambda_for_none(on_predict_begin)
+        self._on_predict_end = self._set_lambda_for_none(on_predict_end)
         self._on_backward_end = self._set_lambda_for_none(on_backward_end)
 
     def _set_lambda_for_none(self, value):
@@ -87,6 +96,12 @@ class LambdaCallback(Callback):
     def on_test_batch_end(self, batch_number: int, logs: Dict):
         self._on_test_batch_end(batch_number, logs)
 
+    def on_predict_batch_begin(self, batch_number: int, logs: Dict):
+        self._on_predict_batch_begin(batch_number, logs)
+
+    def on_predict_batch_end(self, batch_number: int, logs: Dict):
+        self._on_predict_batch_end(batch_number, logs)
+
     def on_train_begin(self, logs: Dict):
         self._on_train_begin(logs)
 
@@ -104,6 +119,12 @@ class LambdaCallback(Callback):
 
     def on_test_end(self, logs: Dict):
         self._on_test_end(logs)
+
+    def on_predict_begin(self, logs: Dict):
+        self._on_predict_begin(logs)
+
+    def on_predict_end(self, logs: Dict):
+        self._on_predict_end(logs)
 
     def on_backward_end(self, batch_number: int):
         self._on_backward_end(batch_number)
