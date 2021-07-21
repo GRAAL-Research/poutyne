@@ -36,7 +36,7 @@ class Experiment:
         network (torch.nn.Module): A PyTorch network.
         device (Union[torch.torch.device, List[torch.torch.device], str, None]): The device to which the model is sent
             or for multi-GPUs, the list of devices to which the model is to be sent. When using a string for a multiple
-            GPUs, the option is "all," for "take them all." By default, the current device is used as the main one.
+            GPUs, the option is "all", for "take them all." By default, the current device is used as the main one.
             If None, the model will be kept on its current device.
             (Default value = None)
         logging (bool): Whether or not to log the experiment's progress. If true, various logging
