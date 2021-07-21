@@ -217,7 +217,7 @@ class Model:
             batches_per_step=1,
             initial_epoch=1,
             verbose=True,
-            progress_options=None,
+            progress_options: Union[dict, None] = None,
             callbacks=None,
             dataloader_kwargs=None):
         # pylint: disable=line-too-long,too-many-locals
@@ -321,11 +321,11 @@ class Model:
                     validation_steps=None,
                     batches_per_step=1,
                     initial_epoch=1,
-                    verbose=True,
-                    progress_options=None,
-                    callbacks=None,
                     num_workers=0,
                     collate_fn=None,
+                    verbose=True,
+                    progress_options: Union[dict, None] = None,
+                    callbacks=None,
                     dataloader_kwargs=None):
         # pylint: disable=line-too-long,too-many-locals
         """
@@ -353,6 +353,11 @@ class Model:
             initial_epoch (int, optional): Epoch at which to start training
                 (useful for resuming a previous training run).
                 (Default value = 1)
+            num_workers (int, optional): how many subprocesses to use for data loading.
+                ``0`` means that the data will be loaded in the main process.
+                (Default value = 0)
+            collate_fn (Callable, optional): merges a list of samples to form a mini-batch of Tensor(s).
+                Used when using batched loading from a map-style dataset.
             verbose (bool): Whether to display the progress of the training.
                 (Default value = True)
             progress_options (dict, optional): Keyword arguments to pass to the default progression callback used
@@ -361,11 +366,6 @@ class Model:
             callbacks (List[~poutyne.Callback]): List of callbacks that will be called
                 during training.
                 (Default value = None)
-            num_workers (int, optional): how many subprocesses to use for data loading.
-                ``0`` means that the data will be loaded in the main process.
-                (Default value = 0)
-            collate_fn (Callable, optional): merges a list of samples to form a mini-batch of Tensor(s).
-                Used when using batched loading from a map-style dataset.
             dataloader_kwargs (dict, optional): Keyword arguments to pass to the PyTorch dataloaders created
                 internally. By default, ``shuffle=True`` is passed for the training dataloader but this can be
                 overridden by using this argument.
@@ -429,7 +429,7 @@ class Model:
                       batches_per_step=1,
                       initial_epoch=1,
                       verbose=True,
-                      progress_options=None,
+                      progress_options: Union[dict, None] = None,
                       callbacks=None):
         # pylint: disable=line-too-long
         """
@@ -724,7 +724,14 @@ class Model:
 
         return init[0] if len(init) == 1 else init
 
-    def predict(self, x, *, batch_size=32, dataloader_kwargs=None) -> Any:
+    def predict(self,
+                x,
+                *,
+                batch_size=32,
+                verbose=True,
+                progress_options: Union[dict, None] = None,
+                callbacks=None,
+                dataloader_kwargs=None) -> Any:
         """
         Returns the predictions of the network given a dataset ``x``, where the tensors are
         converted into Numpy arrays.
@@ -735,6 +742,13 @@ class Model:
                 Union[tuple, list] of Union[Tensor, ndarray] if the model has multiple inputs.
             batch_size (int): Number of samples given to the network at one time.
                 (Default value = 32)
+            verbose (bool): Whether to display the progress of the evaluation.
+                (Default value = True)
+            progress_options (dict, optional): Keyword arguments to pass to the default progression callback used
+                in Poutyne (See :class:`~poutyne.ProgressionCallback` for the available arguments).
+                (Default value = None, meaning default color setting and progress bar)
+            callbacks (List[~poutyne.Callback]): List of callbacks that will be called during
+                testing. (Default value = None)
             dataloader_kwargs (dict, optional): Keyword arguments to pass to the PyTorch dataloaders created
                 internally.
 
@@ -746,7 +760,10 @@ class Model:
         return self.predict_dataset(dataset,
                                     batch_size=batch_size,
                                     concatenate_returns=True,
-                                    dataloader_kwargs=dataloader_kwargs)
+                                    dataloader_kwargs=dataloader_kwargs,
+                                    verbose=verbose,
+                                    progress_options=progress_options,
+                                    callbacks=callbacks)
 
     def predict_dataset(self,
                         dataset,
@@ -756,6 +773,9 @@ class Model:
                         concatenate_returns=True,
                         num_workers=0,
                         collate_fn=None,
+                        verbose=True,
+                        progress_options: Union[dict, None] = None,
+                        callbacks=None,
                         dataloader_kwargs=None) -> Any:
         """
         Returns the predictions of the network given a dataset ``x``, where the tensors are
@@ -775,6 +795,13 @@ class Model:
                 (Default value = 0)
             collate_fn (Callable, optional): merges a list of samples to form a mini-batch of Tensor(s).
                 Used when using batched loading from a map-style dataset.
+            verbose (bool): Whether to display the progress of the evaluation.
+                (Default value = True)
+            progress_options (dict, optional): Keyword arguments to pass to the default progression callback used
+                in Poutyne (See :class:`~poutyne.ProgressionCallback` for the available arguments).
+                (Default value = None, meaning default color setting and progress bar)
+            callbacks (List[~poutyne.Callback]): List of callbacks that will be called during
+                testing. (Default value = None)
             dataloader_kwargs (dict, optional): Keyword arguments to pass to the PyTorch dataloaders created
                 internally.
 
@@ -798,7 +825,12 @@ class Model:
         }
 
         generator = DataLoader(dataset, **dataloader_kwargs)
-        return self.predict_generator(generator, steps=steps, concatenate_returns=concatenate_returns)
+        return self.predict_generator(generator,
+                                      steps=steps,
+                                      concatenate_returns=concatenate_returns,
+                                      verbose=verbose,
+                                      progress_options=progress_options,
+                                      callbacks=callbacks)
 
     def predict_generator(self,
                           generator,
@@ -806,7 +838,7 @@ class Model:
                           steps=None,
                           concatenate_returns=True,
                           verbose=True,
-                          progress_options=None,
+                          progress_options: Union[dict, None] = None,
                           callbacks=None) -> Any:
         """
         Returns the predictions of the network given batches of samples ``x``, where the tensors are
@@ -820,6 +852,13 @@ class Model:
                 (Defaults the number of steps needed to see the entire dataset)
             concatenate_returns (bool, optional): Whether to concatenate the predictions
                 or the ground truths when returning them. (Default value = True)
+            verbose (bool): Whether to display the progress of the evaluation.
+                (Default value = True)
+            progress_options (dict, optional): Keyword arguments to pass to the default progression callback used
+                in Poutyne (See :class:`~poutyne.ProgressionCallback` for the available arguments).
+                (Default value = None, meaning default color setting and progress bar)
+            callbacks (List[~poutyne.Callback]): List of callbacks that will be called during
+                testing. (Default value = None)
 
         Returns:
             Depends on the value of ``concatenate_returns``. By default, (``concatenate_returns`` is true),
@@ -883,9 +922,9 @@ class Model:
                  batch_size=32,
                  return_pred=False,
                  return_dict_format=False,
-                 callbacks=None,
                  verbose=True,
                  progress_options: Union[dict, None] = None,
+                 callbacks=None,
                  dataloader_kwargs=None):
         """
         Computes the loss and the metrics of the network on batches of samples and optionally
@@ -905,15 +944,15 @@ class Model:
                 (Default value = False)
             return_dict_format (bool, optional): Whether to return the loss and metrics in a dict format or not.
                 (Default value = False)
-            callbacks (List[~poutyne.Callback]): List of callbacks that will be called during
-                testing. (Default value = None)
-            dataloader_kwargs (dict, optional): Keyword arguments to pass to the PyTorch dataloaders created
-                internally.
             verbose (bool): Whether to display the progress of the evaluation.
                 (Default value = True)
             progress_options (dict, optional): Keyword arguments to pass to the default progression callback used
                 in Poutyne (See :class:`~poutyne.ProgressionCallback` for the available arguments).
                 (Default value = None, meaning default color setting and progress bar)
+            callbacks (List[~poutyne.Callback]): List of callbacks that will be called during
+                testing. (Default value = None)
+            dataloader_kwargs (dict, optional): Keyword arguments to pass to the PyTorch dataloaders created
+                internally.
 
         Returns:
             Tuple ``(loss, metrics, pred_y)`` where specific elements are omitted if not
@@ -953,12 +992,12 @@ class Model:
                          return_ground_truth=False,
                          return_dict_format=False,
                          concatenate_returns=True,
-                         callbacks=None,
                          num_workers=0,
                          collate_fn=None,
-                         dataloader_kwargs=None,
                          verbose=True,
-                         progress_options: Union[dict, None] = None):
+                         progress_options: Union[dict, None] = None,
+                         callbacks=None,
+                         dataloader_kwargs=None):
         """
         Computes the loss and the metrics of the network on batches of samples and optionally
         returns the predictions.
@@ -977,20 +1016,20 @@ class Model:
                 (Default value = False)
             concatenate_returns (bool, optional): Whether to concatenate the predictions
                 or the ground truths when returning them. (Default value = True)
-            callbacks (List[~poutyne.Callback]): List of callbacks that will be called during
-                testing. (Default value = None)
             num_workers (int, optional): how many subprocesses to use for data loading.
                 ``0`` means that the data will be loaded in the main process.
                 (Default value = 0)
             collate_fn (Callable, optional): merges a list of samples to form a mini-batch of Tensor(s).
                 Used when using batched loading from a map-style dataset.
-            dataloader_kwargs (dict, optional): Keyword arguments to pass to the PyTorch dataloaders created
-                internally.
             verbose (bool): Whether to display the progress of the evaluation.
                 (Default value = True)
             progress_options (dict, optional): Keyword arguments to pass to the default progression callback used
                 in Poutyne (See :class:`~poutyne.ProgressionCallback` for the available arguments).
                 (Default value = None, meaning default color setting and progress bar)
+            callbacks (List[~poutyne.Callback]): List of callbacks that will be called during
+                testing. (Default value = None)
+            dataloader_kwargs (dict, optional): Keyword arguments to pass to the PyTorch dataloaders created
+                internally.
 
         Returns:
             Tuple ``(loss, metrics, pred_y)`` where specific elements are omitted if not
