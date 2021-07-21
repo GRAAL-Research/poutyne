@@ -304,7 +304,7 @@ class Callback:
         Args:
             logs (dict): Contains the following keys:
 
-                 * ``'time'``: The total computation time of the test.
+                 * ``'time'``: The total computation time of the predict.
 
         Example::
 
