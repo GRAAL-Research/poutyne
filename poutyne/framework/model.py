@@ -742,7 +742,7 @@ class Model:
         Returns:
             Numpy arrays of the predictions.
         """
-        x = x if isinstance(x, (tuple, list)) else (x, )
+        x = x if isinstance(x, (tuple, list)) else (x,)
         dataset = self._dataset_from_data(x)
         return self.predict_dataset(dataset,
                                     batch_size=batch_size,
@@ -801,7 +801,9 @@ class Model:
         generator = DataLoader(dataset, **dataloader_kwargs)
         return self.predict_generator(generator, steps=steps, concatenate_returns=concatenate_returns)
 
-    def predict_generator(self, generator, *, steps=None, concatenate_returns=True) -> Union[ndarray, List[ndarray]]:
+    def predict_generator(self, generator, *, steps=None, concatenate_returns=True, verbose=True,
+                          progress_options=None,
+                          callbacks=None) -> Union[ndarray, List[ndarray]]:
         """
         Returns the predictions of the network given batches of samples ``x``, where the tensors are
         converted into Numpy arrays.
@@ -825,12 +827,41 @@ class Model:
         if steps is None and hasattr(generator, '__len__'):
             steps = len(generator)
         pred_y = []
+
+        callbacks = [] if callbacks is None else callbacks
+
+        if verbose:
+            progress_options = {} if progress_options is None else progress_options
+            callbacks = [ProgressionCallback(**progress_options)] + callbacks
+        callback_list = CallbackList(callbacks)
+        callback_list.set_model(self)
+        params = {'steps': steps}
+        callback_list.set_params(params)
+
+        predict_begin_time = timeit.default_timer()
         with self._set_training_mode(False):
-            for _, x in _get_step_iterator(steps, generator):
+            callback_list.on_predict_begin({})
+            time_since_last_batch = timeit.default_timer()
+            for step, x in _get_step_iterator(steps, generator):
+                callback_list.on_predict_batch_begin(step, {})
+
                 x = self.preprocess_input(x)
                 pred_y.append(torch_to_numpy(self.network(*x)))
+
+                batch_end_time = timeit.default_timer()
+                batch_total_time = batch_end_time - time_since_last_batch
+                time_since_last_batch = batch_end_time
+
+                batch_logs = {
+                    'batch': step,
+                    'time': batch_total_time,
+                }
+
+                callback_list.on_predict_batch_end(step, batch_logs)
         if concatenate_returns:
             return _concat(pred_y)
+        predict_total_time = timeit.default_timer() - predict_begin_time
+        callback_list.on_predict_end({'time': predict_total_time})
         return pred_y
 
     def predict_on_batch(self, x) -> ndarray:
