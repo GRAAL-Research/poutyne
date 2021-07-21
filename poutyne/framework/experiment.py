@@ -1,4 +1,3 @@
-from __future__ import annotations  # To allow hint typing of is_better_than methods
 import os
 import warnings
 from typing import Union, Callable, List, Dict, Tuple
@@ -881,7 +880,7 @@ class Experiment:
 
         return ret
 
-    def is_better_than(self, another_experiment: Experiment) -> bool:
+    def is_better_than(self, another_experiment) -> bool:
         """
         Compare the results of the Experiment with another experiment. To compare, both Experiments need to be
         logged, monitor the same metric and the same monitor mod ("min" or "max").
