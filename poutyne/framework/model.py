@@ -290,31 +290,27 @@ class Model:
                 ...
 
         """
-        if dataloader_kwargs is None:
-            dataloader_kwargs = {}
-        dataloader_kwargs = {'batch_size': batch_size, **dataloader_kwargs}
-
-        train_generator = self._dataloader_from_data((x, y), {'shuffle': True, **dataloader_kwargs})
-        valid_generator = None
+        train_dataset = self._dataset_from_data((x, y))
+        valid_dataset = None
         if validation_data is not None:
-            valid_generator = self._dataloader_from_data(validation_data, dataloader_kwargs)
+            valid_dataset = self._dataset_from_data(validation_data)
 
-        return self.fit_generator(train_generator,
-                                  valid_generator=valid_generator,
-                                  epochs=epochs,
-                                  steps_per_epoch=steps_per_epoch,
-                                  validation_steps=validation_steps,
-                                  batches_per_step=batches_per_step,
-                                  initial_epoch=initial_epoch,
-                                  verbose=verbose,
-                                  progress_options=progress_options,
-                                  callbacks=callbacks)
+        return self.fit_dataset(train_dataset,
+                                valid_dataset=valid_dataset,
+                                epochs=epochs,
+                                batch_size=batch_size,
+                                steps_per_epoch=steps_per_epoch,
+                                validation_steps=validation_steps,
+                                batches_per_step=batches_per_step,
+                                initial_epoch=initial_epoch,
+                                verbose=verbose,
+                                progress_options=progress_options,
+                                callbacks=callbacks,
+                                dataloader_kwargs=dataloader_kwargs)
 
-    def _dataloader_from_data(self, args, dataloader_kwargs):
+    def _dataset_from_data(self, args):
         args = numpy_to_torch(args)
-        dataset = TensorDataset(*args) if len(args) > 1 else args[0]
-        generator = DataLoader(dataset, **dataloader_kwargs)
-        return generator
+        return TensorDataset(*args) if len(args) > 1 else args[0]
 
     def fit_dataset(self,
                     train_dataset,
@@ -746,13 +742,12 @@ class Model:
         Returns:
             Numpy arrays of the predictions.
         """
-        if dataloader_kwargs is None:
-            dataloader_kwargs = {}
-        dataloader_kwargs = {'batch_size': batch_size, **dataloader_kwargs}
-
-        x = x if isinstance(x, (tuple, list)) else (x,)
-        generator = self._dataloader_from_data(x, dataloader_kwargs)
-        return self.predict_generator(generator, concatenate_returns=True)
+        x = x if isinstance(x, (tuple, list)) else (x, )
+        dataset = self._dataset_from_data(x)
+        return self.predict_dataset(dataset,
+                                    batch_size=batch_size,
+                                    concatenate_returns=True,
+                                    dataloader_kwargs=dataloader_kwargs)
 
     def predict_dataset(self,
                         dataset,
@@ -909,19 +904,16 @@ class Model:
             dictionary as passed to :func:`~poutyne.Callback.on_test_end()`.
 
         """
-        if dataloader_kwargs is None:
-            dataloader_kwargs = {}
-        dataloader_kwargs = {'batch_size': batch_size, **dataloader_kwargs}
-
-        generator = self._dataloader_from_data((x, y), dataloader_kwargs)
-        return self.evaluate_generator(generator,
-                                       steps=len(generator),
-                                       return_pred=return_pred,
-                                       return_dict_format=return_dict_format,
-                                       concatenate_returns=True,
-                                       callbacks=callbacks,
-                                       verbose=verbose,
-                                       progress_options=progress_options)
+        dataset = self._dataset_from_data((x, y))
+        return self.evaluate_dataset(dataset,
+                                     batch_size=batch_size,
+                                     return_pred=return_pred,
+                                     return_dict_format=return_dict_format,
+                                     concatenate_returns=True,
+                                     callbacks=callbacks,
+                                     verbose=verbose,
+                                     progress_options=progress_options,
+                                     dataloader_kwargs=dataloader_kwargs)
 
     def evaluate_dataset(self,
                          dataset,

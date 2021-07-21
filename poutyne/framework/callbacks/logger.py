@@ -20,7 +20,7 @@ class Logger(Callback):
             self.fieldnames = ['epoch', 'batch', 'size', 'time']
         else:
             self.fieldnames = ['epoch', 'time']
-        if getattr(self.model, 'optimizer') is not None:
+        if getattr(self.model, 'optimizer', None) is not None:
             if len(self.model.optimizer.param_groups) > 1:
                 self.fieldnames += [f'lr_group_{i}' for i in range(len(self.model.optimizer.param_groups))]
             else:
@@ -65,7 +65,7 @@ class Logger(Callback):
 
     def _get_current_learning_rates(self):
         learning_rates = {}
-        if getattr(self.model, 'optimizer') is not None:
+        if getattr(self.model, 'optimizer', None) is not None:
             if len(self.model.optimizer.param_groups) > 1:
                 learning_rates = {
                     f'lr_group_{i}': param_group['lr']
