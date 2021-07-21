@@ -68,12 +68,13 @@ class Experiment:
             (Default value = True)
         monitor_metric (str, optional): Which metric to consider for best model performance calculation. Should be in
             the format '{metric_name}' or 'val_{metric_name}' (i.e. 'val_loss'). If None, will follow the value
-            suggested by ``task`` or default to 'val_loss'.
+            suggested by ``task`` or default to 'val_loss'. If ``monitoring`` is set to False, will be ignore.
 
             .. warning:: If you do not plan on using a validation set, you must set the monitor metric to another
                 value.
         monitor_mode (str, optional): Which mode, either 'min' or 'max', should be used when considering the
             ``monitor_metric`` value. If None, will follow the value suggested by ``task`` or default to 'min'.
+            If ``monitoring`` is set to False, will be ignore.
         task (str, optional): Any str beginning with either 'classif' or 'reg'. Specifying a ``task``
             can assign default values to the ``loss_function``, ``batch_metrics``, ``monitor_mode`` and
             ``monitor_mode``. For ``task`` that begins with 'reg', the only default value is the loss function
