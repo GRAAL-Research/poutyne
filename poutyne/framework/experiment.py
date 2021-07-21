@@ -63,6 +63,7 @@ class Experiment:
         epoch_metrics (List, optional): List of functions with the same signature as
             :class:`~poutyne.EpochMetric`
             (Default value = None)
+        monitoring (bool): Whether or not to monitor the training. Will be use to track the best epoch.
         monitor_metric (str, optional): Which metric to consider for best model performance calculation. Should be in
             the format '{metric_name}' or 'val_{metric_name}' (i.e. 'val_loss'). If None, will follow the value
             suggested by ``task`` or default to 'val_loss'.
