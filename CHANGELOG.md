@@ -1,6 +1,6 @@
 # v1.x.x
 
-*
+* Add a method to compare the results of two experiments.
 
 # v1.5
 
