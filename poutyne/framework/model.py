@@ -321,11 +321,11 @@ class Model:
                     validation_steps=None,
                     batches_per_step=1,
                     initial_epoch=1,
+                    verbose=True,
+                    progress_options=None,
+                    callbacks=None,
                     num_workers=0,
                     collate_fn=None,
-                    verbose=True,
-                    progress_options: Union[dict, None] = None,
-                    callbacks=None,
                     dataloader_kwargs=None):
         # pylint: disable=line-too-long,too-many-locals
         """
@@ -353,11 +353,6 @@ class Model:
             initial_epoch (int, optional): Epoch at which to start training
                 (useful for resuming a previous training run).
                 (Default value = 1)
-            num_workers (int, optional): how many subprocesses to use for data loading.
-                ``0`` means that the data will be loaded in the main process.
-                (Default value = 0)
-            collate_fn (Callable, optional): merges a list of samples to form a mini-batch of Tensor(s).
-                Used when using batched loading from a map-style dataset.
             verbose (bool): Whether to display the progress of the training.
                 (Default value = True)
             progress_options (dict, optional): Keyword arguments to pass to the default progression callback used
@@ -369,6 +364,11 @@ class Model:
             dataloader_kwargs (dict, optional): Keyword arguments to pass to the PyTorch dataloaders created
                 internally. By default, ``shuffle=True`` is passed for the training dataloader but this can be
                 overridden by using this argument.
+            num_workers (int, optional): how many subprocesses to use for data loading.
+                ``0`` means that the data will be loaded in the main process.
+                (Default value = 0)
+            collate_fn (Callable, optional): merges a list of samples to form a mini-batch of Tensor(s).
+                Used when using batched loading from a map-style dataset.
 
         Returns:
             List of dict containing the history of each epoch.
@@ -922,9 +922,9 @@ class Model:
                  batch_size=32,
                  return_pred=False,
                  return_dict_format=False,
+                 callbacks=None,
                  verbose=True,
                  progress_options: Union[dict, None] = None,
-                 callbacks=None,
                  dataloader_kwargs=None):
         """
         Computes the loss and the metrics of the network on batches of samples and optionally
@@ -944,13 +944,13 @@ class Model:
                 (Default value = False)
             return_dict_format (bool, optional): Whether to return the loss and metrics in a dict format or not.
                 (Default value = False)
+            callbacks (List[~poutyne.Callback]): List of callbacks that will be called during
+                testing. (Default value = None)
             verbose (bool): Whether to display the progress of the evaluation.
                 (Default value = True)
             progress_options (dict, optional): Keyword arguments to pass to the default progression callback used
                 in Poutyne (See :class:`~poutyne.ProgressionCallback` for the available arguments).
                 (Default value = None, meaning default color setting and progress bar)
-            callbacks (List[~poutyne.Callback]): List of callbacks that will be called during
-                testing. (Default value = None)
             dataloader_kwargs (dict, optional): Keyword arguments to pass to the PyTorch dataloaders created
                 internally.
 
@@ -992,12 +992,12 @@ class Model:
                          return_ground_truth=False,
                          return_dict_format=False,
                          concatenate_returns=True,
+                         callbacks=None,
                          num_workers=0,
                          collate_fn=None,
+                         dataloader_kwargs=None,
                          verbose=True,
-                         progress_options: Union[dict, None] = None,
-                         callbacks=None,
-                         dataloader_kwargs=None):
+                         progress_options: Union[dict, None] = None):
         """
         Computes the loss and the metrics of the network on batches of samples and optionally
         returns the predictions.
@@ -1016,20 +1016,20 @@ class Model:
                 (Default value = False)
             concatenate_returns (bool, optional): Whether to concatenate the predictions
                 or the ground truths when returning them. (Default value = True)
+            callbacks (List[~poutyne.Callback]): List of callbacks that will be called during
+                testing. (Default value = None)
             num_workers (int, optional): how many subprocesses to use for data loading.
                 ``0`` means that the data will be loaded in the main process.
                 (Default value = 0)
             collate_fn (Callable, optional): merges a list of samples to form a mini-batch of Tensor(s).
                 Used when using batched loading from a map-style dataset.
+            dataloader_kwargs (dict, optional): Keyword arguments to pass to the PyTorch dataloaders created
+                internally.
             verbose (bool): Whether to display the progress of the evaluation.
                 (Default value = True)
             progress_options (dict, optional): Keyword arguments to pass to the default progression callback used
                 in Poutyne (See :class:`~poutyne.ProgressionCallback` for the available arguments).
                 (Default value = None, meaning default color setting and progress bar)
-            callbacks (List[~poutyne.Callback]): List of callbacks that will be called during
-                testing. (Default value = None)
-            dataloader_kwargs (dict, optional): Keyword arguments to pass to the PyTorch dataloaders created
-                internally.
 
         Returns:
             Tuple ``(loss, metrics, pred_y)`` where specific elements are omitted if not
