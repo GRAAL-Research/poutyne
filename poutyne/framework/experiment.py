@@ -877,30 +877,31 @@ class Experiment:
         return ret
 
     def is_better_than(self, another_experiment) -> bool:
-        if not self.logging or not another_experiment.logging:
-            # raise error since we did not log the training
-            pass
+        if not self.logging:
+            raise ValueError("The experiment is not logged.")
+        if not another_experiment.logging:
+            raise ValueError("The experiment to compare to is not logged.")
 
         if self.monitor_metric != another_experiment.monitor_metric:
-            # raise error
-            pass
-        else:
-            monitored_metric = self.monitor_metric
+            raise ValueError("The monitored metric is not the same between the two experiment.")
+        monitored_metric = self.monitor_metric
 
         if self.monitor_mode != another_experiment.monitor_mode:
-            # raise error
-            pass
-        else:
-            monitor_mode = self.monitor_mode
+            raise ValueError("The monitored mode is not the same between the two experiment.")
+        monitor_mode = self.monitor_mode
 
         checkpoint = 'best' if self.monitoring else 'last'
-        self_monitored_metric_value = self.load_checkpoint(checkpoint, verbose=False).get(monitored_metric).values[0]
+        self_stats = self.load_checkpoint(checkpoint, verbose=False)
+        self_monitored_metric = self_stats.get(monitored_metric)
+        self_monitored_metric_value = self_monitored_metric.to_numpy()[0]
 
         other_checkpoint = 'best' if another_experiment.monitoring else 'last'
-        other_monitored_metric_value = another_experiment.load_checkpoint(other_checkpoint, verbose=False).get(
-            monitored_metric).values[0]
+        other_stats = self.load_checkpoint(other_checkpoint, verbose=False)
+        other_monitored_metric = other_stats.get(monitored_metric)
+        other_monitored_metric_value = other_monitored_metric.to_numpy()[0]
 
         if monitor_mode == 'min':
-            return self_monitored_metric_value < other_monitored_metric_value
+            is_better_than = self_monitored_metric_value < other_monitored_metric_value
         else:
-            return self_monitored_metric_value > other_monitored_metric_value
+            is_better_than = self_monitored_metric_value > other_monitored_metric_value
+        return is_better_than
