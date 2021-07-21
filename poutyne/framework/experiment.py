@@ -878,7 +878,7 @@ class Experiment:
 
     def predict(self, x, **kwargs) -> Any:
         """
-         Returns the predictions of the network given a dataset ``x``, where the tensors are
+        Returns the predictions of the network given a dataset ``x``, where the tensors are
         converted into Numpy arrays.
 
         Args:
