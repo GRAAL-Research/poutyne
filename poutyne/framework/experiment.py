@@ -974,7 +974,7 @@ class Experiment:
                   ``torch.save(a_pytorch_network.state_dict(), "./a_path.p")``).
 
                 This argument has no effect when logging is disabled. (Default value = 'best')
-            verbose (bool): Whether to display the progress of the evaluation.
+            verbose (bool): Whether to display the progress of the prediction.
                 (Default value = True)
 
         Returns:
