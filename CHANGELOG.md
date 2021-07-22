@@ -3,7 +3,7 @@
 * Add Predict methods to Callback to allow callback to be call during prediction phase.
 * Add Predict methods to Experiment to more easily make predictions with an experiment.
 * Add a progress bar callback during predictions of a model.
-
+* Add a method to compare the results of two experiments.
 
 # v1.5
 
