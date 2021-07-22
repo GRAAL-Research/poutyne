@@ -981,13 +981,18 @@ class Experiment:
         """
         return self._predict(self.model.predict_on_batch, x)
 
-    def _predict(self, evaluate_func: Callable, checkpoint: Union[str, int] = 'best', *args, **kwargs) -> Any:
+    def _predict(self,
+                 evaluate_func: Callable,
+                 *args,
+                 verbose=True,
+                 checkpoint: Union[str, int] = 'best',
+                 **kwargs) -> Any:
         if self.logging:
             if not self.monitoring and checkpoint == 'best':
                 checkpoint = 'last'
-            self.load_checkpoint(checkpoint, verbose=False)
+            self.load_checkpoint(checkpoint, verbose=verbose)
 
-        ret = evaluate_func(*args, **kwargs)
+        ret = evaluate_func(*args, verbose=verbose, **kwargs)
         return ret
 
     def is_better_than(self, another_experiment) -> bool:
