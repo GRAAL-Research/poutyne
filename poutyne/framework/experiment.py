@@ -929,7 +929,7 @@ class Experiment:
         """
         return self._predict(self.model.predict_dataset, dataset, **kwargs)
 
-    def predict_generator(self, generator, *, kwargs) -> Any:
+    def predict_generator(self, generator, **kwargs) -> Any:
         """
         Returns the predictions of the network given batches of samples ``x``, where the tensors are
         converted into Numpy arrays.
@@ -958,7 +958,7 @@ class Experiment:
         """
         return self._predict(self.model.predict_generator, generator, **kwargs)
 
-    def predict_on_batch(self, x) -> Any:
+    def predict_on_batch(self, x, **kwargs) -> Any:
         """
         Returns the predictions of the network given a batch ``x``, where the tensors are converted
         into Numpy arrays.
@@ -974,12 +974,13 @@ class Experiment:
                   ``torch.save(a_pytorch_network.state_dict(), "./a_path.p")``).
 
                 This argument has no effect when logging is disabled. (Default value = 'best')
-            kwargs: Any keyword arguments to pass to :func:`~Model.predict_on_batch()`.
+            verbose (bool): Whether to display the progress of the evaluation.
+                (Default value = True)
 
         Returns:
             Return the predictions in the format outputted by the model.
         """
-        return self._predict(self.model.predict_on_batch, x)
+        return self._predict(self.model.predict_on_batch, x, **kwargs)
 
     def _predict(self,
                  evaluate_func: Callable,
