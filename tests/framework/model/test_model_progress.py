@@ -572,3 +572,111 @@ class ModelFittingTestCaseProgress(ModelFittingTestCase):
         # last print update templating different
         last_print_regex = r".*Test steps:.*5.*" + ModelFittingTestCaseProgress.TIME_REGEX
         self.assertRegex(steps_update[-1], last_print_regex)
+
+    @skipIf(color is None, "Unable to import colorama")
+    def test_predict_dataset_with_default_coloring(self):
+        x = torch.rand(ModelFittingTestCase.evaluate_dataset_len, 1)
+
+        self.model.predict_dataset(x)
+
+        self.assertStdoutContains(["[32m", "[35m", "[36m"])
+
+    @skipIf(color is None, "Unable to import colorama")
+    def test_predict_dataset_with_user_coloring(self):
+        x = torch.rand(ModelFittingTestCase.evaluate_dataset_len, 1)
+
+        coloring = {
+            "text_color": 'BLACK',
+            "ratio_color": "BLACK",
+            "metric_value_color": "BLACK",
+            "time_color": "BLACK",
+            "progress_bar_color": "BLACK"
+        }
+
+        self.model.predict_dataset(x, progress_options=dict(coloring=coloring, progress_bar=True))
+
+        self.assertStdoutContains(["[30m"])
+
+    def test_predict_dataset_with_user_coloring_invalid(self):
+        x = torch.rand(ModelFittingTestCase.evaluate_dataset_len, 1)
+
+        with self.assertRaises(KeyError):
+            self.model.predict_dataset(x,
+                                       batch_size=ModelFittingTestCase.batch_size,
+                                       progress_options=dict(coloring={"invalid_name": 'A COLOR'}))
+
+    def test_predict_dataset_with_no_coloring(self):
+        x = torch.rand(ModelFittingTestCase.evaluate_dataset_len, 1)
+
+        self.model.predict_dataset(x, batch_size=ModelFittingTestCase.batch_size, progress_options=dict(coloring=False))
+
+        self.assertStdoutNotContains(["[32m", "[35m", "[36m"])
+
+    @skipIf(color is None, "Unable to import colorama")
+    def test_predict_dataset_with_progress_bar_default_coloring(self):
+        x = torch.rand(ModelFittingTestCase.evaluate_dataset_len, 1)
+
+        self.model.predict_dataset(x,
+                                   batch_size=ModelFittingTestCase.batch_size,
+                                   progress_options=dict(coloring=True, progress_bar=True))
+
+        self.assertStdoutContains(["%", "[32m", "[35m", "[36m", "\u2588"])
+
+    @skipIf(color is None, "Unable to import colorama")
+    def test_predict_dataset_with_progress_bar_user_coloring(self):
+        x = torch.rand(ModelFittingTestCase.evaluate_dataset_len, 1)
+
+        coloring = {
+            "text_color": 'BLACK',
+            "ratio_color": "BLACK",
+            "metric_value_color": "BLACK",
+            "time_color": "BLACK",
+            "progress_bar_color": "BLACK"
+        }
+
+        self.model.predict_dataset(x,
+                                   batch_size=ModelFittingTestCase.batch_size,
+                                   progress_options=dict(coloring=coloring, progress_bar=True))
+
+        self.assertStdoutContains(["%", "[30m", "\u2588"])
+
+    @skipIf(color is None, "Unable to import colorama")
+    def test_predict_dataset_with_progress_bar_user_no_color(self):
+        x = torch.rand(ModelFittingTestCase.evaluate_dataset_len, 1)
+
+        self.model.predict_dataset(x,
+                                   batch_size=ModelFittingTestCase.batch_size,
+                                   progress_options=dict(coloring=False, progress_bar=True))
+
+        self.assertStdoutContains(["%", "\u2588"])
+        self.assertStdoutNotContains(["[32m", "[35m", "[36m"])
+
+    def test_predict_dataset_with_no_progress_bar(self):
+        x = torch.rand(ModelFittingTestCase.evaluate_dataset_len, 1)
+
+        self.model.predict_dataset(x,
+                                   batch_size=ModelFittingTestCase.batch_size,
+                                   progress_options=dict(coloring=False, progress_bar=False))
+
+        self.assertStdoutNotContains(["%", "\u2588"])
+        self.assertStdoutNotContains(["[32m", "[35m", "[36m"])
+
+    def test_predict_dataset_complete_display_predict_with_progress_bar_coloring(self):
+        x = torch.rand(ModelFittingTestCase.evaluate_dataset_len, 1)
+        # we use the same color for all components for simplicity
+        coloring = {
+            "text_color": 'WHITE',
+            "ratio_color": "WHITE",
+            "metric_value_color": "WHITE",
+            "time_color": "WHITE",
+            "progress_bar_color": "WHITE"
+        }
+
+        self.model.predict_dataset(x, verbose=True, progress_options=dict(coloring=coloring, progress_bar=True))
+
+        # We split per step update
+        steps_update = self.test_out.getvalue().strip().split("\r")
+
+        # last print update templating different
+        last_print_regex = r".*\[37mPrediction steps:.*" + ModelFittingTestCaseProgress.TIME_REGEX
+        self.assertRegex(steps_update[-1], last_print_regex)

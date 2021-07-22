@@ -1,6 +1,6 @@
-import time
 import math
 import sys
+import time
 import warnings
 from typing import Dict, Union
 
@@ -115,10 +115,15 @@ class ColorProgress:
         self.prev_message_length = 0
 
     def on_valid_begin(self) -> None:
-        if self.progress_bar:
-            self.steps_progress_bar.reset()
+        self._on_phase_begin()
 
     def on_test_begin(self) -> None:
+        self._on_phase_begin()
+
+    def on_predict_begin(self) -> None:
+        self._on_phase_begin()
+
+    def _on_phase_begin(self) -> None:
         if self.progress_bar:
             self.steps_progress_bar.reset()
 
@@ -170,6 +175,19 @@ class ColorProgress:
         update = self.formatted_text
         self._on_batch_end(update, remaining_time, batch_number, metrics_str, steps, do_print)
 
+    def on_predict_batch_end(self,
+                             *,
+                             remaining_time: float,
+                             batch_number: int,
+                             metrics_str: str,
+                             steps: Union[int, None] = None,
+                             do_print: bool = True) -> None:
+        """
+        Format on predict batch end for a steps, the total time and the steps ratio done.
+        """
+        update = self.formatted_text
+        self._on_batch_end(update, remaining_time, batch_number, metrics_str, steps, do_print)
+
     def _on_batch_end(self,
                       update: str,
                       remaining_time: float,
@@ -213,10 +231,23 @@ class ColorProgress:
         """
         Format on test end: the total time for the test, the steps done and the metrics name and values.
         """
+        self.on_phase_end(total_time=total_time, steps=steps, metrics_str=metrics_str, prefix="Test ")
+
+    def on_predict_end(self, total_time: float, steps: int, metrics_str: str) -> None:
+        """
+        Format on predict end: the total time for the predictions and the steps done.
+        """
+        self.on_phase_end(total_time=total_time, steps=steps, metrics_str=metrics_str, prefix="Prediction ")
+
+    def on_phase_end(self, total_time: float, steps: int, metrics_str: str, prefix: str = "") -> None:
+        """
+        Format on a end phase: the total time for the test, the steps done and the metrics name and values.
+        """
         update = self.formatted_text
-        test_steps = self._get_formatted_step(steps, steps, prefix="test ", suffix="s", ratio=False)
+        test_steps = self._get_formatted_step(steps, steps, prefix=prefix, suffix="s", ratio=False)
         update += test_steps + self._get_formatted_total_time(total_time)
-        update += self._get_formatted_metrics(metrics_str)
+        if metrics_str != "":
+            update += self._get_formatted_metrics(metrics_str)
 
         if self.style_reset:
             update += Style.RESET_ALL
@@ -307,7 +338,8 @@ class ColorProgress:
         else:
             update += self._get_formatted_step(batch_number, steps) + self._get_formatted_time(remaining_time, steps)
 
-        update += self._get_formatted_metrics(metrics_str)
+        if metrics_str != "":
+            update += self._get_formatted_metrics(metrics_str)
 
         if self.style_reset and not jupyter:
             # We skip it for Jupyter since the color token appear and otherwise the

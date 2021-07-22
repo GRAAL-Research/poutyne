@@ -46,6 +46,7 @@ from typing import Dict, List
 
 
 class Callback:
+    # pylint: disable=too-many-public-methods
     """
     Attributes:
         params (dict): Contains ``'epoch'`` and ``'steps_per_epoch'`` keys which are passed to the
@@ -188,6 +189,33 @@ class Callback:
         """
         pass
 
+    def on_predict_batch_begin(self, batch_number: int, logs: Dict):
+        """
+        Is called before the beginning of the predict batch.
+
+        Args:
+            batch_number (int): The batch number.
+            logs (dict): Usually an empty dict.
+        """
+        pass
+
+    def on_predict_batch_end(self, batch_number: int, logs: Dict):
+        """
+        Is called before the end of the predict batch.
+
+        Args:
+            batch_number (int): The batch number.
+            logs (dict): Contains the following keys:
+
+                 * ``'batch'``: The batch number.
+                 * ``'time'``: The computation time of the batch.
+
+        Example::
+
+            logs = {'batch': 171, 'time': 0.00310}
+        """
+        pass
+
     def on_train_begin(self, logs: Dict):
         """
         Is called before the beginning of the training.
@@ -260,6 +288,30 @@ class Callback:
         """
         pass
 
+    def on_predict_begin(self, logs: Dict):
+        """
+        Is called before the beginning of the predict.
+
+        Args:
+            logs (dict): Usually an empty dict.
+        """
+        pass
+
+    def on_predict_end(self, logs: Dict):
+        """
+        Is called before the end of the predict.
+
+        Args:
+            logs (dict): Contains the following keys:
+
+                 * ``'time'``: The total computation time of the predict.
+
+        Example::
+
+            logs = {'time': 6.08248}
+        """
+        pass
+
     def on_backward_end(self, batch_number: int):
         """
         Is called after the backpropagation but before the optimization step.
@@ -271,7 +323,7 @@ class Callback:
 
 
 class CallbackList:
-
+    # pylint: disable=too-many-public-methods
     def __init__(self, callbacks: List[Callback]):
         callbacks = callbacks or []
         self.callbacks = list(callbacks)
@@ -327,6 +379,16 @@ class CallbackList:
         for callback in self.callbacks:
             callback.on_test_batch_end(batch_number, logs)
 
+    def on_predict_batch_begin(self, batch_number: int, logs: Dict):
+        logs = logs or {}
+        for callback in self.callbacks:
+            callback.on_predict_batch_begin(batch_number, logs)
+
+    def on_predict_batch_end(self, batch_number: int, logs: Dict):
+        logs = logs or {}
+        for callback in self.callbacks:
+            callback.on_predict_batch_end(batch_number, logs)
+
     def on_train_begin(self, logs: Dict):
         logs = logs or {}
         for callback in self.callbacks:
@@ -356,6 +418,16 @@ class CallbackList:
         logs = logs or {}
         for callback in self.callbacks:
             callback.on_test_end(logs)
+
+    def on_predict_begin(self, logs: Dict):
+        logs = logs or {}
+        for callback in self.callbacks:
+            callback.on_predict_begin(logs)
+
+    def on_predict_end(self, logs: Dict):
+        logs = logs or {}
+        for callback in self.callbacks:
+            callback.on_predict_end(logs)
 
     def on_backward_end(self, batch_number: int):
         for callback in self.callbacks:
