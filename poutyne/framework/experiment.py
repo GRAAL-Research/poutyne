@@ -890,7 +890,7 @@ class Experiment:
             x (Union[~torch.Tensor, ~numpy.ndarray] or Union[tuple, list] of Union[~torch.Tensor, ~numpy.ndarray]):
                 Input to the model. Union[Tensor, ndarray] if the model has a single input.
                 Union[tuple, list] of Union[Tensor, ndarray] if the model has multiple inputs.
-            checkpoint (Union[str, int]): Which model checkpoint weights to load for the test evaluation.
+            checkpoint (Union[str, int]): Which model checkpoint weights to load for the prediction.
 
                 - If 'best', will load the best weights according to ``monitor_metric`` and ``monitor_mode``.
                 - If 'last', will load the last model checkpoint.
@@ -913,7 +913,7 @@ class Experiment:
 
         Args:
             dataset (~torch.utils.data.Dataset): Dataset. Must not return ``y``, just ``x``.
-            checkpoint (Union[str, int]): Which model checkpoint weights to load for the test evaluation.
+            checkpoint (Union[str, int]): Which model checkpoint weights to load for the prediction.
 
                 - If 'best', will load the best weights according to ``monitor_metric`` and ``monitor_mode``.
                 - If 'last', will load the last model checkpoint.
@@ -938,7 +938,7 @@ class Experiment:
             generator: Generator-like object for the dataset. The generator must yield a batch of
                 samples. See the :func:`fit_generator()` method for details on the types of generators
                 supported. This should only yield input data ``x`` and NOT the target ``y``.
-            checkpoint (Union[str, int]): Which model checkpoint weights to load for the test evaluation.
+            checkpoint (Union[str, int]): Which model checkpoint weights to load for the prediction.
 
                 - If 'best', will load the best weights according to ``monitor_metric`` and ``monitor_mode``.
                 - If 'last', will load the last model checkpoint.
@@ -965,7 +965,7 @@ class Experiment:
 
         Args:
             x: Input data as a batch.
-            checkpoint (Union[str, int]): Which model checkpoint weights to load for the test evaluation.
+            checkpoint (Union[str, int]): Which model checkpoint weights to load for the prediction.
 
                 - If 'best', will load the best weights according to ``monitor_metric`` and ``monitor_mode``.
                 - If 'last', will load the last model checkpoint.
