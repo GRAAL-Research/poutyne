@@ -1,3 +1,4 @@
+# pylint: disable=too-many-lines
 import os
 import warnings
 from typing import Union, Callable, List, Dict, Tuple, Any
@@ -984,3 +985,43 @@ class Experiment:
 
         ret = evaluate_func(*args, **kwargs)
         return ret
+
+    def is_better_than(self, another_experiment) -> bool:
+        """
+        Compare the results of the Experiment with another experiment. To compare, both Experiments need to be
+        logged, monitor the same metric and the same monitor mode ("min" or "max").
+
+        Args:
+            another_experiment (~poutyne. Experiment): Another Poutyne experiment to compare results with.
+
+        Return:
+            Whether the Experiment is better than the Experiment to compare with.
+        """
+        if not self.logging:
+            raise ValueError("The experiment is not logged.")
+        if not another_experiment.logging:
+            raise ValueError("The experiment to compare to is not logged.")
+
+        if self.monitor_metric != another_experiment.monitor_metric:
+            raise ValueError("The monitored metric is not the same between the two experiment.")
+        monitored_metric = self.monitor_metric
+
+        if self.monitor_mode != another_experiment.monitor_mode:
+            raise ValueError("The monitored mode is not the same between the two experiment.")
+        monitor_mode = self.monitor_mode
+
+        checkpoint = 'best' if self.monitoring else 'last'
+        self_stats = self.load_checkpoint(checkpoint, verbose=False)
+        self_monitored_metric = self_stats[monitored_metric]
+        self_monitored_metric_value = self_monitored_metric.item()
+
+        other_checkpoint = 'best' if another_experiment.monitoring else 'last'
+        other_stats = self.load_checkpoint(other_checkpoint, verbose=False)
+        other_monitored_metric = other_stats[monitored_metric]
+        other_monitored_metric_value = other_monitored_metric.item()
+
+        if monitor_mode == 'min':
+            is_better_than = self_monitored_metric_value < other_monitored_metric_value
+        else:
+            is_better_than = self_monitored_metric_value > other_monitored_metric_value
+        return is_better_than
