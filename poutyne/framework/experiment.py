@@ -890,7 +890,7 @@ class Experiment:
             x (Union[~torch.Tensor, ~numpy.ndarray] or Union[tuple, list] of Union[~torch.Tensor, ~numpy.ndarray]):
                 Input to the model. Union[Tensor, ndarray] if the model has a single input.
                 Union[tuple, list] of Union[Tensor, ndarray] if the model has multiple inputs.
-            checkpoint (Union[str, int]): Which model checkpoint weights to load for the test evaluation.
+            checkpoint (Union[str, int]): Which model checkpoint weights to load for the prediction.
 
                 - If 'best', will load the best weights according to ``monitor_metric`` and ``monitor_mode``.
                 - If 'last', will load the last model checkpoint.
@@ -913,7 +913,7 @@ class Experiment:
 
         Args:
             dataset (~torch.utils.data.Dataset): Dataset. Must not return ``y``, just ``x``.
-            checkpoint (Union[str, int]): Which model checkpoint weights to load for the test evaluation.
+            checkpoint (Union[str, int]): Which model checkpoint weights to load for the prediction.
 
                 - If 'best', will load the best weights according to ``monitor_metric`` and ``monitor_mode``.
                 - If 'last', will load the last model checkpoint.
@@ -929,7 +929,7 @@ class Experiment:
         """
         return self._predict(self.model.predict_dataset, dataset, **kwargs)
 
-    def predict_generator(self, generator, *, kwargs) -> Any:
+    def predict_generator(self, generator, **kwargs) -> Any:
         """
         Returns the predictions of the network given batches of samples ``x``, where the tensors are
         converted into Numpy arrays.
@@ -938,7 +938,7 @@ class Experiment:
             generator: Generator-like object for the dataset. The generator must yield a batch of
                 samples. See the :func:`fit_generator()` method for details on the types of generators
                 supported. This should only yield input data ``x`` and NOT the target ``y``.
-            checkpoint (Union[str, int]): Which model checkpoint weights to load for the test evaluation.
+            checkpoint (Union[str, int]): Which model checkpoint weights to load for the prediction.
 
                 - If 'best', will load the best weights according to ``monitor_metric`` and ``monitor_mode``.
                 - If 'last', will load the last model checkpoint.
@@ -958,14 +958,14 @@ class Experiment:
         """
         return self._predict(self.model.predict_generator, generator, **kwargs)
 
-    def predict_on_batch(self, x) -> Any:
+    def predict_on_batch(self, x, **kwargs) -> Any:
         """
         Returns the predictions of the network given a batch ``x``, where the tensors are converted
         into Numpy arrays.
 
         Args:
             x: Input data as a batch.
-            checkpoint (Union[str, int]): Which model checkpoint weights to load for the test evaluation.
+            checkpoint (Union[str, int]): Which model checkpoint weights to load for the prediction.
 
                 - If 'best', will load the best weights according to ``monitor_metric`` and ``monitor_mode``.
                 - If 'last', will load the last model checkpoint.
@@ -974,16 +974,26 @@ class Experiment:
                   ``torch.save(a_pytorch_network.state_dict(), "./a_path.p")``).
 
                 This argument has no effect when logging is disabled. (Default value = 'best')
-            kwargs: Any keyword arguments to pass to :func:`~Model.predict_on_batch()`.
+            verbose (bool): Whether to display the progress of the prediction.
+                (Default value = True)
 
         Returns:
             Return the predictions in the format outputted by the model.
         """
-        return self._predict(self.model.predict_on_batch, x)
+        return self._predict(self.model.predict_on_batch, x, **kwargs)
 
-    def _predict(self, evaluate_func: Callable, *args, **kwargs) -> Any:
+    def _predict(self,
+                 evaluate_func: Callable,
+                 *args,
+                 verbose=True,
+                 checkpoint: Union[str, int] = 'best',
+                 **kwargs) -> Any:
+        if self.logging:
+            if not self.monitoring and checkpoint == 'best':
+                checkpoint = 'last'
+            self.load_checkpoint(checkpoint, verbose=verbose)
 
-        ret = evaluate_func(*args, **kwargs)
+        ret = evaluate_func(*args, verbose=verbose, **kwargs)
         return ret
 
     def is_better_than(self, another_experiment) -> bool:
