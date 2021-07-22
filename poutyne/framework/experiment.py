@@ -980,7 +980,11 @@ class Experiment:
         """
         return self._predict(self.model.predict_on_batch, x)
 
-    def _predict(self, evaluate_func: Callable, *args, **kwargs) -> Any:
+    def _predict(self, evaluate_func: Callable, checkpoint: Union[str, int] = 'best', *args, **kwargs) -> Any:
+        if self.logging:
+            if not self.monitoring and checkpoint == 'best':
+                checkpoint = 'last'
+            self.load_checkpoint(checkpoint, verbose=False)
 
         ret = evaluate_func(*args, **kwargs)
         return ret
