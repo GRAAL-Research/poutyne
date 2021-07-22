@@ -1,6 +1,7 @@
+# pylint: disable=too-many-lines
 import os
 import warnings
-from typing import Union, Callable, List, Dict, Tuple
+from typing import Union, Callable, List, Dict, Tuple, Any
 
 try:
     import pandas as pd
@@ -878,6 +879,111 @@ class Experiment:
                 test_stats = epoch_stats.join(test_stats)
             test_stats.to_csv(self.test_log_filename.format(name=name), sep='\t', index=False)
 
+        return ret
+
+    def predict(self, x, **kwargs) -> Any:
+        """
+        Returns the predictions of the network given a dataset ``x``, where the tensors are
+        converted into Numpy arrays.
+
+        Args:
+            x (Union[~torch.Tensor, ~numpy.ndarray] or Union[tuple, list] of Union[~torch.Tensor, ~numpy.ndarray]):
+                Input to the model. Union[Tensor, ndarray] if the model has a single input.
+                Union[tuple, list] of Union[Tensor, ndarray] if the model has multiple inputs.
+            checkpoint (Union[str, int]): Which model checkpoint weights to load for the test evaluation.
+
+                - If 'best', will load the best weights according to ``monitor_metric`` and ``monitor_mode``.
+                - If 'last', will load the last model checkpoint.
+                - If int, will load the checkpoint of the specified epoch.
+                - If a path (str), will load the model pickled state_dict weights (for instance, saved as
+                  ``torch.save(a_pytorch_network.state_dict(), "./a_path.p")``).
+
+                This argument has no effect when logging is disabled. (Default value = 'best')
+            kwargs: Any keyword arguments to pass to :func:`~Model.predict()`.
+
+        Returns:
+            Return the predictions in the format outputted by the model.
+        """
+        return self._predict(self.model.predict, x, **kwargs)
+
+    def predict_dataset(self, dataset, **kwargs) -> Any:
+        """
+        Returns the predictions of the network given a dataset, where the tensors are
+        converted into Numpy arrays.
+
+        Args:
+            dataset (~torch.utils.data.Dataset): Dataset. Must not return ``y``, just ``x``.
+            checkpoint (Union[str, int]): Which model checkpoint weights to load for the test evaluation.
+
+                - If 'best', will load the best weights according to ``monitor_metric`` and ``monitor_mode``.
+                - If 'last', will load the last model checkpoint.
+                - If int, will load the checkpoint of the specified epoch.
+                - If a path (str), will load the model pickled state_dict weights (for instance, saved as
+                  ``torch.save(a_pytorch_network.state_dict(), "./a_path.p")``).
+
+                This argument has no effect when logging is disabled. (Default value = 'best')
+            kwargs: Any keyword arguments to pass to :func:`~Model.predict_dataset()`.
+
+        Returns:
+            Return the predictions in the format outputted by the model.
+        """
+        return self._predict(self.model.predict_dataset, dataset, **kwargs)
+
+    def predict_generator(self, generator, *, kwargs) -> Any:
+        """
+        Returns the predictions of the network given batches of samples ``x``, where the tensors are
+        converted into Numpy arrays.
+
+        Args:
+            generator: Generator-like object for the dataset. The generator must yield a batch of
+                samples. See the :func:`fit_generator()` method for details on the types of generators
+                supported. This should only yield input data ``x`` and NOT the target ``y``.
+            checkpoint (Union[str, int]): Which model checkpoint weights to load for the test evaluation.
+
+                - If 'best', will load the best weights according to ``monitor_metric`` and ``monitor_mode``.
+                - If 'last', will load the last model checkpoint.
+                - If int, will load the checkpoint of the specified epoch.
+                - If a path (str), will load the model pickled state_dict weights (for instance, saved as
+                  ``torch.save(a_pytorch_network.state_dict(), "./a_path.p")``).
+
+                This argument has no effect when logging is disabled. (Default value = 'best')
+            kwargs: Any keyword arguments to pass to :func:`~Model.predict_generator()`.
+
+        Returns:
+            Depends on the value of ``concatenate_returns``. By default, (``concatenate_returns`` is true),
+            the data structures (tensor, tuple, list, dict) returned as predictions for the batches are
+            merged together. In the merge, the tensors are converted into Numpy arrays and are then
+            concatenated together. If ``concatenate_returns`` is false, then a list of the predictions
+            for the batches is returned with tensors converted into Numpy arrays.
+        """
+        return self._predict(self.model.predict_generator, generator, **kwargs)
+
+    def predict_on_batch(self, x) -> Any:
+        """
+        Returns the predictions of the network given a batch ``x``, where the tensors are converted
+        into Numpy arrays.
+
+        Args:
+            x: Input data as a batch.
+            checkpoint (Union[str, int]): Which model checkpoint weights to load for the test evaluation.
+
+                - If 'best', will load the best weights according to ``monitor_metric`` and ``monitor_mode``.
+                - If 'last', will load the last model checkpoint.
+                - If int, will load the checkpoint of the specified epoch.
+                - If a path (str), will load the model pickled state_dict weights (for instance, saved as
+                  ``torch.save(a_pytorch_network.state_dict(), "./a_path.p")``).
+
+                This argument has no effect when logging is disabled. (Default value = 'best')
+            kwargs: Any keyword arguments to pass to :func:`~Model.predict_on_batch()`.
+
+        Returns:
+            Return the predictions in the format outputted by the model.
+        """
+        return self._predict(self.model.predict_on_batch, x)
+
+    def _predict(self, evaluate_func: Callable, *args, **kwargs) -> Any:
+
+        ret = evaluate_func(*args, **kwargs)
         return ret
 
     def is_better_than(self, another_experiment) -> bool:

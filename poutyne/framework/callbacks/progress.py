@@ -58,11 +58,11 @@ class ProgressionCallback(Callback):
         self.step_times_weighted_sum = 0.
 
         assert isinstance(show_every_n_train_steps, int) or \
-            show_every_n_train_steps in ProgressionCallback.EVERY_N_STEPS_CHOICES
+               show_every_n_train_steps in ProgressionCallback.EVERY_N_STEPS_CHOICES
         assert isinstance(show_every_n_valid_steps, int) or \
-            show_every_n_valid_steps in ProgressionCallback.EVERY_N_STEPS_CHOICES
+               show_every_n_valid_steps in ProgressionCallback.EVERY_N_STEPS_CHOICES
         assert isinstance(show_every_n_test_steps, int) or \
-            show_every_n_test_steps in ProgressionCallback.EVERY_N_STEPS_CHOICES
+               show_every_n_test_steps in ProgressionCallback.EVERY_N_STEPS_CHOICES
         self.show_every_n_train_steps = show_every_n_train_steps
         self.show_every_n_valid_steps = show_every_n_valid_steps
         self.show_every_n_test_steps = show_every_n_test_steps
@@ -75,6 +75,7 @@ class ProgressionCallback(Callback):
         self._train_steps = self.params['steps']
         self._valid_steps = self.params.get('valid_steps')
         self._test_steps = self.params['steps']
+        self._predict_steps = self.params['steps']
 
     def _set_progress_bar(self):
         if self.progress_bar and self.steps is not None:
@@ -111,6 +112,16 @@ class ProgressionCallback(Callback):
 
         self.color_progress.on_test_begin()
 
+    def on_predict_begin(self, logs: Dict) -> None:
+        self.step_times_weighted_sum = 0.
+
+        self.metrics = []
+        self.steps = self._predict_steps
+
+        self._set_progress_bar()
+
+        self.color_progress.on_predict_begin()
+
     def on_epoch_begin(self, epoch_number: int, logs: Dict) -> None:
         self.step_times_weighted_sum = 0.
         self.epoch_number = epoch_number
@@ -136,9 +147,15 @@ class ProgressionCallback(Callback):
 
         self._end_progress(logs, test_total_time, progress_fun)
 
+    def on_predict_end(self, logs: Dict) -> None:
+        predict_total_time = logs['time']
+        progress_fun = self.color_progress.on_predict_end
+
+        self._end_progress(logs, predict_total_time, progress_fun)
+
     def _test_show_batch_end(self, show_every_n_steps_flag, batch_number):
         return show_every_n_steps_flag == 'all' or \
-            (isinstance(show_every_n_steps_flag, int) and batch_number % show_every_n_steps_flag == 0)
+               (isinstance(show_every_n_steps_flag, int) and batch_number % show_every_n_steps_flag == 0)
 
     def on_train_batch_end(self, batch_number: int, logs: Dict) -> None:
         train_step_times_rate = self._compute_step_times_rate(batch_number, logs)
@@ -173,6 +190,17 @@ class ProgressionCallback(Callback):
         do_print = self._test_show_batch_end(self.show_every_n_test_steps, batch_number)
         self._batch_end_progress(logs=logs,
                                  step_times_rate=test_step_times_rate,
+                                 batch_number=batch_number,
+                                 func=progress_batch_end_fun,
+                                 do_print=do_print)
+
+    def on_predict_batch_end(self, batch_number: int, logs: Dict) -> None:
+        predict_step_times_rate = self._compute_step_times_rate(batch_number, logs)
+        progress_batch_end_fun = self.color_progress.on_predict_batch_end
+
+        do_print = self._test_show_batch_end(self.show_every_n_test_steps, batch_number)
+        self._batch_end_progress(logs=logs,
+                                 step_times_rate=predict_step_times_rate,
                                  batch_number=batch_number,
                                  func=progress_batch_end_fun,
                                  do_print=do_print)
@@ -231,7 +259,7 @@ class EpochProgressionCallback(Callback):
         self.color_progress = ColorProgress(coloring=coloring)
 
         assert isinstance(show_every_n_epochs, int) or \
-            show_every_n_epochs in EpochProgressionCallback.EVERY_N_EPOCHS_CHOICES
+               show_every_n_epochs in EpochProgressionCallback.EVERY_N_EPOCHS_CHOICES
         self.show_every_n_epochs = show_every_n_epochs
 
     def set_params(self, params: Dict):
@@ -245,7 +273,7 @@ class EpochProgressionCallback(Callback):
 
     def _test_show_epoch(self, epoch_number):
         return self.show_every_n_epochs != 'none' and \
-            (self.show_every_n_epochs == 'all' or epoch_number % self.show_every_n_epochs == 0)
+               (self.show_every_n_epochs == 'all' or epoch_number % self.show_every_n_epochs == 0)
 
     def on_epoch_begin(self, epoch_number: int, logs: Dict) -> None:
         if self._test_show_epoch(epoch_number):

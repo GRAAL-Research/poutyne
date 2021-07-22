@@ -4,7 +4,7 @@ import numbers
 import timeit
 import warnings
 from collections import defaultdict
-from typing import Iterable, Mapping, List, Union
+from typing import Iterable, Mapping, List, Union, Any, Tuple
 
 import numpy as np
 import torch
@@ -217,7 +217,7 @@ class Model:
             batches_per_step=1,
             initial_epoch=1,
             verbose=True,
-            progress_options=None,
+            progress_options: Union[dict, None] = None,
             callbacks=None,
             dataloader_kwargs=None):
         # pylint: disable=line-too-long,too-many-locals
@@ -361,14 +361,14 @@ class Model:
             callbacks (List[~poutyne.Callback]): List of callbacks that will be called
                 during training.
                 (Default value = None)
+            dataloader_kwargs (dict, optional): Keyword arguments to pass to the PyTorch dataloaders created
+                internally. By default, ``shuffle=True`` is passed for the training dataloader but this can be
+                overridden by using this argument.
             num_workers (int, optional): how many subprocesses to use for data loading.
                 ``0`` means that the data will be loaded in the main process.
                 (Default value = 0)
             collate_fn (Callable, optional): merges a list of samples to form a mini-batch of Tensor(s).
                 Used when using batched loading from a map-style dataset.
-            dataloader_kwargs (dict, optional): Keyword arguments to pass to the PyTorch dataloaders created
-                internally. By default, ``shuffle=True`` is passed for the training dataloader but this can be
-                overridden by using this argument.
 
         Returns:
             List of dict containing the history of each epoch.
@@ -429,7 +429,7 @@ class Model:
                       batches_per_step=1,
                       initial_epoch=1,
                       verbose=True,
-                      progress_options=None,
+                      progress_options: Union[dict, None] = None,
                       callbacks=None):
         # pylint: disable=line-too-long
         """
@@ -724,7 +724,14 @@ class Model:
 
         return init[0] if len(init) == 1 else init
 
-    def predict(self, x, *, batch_size=32, dataloader_kwargs=None):
+    def predict(self,
+                x,
+                *,
+                batch_size=32,
+                verbose=True,
+                progress_options: Union[dict, None] = None,
+                callbacks=None,
+                dataloader_kwargs=None) -> Any:
         """
         Returns the predictions of the network given a dataset ``x``, where the tensors are
         converted into Numpy arrays.
@@ -735,18 +742,28 @@ class Model:
                 Union[tuple, list] of Union[Tensor, ndarray] if the model has multiple inputs.
             batch_size (int): Number of samples given to the network at one time.
                 (Default value = 32)
+            verbose (bool): Whether to display the progress of the evaluation.
+                (Default value = True)
+            progress_options (dict, optional): Keyword arguments to pass to the default progression callback used
+                in Poutyne (See :class:`~poutyne.ProgressionCallback` for the available arguments).
+                (Default value = None, meaning default color setting and progress bar)
+            callbacks (List[~poutyne.Callback]): List of callbacks that will be called during
+                testing. (Default value = None)
             dataloader_kwargs (dict, optional): Keyword arguments to pass to the PyTorch dataloaders created
                 internally.
 
         Returns:
-            Numpy arrays of the predictions.
+            Return the predictions in the format outputted by the model.
         """
         x = x if isinstance(x, (tuple, list)) else (x, )
         dataset = self._dataset_from_data(x)
         return self.predict_dataset(dataset,
                                     batch_size=batch_size,
                                     concatenate_returns=True,
-                                    dataloader_kwargs=dataloader_kwargs)
+                                    dataloader_kwargs=dataloader_kwargs,
+                                    verbose=verbose,
+                                    progress_options=progress_options,
+                                    callbacks=callbacks)
 
     def predict_dataset(self,
                         dataset,
@@ -756,7 +773,10 @@ class Model:
                         concatenate_returns=True,
                         num_workers=0,
                         collate_fn=None,
-                        dataloader_kwargs=None):
+                        verbose=True,
+                        progress_options: Union[dict, None] = None,
+                        callbacks=None,
+                        dataloader_kwargs=None) -> Any:
         """
         Returns the predictions of the network given a dataset ``x``, where the tensors are
         converted into Numpy arrays.
@@ -775,11 +795,22 @@ class Model:
                 (Default value = 0)
             collate_fn (Callable, optional): merges a list of samples to form a mini-batch of Tensor(s).
                 Used when using batched loading from a map-style dataset.
+            verbose (bool): Whether to display the progress of the evaluation.
+                (Default value = True)
+            progress_options (dict, optional): Keyword arguments to pass to the default progression callback used
+                in Poutyne (See :class:`~poutyne.ProgressionCallback` for the available arguments).
+                (Default value = None, meaning default color setting and progress bar)
+            callbacks (List[~poutyne.Callback]): List of callbacks that will be called during
+                testing. (Default value = None)
             dataloader_kwargs (dict, optional): Keyword arguments to pass to the PyTorch dataloaders created
                 internally.
 
         Returns:
-            Numpy arrays of the predictions.
+            Depends on the value of ``concatenate_returns``. By default, (``concatenate_returns`` is true),
+            the data structures (tensor, tuple, list, dict) returned as predictions for the batches are
+            merged together. In the merge, the tensors are converted into Numpy arrays and are then
+            concatenated together. If ``concatenate_returns`` is false, then a list of the predictions
+            for the batches is returned with tensors converted into Numpy arrays.
 
         See:
             :class:`~torch.utils.data.DataLoader` for details on ``batch_size``, ``num_workers`` and ``collate_fn``.
@@ -794,9 +825,21 @@ class Model:
         }
 
         generator = DataLoader(dataset, **dataloader_kwargs)
-        return self.predict_generator(generator, steps=steps, concatenate_returns=concatenate_returns)
+        return self.predict_generator(generator,
+                                      steps=steps,
+                                      concatenate_returns=concatenate_returns,
+                                      verbose=verbose,
+                                      progress_options=progress_options,
+                                      callbacks=callbacks)
 
-    def predict_generator(self, generator, *, steps=None, concatenate_returns=True):
+    def predict_generator(self,
+                          generator,
+                          *,
+                          steps=None,
+                          concatenate_returns=True,
+                          verbose=True,
+                          progress_options: Union[dict, None] = None,
+                          callbacks=None) -> Any:
         """
         Returns the predictions of the network given batches of samples ``x``, where the tensors are
         converted into Numpy arrays.
@@ -809,6 +852,13 @@ class Model:
                 (Defaults the number of steps needed to see the entire dataset)
             concatenate_returns (bool, optional): Whether to concatenate the predictions
                 or the ground truths when returning them. (Default value = True)
+            verbose (bool): Whether to display the progress of the evaluation.
+                (Default value = True)
+            progress_options (dict, optional): Keyword arguments to pass to the default progression callback used
+                in Poutyne (See :class:`~poutyne.ProgressionCallback` for the available arguments).
+                (Default value = None, meaning default color setting and progress bar)
+            callbacks (List[~poutyne.Callback]): List of callbacks that will be called during
+                testing. (Default value = None)
 
         Returns:
             Depends on the value of ``concatenate_returns``. By default, (``concatenate_returns`` is true),
@@ -820,23 +870,46 @@ class Model:
         if steps is None and hasattr(generator, '__len__'):
             steps = len(generator)
         pred_y = []
+
+        callbacks = [] if callbacks is None else callbacks
+
+        if verbose:
+            progress_options = {} if progress_options is None else progress_options
+            callbacks = [ProgressionCallback(**progress_options)] + callbacks
+        callback_list = CallbackList(callbacks)
+        callback_list.set_model(self)
+        callback_list.set_params({'steps': steps})
+
+        predict_begin_time = timeit.default_timer()
         with self._set_training_mode(False):
-            for _, x in _get_step_iterator(steps, generator):
+            callback_list.on_predict_begin({})
+            time_since_last_batch = timeit.default_timer()
+            for step, x in _get_step_iterator(steps, generator):
+                callback_list.on_predict_batch_begin(step, {})
+
                 x = self.preprocess_input(x)
                 pred_y.append(torch_to_numpy(self.network(*x)))
+
+                batch_end_time = timeit.default_timer()
+                batch_total_time = batch_end_time - time_since_last_batch
+                time_since_last_batch = batch_end_time
+
+                callback_list.on_predict_batch_end(step, {'batch': step, 'time': batch_total_time})
         if concatenate_returns:
-            return _concat(pred_y)
+            pred_y = _concat(pred_y)
+        callback_list.on_predict_end({'time': timeit.default_timer() - predict_begin_time})
         return pred_y
 
-    def predict_on_batch(self, x):
+    def predict_on_batch(self, x) -> Any:
         """
         Returns the predictions of the network given a batch ``x``, where the tensors are converted
         into Numpy arrays.
 
         Args:
             x: Input data as a batch.
+
         Returns:
-            The predictions with tensors converted into Numpy arrays.
+            Return the predictions in the format outputted by the model.
         """
         with self._set_training_mode(False):
             x = self.preprocess_input(x)
@@ -852,7 +925,7 @@ class Model:
                  callbacks=None,
                  verbose=True,
                  progress_options: Union[dict, None] = None,
-                 dataloader_kwargs=None):
+                 dataloader_kwargs=None) -> Tuple:
         """
         Computes the loss and the metrics of the network on batches of samples and optionally
         returns the predictions.
@@ -873,13 +946,13 @@ class Model:
                 (Default value = False)
             callbacks (List[~poutyne.Callback]): List of callbacks that will be called during
                 testing. (Default value = None)
-            dataloader_kwargs (dict, optional): Keyword arguments to pass to the PyTorch dataloaders created
-                internally.
             verbose (bool): Whether to display the progress of the evaluation.
                 (Default value = True)
             progress_options (dict, optional): Keyword arguments to pass to the default progression callback used
                 in Poutyne (See :class:`~poutyne.ProgressionCallback` for the available arguments).
                 (Default value = None, meaning default color setting and progress bar)
+            dataloader_kwargs (dict, optional): Keyword arguments to pass to the PyTorch dataloaders created
+                internally.
 
         Returns:
             Tuple ``(loss, metrics, pred_y)`` where specific elements are omitted if not
@@ -924,7 +997,7 @@ class Model:
                          collate_fn=None,
                          dataloader_kwargs=None,
                          verbose=True,
-                         progress_options: Union[dict, None] = None):
+                         progress_options: Union[dict, None] = None) -> Tuple:
         """
         Computes the loss and the metrics of the network on batches of samples and optionally
         returns the predictions.
@@ -1008,7 +1081,7 @@ class Model:
                            concatenate_returns=True,
                            verbose=True,
                            progress_options: Union[dict, None] = None,
-                           callbacks=None):
+                           callbacks=None) -> Tuple:
         # pylint: disable=too-many-locals
         """
         Computes the loss and the metrics of the network on batches of samples and optionally returns
@@ -1163,7 +1236,7 @@ class Model:
         metrics = np.concatenate((batch_metrics, step_iterator.epoch_metrics))
         return self._format_loss_metrics_return(loss, metrics, pred_y, return_pred, true_y, return_ground_truth)
 
-    def evaluate_on_batch(self, x, y, *, return_pred=False, return_dict_format=False):
+    def evaluate_on_batch(self, x, y, *, return_pred=False, return_dict_format=False) -> Tuple:
         """
         Computes the loss and the metrics of the network on a single batch of samples and optionally
         returns the predictions.
