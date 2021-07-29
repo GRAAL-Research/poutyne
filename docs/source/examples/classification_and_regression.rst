@@ -23,7 +23,6 @@ Let's import all the needed packages.
     import wget
     import zipfile
     import cv2
-    from natsort import natsorted
     import torch
     import torch.nn as nn
     import torch.nn.functional as F
@@ -42,10 +41,11 @@ Training Constants
 .. code-block:: python
 
     num_epochs = 15
-    learning_rate = 0.01
+    learning_rate = 0.001
     batch_size = 32
     image_size = 224
     valid_split_percent = 0.1
+    w, h = 218, 178   # the width and the hight of original images before resizing
     momentum = 0.5
     set_seeds(42)
     imagenet_mean = [0.485, 0.456, 0.406]  # mean of the ImageNet dataset for normalizing 
@@ -56,7 +56,7 @@ Training Constants
 CelebA Dataset
 ==============
 
-We are going to use CelebA dataset for this experiment. The CelebA dataset  is a large-scale face attributes dataset which can be employed as the training and test sets for the following computer vision tasks: face attribute recognition, face detection, landmark (or facial part) localization, and face editing & synthesis.
+The section below consists of a few lines of codes that help us download celebA dataset from a public web source and unzip them. Downloading the Celeba dataset can be also done directly by `torch.datasets.CelebA(data_root, download =  True)`. however, due to the high traffic of Google Drive ( the main source of the dataset) it usually fails to function. hence we decided to download it from another public source but use it with `torch.datasets.CelebA()`.
 
 Fetching data 
 =============
@@ -65,96 +65,55 @@ The section below consists of a few lines of codes that help us download celebA 
 
 .. code-block:: python
 
-    data_root = 'data/celeba'
-    # Path to folder with the dataset
-    dataset_folder = f'{data_root}/img_align_celeba'
-    os.makedirs(data_root, exist_ok=True)
-    os.makedirs(dataset_folder, exist_ok=True)
+    data_root = 'datasets'
+    base_url = "https://graal.ift.ulaval.ca/public/celeba/"
 
-    # URL for the CelebA dataset (aligned images, attributes, landmasrks)
-    url = 'https://graal.ift.ulaval.ca/public/celeba/img_align_celeba.zip'
-    attr_url = 'https://graal.ift.ulaval.ca/public/celeba/list_attr_celeba.txt'
-    land_mark_url = 'https://graal.ift.ulaval.ca/public/celeba/list_landmarks_align_celeba.txt'
-
-    # Path to download the dataset to
-    download_path = f'{data_root}/img_align_celeba.zip'
-    land_mark_path = f'{data_root}/list_landmarks_align_celeba.txt'
-    attr_path = f'{data_root}/list_attr_celeba.txt'
-
-    # Download the dataset from the source
-    wget.download(url,download_path)
-    wget.download(land_mark_url,land_mark_path)
-    wget.download(attr_url,attr_path)
+    file_list = [
+        "img_align_celeba.zip",
+        "list_attr_celeba.txt", 
+        "identity_CelebA.txt",
+        "list_bbox_celeba.txt",
+        "list_landmarks_align_celeba.txt",
+        "list_eval_partition.txt"
+    ]
 
     # Path to folder with the dataset
-    dataset_folder = f'{data_root}/img_align_celeba'
+    dataset_folder = f'{data_root}/celeba'
     os.makedirs(dataset_folder, exist_ok=True)
 
-    # Unzip the downloaded file 
-    with zipfile.ZipFile(download_path, 'r') as ziphandler:
+    for file in file_list:
+        url = f"{base_url}/{file}"
+        if not os.path.exists(f"{dataset_folder}/{file}"):
+        wget.download(url, f"{dataset_folder}/{file}")
+
+    with zipfile.ZipFile(f"{dataset_folder}/img_align_celeba.zip", 'r') as ziphandler:
         ziphandler.extractall(dataset_folder)
    
-Create a custom dataset class
-=============================
-
-As we are going to implement a multi-task problem by a single CNN, we should provide the CNN with the ground truth in a proper way. Here, we have two different tasks: classification and regression. In the classification task, the goal is to identify the gender. The labels of the gender for each image are saved in the `list_attr_celeba.txt` file, in which 1 stands for male and -1 for female. Since we consider the loss of both tasks simultaneously, we scale all target values to the range of [0,1]. Hence, the gender labels will be changed as well, 1 for male and 0 for female. For the localization part, the coordinates of the eyes (Left and Right) are provided in the `list_landmarks_align_celeba.txt` file. In addition to scaling the number to the range of [0,1], we also need to rescale the coordinates to the image's new size (224,224).
+Now, as the dataset id downloaded, we can define our datasets and dataloaders in its original way.
 
 .. code-block:: python
 
-    class CelebADataset(Dataset):
-    def __init__(self, root_dir, transform=None):
-        img_folder = data_root + '/img_align_celeba/img_align_celeba'
-        image_names = os.listdir(img_folder)
-        self.root_dir = img_folder
-        self.data_root = data_root
-        self.transform = transform 
-        self.image_names = natsorted(image_names)
-
-    def __len__(self): 
-        return len(self.image_names)
-
-    def __getitem__(self, idx):
-        img_path = os.path.join(self.root_dir, self.image_names[idx])
-        img = cv2.imread(img_path)
-        w, h, _ = img.shape
-        img = cv2.resize(img, (image_size, image_size))
-
-        # Apply transformations to the image
-        if self.transform:
-        img = self.transform(img)
-
-        img.requires_grad=True
-        land_mark = open(f'{self.data_root}/list_landmarks_align_celeba.txt','r').readlines()[idx+2]
-        land_mark_contents = land_mark.split(' ')
-        land_mark_contents = [x for x in land_mark_contents if x]
-        x_L, y_L ,x_R, y_R = int(land_mark_contents[1]), int(land_mark_contents[2]), int(land_mark_contents[3]), int(land_mark_contents[4])
-        w_scale = image_size/w
-        h_scale = image_size/h
-        x_L, x_R = (x_L*h_scale/h), (x_R*h_scale/h)  #rescaling for the size of (224,224) and finaly to the range of [0,1]
-        y_L, y_R = (y_L*w_scale/w), (y_R*w_scale/w)
-        attr = open(f'{self.data_root}/list_attr_celeba.txt','r').readlines()[idx+2]
-        attr_contents = attr.split(' ')
-        attr_contents = [x for x in attr_contents if x]
-        gender = attr_contents[21]
-        gender = int((int(gender)+1)/2)
-        return img, (torch.tensor(gender), torch.tensor([x_L, y_L, x_R, y_R], requires_grad=True),[w, h])
-
-    transform=tfms.Compose([
-        tfms.ToTensor(),
-        tfms.Normalize(imagenet_mean, imagenet_std)
+    transforms = tfms.Compose ([
+                            tfms.Resize((image_size, image_size)),
+                            tfms.ToTensor(),
+                            tfms.Normalize(imagenet_mean, imagenet_std)
     ])
-
-    celeba_dataset = CelebADataset(data_root, transform)
-    celeba_dataloader = DataLoader(celeba_dataset, batch_size=batch_size, shuffle=True)
-    full_dataset_length = len(celeba_dataset)
-    indices = list(np.arange(full_dataset_length))
-    np.random.shuffle(indices)
-    train_indices = indices[math.floor(full_dataset_length * valid_split_percent):]
-    valid_indices = indices[:math.floor(full_dataset_length * valid_split_percent)]
-    train_dataset = Subset(celeba_dataset, train_indices)
-    valid_dataset = Subset(celeba_dataset, valid_indices)
+    train_dataset = datasets.CelebA(data_root, 
+                                    split='train', 
+                                    target_type=['attr', 'landmarks'], 
+                                    transform=transforms)
+    valid_dataset = datasets.CelebA(data_root, 
+                                    split='valid', 
+                                    target_type=['attr', 'landmarks'], 
+                                    transform=transforms)
+    test_dataset = datasets.CelebA(data_root, 
+                                split='test', 
+                                target_type=['attr', 'landmarks'], 
+                                transform=transforms)
+                                
     train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
     valid_dataloader = DataLoader(valid_dataset, batch_size=batch_size, shuffle=False)
+    test_dataloader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
 
 Here we can see how each dataset sample looks like:
 
@@ -162,25 +121,39 @@ Here we can see how each dataset sample looks like:
 
     print (train_dataset[0])
 
-Here, we can see an example from the training dataset. It shows an image of a person, printing the gender and also showing the location of the eyes.
+Regarding the complexity of the problem and the high number training/valid samples, we can seperate and use a portion of data as below:
 
 .. code-block:: python
 
-    sample_number = 16
+    train_subset = Subset(train_dataset, np.arange(1,10000))
+    valid_subset = Subset(valid_dataset, np.arange(1,2000))
+    train_dataloader = DataLoader(train_subset, batch_size=batch_size, shuffle=True)
+    valid_dataloader = DataLoader(valid_subset, batch_size=batch_size, shuffle=False)
+
+Here, we can see an example from the training dataset. It shows an image of a person, printing the gender and also showing the location of the eyes. It is worth mentioning that as we resize the image, the coordinates of the eyes should also be changed with same ratio.
+
+.. code-block:: python
+
+    sample_number = 189
     image = train_dataset[sample_number][0]
     image = image.permute(1,2,0).detach().numpy()
     image_rgb = cv2.cvtColor(np.float32(image), cv2.COLOR_BGR2RGB)
     image_rgb = image_rgb * imagenet_std + imagenet_mean
-    Gender = 'male' if int(train_dataset[sample_number][1][0])==1 else 'female'
+    Gender = 'male' if int(train_dataset[sample_number][1][0][20])==1 else 'female'
     print('Gender is: ', Gender)
-    w, h = train_dataset[sample_number][1][2]
-    (x1, y1) = train_dataset[sample_number][1][1][0:2]
-    (x2, y2) = train_dataset[sample_number][1][1][2:4]
-    x1, x2 = int(x1*h), int(x2*h)
-    y1, y2 = int(y1*w), int(y2*w)
-    image_rgb = cv2.drawMarker(image_rgb, (x1,y1), (0,255,0))
-    image_rgb = cv2.drawMarker(image_rgb, (x2,y2), (0,255,0))
-    image_rgb = np.clip(image_rgb , 0, 1)
+    w, h = 218, 178
+    (x_L, y_L) = train_dataset[sample_number][1][1][0:2]
+    (x_R, y_R) = train_dataset[sample_number][1][1][2:4]
+    w_scale = image_size/w
+    h_scale = image_size/h
+    x_L, x_R = (x_L*h_scale), (x_R*h_scale)  #rescaling for the size of (224,224) and finaly to the range of [0,1]
+    y_L, y_R = (y_L*w_scale), (y_R*w_scale)
+    x_L, x_R = int(x_L), int(x_R)
+    y_L, y_R = int(y_L), int(y_R)
+    image_rgb	= cv2.drawMarker(image_rgb, (x_L,y_L), (0,255,0))
+    image_rgb	= cv2.drawMarker(image_rgb, (x_R,y_R), (0,255,0))
+    image_rgb = cv2.cvtColor(np.float32(image_rgb), cv2.COLOR_BGR2RGB)
+    image_rgb = np.clip(image_rgb ,0 , 1)
     plt.imshow(image_rgb)
     plt.axis('off')
     plt.show()
@@ -245,9 +218,12 @@ As we discussed before, we have two different tasks in this example. These tasks
             self.mse_loss = nn.MSELoss()
             
         def forward(self, y_pred, y_true):
-            loss_cls = self.ce_loss(y_pred[0], y_true[0]) # Cross Entropy Error (for classification)
-            loss_reg = self.mse_loss(y_pred[1], y_true[ 1]) # Mean Squared Error (for landmarks)
-            total_loss = loss_reg + loss_cls
+            loss_cls = self.ce_loss(y_pred[0], Variable(y_true[0][:,20])) # Cross Entropy Error (for classification)
+            loss_reg1 = self.mse_loss(y_pred[1][:,0], Variable(y_true[1][:,0]/h, requires_grad=True)) # Mean Squared Error for X_L
+            loss_reg2 = self.mse_loss(y_pred[1][:,1], Variable(y_true[1][:,1]/w, requires_grad=True)) # Mean Squared Error for Y_L
+            loss_reg3 = self.mse_loss(y_pred[1][:,2], Variable(y_true[1][:,2]/h, requires_grad=True)) # Mean Squared Error for X_R
+            loss_reg4 = self.mse_loss(y_pred[1][:,3], Variable(y_true[1][:,3]/w, requires_grad=True)) # Mean Squared Error for Y_R
+            total_loss = loss_cls + loss_reg1 + loss_reg2 + loss_reg3 + loss_reg4
             return total_loss
 
 Training
@@ -255,7 +231,7 @@ Training
 
 .. code-block:: python
 
-    optimizer = optim.Adam(network.parameters(), lr=0.0001, weight_decay=0)
+    optimizer = optim.Adam(network.parameters(), lr=learning_rate, weight_decay=0)
     loss_function = ClassificationRegressionLoss()
     #Step_Learning_Rate = StepLR(step_size=2 , gamma=0.1, last_epoch=-1, verbose=False)
     exp = Experiment('./two_task_example', network, optimizer=optimizer, loss_function=loss_function, device="all")
@@ -304,20 +280,20 @@ Now let's evaluate the performance of the network visually.
 
 .. code-block:: python
 
-    sample_number = 10
-    image = valid_dataset[sample_number][0]
+    sample_number = 35
+    image = train_dataset[sample_number][0]
     image = image.permute(1,2,0).detach().numpy()
     image_rgb = cv2.cvtColor(np.float32(image), cv2.COLOR_BGR2RGB)
     image_rgb = image_rgb * imagenet_std + imagenet_mean
     Gender = 'male' if np.argmax(predictions[0][sample_number])==0 else 'female'
     print('Gender is: ', Gender)
-    w, h = valid_dataset[sample_number][1][2]
-    (x1, y1) = predictions[1][sample_number][0:2]
-    (x2, y2) = predictions[1][sample_number][2:4]
-    x1, x2 = int(x1*h), int(x2*h)
-    y1, y2 = int(y1*w), int(y2*w)
-    image_rgb = cv2.drawMarker(image_rgb, (x1,y1), (0,255,0))
-    image_rgb = cv2.drawMarker(image_rgb, (x2,y2), (0,255,0))
+    (x_L, y_L) = predictions[1][sample_number][0:2]*image_size
+    (x_R, y_R) = predictions[1][sample_number][2:4]*image_size
+    x_L, x_R = int(x_L), int(x_R)
+    y_L, y_R = int(y_L), int(y_R)
+    image_rgb	= cv2.drawMarker(image_rgb, (x_L,y_L), (0,255,0))
+    image_rgb	= cv2.drawMarker(image_rgb, (x_R,y_R), (0,255,0))
+    image_rgb = cv2.cvtColor(np.float32(image_rgb), cv2.COLOR_BGR2RGB)
     image_rgb = np.clip(image_rgb , 0, 1)
     plt.imshow(image_rgb)
     plt.axis('off')
