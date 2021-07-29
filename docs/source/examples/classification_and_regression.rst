@@ -9,7 +9,13 @@ Gender Classification and Eyes Location Detection: A Two Task Problem
     - See the notebook `here <https://github.com/GRAAL-Research/poutyne/blob/master/examples/classification_and_regression.ipynb>`_
     - Run in `Google Colab <https://colab.research.google.com/github/GRAAL-Research/poutyne/blob/master/examples/classification_and_regression.ipynb>`_
 
-In this example, we are going to implement a multi-task problem. We try to identify the gender of the people, as well as locating their eyes in the image. Hence, we have two different tasks: classification (to identify the gender) and regression (to find the location of the eyes). We are going to use a single network (A CNN) to perform both tasks, however, we will need to apply different loss functions, each proper to a specific task.
+In this example, we are going to implement a multi-task problem. We try to identify the gender of the people, as well as locating their eyes in the image. Hence, we have two different tasks: classification (to identify the gender) and regression (to find the location of the eyes). We are going to use a single network (a CNN) to perform both tasks, however, we will need to apply different loss functions, each proper to a specific task. For this example we will need to install a few libraries (such as OpenCV, wget). If you don't have them, they can be installed as below:
+
+.. code-block:: python
+
+    %pip install poutyne          # to install the Poutyne library
+    %pip install wget             # to install the wget library in order to download data
+    %pip install opencv-python    # to install the cv2 (opencv) library
 
 Let's import all the needed packages.
 
@@ -27,7 +33,6 @@ Let's import all the needed packages.
     import torch.nn as nn
     import torch.nn.functional as F
     import torch.optim as optim
-    from torch.autograd import Variable
     import torchvision.datasets as datasets
     import torchvision.models as models
     import torchvision.transforms as tfms
@@ -47,6 +52,7 @@ Training Constants
     valid_split_percent = 0.1
     w, h = 218, 178   # the width and the hight of original images before resizing
     momentum = 0.5
+    W = 1.3 # the weight of regression loss 
     set_seeds(42)
     imagenet_mean = [0.485, 0.456, 0.406]  # mean of the ImageNet dataset for normalizing 
     imagenet_std = [0.229, 0.224, 0.225]  # std of the ImageNet dataset for normalizing
@@ -56,7 +62,7 @@ Training Constants
 CelebA Dataset
 ==============
 
-The section below consists of a few lines of codes that help us download celebA dataset from a public web source and unzip them. Downloading the Celeba dataset can be also done directly by `torch.datasets.CelebA(data_root, download =  True)`. however, due to the high traffic of Google Drive ( the main source of the dataset) it usually fails to function. hence we decided to download it from another public source but use it with `torch.datasets.CelebA()`.
+The section below consists of a few lines of codes that help us download the CelebA dataset from a public web source and unzip it. Downloading the CelebA dataset can be also done directly using `torch.datasets.CelebA(data_root, download=True)`. However, due to the high traffic on the dataset's Google Drive (the main source of the dataset), it usually fails to function. Hence we decided to download it from another public source but use it with `torch.datasets.CelebA()`.
 
 Fetching data 
 =============
@@ -84,7 +90,7 @@ The section below consists of a few lines of codes that help us download celebA 
     for file in file_list:
         url = f"{base_url}/{file}"
         if not os.path.exists(f"{dataset_folder}/{file}"):
-        wget.download(url, f"{dataset_folder}/{file}")
+            wget.download(url, f"{dataset_folder}/{file}")
 
     with zipfile.ZipFile(f"{dataset_folder}/img_align_celeba.zip", 'r') as ziphandler:
         ziphandler.extractall(dataset_folder)
@@ -94,22 +100,22 @@ Now, as the dataset id downloaded, we can define our datasets and dataloaders in
 .. code-block:: python
 
     transforms = tfms.Compose ([
-                            tfms.Resize((image_size, image_size)),
-                            tfms.ToTensor(),
-                            tfms.Normalize(imagenet_mean, imagenet_std)
-    ])
-    train_dataset = datasets.CelebA(data_root, 
-                                    split='train', 
-                                    target_type=['attr', 'landmarks'], 
-                                    transform=transforms)
+        tfms.Resize((image_size, image_size)),
+        tfms.ToTensor(),
+        tfms.Normalize(imagenet_mean, imagenet_std)
+        ])
+    train_dataset = datasets.CelebA(data_root,
+        split='train',
+        target_type=['attr', 'landmarks'],
+        transform=transforms)
     valid_dataset = datasets.CelebA(data_root, 
-                                    split='valid', 
-                                    target_type=['attr', 'landmarks'], 
-                                    transform=transforms)
+        split='valid', 
+        target_type=['attr', 'landmarks'], 
+        transform=transforms)
     test_dataset = datasets.CelebA(data_root, 
-                                split='test', 
-                                target_type=['attr', 'landmarks'], 
-                                transform=transforms)
+        split='test', 
+        target_type=['attr', 'landmarks'], 
+        transform=transforms)
                                 
     train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
     valid_dataloader = DataLoader(valid_dataset, batch_size=batch_size, shuffle=False)
@@ -186,7 +192,7 @@ Below, we define a new class, named 'ClassifierLocalizer, which accepts a pre-tr
             coords = x[:, self.num_classes:]     # coordinates
             return [scores, torch.sigmoid(coords)]   # sigmoid output is in the range of [0, 1]
 
-Regarding the complexity of the problem, the number of the samples in the training dataset, and the similarity of the training dataset to the ImageNet dataset, we may decide to freeze some of the layers. In our current example, based on the mentioned factors, we freeze just the last fully connected layer.
+Regarding the complexity of the problem, the number of the samples in the training dataset, and the similarity of the training dataset to the ImageNet dataset, we may decide to freeze some of the layers. In our current example, based on the mentioned factors, we freeze all layers but the last fully connected layer.
 
 .. code-block:: python
 
@@ -199,10 +205,6 @@ Regarding the complexity of the problem, the number of the samples in the traini
 
     freeze_weights(network)
     print(network)
-
-.. code-block:: python
-
-    network = ClassifierLocalizer(model_name='resnet18')  # network without freezing any layer.
 
 Loss function
 =============
@@ -219,11 +221,11 @@ As we discussed before, we have two different tasks in this example. These tasks
             
         def forward(self, y_pred, y_true):
             loss_cls = self.ce_loss(y_pred[0], Variable(y_true[0][:,20])) # Cross Entropy Error (for classification)
-            loss_reg1 = self.mse_loss(y_pred[1][:,0], Variable(y_true[1][:,0]/h, requires_grad=True)) # Mean Squared Error for X_L
-            loss_reg2 = self.mse_loss(y_pred[1][:,1], Variable(y_true[1][:,1]/w, requires_grad=True)) # Mean Squared Error for Y_L
-            loss_reg3 = self.mse_loss(y_pred[1][:,2], Variable(y_true[1][:,2]/h, requires_grad=True)) # Mean Squared Error for X_R
-            loss_reg4 = self.mse_loss(y_pred[1][:,3], Variable(y_true[1][:,3]/w, requires_grad=True)) # Mean Squared Error for Y_R
-            total_loss = loss_cls + loss_reg1 + loss_reg2 + loss_reg3 + loss_reg4
+            loss_reg1 = self.mse_loss(y_pred[1][:,0], y_true[1][:,0]/h) # Mean Squared Error for X_L
+            loss_reg2 = self.mse_loss(y_pred[1][:,1], y_true[1][:,1]/w) # Mean Squared Error for Y_L
+            loss_reg3 = self.mse_loss(y_pred[1][:,2], y_true[1][:,2]/h) # Mean Squared Error for X_R
+            loss_reg4 = self.mse_loss(y_pred[1][:,3], y_true[1][:,3]/w) # Mean Squared Error for Y_R
+            total_loss = loss_cls + W * (loss_reg1 + loss_reg2 + loss_reg3 + loss_reg4)
             return total_loss
 
 Training
@@ -240,7 +242,7 @@ Training
 Evaluation
 ==========
 
-As you have also noticed from the training logs, we have achieved the best performance (considering the validation loss) at the 15th epoch. The weights of the network for the corresponding epoch have been automatically saved and we use these parameters to evaluate our algorithm visually. Hence,  we take advantage of evaluate function of Poutyne, and apply it to the validation dataset. It provides us the predictions as well as the ground-truth for comparison, in case of need.
+As you have also noticed from the training logs, in this try we achieved the best performance (considering the validation loss) at the 15th epoch. The weights of the network for the corresponding epoch have been automatically saved by the `Experiment` function and we use these parameters to evaluate our algorithm visually. Hence,  we take advantage of evaluate function of Poutyne, and apply it to the validation dataset. It provides us the predictions as well as the ground-truth for comparison, in case of need.
 
 .. code-block:: python
 
