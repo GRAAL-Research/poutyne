@@ -62,13 +62,12 @@ Training Constants
 CelebA Dataset
 ==============
 
-The section below consists of a few lines of codes that help us download the CelebA dataset from a public web source and unzip it. Downloading the CelebA dataset can be also done directly using `torch.datasets.CelebA(data_root, download=True)`. However, due to the high traffic on the dataset's Google Drive (the main source of the dataset), it usually fails to function. Hence we decided to download it from another public source but use it with `torch.datasets.CelebA()`.
+We are going to use the CelebA dataset for this experiment. The CelebA dataset is a large-scale face attributes dataset which can be employed as the training and test sets for the following computer vision tasks: face attribute recognition, face detection, landmark (or facial part) localization, and face editing & synthesis.
 
 Fetching data 
 =============
 
-The section below consists of a few lines of codes that help us download celebA dataset from a public web source and unzip them.
-
+The section below consists of a few lines of codes that help us download the CelebA dataset from a public web source and unzip it. Downloading the CelebA dataset can be also done directly using `torch.datasets.CelebA(data_root, download=True)`. However, due to the high traffic on the dataset's Google Drive (the main source of the dataset), it usually fails to function. Hence we decided to download it from another public source but use it with `torch.datasets.CelebA()`.
 .. code-block:: python
 
     data_root = 'datasets'
@@ -127,7 +126,7 @@ Here we can see how each dataset sample looks like:
 
     print (train_dataset[0])
 
-Regarding the complexity of the problem and the high number training/valid samples, we can seperate and use a portion of data as below:
+Regarding the complexity of the problem and the number of training/valid samples, we have a huge number of training/validation images. Since there are not a considerable varation between images (e.g., the eye coordinates in images do not vary considerably), using all images in the dataset is not necessary and will only increase the training time. Hence, we can seperate and use a portion of data as below:
 
 .. code-block:: python
 
@@ -247,7 +246,7 @@ As you have also noticed from the training logs, in this try we achieved the bes
 .. code-block:: python
 
     model = Model(network, optimizer, loss_function, device=device)
-    model.load_weights('./two_task_example/checkpoint_epoch_15.ckpt')
+    model.load_weights('./two_task_example/checkpoint.ckpt')
     loss, predictions, Ground_Truth = model.evaluate_generator(valid_dataloader, callbacks=callbacks, return_pred=True, return_ground_truth=True)
 
 
@@ -255,7 +254,7 @@ The ``callbacks`` feature also records the training logs. we can use this inform
 
 .. code-block:: python
 
-    logs = pd.read_csv('./callbacks/log.tsv', sep='\t')
+    logs = pd.read_csv('./two_task_example/log.tsv', sep='\t')
     print(logs)
 
 .. image:: /_static/img/classification_and_regression/logs.png
@@ -276,14 +275,14 @@ We can also evaluate the performance of the trained network (a network with the 
 
 .. code-block:: python
 
-    exp.test(valid_dataloader)
+    exp.test(test_dataloader)
 
 Now let's evaluate the performance of the network visually.
 
 .. code-block:: python
 
     sample_number = 35
-    image = train_dataset[sample_number][0]
+    image = valid_dataset[sample_number][0]
     image = image.permute(1,2,0).detach().numpy()
     image_rgb = cv2.cvtColor(np.float32(image), cv2.COLOR_BGR2RGB)
     image_rgb = image_rgb * imagenet_std + imagenet_mean
