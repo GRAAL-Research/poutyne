@@ -204,6 +204,10 @@ class Experiment:
                  monitor_metric: Union[str, None] = None,
                  monitor_mode: Union[str, None] = None,
                  task: Union[str, None] = None) -> None:
+
+        if pd is None:
+            raise ImportError("pandas needs to be installed to use the class Experiment.")
+
         self.directory = directory
         self.logging = logging
 

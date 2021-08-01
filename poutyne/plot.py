@@ -1,7 +1,13 @@
 import os
 import itertools
-import matplotlib.pyplot as plt
-from matplotlib.ticker import MaxNLocator
+
+try:
+    import matplotlib.pyplot as plt
+    from matplotlib.ticker import MaxNLocator
+
+    matplotlib = True
+except ImportError:
+    matplotlib = False
 
 try:
     import pandas as pd
@@ -11,6 +17,11 @@ except ImportError:
 from poutyne import is_in_jupter_notebook
 
 jupyter = is_in_jupter_notebook()
+
+
+def _raise_error_if_matplotlib_not_there():
+    if not matplotlib:
+        raise ImportError("matplotlib needs to be installed to use this function.")
 
 
 def _none_to_iterator(value, repeat=None):
@@ -78,6 +89,8 @@ def plot_history(history,
                  close=None,
                  fig_kwargs=None):
     # pylint: disable=too-many-locals
+    _raise_error_if_matplotlib_not_there()
+
     metrics = _infer_metrics(history, metrics)
 
     _assert_list_length_with_num_metrics(labels, metrics, 'label', 'labels')
@@ -107,6 +120,8 @@ def plot_history(history,
 
 
 def plot_metric(history, metric, *, label=None, title='', ax=None):
+    _raise_error_if_matplotlib_not_there()
+
     if ax is None:
         ax = plt.gca()
 
