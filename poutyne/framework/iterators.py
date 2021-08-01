@@ -176,7 +176,6 @@ class EpochIterator:
             val_metrics_log = {} if valid_step_iterator is None else valid_step_iterator.metrics_logs
             epoch_log = {
                 'epoch': epoch,
-                'loss': train_step_iterator.loss,
                 'time': epoch_total_time,
                 **train_step_iterator.metrics_logs,
                 **val_metrics_log
