@@ -68,7 +68,6 @@ def plot_history(history,
                  *,
                  metrics=None,
                  labels=None,
-                 val_labels=None,
                  titles=None,
                  axes=None,
                  show=True,
@@ -82,7 +81,6 @@ def plot_history(history,
     metrics = _infer_metrics(history, metrics)
 
     _assert_list_length_with_num_metrics(labels, metrics, 'label', 'labels')
-    _assert_list_length_with_num_metrics(val_labels, metrics, 'validation label', 'validation labels')
 
     if isinstance(titles, str):
         titles = [titles] * len(metrics)
@@ -90,12 +88,11 @@ def plot_history(history,
         _assert_list_length_with_num_metrics(titles, metrics, 'title', 'titles')
 
     labels = _none_to_iterator(labels)
-    val_labels = _none_to_iterator(val_labels)
     titles = _none_to_iterator(titles, repeat='')
 
     figs, axes = _get_figs_and_axes(axes, len(metrics), fig_kwargs)
-    for metric, label, val_label, title, ax in zip(metrics, labels, val_labels, titles, axes):
-        plot_metric(history, metric, label=label, val_label=val_label, title=title, ax=ax)
+    for metric, label, title, ax in zip(metrics, labels, titles, axes):
+        plot_metric(history, metric, label=label, title=title, ax=ax)
 
     _show_and_save_figs(figs,
                         metrics,
@@ -109,18 +106,16 @@ def plot_history(history,
     return figs, axes
 
 
-def plot_metric(history, metric, *, label=None, val_label=None, title='', ax=None):
+def plot_metric(history, metric, *, label=None, title='', ax=None):
     if ax is None:
         ax = plt.gca()
 
-    if val_label is None:
-        if label is not None:
-            val_label = 'Validation ' + label
-        else:
-            val_label = 'val_' + metric
-
     if label is None:
-        label = metric
+        train_label = metric
+        valid_label = 'val_' + metric
+    else:
+        train_label = 'Training ' + label
+        valid_label = 'Validation ' + label
 
     val_metric_values = None
     if pd is not None and isinstance(history, pd.DataFrame):
@@ -134,9 +129,9 @@ def plot_metric(history, metric, *, label=None, val_label=None, title='', ax=Non
         if 'val_' + metric in history[0]:
             val_metric_values = [entry['val_' + metric] for entry in history]
 
-    ax.plot(epochs, metric_values, label=label)
+    ax.plot(epochs, metric_values, label=train_label)
     if val_metric_values is not None:
-        ax.plot(epochs, val_metric_values, label=val_label)
+        ax.plot(epochs, val_metric_values, label=valid_label)
 
     ax.set_xlabel('Epochs')
     ax.set_ylabel(label)
