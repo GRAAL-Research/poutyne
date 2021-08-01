@@ -16,10 +16,12 @@ jupyter = is_in_jupter_notebook()
 def _none_to_iterator(value, repeat=None):
     return value if value is not None else itertools.repeat(repeat)
 
+
 def _assert_list_length_with_num_metrics(l, metrics, name, plural_name):
     if l is not None and len(l) != len(metrics):
         raise ValueError(f"A {name} was not provided for each metric. "
                          f"Got {len(l)} {plural_name} for {len(metrics)} metrics.")
+
 
 def _infer_metrics(history, metrics):
     if metrics is None:
@@ -30,12 +32,14 @@ def _infer_metrics(history, metrics):
         metrics = [col for col in cols if col != 'epoch' and not col.startswith('val_')]
     return metrics
 
+
 def _get_figs_and_axes(axes, num_axes, fig_kwargs):
     figs = ()
     if axes is None:
         fig_kwargs = fig_kwargs if fig_kwargs is not None else {}
         figs, axes = zip(*(plt.subplots(**fig_kwargs) for _ in range(num_axes)))
     return figs, axes
+
 
 def _show_and_save_figs(figs, metrics, *, show, save, save_filename_template, save_directory, save_extensions, close):
     if save:
@@ -59,6 +63,7 @@ def _show_and_save_figs(figs, metrics, *, show, save, save_filename_template, sa
         if close:
             plt.close(fig)
 
+
 def plot_history(history,
                  *,
                  metrics=None,
@@ -70,7 +75,7 @@ def plot_history(history,
                  save=False,
                  save_filename_template='{metric}',
                  save_directory=None,
-                 save_extensions=('png',),
+                 save_extensions=('png', ),
                  close=None,
                  fig_kwargs=None):
     # pylint: disable=too-many-locals
@@ -102,6 +107,7 @@ def plot_history(history,
                         close=close)
 
     return figs, axes
+
 
 def plot_metric(history, metric, *, label=None, val_label=None, title='', ax=None):
     if ax is None:
