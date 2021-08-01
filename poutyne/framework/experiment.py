@@ -290,6 +290,9 @@ class Experiment:
             self.monitor_metric = 'val_acc'
             self.monitor_mode = 'max'
 
+    def get_stats(self):
+        return pd.read_csv(self.log_filename, sep='\t')
+
     def get_best_epoch_stats(self) -> Dict:
         """
         Returns all computed statistics corresponding to the best epoch according to the
@@ -302,10 +305,7 @@ class Experiment:
         if not self.monitoring:
             raise ValueError("Monitoring was disabled. Cannot get best epoch.")
 
-        if pd is None:
-            raise ImportError("pandas needs to be installed to use this function.")
-
-        history = pd.read_csv(self.log_filename, sep='\t')
+        history = self.get_stats()
         if self.monitor_mode == 'min':
             best_epoch_index = history[self.monitor_metric].idxmin()
         else:
@@ -324,10 +324,7 @@ class Experiment:
         if not self.monitoring:
             raise ValueError("Monitoring was disabled. Except the last epoch, no epoch checkpoint were saved.")
 
-        if pd is None:
-            raise ImportError("pandas needs to be installed to use this function.")
-
-        history = pd.read_csv(self.log_filename, sep='\t')
+        history = self.get_stats()
         metrics = history[self.monitor_metric].tolist()
         if self.monitor_mode == 'min':
             monitor_op = lambda x, y: x < y
@@ -697,7 +694,7 @@ class Experiment:
     def _load_epoch_checkpoint(self, epoch: int, *, verbose: bool = False, strict: bool = True) -> None:
         ckpt_filename = self.best_checkpoint_filename.format(epoch=epoch)
 
-        history = pd.read_csv(self.log_filename, sep='\t')
+        history = self.get_stats()
         epoch_stats = history.iloc[epoch - 1:epoch]
 
         if verbose:
@@ -726,7 +723,7 @@ class Experiment:
         return best_epoch_stats, self.model.load_weights(ckpt_filename, strict=strict)
 
     def _load_last_checkpoint(self, *, verbose: bool = False, strict: bool = True) -> None:
-        history = pd.read_csv(self.log_filename, sep='\t')
+        history = self.get_stats()
         epoch_stats = history.iloc[-1:]
 
         if verbose:

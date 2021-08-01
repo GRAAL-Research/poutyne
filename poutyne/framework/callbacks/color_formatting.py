@@ -4,6 +4,7 @@ import time
 import warnings
 from typing import Dict, Union
 
+from poutyne import is_in_jupter_notebook
 from .progress_bar import ProgressBar
 
 
@@ -21,21 +22,9 @@ try:
 
     colorama = True
 
-    try:
-        # We don't init when Jupyter Notebook see issue https://github.com/jupyter/notebook/issues/2284
-        from IPython import get_ipython
-
-        shell = get_ipython().__class__.__name__
-        if shell in ['ZMQInteractiveShell', 'Shell']:
-            jupyter = True
-        else:
-            init()
-            jupyter = False
-
-    except ImportError:
+    jupyter = is_in_jupter_notebook()
+    if not jupyter:
         init()
-        jupyter = False
-
 except ImportError:
     colorama = None
     jupyter = False

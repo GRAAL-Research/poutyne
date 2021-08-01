@@ -166,3 +166,19 @@ def set_seeds(seed):
         random.seed(seed)
         np.random.seed(seed)
         torch.manual_seed(seed)
+
+def is_in_jupter_notebook():
+    try:
+        # We don't init when Jupyter Notebook see issue https://github.com/jupyter/notebook/issues/2284
+        from IPython import get_ipython
+
+        shell = get_ipython().__class__.__name__
+        if shell in ['ZMQInteractiveShell', 'Shell']:
+            jupyter = True
+        else:
+            jupyter = False
+
+    except ImportError:
+        jupyter = False
+
+    return jupyter
