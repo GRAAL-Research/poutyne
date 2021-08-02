@@ -4,7 +4,7 @@ import time
 import warnings
 from typing import Dict, Union
 
-from poutyne import is_in_jupter_notebook
+from poutyne import is_in_jupyter_notebook
 from .progress_bar import ProgressBar
 
 
