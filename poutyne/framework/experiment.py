@@ -958,30 +958,6 @@ class Experiment:
         """
         return self._predict(self.model.predict_generator, generator, **kwargs)
 
-    def predict_on_batch(self, x, **kwargs) -> Any:
-        """
-        Returns the predictions of the network given a batch ``x``, where the tensors are converted
-        into Numpy arrays.
-
-        Args:
-            x: Input data as a batch.
-            checkpoint (Union[str, int]): Which model checkpoint weights to load for the prediction.
-
-                - If 'best', will load the best weights according to ``monitor_metric`` and ``monitor_mode``.
-                - If 'last', will load the last model checkpoint.
-                - If int, will load the checkpoint of the specified epoch.
-                - If a path (str), will load the model pickled state_dict weights (for instance, saved as
-                  ``torch.save(a_pytorch_network.state_dict(), "./a_path.p")``).
-
-                This argument has no effect when logging is disabled. (Default value = 'best')
-            verbose (bool): Whether to display the progress of the prediction.
-                (Default value = True)
-
-        Returns:
-            Return the predictions in the format outputted by the model.
-        """
-        return self._predict(self.model.predict_on_batch, x, **kwargs)
-
     def _predict(self,
                  evaluate_func: Callable,
                  *args,
