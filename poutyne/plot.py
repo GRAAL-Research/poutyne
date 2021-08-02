@@ -52,27 +52,26 @@ def _get_figs_and_axes(axes, num_axes, fig_kwargs):
     return figs, axes
 
 
-def _show_and_save_figs(figs, metrics, *, show, save, save_filename_template, save_directory, save_extensions, close):
-    if save:
-        save_template = save_filename_template
-        if save_directory is not None:
-            os.makedirs(save_directory, exist_ok=True)
-            save_template = os.path.join(save_directory, save_filename_template)
-
-    if close is None and jupyter:
-        close = False
+def _save_figs(figs, metrics, *, filename_template, directory, extensions):
+    save_template = filename_template
+    if directory is not None:
+        os.makedirs(directory, exist_ok=True)
+        save_template = os.path.join(directory, filename_template)
 
     for fig, metric in zip(figs, metrics):
-        if show:
-            fig.show()
+        for ext in extensions:
+            filename = save_template.format(metric=metric) + f'.{ext}'
+            fig.savefig(filename)
 
-        if save:
-            for ext in save_extensions:
-                filename = save_template.format(metric=metric) + f'.{ext}'
-                fig.savefig(filename)
 
-        if close:
-            plt.close(fig)
+def _show_figs(figs):
+    for fig in figs:
+        fig.show()
+
+
+def _close_figs(figs):
+    for fig in figs:
+        plt.close(fig)
 
 
 def plot_history(history,
@@ -107,14 +106,23 @@ def plot_history(history,
     for metric, label, title, ax in zip(metrics, labels, titles, axes):
         plot_metric(history, metric, label=label, title=title, ax=ax)
 
-    _show_and_save_figs(figs,
-                        metrics,
-                        show=show,
-                        save=save,
-                        save_filename_template=save_filename_template,
-                        save_directory=save_directory,
-                        save_extensions=save_extensions,
-                        close=close)
+    if save:
+        _save_figs(
+            figs,
+            metrics,
+            filename_template=save_filename_template,
+            directory=save_directory,
+            extensions=save_extensions,
+        )
+
+    if show:
+        _show_figs(figs)
+
+    if close is None and jupyter:
+        close = False
+
+    if close:
+        _close_figs(figs)
 
     return figs, axes
 
