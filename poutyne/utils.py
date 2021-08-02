@@ -168,7 +168,7 @@ def set_seeds(seed):
         torch.manual_seed(seed)
 
 
-def is_in_jupter_notebook():
+def is_in_jupyter_notebook():
     # pylint: disable=import-outside-toplevel
     try:
         from IPython import get_ipython
