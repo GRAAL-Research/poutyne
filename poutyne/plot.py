@@ -14,7 +14,7 @@ try:
 except ImportError:
     pd = None
 
-from poutyne import is_in_jupter_notebook
+from poutyne import is_in_jupyter_notebook
 
 jupyter = is_in_jupter_notebook()
 
