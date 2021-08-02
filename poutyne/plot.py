@@ -16,7 +16,7 @@ except ImportError:
 
 from poutyne import is_in_jupyter_notebook
 
-jupyter = is_in_jupter_notebook()
+jupyter = is_in_jupyter_notebook()
 
 
 def _raise_error_if_matplotlib_not_there():
