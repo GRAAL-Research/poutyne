@@ -54,6 +54,7 @@ Training Constants
     momentum = 0.5
     W = 1.3 # the weight of regression loss 
     set_seeds(42)
+    gender_index = 20 # in the CelebA dataset gender information is the 21th item in the attributes vector.
     imagenet_mean = [0.485, 0.456, 0.406]  # mean of the ImageNet dataset for normalizing 
     imagenet_std = [0.229, 0.224, 0.225]  # std of the ImageNet dataset for normalizing
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -68,6 +69,7 @@ Fetching data
 =============
 
 The section below consists of a few lines of codes that help us download the CelebA dataset from a public web source and unzip it. Downloading the CelebA dataset can be also done directly using `torch.datasets.CelebA(data_root, download=True)`. However, due to the high traffic on the dataset's Google Drive (the main source of the dataset), it usually fails to function. Hence we decided to download it from another public source but use it with `torch.datasets.CelebA()`.
+
 .. code-block:: python
 
     data_root = 'datasets'
@@ -98,20 +100,23 @@ Now, as the dataset id downloaded, we can define our datasets and dataloaders in
 
 .. code-block:: python
 
-    transforms = tfms.Compose ([
+    transforms = tfms.Compose([
         tfms.Resize((image_size, image_size)),
         tfms.ToTensor(),
         tfms.Normalize(imagenet_mean, imagenet_std)
-        ])
-    train_dataset = datasets.CelebA(data_root,
+    ])
+    train_dataset = datasets.CelebA(
+        data_root,
         split='train',
         target_type=['attr', 'landmarks'],
         transform=transforms)
-    valid_dataset = datasets.CelebA(data_root, 
+    valid_dataset = datasets.CelebA(
+        data_root, 
         split='valid', 
         target_type=['attr', 'landmarks'], 
         transform=transforms)
-    test_dataset = datasets.CelebA(data_root, 
+    test_dataset = datasets.CelebA(
+        data_root, 
         split='test', 
         target_type=['attr', 'landmarks'], 
         transform=transforms)
@@ -144,10 +149,10 @@ Here, we can see an example from the training dataset. It shows an image of a pe
     image = image.permute(1,2,0).detach().numpy()
     image_rgb = cv2.cvtColor(np.float32(image), cv2.COLOR_BGR2RGB)
     image_rgb = image_rgb * imagenet_std + imagenet_mean
-    Gender = 'male' if int(train_dataset[sample_number][1][0][20])==1 else 'female'
-    print('Gender is: ', Gender)
+    gender = 'male' if int(train_dataset[sample_number][1][0][20])==1 else 'female'
+    print('Gender is: ', gender)
     w, h = 218, 178
-    (x_L, y_L) = train_dataset[sample_number][1][1][0:2]
+    (x_L, y_L) = train_dataset[sample_number][1][1][0:2]  # The coordinates vector of the datasets starts with X_L, y_L, X_R, y_R
     (x_R, y_R) = train_dataset[sample_number][1][1][2:4]
     w_scale = image_size/w
     h_scale = image_size/h
@@ -168,7 +173,7 @@ Here, we can see an example from the training dataset. It shows an image of a pe
 Network
 =======
 
-Below, we define a new class, named 'ClassifierLocalizer, which accepts a pre-trained CNN and changes its last fully connected layer to be proper for the two task problem. The new fully connected layer contains 6 neurons, 2 for the classification task (male or female) and 4 for the localization task (x and y for the left and right eyes). Moreover, to put the location results on the same scale as the class scores, we apply the sigmoid function to the neurons assigned for the localization task.
+Below, we define a new class, named `ClassifierLocalizer`, which accepts a pre-trained CNN and changes its last fully connected layer to be proper for the two task problem. The new fully connected layer contains 6 neurons, 2 for the classification task (male or female) and 4 for the localization task (x and y for the left and right eyes). Moreover, to put the location results on the same scale as the class scores, we apply the sigmoid function to the neurons assigned for the localization task.
 
 .. code-block:: python
 
@@ -189,7 +194,7 @@ Below, we define a new class, named 'ClassifierLocalizer, which accepts a pre-tr
             x = self.model(x)                    # extract features from CNN
             scores = x[:, :self.num_classes]     # class scores
             coords = x[:, self.num_classes:]     # coordinates
-            return [scores, torch.sigmoid(coords)]   # sigmoid output is in the range of [0, 1]
+            return scores, torch.sigmoid(coords)   # sigmoid output is in the range of [0, 1]
 
 Regarding the complexity of the problem, the number of the samples in the training dataset, and the similarity of the training dataset to the ImageNet dataset, we may decide to freeze some of the layers. In our current example, based on the mentioned factors, we freeze all layers but the last fully connected layer.
 
@@ -241,13 +246,13 @@ Training
 Evaluation
 ==========
 
-As you have also noticed from the training logs, in this try we achieved the best performance (considering the validation loss) at the 15th epoch. The weights of the network for the corresponding epoch have been automatically saved by the `Experiment` function and we use these parameters to evaluate our algorithm visually. Hence,  we take advantage of evaluate function of Poutyne, and apply it to the validation dataset. It provides us the predictions as well as the ground-truth for comparison, in case of need.
+As you have also noticed from the training logs, in this try we achieved the best performance (considering the validation loss) at the 15th epoch. The weights of the network for the corresponding epoch have been automatically saved by the `Experiment` function and we use these parameters to evaluate our algorithm visually. For this purpose, we utulize the load_checkpoint method and set its argument to `best` to load the best weights of the model automatically. Finally,  we take advantage of the `evaluate` function of Poutyne, and apply it to the validation dataset. It provides us the predictions as well as the ground-truth for comparison, in case of need.
 
 .. code-block:: python
 
-    model = Model(network, optimizer, loss_function, device=device)
-    model.load_weights('./two_task_example/checkpoint.ckpt')
-    loss, predictions, Ground_Truth = model.evaluate_generator(valid_dataloader, callbacks=callbacks, return_pred=True, return_ground_truth=True)
+    exp.load_checkpoint('best')
+    model = exp.model
+    loss, predictions, Ground_Truth = model.evaluate_generator(valid_dataloader, return_pred=True, return_ground_truth=True)
 
 
 The ``callbacks`` feature also records the training logs. we can use this information to monitor and analyze the training process.
@@ -286,8 +291,8 @@ Now let's evaluate the performance of the network visually.
     image = image.permute(1,2,0).detach().numpy()
     image_rgb = cv2.cvtColor(np.float32(image), cv2.COLOR_BGR2RGB)
     image_rgb = image_rgb * imagenet_std + imagenet_mean
-    Gender = 'male' if np.argmax(predictions[0][sample_number])==0 else 'female'
-    print('Gender is: ', Gender)
+    gender = 'male' if np.argmax(predictions[0][sample_number])==0 else 'female'
+    print('Gender is: ', gender)
     (x_L, y_L) = predictions[1][sample_number][0:2]*image_size
     (x_R, y_R) = predictions[1][sample_number][2:4]*image_size
     x_L, x_R = int(x_L), int(x_R)
