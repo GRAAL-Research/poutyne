@@ -118,8 +118,8 @@ def plot_history(history,
     if show:
         _show_figs(figs)
 
-    if close is None and jupyter:
-        close = False
+    if close is None:
+        close = not jupyter
 
     if close:
         _close_figs(figs)
