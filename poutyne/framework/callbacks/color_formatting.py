@@ -22,7 +22,7 @@ try:
 
     colorama = True
 
-    jupyter = is_in_jupter_notebook()
+    jupyter = is_in_jupyter_notebook()
 
     # We don't init when Jupyter Notebook see issue https://github.com/jupyter/notebook/issues/2284
     if not jupyter:
