@@ -109,17 +109,20 @@ Now, as the dataset id downloaded, we can define our datasets and dataloaders in
         data_root,
         split='train',
         target_type=['attr', 'landmarks'],
-        transform=transforms)
+        transform=transforms
+    )
     valid_dataset = datasets.CelebA(
         data_root, 
         split='valid', 
         target_type=['attr', 'landmarks'], 
-        transform=transforms)
+        transform=transforms
+    )
     test_dataset = datasets.CelebA(
         data_root, 
         split='test', 
         target_type=['attr', 'landmarks'], 
-        transform=transforms)
+        transform=transforms
+    )
                                 
     train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
     valid_dataloader = DataLoader(valid_dataset, batch_size=batch_size, shuffle=False)
@@ -149,7 +152,7 @@ Here, we can see an example from the training dataset. It shows an image of a pe
     image = image.permute(1,2,0).detach().numpy()
     image_rgb = cv2.cvtColor(np.float32(image), cv2.COLOR_BGR2RGB)
     image_rgb = image_rgb * imagenet_std + imagenet_mean
-    gender = 'male' if int(train_dataset[sample_number][1][0][20])==1 else 'female'
+    gender = 'male' if int(train_dataset[sample_number][1][0][gender_index])==1 else 'female'
     print('Gender is: ', gender)
     w, h = 218, 178
     (x_L, y_L) = train_dataset[sample_number][1][1][0:2]  # The coordinates vector of the datasets starts with X_L, y_L, X_R, y_R
@@ -218,18 +221,19 @@ As we discussed before, we have two different tasks in this example. These tasks
 .. code-block:: python
 
     class ClassificationRegressionLoss(nn.Module):
-        def __init__(self):
+        def __init__(self, W):
             super(ClassificationRegressionLoss, self).__init__()
             self.ce_loss = nn.CrossEntropyLoss() # size_average=False
             self.mse_loss = nn.MSELoss()
+            self.W = W
             
         def forward(self, y_pred, y_true):
-            loss_cls = self.ce_loss(y_pred[0], Variable(y_true[0][:,20])) # Cross Entropy Error (for classification)
+            loss_cls = self.ce_loss(y_pred[0], Variable(y_true[0][:,gender_index])) # Cross Entropy Error (for classification)
             loss_reg1 = self.mse_loss(y_pred[1][:,0], y_true[1][:,0]/h) # Mean Squared Error for X_L
             loss_reg2 = self.mse_loss(y_pred[1][:,1], y_true[1][:,1]/w) # Mean Squared Error for Y_L
             loss_reg3 = self.mse_loss(y_pred[1][:,2], y_true[1][:,2]/h) # Mean Squared Error for X_R
             loss_reg4 = self.mse_loss(y_pred[1][:,3], y_true[1][:,3]/w) # Mean Squared Error for Y_R
-            total_loss = loss_cls + W * (loss_reg1 + loss_reg2 + loss_reg3 + loss_reg4)
+            total_loss = loss_cls + self.W * (loss_reg1 + loss_reg2 + loss_reg3 + loss_reg4)
             return total_loss
 
 Training
@@ -252,7 +256,7 @@ As you have also noticed from the training logs, in this try we achieved the bes
 
     exp.load_checkpoint('best')
     model = exp.model
-    loss, predictions, Ground_Truth = model.evaluate_generator(valid_dataloader, return_pred=True, return_ground_truth=True)
+    loss, predictions, ground_Truth = model.evaluate_generator(valid_dataloader, return_pred=True, return_ground_truth=True)
 
 
 The ``callbacks`` feature also records the training logs. we can use this information to monitor and analyze the training process.
