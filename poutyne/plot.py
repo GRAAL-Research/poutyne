@@ -28,10 +28,10 @@ def _none_to_iterator(value, repeat=None):
     return value if value is not None else itertools.repeat(repeat)
 
 
-def _assert_list_length_with_num_metrics(l, metrics, name, plural_name):
+def _assert_list_length_with_num_metrics(l, metrics, name):
     if l is not None and len(l) != len(metrics):
         raise ValueError(f"A {name} was not provided for each metric. "
-                         f"Got {len(l)} {plural_name} for {len(metrics)} metrics.")
+                         f"Got {len(l)} {name}s for {len(metrics)} metrics.")
 
 
 def _infer_metrics(history, metrics):
@@ -92,12 +92,12 @@ def plot_history(history,
 
     metrics = _infer_metrics(history, metrics)
 
-    _assert_list_length_with_num_metrics(labels, metrics, 'label', 'labels')
+    _assert_list_length_with_num_metrics(labels, metrics, 'label')
 
     if isinstance(titles, str):
         titles = [titles] * len(metrics)
     else:
-        _assert_list_length_with_num_metrics(titles, metrics, 'title', 'titles')
+        _assert_list_length_with_num_metrics(titles, metrics, 'title')
 
     labels = _none_to_iterator(labels)
     titles = _none_to_iterator(titles, repeat='')
