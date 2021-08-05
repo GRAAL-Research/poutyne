@@ -162,7 +162,7 @@ intersphinx_mapping = {
     'PyTorch': ('https://pytorch.org/docs/stable/', None),
     'python': ('https://docs.python.org/3', None),
     'numpy': ('http://docs.scipy.org/doc/numpy/', None),
-    'matplotlib': ('https://matplotlib.org/', None)
+    'matplotlib': ('https://matplotlib.org/stable/', None)
 }
 
 # -- Extension configuration -------------------------------------------------

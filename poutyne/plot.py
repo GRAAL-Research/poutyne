@@ -1,5 +1,6 @@
 import os
 import itertools
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 try:
     import matplotlib.pyplot as plt
@@ -74,19 +75,39 @@ def _close_figs(figs):
         plt.close(fig)
 
 
-def plot_history(history,
+def plot_history(history: Union[List[Dict[str, Union[float, int]]], 'pd.DataFrame'],
                  *,
-                 metrics=None,
-                 labels=None,
-                 titles=None,
-                 axes=None,
-                 show=True,
-                 save=False,
-                 save_filename_template='{metric}',
-                 save_directory=None,
-                 save_extensions=('png', ),
-                 close=None,
-                 fig_kwargs=None):
+                 metrics: Optional[List[str]] = None,
+                 labels: Optional[List[str]] = None,
+                 titles: Optional[Union[List[str], str]] = None,
+                 axes: Optional[List['matplotlib.axes.Axes']] = None,
+                 show: bool = True,
+                 save: bool = False,
+                 save_filename_template: str = '{metric}',
+                 save_directory: Optional[str] = None,
+                 save_extensions: Union[List[str], Tuple[str]] = ('png', ),
+                 close: Optional[bool] = None,
+                 fig_kwargs: Optional[Dict[str, Any]] = None):
+    """[summary]
+
+    Args:
+        history (Union[List[Dict[str, Union[float, int]]], pd.DataFrame]): [description]
+        metrics (Optional[List[str]], optional): [description]. Defaults to None.
+        labels (Optional[List[str]], optional): [description]. Defaults to None.
+        titles (Optional[Union[List[str], str]], optional): [description]. Defaults to None.
+        axes (Optional[List[matplotlib.axes.Axes]], optional): [description]. Defaults to None.
+        show (bool, optional): [description]. Defaults to True.
+        save (bool, optional): [description]. Defaults to False.
+        save_filename_template (str, optional): [description]. Defaults to '{metric}'.
+        save_directory (Optional[str], optional): [description]. Defaults to None.
+        save_extensions (Union[List[str], Tuple[str]], optional): [description]. Defaults to `('png', )`.
+        close (Optional[bool], optional): [description]. Defaults to None.
+        fig_kwargs (Optional[Dict[str, Any]], optional): [description]. Defaults to None.
+
+    Returns:
+        Tuple[List[matplotlib.figure.Figure], List[matplotlib.axes.Axes]]: [description]
+    """
+
     # pylint: disable=too-many-locals
     _raise_error_if_matplotlib_not_there()
 
@@ -127,7 +148,21 @@ def plot_history(history,
     return figs, axes
 
 
-def plot_metric(history, metric, *, label=None, title='', ax=None):
+def plot_metric(history: Union[List[Dict[str, Union[float, int]]], 'pd.DataFrame'],
+                metric: str,
+                *,
+                label: Optional[str] = None,
+                title: str = '',
+                ax: Optional['matplotlib.axes.Axes'] = None):
+    """[summary]
+
+    Args:
+        history (Union[List[Dict[str, Union[float, int]]], pd.DataFrame]): [description]
+        metric (str): [description]
+        label (str, Optional[str]): [description]. Defaults to None.
+        title (str, optional): [description]. Defaults to ''.
+        ax (Optional[matplotlib.axes.Axes], optional): [description]. Defaults to None.
+    """
     _raise_error_if_matplotlib_not_there()
 
     if ax is None:
