@@ -96,7 +96,7 @@ The section below consists of a few lines of codes that help us download the Cel
     with zipfile.ZipFile(f"{dataset_folder}/img_align_celeba.zip", 'r') as ziphandler:
         ziphandler.extractall(dataset_folder)
    
-Now, as the dataset id downloaded, we can define our datasets and dataloaders in its original way.
+Now, as the dataset is downloaded, we can define our datasets and dataloaders in its original way.
 
 .. code-block:: python
 
@@ -134,6 +134,8 @@ Here we can see how each dataset sample looks like:
 
     print (train_dataset[0])
 
+.. image:: /_static/img/classification_and_regression/out.png
+
 Regarding the complexity of the problem and the number of training/valid samples, we have a huge number of training/validation images. Since there are not a considerable varation between images (e.g., the eye coordinates in images do not vary considerably), using all images in the dataset is not necessary and will only increase the training time. Hence, we can seperate and use a portion of data as below:
 
 .. code-block:: python
@@ -163,8 +165,8 @@ Here, we can see an example from the training dataset. It shows an image of a pe
     y_L, y_R = (y_L*w_scale), (y_R*w_scale)
     x_L, x_R = int(x_L), int(x_R)
     y_L, y_R = int(y_L), int(y_R)
-    image_rgb	= cv2.drawMarker(image_rgb, (x_L,y_L), (0,255,0))
-    image_rgb	= cv2.drawMarker(image_rgb, (x_R,y_R), (0,255,0))
+    image_rgb = cv2.drawMarker(image_rgb, (x_L,y_L), (0,255,0))
+    image_rgb = cv2.drawMarker(image_rgb, (x_R,y_R), (0,255,0))
     image_rgb = cv2.cvtColor(np.float32(image_rgb), cv2.COLOR_BGR2RGB)
     image_rgb = np.clip(image_rgb ,0 , 1)
     plt.imshow(image_rgb)
@@ -242,15 +244,15 @@ Training
 .. code-block:: python
 
     optimizer = optim.Adam(network.parameters(), lr=learning_rate, weight_decay=0)
-    loss_function = ClassificationRegressionLoss()
+    loss_function = ClassificationRegressionLoss(W)
     #Step_Learning_Rate = StepLR(step_size=2 , gamma=0.1, last_epoch=-1, verbose=False)
-    exp = Experiment('./two_task_example', network, optimizer=optimizer, loss_function=loss_function, device="all")
+    exp = Experiment('./saves/two_task_example', network, optimizer=optimizer, loss_function=loss_function, device="all")
     exp.train(train_dataloader, valid_dataloader, callbacks=callbacks, epochs=num_epochs)
 
 Evaluation
 ==========
 
-As you have also noticed from the training logs, in this try we achieved the best performance (considering the validation loss) at the 15th epoch. The weights of the network for the corresponding epoch have been automatically saved by the `Experiment` function and we use these parameters to evaluate our algorithm visually. For this purpose, we utulize the load_checkpoint method and set its argument to `best` to load the best weights of the model automatically. Finally,  we take advantage of the `evaluate` function of Poutyne, and apply it to the validation dataset. It provides us the predictions as well as the ground-truth for comparison, in case of need.
+As you have also noticed from the training logs, in this try we achieved the best performance (considering the validation loss) at the 15th epoch. The weights of the network for the corresponding epoch have been automatically saved by the `Experiment` function and we use these parameters to evaluate our algorithm visually. For this purpose, we utilize the `load_checkpoint` method and set its argument to `best` to load the best weights of the model automatically. Finally,  we take advantage of the `evaluate` function of Poutyne, and apply it to the validation dataset. It provides us the predictions as well as the ground-truth for comparison, in case of need.
 
 .. code-block:: python
 
@@ -259,11 +261,11 @@ As you have also noticed from the training logs, in this try we achieved the bes
     loss, predictions, ground_Truth = model.evaluate_generator(valid_dataloader, return_pred=True, return_ground_truth=True)
 
 
-The ``callbacks`` feature also records the training logs. we can use this information to monitor and analyze the training process.
+The ``callbacks`` feature of Poutyne, also used by the Experiment class, records the training logs. We can use this information to monitor and analyze the training process.
 
 .. code-block:: python
 
-    logs = pd.read_csv('./two_task_example/log.tsv', sep='\t')
+    logs = pd.read_csv('./saves/two_task_example/log.tsv', sep='\t')
     print(logs)
 
 .. image:: /_static/img/classification_and_regression/logs.png
@@ -301,8 +303,8 @@ Now let's evaluate the performance of the network visually.
     (x_R, y_R) = predictions[1][sample_number][2:4]*image_size
     x_L, x_R = int(x_L), int(x_R)
     y_L, y_R = int(y_L), int(y_R)
-    image_rgb	= cv2.drawMarker(image_rgb, (x_L,y_L), (0,255,0))
-    image_rgb	= cv2.drawMarker(image_rgb, (x_R,y_R), (0,255,0))
+    image_rgb = cv2.drawMarker(image_rgb, (x_L,y_L), (0,255,0))
+    image_rgb = cv2.drawMarker(image_rgb, (x_R,y_R), (0,255,0))
     image_rgb = cv2.cvtColor(np.float32(image_rgb), cv2.COLOR_BGR2RGB)
     image_rgb = np.clip(image_rgb , 0, 1)
     plt.imshow(image_rgb)
