@@ -271,7 +271,7 @@ class ColorProgress:
             ret += f"{hours}h"
         if days > 0 or hours > 0 or minutes > 0:
             ret += f"{minutes}m"
-        ret = f"{seconds:.2f}s"
+        ret += f"{seconds:.2f}s"
         return ret
 
     def _get_formatted_total_time(self, total_time: float) -> str:
