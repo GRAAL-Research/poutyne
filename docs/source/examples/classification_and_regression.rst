@@ -258,7 +258,7 @@ As you have also noticed from the training logs, in this try we achieved the bes
 
     exp.load_checkpoint('best')
     model = exp.model
-    loss, predictions, ground_Truth = model.evaluate_generator(valid_dataloader, return_pred=True, return_ground_truth=True)
+    loss, predictions, ground_truth = model.evaluate_generator(valid_dataloader, return_pred=True, return_ground_truth=True)
 
 
 The ``callbacks`` feature of Poutyne, also used by the Experiment class, records the training logs. We can use this information to monitor and analyze the training process.
