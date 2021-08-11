@@ -883,54 +883,6 @@ class Experiment:
 
     def infer(self, generator, **kwargs) -> Any:
         """
-        Returns the inferred predictions of the network given a dataset ``x``, where the tensors are
-        converted into Numpy arrays.
-
-        Args:
-            generator: Generator-like object for the dataset. The generator must yield a batch of
-                samples. See the :func:`fit_generator()` method for details on the types of generators
-                supported. This should only yield input data ``x`` and NOT the target ``y``.
-            checkpoint (Union[str, int]): Which model checkpoint weights to load for the prediction.
-
-                - If 'best', will load the best weights according to ``monitor_metric`` and ``monitor_mode``.
-                - If 'last', will load the last model checkpoint.
-                - If int, will load the checkpoint of the specified epoch.
-                - If a path (str), will load the model pickled state_dict weights (for instance, saved as
-                  ``torch.save(a_pytorch_network.state_dict(), "./a_path.p")``).
-
-                This argument has no effect when logging is disabled. (Default value = 'best')
-            kwargs: Any keyword arguments to pass to :func:`~Model.predict()`.
-
-        Returns:
-            Return the predictions in the format outputted by the model.
-        """
-        return self._predict(self.model.predict_generator, generator, **kwargs)
-
-    def infer_dataset(self, dataset, **kwargs) -> Any:
-        """
-        Returns the inferred predictions of the network given a dataset, where the tensors are
-        converted into Numpy arrays.
-
-        Args:
-            dataset (~torch.utils.data.Dataset): Dataset. Must not return ``y``, just ``x``.
-            checkpoint (Union[str, int]): Which model checkpoint weights to load for the prediction.
-
-                - If 'best', will load the best weights according to ``monitor_metric`` and ``monitor_mode``.
-                - If 'last', will load the last model checkpoint.
-                - If int, will load the checkpoint of the specified epoch.
-                - If a path (str), will load the model pickled state_dict weights (for instance, saved as
-                  ``torch.save(a_pytorch_network.state_dict(), "./a_path.p")``).
-
-                This argument has no effect when logging is disabled. (Default value = 'best')
-            kwargs: Any keyword arguments to pass to :func:`~Model.predict_dataset()`.
-
-        Returns:
-            Return the predictions in the format outputted by the model.
-        """
-        return self._predict(self.model.predict_dataset, dataset, **kwargs)
-
-    def infer_generator(self, generator, **kwargs) -> Any:
-        """
         Returns the predictions of the network given batches of samples ``x``, where the tensors are
         converted into Numpy arrays.
 
@@ -957,6 +909,29 @@ class Experiment:
             for the batches is returned with tensors converted into Numpy arrays.
         """
         return self._predict(self.model.predict_generator, generator, **kwargs)
+
+    def infer_dataset(self, dataset, **kwargs) -> Any:
+        """
+        Returns the inferred predictions of the network given a dataset, where the tensors are
+        converted into Numpy arrays.
+
+        Args:
+            dataset (~torch.utils.data.Dataset): Dataset. Must not return ``y``, just ``x``.
+            checkpoint (Union[str, int]): Which model checkpoint weights to load for the prediction.
+
+                - If 'best', will load the best weights according to ``monitor_metric`` and ``monitor_mode``.
+                - If 'last', will load the last model checkpoint.
+                - If int, will load the checkpoint of the specified epoch.
+                - If a path (str), will load the model pickled state_dict weights (for instance, saved as
+                  ``torch.save(a_pytorch_network.state_dict(), "./a_path.p")``).
+
+                This argument has no effect when logging is disabled. (Default value = 'best')
+            kwargs: Any keyword arguments to pass to :func:`~Model.predict_dataset()`.
+
+        Returns:
+            Return the predictions in the format outputted by the model.
+        """
+        return self._predict(self.model.predict_dataset, dataset, **kwargs)
 
     def infer_data(self, x, **kwargs) -> Any:
         """
