@@ -767,6 +767,40 @@ class ModelTest(ModelFittingTestCase):
             self.assertEqual(type(pred), np.ndarray)
             self.assertEqual(pred.shape, (ModelTest.batch_size, 1))
 
+    def test_predict_generator_with_has_ground_truth(self):
+        num_steps = 10
+        generator = some_data_tensor_generator(ModelTest.batch_size)
+        pred_y = self.model.predict_generator(generator, steps=num_steps, has_ground_truth=True)
+        self.assertEqual(type(pred_y), np.ndarray)
+        self.assertEqual(pred_y.shape, (num_steps * ModelTest.batch_size, 1))
+
+    def test_predict_generator_with_ground_truth(self):
+        num_steps = 10
+        generator = some_data_tensor_generator(ModelTest.batch_size)
+        pred_y, true_y = self.model.predict_generator(generator, steps=num_steps, return_ground_truth=True)
+
+        self.assertEqual(type(pred_y), np.ndarray)
+        self.assertEqual(type(true_y), np.ndarray)
+        self.assertEqual(pred_y.shape, (num_steps * ModelTest.batch_size, 1))
+        self.assertEqual(true_y.shape, (num_steps * ModelTest.batch_size, 1))
+
+    def test_predict_generator_with_ground_truth_and_no_concatenation(self):
+        num_steps = 10
+        generator = some_data_tensor_generator(ModelTest.batch_size)
+        pred_y, true_y = self.model.predict_generator(generator,
+                                                      steps=num_steps,
+                                                      return_ground_truth=True,
+                                                      concatenate_returns=False)
+
+        self.assertEqual(type(pred_y), list)
+        for pred in pred_y:
+            self.assertEqual(type(pred), np.ndarray)
+            self.assertEqual(pred.shape, (ModelTest.batch_size, 1))
+        self.assertEqual(type(true_y), list)
+        for true in true_y:
+            self.assertEqual(type(true), np.ndarray)
+            self.assertEqual(true.shape, (ModelTest.batch_size, 1))
+
     def test_tensor_predict_on_batch(self):
         x = torch.rand(ModelTest.batch_size, 1)
         pred_y = self.model.predict_on_batch(x)
@@ -1090,6 +1124,44 @@ class ModelDatasetMethodsTest(ModelFittingTestCase):
                                             steps=num_steps)
         self.assertEqual(type(pred_y), np.ndarray)
         self.assertEqual(pred_y.shape, (num_steps * ModelTest.batch_size, 10))
+
+    def test_predict_dataset_with_has_ground_truth(self):
+        num_steps = 10
+        pred_y = self.model.predict_dataset(self.test_dataset,
+                                            has_ground_truth=True,
+                                            batch_size=ModelTest.batch_size,
+                                            steps=num_steps)
+        self.assertEqual(type(pred_y), np.ndarray)
+        self.assertEqual(pred_y.shape, (num_steps * ModelTest.batch_size, 10))
+
+    def test_predict_dataset_with_ground_truth(self):
+        num_steps = 10
+        pred_y, true_y = self.model.predict_dataset(self.test_dataset,
+                                                    batch_size=ModelTest.batch_size,
+                                                    steps=num_steps,
+                                                    return_ground_truth=True)
+
+        self.assertEqual(type(pred_y), np.ndarray)
+        self.assertEqual(type(true_y), np.ndarray)
+        self.assertEqual(pred_y.shape, (num_steps * ModelTest.batch_size, 10))
+        self.assertEqual(true_y.shape, (num_steps * ModelTest.batch_size, ))
+
+    def test_predict_dataset_with_ground_truth_and_no_concatenation(self):
+        num_steps = 10
+        pred_y, true_y = self.model.predict_dataset(self.test_dataset,
+                                                    batch_size=ModelTest.batch_size,
+                                                    steps=num_steps,
+                                                    return_ground_truth=True,
+                                                    concatenate_returns=False)
+
+        self.assertEqual(type(pred_y), list)
+        for pred in pred_y:
+            self.assertEqual(type(pred), np.ndarray)
+            self.assertEqual(pred.shape, (ModelTest.batch_size, 10))
+        self.assertEqual(type(true_y), list)
+        for true in true_y:
+            self.assertEqual(type(true), np.ndarray)
+            self.assertEqual(true.shape, (ModelTest.batch_size, ))
 
 
 if __name__ == '__main__':

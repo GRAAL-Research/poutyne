@@ -4,6 +4,9 @@
 * Add `infer` methods to Experiment to more easily make inference (predictions) with an experiment.
 * Add a progress bar callback during predictions of a model.
 * Add a method to compare the results of two experiments.
+* Add `return_ground_truth` and `has_ground_truth` arguments to
+  [`predict_dataset`](https://poutyne.org/model.html#poutyne.Model.predict_dataset) and
+  [`predict_generator`](https://poutyne.org/model.html#poutyne.Model.predict_generator).
 
 # v1.5
 

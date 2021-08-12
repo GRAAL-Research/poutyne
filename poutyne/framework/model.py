@@ -770,6 +770,8 @@ class Model:
                         *,
                         batch_size=32,
                         steps=None,
+                        has_ground_truth=False,
+                        return_ground_truth=False,
                         concatenate_returns=True,
                         num_workers=0,
                         collate_fn=None,
@@ -782,11 +784,16 @@ class Model:
         converted into Numpy arrays.
 
         Args:
-            dataset (~torch.utils.data.Dataset): Dataset. Must not return ``y``, just ``x``.
+            dataset (~torch.utils.data.Dataset): Dataset. Must not return ``y``, just ``x``, unless
+                `has_ground_truth` is true.
             batch_size (int): Number of samples given to the network at one time.
                 (Default value = 32)
             steps (int, optional): Number of iterations done on ``generator``.
                 (Defaults the number of steps needed to see the entire dataset)
+            has_ground_truth (bool, optional): Whether the generator yields the target ``y``.  Automatically
+                set to true if `return_ground_truth` is true. (Default value = False)
+            return_ground_truth (bool, optional): Whether to return the ground truths. If true, automatically
+                set `has_ground_truth` to true. (Default value = False)
             concatenate_returns (bool, optional): Whether to concatenate the predictions
                 or the ground truths when returning them. See :func:`predict_generator()`
                 for details. (Default value = True)
@@ -827,6 +834,8 @@ class Model:
         generator = DataLoader(dataset, **dataloader_kwargs)
         return self.predict_generator(generator,
                                       steps=steps,
+                                      has_ground_truth=has_ground_truth,
+                                      return_ground_truth=return_ground_truth,
                                       concatenate_returns=concatenate_returns,
                                       verbose=verbose,
                                       progress_options=progress_options,
@@ -836,6 +845,8 @@ class Model:
                           generator,
                           *,
                           steps=None,
+                          has_ground_truth=False,
+                          return_ground_truth=False,
                           concatenate_returns=True,
                           verbose=True,
                           progress_options: Union[dict, None] = None,
@@ -847,9 +858,14 @@ class Model:
         Args:
             generator: Generator-like object for the dataset. The generator must yield a batch of
                 samples. See the :func:`fit_generator()` method for details on the types of generators
-                supported. This should only yield input data ``x`` and NOT the target ``y``.
+                supported. This should only yield input data ``x`` and NOT the target ``y``, unless
+                `has_ground_truth` is true.
             steps (int, optional): Number of iterations done on ``generator``.
                 (Defaults the number of steps needed to see the entire dataset)
+            has_ground_truth (bool, optional): Whether the generator yields the target ``y``.  Automatically
+                set to true if `return_ground_truth` is true. (Default value = False)
+            return_ground_truth (bool, optional): Whether to return the ground truths. If true, automatically
+                set `has_ground_truth` to true. (Default value = False)
             concatenate_returns (bool, optional): Whether to concatenate the predictions
                 or the ground truths when returning them. (Default value = True)
             verbose (bool): Whether to display the progress of the evaluation.
@@ -867,9 +883,14 @@ class Model:
             concatenated together. If ``concatenate_returns`` is false, then a list of the predictions
             for the batches is returned with tensors converted into Numpy arrays.
         """
+        # pylint: disable=too-many-locals
+        has_ground_truth = has_ground_truth or return_ground_truth
+
         if steps is None and hasattr(generator, '__len__'):
             steps = len(generator)
         pred_y = []
+        if return_ground_truth:
+            true_y = []
 
         callbacks = [] if callbacks is None else callbacks
 
@@ -884,20 +905,32 @@ class Model:
         with self._set_training_mode(False):
             callback_list.on_predict_begin({})
             time_since_last_batch = timeit.default_timer()
-            for step, x in _get_step_iterator(steps, generator):
+            for step, batch in _get_step_iterator(steps, generator):
                 callback_list.on_predict_batch_begin(step, {})
 
-                x = self.preprocess_input(x)
+                if has_ground_truth:
+                    x, y = self.preprocess_input(*batch)
+                else:
+                    x = self.preprocess_input(batch)
                 pred_y.append(torch_to_numpy(self.network(*x)))
+                if return_ground_truth:
+                    true_y.append(torch_to_numpy(y))
 
                 batch_end_time = timeit.default_timer()
                 batch_total_time = batch_end_time - time_since_last_batch
                 time_since_last_batch = batch_end_time
 
                 callback_list.on_predict_batch_end(step, {'batch': step, 'time': batch_total_time})
+
         if concatenate_returns:
             pred_y = _concat(pred_y)
+            if return_ground_truth:
+                true_y = _concat(true_y)
+
         callback_list.on_predict_end({'time': timeit.default_timer() - predict_begin_time})
+
+        if return_ground_truth:
+            return pred_y, true_y
         return pred_y
 
     def predict_on_batch(self, x) -> Any:
