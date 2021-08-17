@@ -52,7 +52,7 @@ Training Constants
     valid_split_percent = 0.1
     w, h = 218, 178   # the width and the hight of original images before resizing
     momentum = 0.5
-    W = 1.3 # the weight of regression loss 
+    W = 0.7 # the weight of regression loss 
     set_seeds(42)
     gender_index = 20 # in the CelebA dataset gender information is the 21th item in the attributes vector.
     imagenet_mean = [0.485, 0.456, 0.406]  # mean of the ImageNet dataset for normalizing 
@@ -140,7 +140,7 @@ Regarding the complexity of the problem and the number of training/valid samples
 
 .. code-block:: python
 
-    train_subset = Subset(train_dataset, np.arange(1,10000))
+    train_subset = Subset(train_dataset, np.arange(1,40000))
     valid_subset = Subset(valid_dataset, np.arange(1,2000))
     train_dataloader = DataLoader(train_subset, batch_size=batch_size, shuffle=True)
     valid_dataloader = DataLoader(valid_subset, batch_size=batch_size, shuffle=False)
@@ -155,7 +155,7 @@ Here, we can see an example from the training dataset. It shows an image of a pe
     image_rgb = cv2.cvtColor(np.float32(image), cv2.COLOR_BGR2RGB)
     image_rgb = image_rgb * imagenet_std + imagenet_mean
     gender = 'male' if int(train_dataset[sample_number][1][0][gender_index])==1 else 'female'
-    print('Gender is: ', gender)
+    print('Gender is:', gender)
     w, h = 218, 178
     (x_L, y_L) = train_dataset[sample_number][1][1][0:2]  # The coordinates vector of the datasets starts with X_L, y_L, X_R, y_R
     (x_R, y_R) = train_dataset[sample_number][1][1][2:4]
@@ -201,24 +201,14 @@ Below, we define a new class, named `ClassifierLocalizer`, which accepts a pre-t
             coords = x[:, self.num_classes:]     # coordinates
             return scores, torch.sigmoid(coords)   # sigmoid output is in the range of [0, 1]
 
-Regarding the complexity of the problem, the number of the samples in the training dataset, and the similarity of the training dataset to the ImageNet dataset, we may decide to freeze some of the layers. In our current example, based on the mentioned factors, we freeze all layers but the last fully connected layer.
-
 .. code-block:: python
 
-    network = ClassifierLocalizer(model_name='resnet18')
-
-    def freeze_weights(network):
-        for name, param in network.named_parameters():
-            if not name.startswith('fc.'):
-                param.requires_grad = False
-
-    freeze_weights(network)
-    print(network)
+    network = ClassifierLocalizer(model_name='resnet34')
 
 Loss function
 =============
 
-As we discussed before, we have two different tasks in this example. These tasks need different loss functions; Cross-Entropy loss for the classification and Mean Square Error loss for the regression. Below, we define a new loss function class that sums both losses to considers them simultaneously. However, as the regression is relatively a harder task, we apply a higher weight to MSEloss.
+As we discussed before, we have two different tasks in this example. These tasks need different loss functions; Cross-Entropy loss for the classification and Mean Square Error loss for the regression. Below, we define a new loss function class that sums both losses to considers them simultaneously. However, as the regression is relatively a simpler task here (due to similarity of coordinates in the images), we apply a lower weight to MSEloss.
 
 .. code-block:: python
 
@@ -243,7 +233,7 @@ Training
 
 .. code-block:: python
 
-    optimizer = optim.Adam(network.parameters(), lr=learning_rate, weight_decay=0)
+    optimizer = optim.Adam(network.parameters(), lr=learning_rate, weight_decay=0.001)
     loss_function = ClassificationRegressionLoss(W)
     #Step_Learning_Rate = StepLR(step_size=2 , gamma=0.1, last_epoch=-1, verbose=False)
     exp = Experiment('./saves/two_task_example', network, optimizer=optimizer, loss_function=loss_function, device="all")
@@ -298,7 +288,7 @@ Now let's evaluate the performance of the network visually.
     image_rgb = cv2.cvtColor(np.float32(image), cv2.COLOR_BGR2RGB)
     image_rgb = image_rgb * imagenet_std + imagenet_mean
     gender = 'male' if np.argmax(predictions[0][sample_number])==0 else 'female'
-    print('Gender is: ', gender)
+    print('Gender is:', gender)
     (x_L, y_L) = predictions[1][sample_number][0:2]*image_size
     (x_R, y_R) = predictions[1][sample_number][2:4]*image_size
     x_L, x_R = int(x_L), int(x_R)
