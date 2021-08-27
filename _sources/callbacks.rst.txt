@@ -42,16 +42,22 @@ Poutyne's Callbacks
 Logging
 -------
 
+Training Results
+~~~~~~~~~~~~~~~~
+
 .. autoclass:: CSVLogger
 
 .. autoclass:: AtomicCSVLogger
 
 .. autoclass:: TensorBoardLogger
 
-.. autoclass:: ProgressionCallback
-
 .. autoclass:: MLFlowLogger
     :members: log_config_params, log_param, log_metric
+
+Training Progress
+~~~~~~~~~~~~~~~~~
+.. autoclass:: ProgressionCallback
+
 
 Tracking
 --------

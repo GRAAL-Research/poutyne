@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>poutyne.framework.model &mdash; Poutyne 1.5 documentation</title>
+  <title>poutyne.framework.model &mdash; Poutyne 1.6 documentation</title>
   
 
   
@@ -67,7 +67,7 @@
             
             
               <div class="version">
-                1.5
+                1.6
               </div>
             
           
@@ -92,7 +92,7 @@
               
             
             
-              <p class="caption"><span class="caption-text">API</span></p>
+              <p class="caption" role="heading"><span class="caption-text">API</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../model.html">Model</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../experiment.html">Experiment</a></li>
@@ -101,7 +101,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../layers.html">Layers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../utils.html">Utils</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Examples</span></p>
+<p class="caption" role="heading"><span class="caption-text">Examples</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../examples/introduction.html">Introduction to PyTorch and Poutyne</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../examples/tips_and_tricks.html">Tips and Tricks</a></li>
@@ -182,7 +182,7 @@
 <span class="kn">import</span> <span class="nn">timeit</span>
 <span class="kn">import</span> <span class="nn">warnings</span>
 <span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Union</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Tuple</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">torch</span>
@@ -395,7 +395,7 @@
             <span class="n">batches_per_step</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
             <span class="n">initial_epoch</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
             <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-            <span class="n">progress_options</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">progress_options</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">dict</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
             <span class="n">callbacks</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
             <span class="n">dataloader_kwargs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="c1"># pylint: disable=line-too-long,too-many-locals</span>
@@ -467,31 +467,27 @@
 <span class="sd">                ...</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">dataloader_kwargs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">dataloader_kwargs</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="n">dataloader_kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;batch_size&#39;</span><span class="p">:</span> <span class="n">batch_size</span><span class="p">,</span> <span class="o">**</span><span class="n">dataloader_kwargs</span><span class="p">}</span>
-
-        <span class="n">train_generator</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dataloader_from_data</span><span class="p">((</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">),</span> <span class="p">{</span><span class="s1">&#39;shuffle&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">dataloader_kwargs</span><span class="p">})</span>
-        <span class="n">valid_generator</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">train_dataset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dataset_from_data</span><span class="p">((</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">))</span>
+        <span class="n">valid_dataset</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">if</span> <span class="n">validation_data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">valid_generator</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dataloader_from_data</span><span class="p">(</span><span class="n">validation_data</span><span class="p">,</span> <span class="n">dataloader_kwargs</span><span class="p">)</span>
+            <span class="n">valid_dataset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dataset_from_data</span><span class="p">(</span><span class="n">validation_data</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_generator</span><span class="p">(</span><span class="n">train_generator</span><span class="p">,</span>
-                                  <span class="n">valid_generator</span><span class="o">=</span><span class="n">valid_generator</span><span class="p">,</span>
-                                  <span class="n">epochs</span><span class="o">=</span><span class="n">epochs</span><span class="p">,</span>
-                                  <span class="n">steps_per_epoch</span><span class="o">=</span><span class="n">steps_per_epoch</span><span class="p">,</span>
-                                  <span class="n">validation_steps</span><span class="o">=</span><span class="n">validation_steps</span><span class="p">,</span>
-                                  <span class="n">batches_per_step</span><span class="o">=</span><span class="n">batches_per_step</span><span class="p">,</span>
-                                  <span class="n">initial_epoch</span><span class="o">=</span><span class="n">initial_epoch</span><span class="p">,</span>
-                                  <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span>
-                                  <span class="n">progress_options</span><span class="o">=</span><span class="n">progress_options</span><span class="p">,</span>
-                                  <span class="n">callbacks</span><span class="o">=</span><span class="n">callbacks</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_dataset</span><span class="p">(</span><span class="n">train_dataset</span><span class="p">,</span>
+                                <span class="n">valid_dataset</span><span class="o">=</span><span class="n">valid_dataset</span><span class="p">,</span>
+                                <span class="n">epochs</span><span class="o">=</span><span class="n">epochs</span><span class="p">,</span>
+                                <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span>
+                                <span class="n">steps_per_epoch</span><span class="o">=</span><span class="n">steps_per_epoch</span><span class="p">,</span>
+                                <span class="n">validation_steps</span><span class="o">=</span><span class="n">validation_steps</span><span class="p">,</span>
+                                <span class="n">batches_per_step</span><span class="o">=</span><span class="n">batches_per_step</span><span class="p">,</span>
+                                <span class="n">initial_epoch</span><span class="o">=</span><span class="n">initial_epoch</span><span class="p">,</span>
+                                <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span>
+                                <span class="n">progress_options</span><span class="o">=</span><span class="n">progress_options</span><span class="p">,</span>
+                                <span class="n">callbacks</span><span class="o">=</span><span class="n">callbacks</span><span class="p">,</span>
+                                <span class="n">dataloader_kwargs</span><span class="o">=</span><span class="n">dataloader_kwargs</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">_dataloader_from_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">dataloader_kwargs</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_dataset_from_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">args</span><span class="p">):</span>
         <span class="n">args</span> <span class="o">=</span> <span class="n">numpy_to_torch</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
-        <span class="n">dataset</span> <span class="o">=</span> <span class="n">TensorDataset</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="n">generator</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="o">**</span><span class="n">dataloader_kwargs</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">generator</span>
+        <span class="k">return</span> <span class="n">TensorDataset</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
 <div class="viewcode-block" id="Model.fit_dataset"><a class="viewcode-back" href="../../../model.html#poutyne.Model.fit_dataset">[docs]</a>    <span class="k">def</span> <span class="nf">fit_dataset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                     <span class="n">train_dataset</span><span class="p">,</span>
@@ -543,14 +539,14 @@
 <span class="sd">            callbacks (List[~poutyne.Callback]): List of callbacks that will be called</span>
 <span class="sd">                during training.</span>
 <span class="sd">                (Default value = None)</span>
+<span class="sd">            dataloader_kwargs (dict, optional): Keyword arguments to pass to the PyTorch dataloaders created</span>
+<span class="sd">                internally. By default, ``shuffle=True`` is passed for the training dataloader but this can be</span>
+<span class="sd">                overridden by using this argument.</span>
 <span class="sd">            num_workers (int, optional): how many subprocesses to use for data loading.</span>
 <span class="sd">                ``0`` means that the data will be loaded in the main process.</span>
 <span class="sd">                (Default value = 0)</span>
 <span class="sd">            collate_fn (Callable, optional): merges a list of samples to form a mini-batch of Tensor(s).</span>
 <span class="sd">                Used when using batched loading from a map-style dataset.</span>
-<span class="sd">            dataloader_kwargs (dict, optional): Keyword arguments to pass to the PyTorch dataloaders created</span>
-<span class="sd">                internally. By default, ``shuffle=True`` is passed for the training dataloader but this can be</span>
-<span class="sd">                overridden by using this argument.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            List of dict containing the history of each epoch.</span>
@@ -611,7 +607,7 @@
                       <span class="n">batches_per_step</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
                       <span class="n">initial_epoch</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
                       <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                      <span class="n">progress_options</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                      <span class="n">progress_options</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">dict</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                       <span class="n">callbacks</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="c1"># pylint: disable=line-too-long</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -906,7 +902,14 @@
 
         <span class="k">return</span> <span class="n">init</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">init</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">init</span>
 
-<div class="viewcode-block" id="Model.predict"><a class="viewcode-back" href="../../../model.html#poutyne.Model.predict">[docs]</a>    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">dataloader_kwargs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="Model.predict"><a class="viewcode-back" href="../../../model.html#poutyne.Model.predict">[docs]</a>    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                <span class="n">x</span><span class="p">,</span>
+                <span class="o">*</span><span class="p">,</span>
+                <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span>
+                <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">progress_options</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">dict</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                <span class="n">callbacks</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">dataloader_kwargs</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns the predictions of the network given a dataset ``x``, where the tensors are</span>
 <span class="sd">        converted into Numpy arrays.</span>
@@ -917,39 +920,58 @@
 <span class="sd">                Union[tuple, list] of Union[Tensor, ndarray] if the model has multiple inputs.</span>
 <span class="sd">            batch_size (int): Number of samples given to the network at one time.</span>
 <span class="sd">                (Default value = 32)</span>
+<span class="sd">            verbose (bool): Whether to display the progress of the evaluation.</span>
+<span class="sd">                (Default value = True)</span>
+<span class="sd">            progress_options (dict, optional): Keyword arguments to pass to the default progression callback used</span>
+<span class="sd">                in Poutyne (See :class:`~poutyne.ProgressionCallback` for the available arguments).</span>
+<span class="sd">                (Default value = None, meaning default color setting and progress bar)</span>
+<span class="sd">            callbacks (List[~poutyne.Callback]): List of callbacks that will be called during</span>
+<span class="sd">                testing. (Default value = None)</span>
 <span class="sd">            dataloader_kwargs (dict, optional): Keyword arguments to pass to the PyTorch dataloaders created</span>
 <span class="sd">                internally.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            Numpy arrays of the predictions.</span>
+<span class="sd">            Return the predictions in the format outputted by the model.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">dataloader_kwargs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">dataloader_kwargs</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="n">dataloader_kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;batch_size&#39;</span><span class="p">:</span> <span class="n">batch_size</span><span class="p">,</span> <span class="o">**</span><span class="n">dataloader_kwargs</span><span class="p">}</span>
-
         <span class="n">x</span> <span class="o">=</span> <span class="n">x</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="p">(</span><span class="nb">tuple</span><span class="p">,</span> <span class="nb">list</span><span class="p">))</span> <span class="k">else</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="p">)</span>
-        <span class="n">generator</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dataloader_from_data</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dataloader_kwargs</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">predict_generator</span><span class="p">(</span><span class="n">generator</span><span class="p">,</span> <span class="n">concatenate_returns</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+        <span class="n">dataset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dataset_from_data</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">predict_dataset</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span>
+                                    <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span>
+                                    <span class="n">concatenate_returns</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                                    <span class="n">dataloader_kwargs</span><span class="o">=</span><span class="n">dataloader_kwargs</span><span class="p">,</span>
+                                    <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span>
+                                    <span class="n">progress_options</span><span class="o">=</span><span class="n">progress_options</span><span class="p">,</span>
+                                    <span class="n">callbacks</span><span class="o">=</span><span class="n">callbacks</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Model.predict_dataset"><a class="viewcode-back" href="../../../model.html#poutyne.Model.predict_dataset">[docs]</a>    <span class="k">def</span> <span class="nf">predict_dataset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                         <span class="n">dataset</span><span class="p">,</span>
                         <span class="o">*</span><span class="p">,</span>
                         <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span>
                         <span class="n">steps</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                        <span class="n">has_ground_truth</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                        <span class="n">return_ground_truth</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                         <span class="n">concatenate_returns</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                         <span class="n">num_workers</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
                         <span class="n">collate_fn</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                        <span class="n">dataloader_kwargs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+                        <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                        <span class="n">progress_options</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">dict</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                        <span class="n">callbacks</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                        <span class="n">dataloader_kwargs</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns the predictions of the network given a dataset ``x``, where the tensors are</span>
 <span class="sd">        converted into Numpy arrays.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            dataset (~torch.utils.data.Dataset): Dataset. Must not return ``y``, just ``x``.</span>
+<span class="sd">            dataset (~torch.utils.data.Dataset): Dataset. Must not return ``y``, just ``x``, unless</span>
+<span class="sd">                `has_ground_truth` is true.</span>
 <span class="sd">            batch_size (int): Number of samples given to the network at one time.</span>
 <span class="sd">                (Default value = 32)</span>
 <span class="sd">            steps (int, optional): Number of iterations done on ``generator``.</span>
 <span class="sd">                (Defaults the number of steps needed to see the entire dataset)</span>
+<span class="sd">            has_ground_truth (bool, optional): Whether the generator yields the target ``y``.  Automatically</span>
+<span class="sd">                set to true if `return_ground_truth` is true. (Default value = False)</span>
+<span class="sd">            return_ground_truth (bool, optional): Whether to return the ground truths. If true, automatically</span>
+<span class="sd">                set `has_ground_truth` to true. (Default value = False)</span>
 <span class="sd">            concatenate_returns (bool, optional): Whether to concatenate the predictions</span>
 <span class="sd">                or the ground truths when returning them. See :func:`predict_generator()`</span>
 <span class="sd">                for details. (Default value = True)</span>
@@ -958,11 +980,22 @@
 <span class="sd">                (Default value = 0)</span>
 <span class="sd">            collate_fn (Callable, optional): merges a list of samples to form a mini-batch of Tensor(s).</span>
 <span class="sd">                Used when using batched loading from a map-style dataset.</span>
+<span class="sd">            verbose (bool): Whether to display the progress of the evaluation.</span>
+<span class="sd">                (Default value = True)</span>
+<span class="sd">            progress_options (dict, optional): Keyword arguments to pass to the default progression callback used</span>
+<span class="sd">                in Poutyne (See :class:`~poutyne.ProgressionCallback` for the available arguments).</span>
+<span class="sd">                (Default value = None, meaning default color setting and progress bar)</span>
+<span class="sd">            callbacks (List[~poutyne.Callback]): List of callbacks that will be called during</span>
+<span class="sd">                testing. (Default value = None)</span>
 <span class="sd">            dataloader_kwargs (dict, optional): Keyword arguments to pass to the PyTorch dataloaders created</span>
 <span class="sd">                internally.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            Numpy arrays of the predictions.</span>
+<span class="sd">            Depends on the value of ``concatenate_returns``. By default, (``concatenate_returns`` is true),</span>
+<span class="sd">            the data structures (tensor, tuple, list, dict) returned as predictions for the batches are</span>
+<span class="sd">            merged together. In the merge, the tensors are converted into Numpy arrays and are then</span>
+<span class="sd">            concatenated together. If ``concatenate_returns`` is false, then a list of the predictions</span>
+<span class="sd">            for the batches is returned with tensors converted into Numpy arrays.</span>
 
 <span class="sd">        See:</span>
 <span class="sd">            :class:`~torch.utils.data.DataLoader` for details on ``batch_size``, ``num_workers`` and ``collate_fn``.</span>
@@ -977,9 +1010,25 @@
         <span class="p">}</span>
 
         <span class="n">generator</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="o">**</span><span class="n">dataloader_kwargs</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">predict_generator</span><span class="p">(</span><span class="n">generator</span><span class="p">,</span> <span class="n">steps</span><span class="o">=</span><span class="n">steps</span><span class="p">,</span> <span class="n">concatenate_returns</span><span class="o">=</span><span class="n">concatenate_returns</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">predict_generator</span><span class="p">(</span><span class="n">generator</span><span class="p">,</span>
+                                      <span class="n">steps</span><span class="o">=</span><span class="n">steps</span><span class="p">,</span>
+                                      <span class="n">has_ground_truth</span><span class="o">=</span><span class="n">has_ground_truth</span><span class="p">,</span>
+                                      <span class="n">return_ground_truth</span><span class="o">=</span><span class="n">return_ground_truth</span><span class="p">,</span>
+                                      <span class="n">concatenate_returns</span><span class="o">=</span><span class="n">concatenate_returns</span><span class="p">,</span>
+                                      <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span>
+                                      <span class="n">progress_options</span><span class="o">=</span><span class="n">progress_options</span><span class="p">,</span>
+                                      <span class="n">callbacks</span><span class="o">=</span><span class="n">callbacks</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Model.predict_generator"><a class="viewcode-back" href="../../../model.html#poutyne.Model.predict_generator">[docs]</a>    <span class="k">def</span> <span class="nf">predict_generator</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">generator</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">steps</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">concatenate_returns</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<div class="viewcode-block" id="Model.predict_generator"><a class="viewcode-back" href="../../../model.html#poutyne.Model.predict_generator">[docs]</a>    <span class="k">def</span> <span class="nf">predict_generator</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                          <span class="n">generator</span><span class="p">,</span>
+                          <span class="o">*</span><span class="p">,</span>
+                          <span class="n">steps</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                          <span class="n">has_ground_truth</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                          <span class="n">return_ground_truth</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                          <span class="n">concatenate_returns</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                          <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                          <span class="n">progress_options</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">dict</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                          <span class="n">callbacks</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns the predictions of the network given batches of samples ``x``, where the tensors are</span>
 <span class="sd">        converted into Numpy arrays.</span>
@@ -987,11 +1036,23 @@
 <span class="sd">        Args:</span>
 <span class="sd">            generator: Generator-like object for the dataset. The generator must yield a batch of</span>
 <span class="sd">                samples. See the :func:`fit_generator()` method for details on the types of generators</span>
-<span class="sd">                supported. This should only yield input data ``x`` and NOT the target ``y``.</span>
+<span class="sd">                supported. This should only yield input data ``x`` and NOT the target ``y``, unless</span>
+<span class="sd">                `has_ground_truth` is true.</span>
 <span class="sd">            steps (int, optional): Number of iterations done on ``generator``.</span>
 <span class="sd">                (Defaults the number of steps needed to see the entire dataset)</span>
+<span class="sd">            has_ground_truth (bool, optional): Whether the generator yields the target ``y``.  Automatically</span>
+<span class="sd">                set to true if `return_ground_truth` is true. (Default value = False)</span>
+<span class="sd">            return_ground_truth (bool, optional): Whether to return the ground truths. If true, automatically</span>
+<span class="sd">                set `has_ground_truth` to true. (Default value = False)</span>
 <span class="sd">            concatenate_returns (bool, optional): Whether to concatenate the predictions</span>
 <span class="sd">                or the ground truths when returning them. (Default value = True)</span>
+<span class="sd">            verbose (bool): Whether to display the progress of the evaluation.</span>
+<span class="sd">                (Default value = True)</span>
+<span class="sd">            progress_options (dict, optional): Keyword arguments to pass to the default progression callback used</span>
+<span class="sd">                in Poutyne (See :class:`~poutyne.ProgressionCallback` for the available arguments).</span>
+<span class="sd">                (Default value = None, meaning default color setting and progress bar)</span>
+<span class="sd">            callbacks (List[~poutyne.Callback]): List of callbacks that will be called during</span>
+<span class="sd">                testing. (Default value = None)</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Depends on the value of ``concatenate_returns``. By default, (``concatenate_returns`` is true),</span>
@@ -1000,26 +1061,66 @@
 <span class="sd">            concatenated together. If ``concatenate_returns`` is false, then a list of the predictions</span>
 <span class="sd">            for the batches is returned with tensors converted into Numpy arrays.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># pylint: disable=too-many-locals</span>
+        <span class="n">has_ground_truth</span> <span class="o">=</span> <span class="n">has_ground_truth</span> <span class="ow">or</span> <span class="n">return_ground_truth</span>
+
         <span class="k">if</span> <span class="n">steps</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">generator</span><span class="p">,</span> <span class="s1">&#39;__len__&#39;</span><span class="p">):</span>
             <span class="n">steps</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">generator</span><span class="p">)</span>
         <span class="n">pred_y</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">return_ground_truth</span><span class="p">:</span>
+            <span class="n">true_y</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="n">callbacks</span> <span class="o">=</span> <span class="p">[]</span> <span class="k">if</span> <span class="n">callbacks</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">callbacks</span>
+
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="n">progress_options</span> <span class="o">=</span> <span class="p">{}</span> <span class="k">if</span> <span class="n">progress_options</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">progress_options</span>
+            <span class="n">callbacks</span> <span class="o">=</span> <span class="p">[</span><span class="n">ProgressionCallback</span><span class="p">(</span><span class="o">**</span><span class="n">progress_options</span><span class="p">)]</span> <span class="o">+</span> <span class="n">callbacks</span>
+        <span class="n">callback_list</span> <span class="o">=</span> <span class="n">CallbackList</span><span class="p">(</span><span class="n">callbacks</span><span class="p">)</span>
+        <span class="n">callback_list</span><span class="o">.</span><span class="n">set_model</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">callback_list</span><span class="o">.</span><span class="n">set_params</span><span class="p">({</span><span class="s1">&#39;steps&#39;</span><span class="p">:</span> <span class="n">steps</span><span class="p">})</span>
+
+        <span class="n">predict_begin_time</span> <span class="o">=</span> <span class="n">timeit</span><span class="o">.</span><span class="n">default_timer</span><span class="p">()</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_set_training_mode</span><span class="p">(</span><span class="kc">False</span><span class="p">):</span>
-            <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">_get_step_iterator</span><span class="p">(</span><span class="n">steps</span><span class="p">,</span> <span class="n">generator</span><span class="p">):</span>
-                <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">preprocess_input</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+            <span class="n">callback_list</span><span class="o">.</span><span class="n">on_predict_begin</span><span class="p">({})</span>
+            <span class="n">time_since_last_batch</span> <span class="o">=</span> <span class="n">timeit</span><span class="o">.</span><span class="n">default_timer</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">step</span><span class="p">,</span> <span class="n">batch</span> <span class="ow">in</span> <span class="n">_get_step_iterator</span><span class="p">(</span><span class="n">steps</span><span class="p">,</span> <span class="n">generator</span><span class="p">):</span>
+                <span class="n">callback_list</span><span class="o">.</span><span class="n">on_predict_batch_begin</span><span class="p">(</span><span class="n">step</span><span class="p">,</span> <span class="p">{})</span>
+
+                <span class="k">if</span> <span class="n">has_ground_truth</span><span class="p">:</span>
+                    <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">preprocess_input</span><span class="p">(</span><span class="o">*</span><span class="n">batch</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">preprocess_input</span><span class="p">(</span><span class="n">batch</span><span class="p">)</span>
                 <span class="n">pred_y</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">torch_to_numpy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">network</span><span class="p">(</span><span class="o">*</span><span class="n">x</span><span class="p">)))</span>
+                <span class="k">if</span> <span class="n">return_ground_truth</span><span class="p">:</span>
+                    <span class="n">true_y</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">torch_to_numpy</span><span class="p">(</span><span class="n">y</span><span class="p">))</span>
+
+                <span class="n">batch_end_time</span> <span class="o">=</span> <span class="n">timeit</span><span class="o">.</span><span class="n">default_timer</span><span class="p">()</span>
+                <span class="n">batch_total_time</span> <span class="o">=</span> <span class="n">batch_end_time</span> <span class="o">-</span> <span class="n">time_since_last_batch</span>
+                <span class="n">time_since_last_batch</span> <span class="o">=</span> <span class="n">batch_end_time</span>
+
+                <span class="n">callback_list</span><span class="o">.</span><span class="n">on_predict_batch_end</span><span class="p">(</span><span class="n">step</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;batch&#39;</span><span class="p">:</span> <span class="n">step</span><span class="p">,</span> <span class="s1">&#39;time&#39;</span><span class="p">:</span> <span class="n">batch_total_time</span><span class="p">})</span>
+
         <span class="k">if</span> <span class="n">concatenate_returns</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">_concat</span><span class="p">(</span><span class="n">pred_y</span><span class="p">)</span>
+            <span class="n">pred_y</span> <span class="o">=</span> <span class="n">_concat</span><span class="p">(</span><span class="n">pred_y</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">return_ground_truth</span><span class="p">:</span>
+                <span class="n">true_y</span> <span class="o">=</span> <span class="n">_concat</span><span class="p">(</span><span class="n">true_y</span><span class="p">)</span>
+
+        <span class="n">callback_list</span><span class="o">.</span><span class="n">on_predict_end</span><span class="p">({</span><span class="s1">&#39;time&#39;</span><span class="p">:</span> <span class="n">timeit</span><span class="o">.</span><span class="n">default_timer</span><span class="p">()</span> <span class="o">-</span> <span class="n">predict_begin_time</span><span class="p">})</span>
+
+        <span class="k">if</span> <span class="n">return_ground_truth</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">pred_y</span><span class="p">,</span> <span class="n">true_y</span>
         <span class="k">return</span> <span class="n">pred_y</span></div>
 
-<div class="viewcode-block" id="Model.predict_on_batch"><a class="viewcode-back" href="../../../model.html#poutyne.Model.predict_on_batch">[docs]</a>    <span class="k">def</span> <span class="nf">predict_on_batch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+<div class="viewcode-block" id="Model.predict_on_batch"><a class="viewcode-back" href="../../../model.html#poutyne.Model.predict_on_batch">[docs]</a>    <span class="k">def</span> <span class="nf">predict_on_batch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns the predictions of the network given a batch ``x``, where the tensors are converted</span>
 <span class="sd">        into Numpy arrays.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            x: Input data as a batch.</span>
+
 <span class="sd">        Returns:</span>
-<span class="sd">            The predictions with tensors converted into Numpy arrays.</span>
+<span class="sd">            Return the predictions in the format outputted by the model.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_set_training_mode</span><span class="p">(</span><span class="kc">False</span><span class="p">):</span>
             <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">preprocess_input</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
@@ -1035,7 +1136,7 @@
                  <span class="n">callbacks</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                  <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                  <span class="n">progress_options</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">dict</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                 <span class="n">dataloader_kwargs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+                 <span class="n">dataloader_kwargs</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Computes the loss and the metrics of the network on batches of samples and optionally</span>
 <span class="sd">        returns the predictions.</span>
@@ -1056,13 +1157,13 @@
 <span class="sd">                (Default value = False)</span>
 <span class="sd">            callbacks (List[~poutyne.Callback]): List of callbacks that will be called during</span>
 <span class="sd">                testing. (Default value = None)</span>
-<span class="sd">            dataloader_kwargs (dict, optional): Keyword arguments to pass to the PyTorch dataloaders created</span>
-<span class="sd">                internally.</span>
 <span class="sd">            verbose (bool): Whether to display the progress of the evaluation.</span>
 <span class="sd">                (Default value = True)</span>
 <span class="sd">            progress_options (dict, optional): Keyword arguments to pass to the default progression callback used</span>
 <span class="sd">                in Poutyne (See :class:`~poutyne.ProgressionCallback` for the available arguments).</span>
 <span class="sd">                (Default value = None, meaning default color setting and progress bar)</span>
+<span class="sd">            dataloader_kwargs (dict, optional): Keyword arguments to pass to the PyTorch dataloaders created</span>
+<span class="sd">                internally.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Tuple ``(loss, metrics, pred_y)`` where specific elements are omitted if not</span>
@@ -1082,19 +1183,16 @@
 <span class="sd">            dictionary as passed to :func:`~poutyne.Callback.on_test_end()`.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">dataloader_kwargs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">dataloader_kwargs</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="n">dataloader_kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;batch_size&#39;</span><span class="p">:</span> <span class="n">batch_size</span><span class="p">,</span> <span class="o">**</span><span class="n">dataloader_kwargs</span><span class="p">}</span>
-
-        <span class="n">generator</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dataloader_from_data</span><span class="p">((</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">),</span> <span class="n">dataloader_kwargs</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">evaluate_generator</span><span class="p">(</span><span class="n">generator</span><span class="p">,</span>
-                                       <span class="n">steps</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">generator</span><span class="p">),</span>
-                                       <span class="n">return_pred</span><span class="o">=</span><span class="n">return_pred</span><span class="p">,</span>
-                                       <span class="n">return_dict_format</span><span class="o">=</span><span class="n">return_dict_format</span><span class="p">,</span>
-                                       <span class="n">concatenate_returns</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                                       <span class="n">callbacks</span><span class="o">=</span><span class="n">callbacks</span><span class="p">,</span>
-                                       <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span>
-                                       <span class="n">progress_options</span><span class="o">=</span><span class="n">progress_options</span><span class="p">)</span></div>
+        <span class="n">dataset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dataset_from_data</span><span class="p">((</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">))</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">evaluate_dataset</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span>
+                                     <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span>
+                                     <span class="n">return_pred</span><span class="o">=</span><span class="n">return_pred</span><span class="p">,</span>
+                                     <span class="n">return_dict_format</span><span class="o">=</span><span class="n">return_dict_format</span><span class="p">,</span>
+                                     <span class="n">concatenate_returns</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                                     <span class="n">callbacks</span><span class="o">=</span><span class="n">callbacks</span><span class="p">,</span>
+                                     <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span>
+                                     <span class="n">progress_options</span><span class="o">=</span><span class="n">progress_options</span><span class="p">,</span>
+                                     <span class="n">dataloader_kwargs</span><span class="o">=</span><span class="n">dataloader_kwargs</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Model.evaluate_dataset"><a class="viewcode-back" href="../../../model.html#poutyne.Model.evaluate_dataset">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate_dataset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                          <span class="n">dataset</span><span class="p">,</span>
@@ -1110,7 +1208,7 @@
                          <span class="n">collate_fn</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                          <span class="n">dataloader_kwargs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                          <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                         <span class="n">progress_options</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">dict</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+                         <span class="n">progress_options</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">dict</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Computes the loss and the metrics of the network on batches of samples and optionally</span>
 <span class="sd">        returns the predictions.</span>
@@ -1194,7 +1292,7 @@
                            <span class="n">concatenate_returns</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                            <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                            <span class="n">progress_options</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">dict</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                           <span class="n">callbacks</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+                           <span class="n">callbacks</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">:</span>
         <span class="c1"># pylint: disable=too-many-locals</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Computes the loss and the metrics of the network on batches of samples and optionally returns</span>
@@ -1349,7 +1447,7 @@
         <span class="n">metrics</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">batch_metrics</span><span class="p">,</span> <span class="n">step_iterator</span><span class="o">.</span><span class="n">epoch_metrics</span><span class="p">))</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_format_loss_metrics_return</span><span class="p">(</span><span class="n">loss</span><span class="p">,</span> <span class="n">metrics</span><span class="p">,</span> <span class="n">pred_y</span><span class="p">,</span> <span class="n">return_pred</span><span class="p">,</span> <span class="n">true_y</span><span class="p">,</span> <span class="n">return_ground_truth</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Model.evaluate_on_batch"><a class="viewcode-back" href="../../../model.html#poutyne.Model.evaluate_on_batch">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate_on_batch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">return_pred</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">return_dict_format</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="Model.evaluate_on_batch"><a class="viewcode-back" href="../../../model.html#poutyne.Model.evaluate_on_batch">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate_on_batch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">return_pred</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">return_dict_format</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Computes the loss and the metrics of the network on a single batch of samples and optionally</span>
 <span class="sd">        returns the predictions.</span>

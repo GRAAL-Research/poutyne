@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>poutyne.framework.callbacks.lambda_ &mdash; Poutyne 1.5 documentation</title>
+  <title>poutyne.framework.callbacks.lambda_ &mdash; Poutyne 1.6 documentation</title>
   
 
   
@@ -67,7 +67,7 @@
             
             
               <div class="version">
-                1.5
+                1.6
               </div>
             
           
@@ -92,7 +92,7 @@
               
             
             
-              <p class="caption"><span class="caption-text">API</span></p>
+              <p class="caption" role="heading"><span class="caption-text">API</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../../model.html">Model</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../experiment.html">Experiment</a></li>
@@ -101,7 +101,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../layers.html">Layers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../utils.html">Utils</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Examples</span></p>
+<p class="caption" role="heading"><span class="caption-text">Examples</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../../examples/introduction.html">Introduction to PyTorch and Poutyne</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../examples/tips_and_tricks.html">Tips and Tricks</a></li>
@@ -177,6 +177,7 @@
             
   <h1>Source code for poutyne.framework.callbacks.lambda_</h1><div class="highlight"><pre>
 <span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span>
+
 <span class="kn">from</span> <span class="nn">.callbacks</span> <span class="kn">import</span> <span class="n">Callback</span>
 
 
@@ -213,12 +214,16 @@
                  <span class="n">on_valid_batch_end</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                  <span class="n">on_test_batch_begin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                  <span class="n">on_test_batch_end</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">on_predict_batch_begin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">on_predict_batch_end</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                  <span class="n">on_train_begin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                  <span class="n">on_train_end</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                  <span class="n">on_valid_begin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                  <span class="n">on_valid_end</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                  <span class="n">on_test_begin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                  <span class="n">on_test_end</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">on_predict_begin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">on_predict_end</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                  <span class="n">on_backward_end</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="c1"># pylint: disable=too-many-locals</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
@@ -230,12 +235,16 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_on_valid_batch_end</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_set_lambda_for_none</span><span class="p">(</span><span class="n">on_valid_batch_end</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_on_test_batch_begin</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_set_lambda_for_none</span><span class="p">(</span><span class="n">on_test_batch_begin</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_on_test_batch_end</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_set_lambda_for_none</span><span class="p">(</span><span class="n">on_test_batch_end</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_on_predict_batch_begin</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_set_lambda_for_none</span><span class="p">(</span><span class="n">on_predict_batch_begin</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_on_predict_batch_end</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_set_lambda_for_none</span><span class="p">(</span><span class="n">on_predict_batch_end</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_on_train_begin</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_set_lambda_for_none</span><span class="p">(</span><span class="n">on_train_begin</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_on_train_end</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_set_lambda_for_none</span><span class="p">(</span><span class="n">on_train_end</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_on_valid_begin</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_set_lambda_for_none</span><span class="p">(</span><span class="n">on_valid_begin</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_on_valid_end</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_set_lambda_for_none</span><span class="p">(</span><span class="n">on_valid_end</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_on_test_begin</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_set_lambda_for_none</span><span class="p">(</span><span class="n">on_test_begin</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_on_test_end</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_set_lambda_for_none</span><span class="p">(</span><span class="n">on_test_end</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_on_predict_begin</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_set_lambda_for_none</span><span class="p">(</span><span class="n">on_predict_begin</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_on_predict_end</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_set_lambda_for_none</span><span class="p">(</span><span class="n">on_predict_end</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_on_backward_end</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_set_lambda_for_none</span><span class="p">(</span><span class="n">on_backward_end</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_set_lambda_for_none</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
@@ -265,6 +274,12 @@
     <span class="k">def</span> <span class="nf">on_test_batch_end</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch_number</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">logs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_on_test_batch_end</span><span class="p">(</span><span class="n">batch_number</span><span class="p">,</span> <span class="n">logs</span><span class="p">)</span>
 
+    <span class="k">def</span> <span class="nf">on_predict_batch_begin</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch_number</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">logs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_on_predict_batch_begin</span><span class="p">(</span><span class="n">batch_number</span><span class="p">,</span> <span class="n">logs</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">on_predict_batch_end</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch_number</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">logs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_on_predict_batch_end</span><span class="p">(</span><span class="n">batch_number</span><span class="p">,</span> <span class="n">logs</span><span class="p">)</span>
+
     <span class="k">def</span> <span class="nf">on_train_begin</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_on_train_begin</span><span class="p">(</span><span class="n">logs</span><span class="p">)</span>
 
@@ -282,6 +297,12 @@
 
     <span class="k">def</span> <span class="nf">on_test_end</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_on_test_end</span><span class="p">(</span><span class="n">logs</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">on_predict_begin</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_on_predict_begin</span><span class="p">(</span><span class="n">logs</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">on_predict_end</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_on_predict_end</span><span class="p">(</span><span class="n">logs</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">on_backward_end</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch_number</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_on_backward_end</span><span class="p">(</span><span class="n">batch_number</span><span class="p">)</span></div>

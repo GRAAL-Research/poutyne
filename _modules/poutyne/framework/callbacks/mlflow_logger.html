@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>poutyne.framework.callbacks.mlflow_logger &mdash; Poutyne 1.5 documentation</title>
+  <title>poutyne.framework.callbacks.mlflow_logger &mdash; Poutyne 1.6 documentation</title>
   
 
   
@@ -67,7 +67,7 @@
             
             
               <div class="version">
-                1.5
+                1.6
               </div>
             
           
@@ -92,7 +92,7 @@
               
             
             
-              <p class="caption"><span class="caption-text">API</span></p>
+              <p class="caption" role="heading"><span class="caption-text">API</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../../model.html">Model</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../experiment.html">Experiment</a></li>
@@ -101,7 +101,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../layers.html">Layers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../utils.html">Utils</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Examples</span></p>
+<p class="caption" role="heading"><span class="caption-text">Examples</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../../examples/introduction.html">Introduction to PyTorch and Poutyne</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../examples/tips_and_tricks.html">Tips and Tricks</a></li>
@@ -204,9 +204,9 @@
 <span class="sd">    Args:</span>
 <span class="sd">        experiment_name (str): The name of the experiment. Name must be unique and are case sensitive.</span>
 <span class="sd">        tracking_uri (Union[str, None]): Either the URI tracking path (for server tracking) of the absolute path to</span>
-<span class="sd">            the directory to save the files (for file store). For example: http://&lt;ip address&gt;:&lt;port&gt; (remote server) or</span>
-<span class="sd">            /home/&lt;user&gt;/mlflow-server (local server). If None, will use the default MLflow file</span>
-<span class="sd">            tracking URI &quot;./mlruns&quot;.</span>
+<span class="sd">            the directory to save the files (for file store). For example: ``http://&lt;ip address&gt;:&lt;port&gt;``</span>
+<span class="sd">            (remote server) or ``/home/&lt;user&gt;/mlflow-server`` (local server).</span>
+<span class="sd">            If None, will use the default MLflow file tracking URI ``&quot;./mlruns&quot;``.</span>
 <span class="sd">        batch_granularity (bool): Whether to also output the result of each batch in addition to the epochs.</span>
 <span class="sd">            (Default value = False)</span>
 
