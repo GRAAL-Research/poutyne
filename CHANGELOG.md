@@ -1,5 +1,9 @@
 # v1.x.x
 
+*
+
+# v1.6
+
 * PeriodicSaveCallback and all its subclasses now have the `restore_best` argument.
 * `Experiment` now contains a `monitoring` argument that can be set to false to avoid monitoring any metric and saving uneeded checkpoints.
 * The format of the ETA time and total time now contains days, hours, minutes when appropriate.
