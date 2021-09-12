@@ -4,8 +4,10 @@ from itertools import repeat
 import numpy as np
 import torch
 from torch.utils.data import DataLoader
+
 try:
     from sklearn.metrics import roc_auc_score, average_precision_score, r2_score
+
     is_sklearn_available = True
 except ImportError:
     is_sklearn_available = False
@@ -42,7 +44,8 @@ class SKLearnMetricsTest(TestCase):
         self.multiclass_classification_true = self.multiclass_classification_pred.argmax(1)
         self.multiclass_errors_indices = torch.where(torch.rand(SKLearnMetricsTest.num_examples) > 0.9)[0]
         self.multiclass_classification_true[self.multiclass_errors_indices] = torch.randint(
-            3, (len(self.multiclass_errors_indices), ))
+            3, (len(self.multiclass_errors_indices),)
+        )
         self.sample_weight = torch.rand((SKLearnMetricsTest.num_examples, 1))
 
     def _get_data_loader(self, *tensors):
@@ -90,28 +93,29 @@ class SKLearnMetricsTest(TestCase):
         self._test_regression(two_skl_metrics, False)
 
     def _test_classification(self, sklearn_metrics, with_sample_weight, *, kwargs=None, names=None):
-        return self._test_epoch_metric(self.classification_pred,
-                                       self.classification_true,
-                                       sklearn_metrics,
-                                       with_sample_weight,
-                                       kwargs=kwargs,
-                                       names=names)
+        return self._test_epoch_metric(
+            self.classification_pred,
+            self.classification_true,
+            sklearn_metrics,
+            with_sample_weight,
+            kwargs=kwargs,
+            names=names,
+        )
 
     def _test_multiclass_classification(self, sklearn_metrics, with_sample_weight, *, kwargs=None, names=None):
-        return self._test_epoch_metric(self.multiclass_classification_pred,
-                                       self.multiclass_classification_true,
-                                       sklearn_metrics,
-                                       with_sample_weight,
-                                       kwargs=kwargs,
-                                       names=names)
+        return self._test_epoch_metric(
+            self.multiclass_classification_pred,
+            self.multiclass_classification_true,
+            sklearn_metrics,
+            with_sample_weight,
+            kwargs=kwargs,
+            names=names,
+        )
 
     def _test_regression(self, sklearn_metrics, with_sample_weight, *, kwargs=None, names=None):
-        return self._test_epoch_metric(self.regression_pred,
-                                       self.regression_true,
-                                       sklearn_metrics,
-                                       with_sample_weight,
-                                       kwargs=kwargs,
-                                       names=names)
+        return self._test_epoch_metric(
+            self.regression_pred, self.regression_true, sklearn_metrics, with_sample_weight, kwargs=kwargs, names=names
+        )
 
     def _test_epoch_metric(self, pred, true, sklearn_metrics, with_sample_weight, *, kwargs=None, names=None):
         epoch_metric = SKLearnMetrics(sklearn_metrics, kwargs=kwargs, names=names)

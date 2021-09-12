@@ -26,12 +26,18 @@ from poutyne import FBeta
 
 
 class FBetaTest(TestCase):
-
     def setUp(self):
         # [0, 1, 1, 1, 3, 1]
-        self.predictions = torch.Tensor([[0.35, 0.25, 0.1, 0.1, 0.2], [0.1, 0.6, 0.1, 0.2, 0.0],
-                                         [0.1, 0.6, 0.1, 0.2, 0.0], [0.1, 0.5, 0.1, 0.2, 0.0],
-                                         [0.1, 0.2, 0.1, 0.7, 0.0], [0.1, 0.6, 0.1, 0.2, 0.0]])
+        self.predictions = torch.Tensor(
+            [
+                [0.35, 0.25, 0.1, 0.1, 0.2],
+                [0.1, 0.6, 0.1, 0.2, 0.0],
+                [0.1, 0.6, 0.1, 0.2, 0.0],
+                [0.1, 0.5, 0.1, 0.2, 0.0],
+                [0.1, 0.2, 0.1, 0.7, 0.0],
+                [0.1, 0.6, 0.1, 0.2, 0.0],
+            ]
+        )
         self.targets = torch.Tensor([0, 4, 1, 0, 3, 0])
 
         # detailed target state
@@ -43,8 +49,9 @@ class FBetaTest(TestCase):
 
         desired_precisions = [1.00, 0.25, 0.00, 1.00, 0.00]
         desired_recalls = [0.33, 1.00, 0.00, 1.00, 0.00]
-        desired_fscores = [(2 * p * r) / (p + r) if p + r != 0.0 else 0.0
-                           for p, r in zip(desired_precisions, desired_recalls)]
+        desired_fscores = [
+            (2 * p * r) / (p + r) if p + r != 0.0 else 0.0 for p, r in zip(desired_precisions, desired_recalls)
+        ]
         self.desired_precisions = desired_precisions
         self.desired_recalls = desired_recalls
         self.desired_fscores = desired_fscores

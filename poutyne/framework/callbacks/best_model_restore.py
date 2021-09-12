@@ -40,8 +40,10 @@ class BestModelRestore(Callback):
             self.current_best = logs[self.monitor]
 
             if self.verbose:
-                print('Epoch %d: %s improved from %0.5f to %0.5f' %
-                      (epoch_number, self.monitor, old_best, self.current_best))
+                print(
+                    'Epoch %d: %s improved from %0.5f to %0.5f'
+                    % (epoch_number, self.monitor, old_best, self.current_best)
+                )
             self.best_weights = self.model.get_weight_copies()
 
     def on_train_end(self, logs: Dict):

@@ -94,20 +94,22 @@ class PeriodicSaveCallback(Callback):
             (Default value = 'wb')
     """
 
-    def __init__(self,
-                 filename: str,
-                 *,
-                 monitor: str = 'val_loss',
-                 mode: str = 'min',
-                 save_best_only: bool = False,
-                 keep_only_last_best: bool = False,
-                 restore_best: bool = False,
-                 period: int = 1,
-                 verbose: bool = False,
-                 temporary_filename: Optional[str] = None,
-                 atomic_write: bool = True,
-                 open_mode: str = 'wb',
-                 read_mode: str = 'rb'):
+    def __init__(
+        self,
+        filename: str,
+        *,
+        monitor: str = 'val_loss',
+        mode: str = 'min',
+        save_best_only: bool = False,
+        keep_only_last_best: bool = False,
+        restore_best: bool = False,
+        period: int = 1,
+        verbose: bool = False,
+        temporary_filename: Optional[str] = None,
+        atomic_write: bool = True,
+        open_mode: str = 'wb',
+        read_mode: str = 'rb'
+    ):
         super().__init__()
         self.filename = filename
         self.monitor = monitor
@@ -142,11 +144,14 @@ class PeriodicSaveCallback(Callback):
         raise NotImplementedError
 
     def _save_file(self, filename: str, epoch_number: int, logs: Dict):
-        atomic_lambda_save(filename,
-                           self.save_file, (epoch_number, logs),
-                           temporary_filename=self.temporary_filename,
-                           open_mode=self.open_mode,
-                           atomic=self.atomic_write)
+        atomic_lambda_save(
+            filename,
+            self.save_file,
+            (epoch_number, logs),
+            temporary_filename=self.temporary_filename,
+            open_mode=self.open_mode,
+            atomic=self.atomic_write,
+        )
 
     def on_epoch_end(self, epoch_number: int, logs: Dict):
         filename = self.filename.format_map(logs)
@@ -159,12 +164,16 @@ class PeriodicSaveCallback(Callback):
                 self.best_filename = filename
 
                 if self.verbose:
-                    print('Epoch %d: %s improved from %0.5f to %0.5f, saving file to %s' %
-                          (epoch_number, self.monitor, old_best, self.current_best, self.best_filename))
+                    print(
+                        'Epoch %d: %s improved from %0.5f to %0.5f, saving file to %s'
+                        % (epoch_number, self.monitor, old_best, self.current_best, self.best_filename)
+                    )
                 self._save_file(self.best_filename, epoch_number, logs)
-                if self.keep_only_last_best and \
-                        self.best_filename != old_best_filename and \
-                        old_best_filename is not None:
+                if (
+                    self.keep_only_last_best
+                    and self.best_filename != old_best_filename
+                    and old_best_filename is not None
+                ):
                     os.remove(old_best_filename)
         elif epoch_number % self.period == 0:
             if self.verbose:

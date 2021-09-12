@@ -28,7 +28,6 @@ def some_data_tensor_generator_multi_io(batch_size):
 
 
 class ModelMultiOutputTest(ModelFittingTestCase):
-
     def setUp(self):
         super().setUp()
         torch.manual_seed(42)
@@ -41,21 +40,24 @@ class ModelMultiOutputTest(ModelFittingTestCase):
             self.optimizer,
             lambda y_pred, y_true: self.loss_function(y_pred[0], y_true[0]) + self.loss_function(y_pred[1], y_true[1]),
             batch_metrics=self.batch_metrics,
-            epoch_metrics=self.epoch_metrics)
+            epoch_metrics=self.epoch_metrics,
+        )
 
     def test_fitting_tensor_generator_multi_output(self):
         train_generator = some_data_tensor_generator_multi_output(ModelMultiOutputTest.batch_size)
         valid_generator = some_data_tensor_generator_multi_output(ModelMultiOutputTest.batch_size)
-        logs = self.model.fit_generator(train_generator,
-                                        valid_generator,
-                                        epochs=ModelMultiOutputTest.epochs,
-                                        steps_per_epoch=ModelMultiOutputTest.steps_per_epoch,
-                                        validation_steps=ModelMultiOutputTest.steps_per_epoch,
-                                        callbacks=[self.mock_callback])
+        logs = self.model.fit_generator(
+            train_generator,
+            valid_generator,
+            epochs=ModelMultiOutputTest.epochs,
+            steps_per_epoch=ModelMultiOutputTest.steps_per_epoch,
+            validation_steps=ModelMultiOutputTest.steps_per_epoch,
+            callbacks=[self.mock_callback],
+        )
         params = {
             'epochs': ModelMultiOutputTest.epochs,
             'steps': ModelMultiOutputTest.steps_per_epoch,
-            'valid_steps': ModelMultiOutputTest.steps_per_epoch
+            'valid_steps': ModelMultiOutputTest.steps_per_epoch,
         }
         self._test_callbacks_train(params, logs, valid_steps=ModelMultiOutputTest.steps_per_epoch)
 
@@ -63,8 +65,7 @@ class ModelMultiOutputTest(ModelFittingTestCase):
         train_real_steps_per_epoch = 30
         train_batch_size = ModelMultiOutputTest.batch_size
         train_final_batch_missing_samples = 7
-        train_size = train_real_steps_per_epoch * train_batch_size - \
-                     train_final_batch_missing_samples
+        train_size = train_real_steps_per_epoch * train_batch_size - train_final_batch_missing_samples
         train_x = torch.rand(train_size, 1)
         train_y = (torch.rand(train_size, 1), torch.rand(train_size, 1))
 
@@ -72,23 +73,24 @@ class ModelMultiOutputTest(ModelFittingTestCase):
         # valid_batch_size will be the same as train_batch_size in the fit method.
         valid_batch_size = train_batch_size
         valid_final_batch_missing_samples = 3
-        valid_size = valid_real_steps_per_epoch * valid_batch_size - \
-                     valid_final_batch_missing_samples
+        valid_size = valid_real_steps_per_epoch * valid_batch_size - valid_final_batch_missing_samples
         valid_x = torch.rand(valid_size, 1)
         valid_y = (torch.rand(valid_size, 1), torch.rand(valid_size, 1))
 
-        logs = self.model.fit(train_x,
-                              train_y,
-                              validation_data=(valid_x, valid_y),
-                              epochs=ModelMultiOutputTest.epochs,
-                              batch_size=train_batch_size,
-                              steps_per_epoch=None,
-                              validation_steps=None,
-                              callbacks=[self.mock_callback])
+        logs = self.model.fit(
+            train_x,
+            train_y,
+            validation_data=(valid_x, valid_y),
+            epochs=ModelMultiOutputTest.epochs,
+            batch_size=train_batch_size,
+            steps_per_epoch=None,
+            validation_steps=None,
+            callbacks=[self.mock_callback],
+        )
         params = {
             'epochs': ModelMultiOutputTest.epochs,
             'steps': train_real_steps_per_epoch,
-            'valid_steps': valid_real_steps_per_epoch
+            'valid_steps': valid_real_steps_per_epoch,
         }
         self._test_callbacks_train(params, logs)
 
@@ -107,8 +109,10 @@ class ModelMultiOutputTest(ModelFittingTestCase):
         self.assertEqual(type(loss), float)
 
     def test_evaluate_with_pred_multi_output(self):
-        y = (torch.rand(ModelMultiOutputTest.evaluate_dataset_len,
-                        1), torch.rand(ModelMultiOutputTest.evaluate_dataset_len, 1))
+        y = (
+            torch.rand(ModelMultiOutputTest.evaluate_dataset_len, 1),
+            torch.rand(ModelMultiOutputTest.evaluate_dataset_len, 1),
+        )
         x = torch.rand(ModelMultiOutputTest.evaluate_dataset_len, 1)
         # We also test the unpacking.
         _, pred_y = self.model.evaluate(x, y, batch_size=ModelMultiOutputTest.batch_size, return_pred=True)

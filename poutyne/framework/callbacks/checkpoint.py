@@ -115,7 +115,6 @@ class LRSchedulerCheckpoint(PeriodicSaveCallback):
 
 
 class StateCheckpoint(PeriodicSaveCallback):
-
     def __init__(self, name_to_stateful, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.name_to_stateful = name_to_stateful

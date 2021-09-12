@@ -5,9 +5,18 @@ import torch.nn as nn
 from torch.utils.data import DataLoader
 
 from poutyne import Model, TensorDataset
-from tests.framework.tools import SomeConstantEpochMetric, some_batch_metric_1, \
-    some_batch_metric_2, repeat_batch_metric, some_metric_1_value, some_metric_2_value, repeat_batch_metric_value, \
-    some_constant_epoch_metric_value, some_data_tensor_generator, SomeDataGeneratorUsingStopIteration
+from tests.framework.tools import (
+    SomeConstantEpochMetric,
+    some_batch_metric_1,
+    some_batch_metric_2,
+    repeat_batch_metric,
+    some_metric_1_value,
+    some_metric_2_value,
+    repeat_batch_metric_value,
+    some_constant_epoch_metric_value,
+    some_data_tensor_generator,
+    SomeDataGeneratorUsingStopIteration,
+)
 from .base import ModelFittingTestCase
 
 try:
@@ -31,23 +40,34 @@ class ModelFittingTestCaseProgress(ModelFittingTestCase):
         self.loss_function = nn.MSELoss()
         self.optimizer = torch.optim.SGD(self.pytorch_network.parameters(), lr=1e-3)
         self.batch_metrics = [
-            some_batch_metric_1, ('custom_name', some_batch_metric_2), repeat_batch_metric, repeat_batch_metric
+            some_batch_metric_1,
+            ('custom_name', some_batch_metric_2),
+            repeat_batch_metric,
+            repeat_batch_metric,
         ]
         self.batch_metrics_names = [
-            'some_batch_metric_1', 'custom_name', 'repeat_batch_metric1', 'repeat_batch_metric2'
+            'some_batch_metric_1',
+            'custom_name',
+            'repeat_batch_metric1',
+            'repeat_batch_metric2',
         ]
         self.batch_metrics_values = [
-            some_metric_1_value, some_metric_2_value, repeat_batch_metric_value, repeat_batch_metric_value
+            some_metric_1_value,
+            some_metric_2_value,
+            repeat_batch_metric_value,
+            repeat_batch_metric_value,
         ]
         self.epoch_metrics = [SomeConstantEpochMetric()]
         self.epoch_metrics_names = ['some_constant_epoch_metric']
         self.epoch_metrics_values = [some_constant_epoch_metric_value]
 
-        self.model = Model(self.pytorch_network,
-                           self.optimizer,
-                           self.loss_function,
-                           batch_metrics=self.batch_metrics,
-                           epoch_metrics=self.epoch_metrics)
+        self.model = Model(
+            self.pytorch_network,
+            self.optimizer,
+            self.loss_function,
+            batch_metrics=self.batch_metrics,
+            epoch_metrics=self.epoch_metrics,
+        )
 
         self._capture_output()
 
@@ -61,53 +81,63 @@ class ModelFittingTestCaseProgress(ModelFittingTestCase):
 
     @skipIf(color is None, "Unable to import colorama")
     def test_fitting_with_default_coloring(self):
-        _ = self.model.fit_generator(self.train_generator,
-                                     self.valid_generator,
-                                     epochs=ModelFittingTestCase.epochs,
-                                     steps_per_epoch=ModelFittingTestCase.steps_per_epoch,
-                                     validation_steps=ModelFittingTestCase.steps_per_epoch,
-                                     callbacks=[self.mock_callback])
+        _ = self.model.fit_generator(
+            self.train_generator,
+            self.valid_generator,
+            epochs=ModelFittingTestCase.epochs,
+            steps_per_epoch=ModelFittingTestCase.steps_per_epoch,
+            validation_steps=ModelFittingTestCase.steps_per_epoch,
+            callbacks=[self.mock_callback],
+        )
 
         self.assertStdoutContains(["[32m", "[35m", "[36m", "[94m"])
 
     def test_fitting_with_progress_bar_show_epoch(self):
-        _ = self.model.fit_generator(self.train_generator,
-                                     self.valid_generator,
-                                     epochs=ModelFittingTestCase.epochs,
-                                     steps_per_epoch=ModelFittingTestCase.steps_per_epoch,
-                                     validation_steps=ModelFittingTestCase.steps_per_epoch,
-                                     callbacks=[self.mock_callback])
+        _ = self.model.fit_generator(
+            self.train_generator,
+            self.valid_generator,
+            epochs=ModelFittingTestCase.epochs,
+            steps_per_epoch=ModelFittingTestCase.steps_per_epoch,
+            validation_steps=ModelFittingTestCase.steps_per_epoch,
+            callbacks=[self.mock_callback],
+        )
 
         self.assertStdoutContains(["Epoch", "1/5", "2/5"])
 
     def test_fitting_with_progress_bar_show_steps(self):
-        _ = self.model.fit_generator(self.train_generator,
-                                     self.valid_generator,
-                                     epochs=ModelFittingTestCase.epochs,
-                                     steps_per_epoch=ModelFittingTestCase.steps_per_epoch,
-                                     validation_steps=ModelFittingTestCase.steps_per_epoch,
-                                     callbacks=[self.mock_callback])
+        _ = self.model.fit_generator(
+            self.train_generator,
+            self.valid_generator,
+            epochs=ModelFittingTestCase.epochs,
+            steps_per_epoch=ModelFittingTestCase.steps_per_epoch,
+            validation_steps=ModelFittingTestCase.steps_per_epoch,
+            callbacks=[self.mock_callback],
+        )
 
         self.assertStdoutContains(["steps", f"{ModelFittingTestCase.steps_per_epoch}"])
 
     def test_fitting_with_progress_bar_show_train_val_final_steps(self):
-        _ = self.model.fit_generator(self.train_generator,
-                                     self.valid_generator,
-                                     epochs=ModelFittingTestCase.epochs,
-                                     steps_per_epoch=ModelFittingTestCase.steps_per_epoch,
-                                     validation_steps=ModelFittingTestCase.steps_per_epoch,
-                                     callbacks=[self.mock_callback])
+        _ = self.model.fit_generator(
+            self.train_generator,
+            self.valid_generator,
+            epochs=ModelFittingTestCase.epochs,
+            steps_per_epoch=ModelFittingTestCase.steps_per_epoch,
+            validation_steps=ModelFittingTestCase.steps_per_epoch,
+            callbacks=[self.mock_callback],
+        )
 
         self.assertStdoutContains(["Val steps", "Train steps"])
 
     def test_fitting_with_no_progress_bar_dont_show_epoch(self):
-        _ = self.model.fit_generator(self.train_generator,
-                                     self.valid_generator,
-                                     epochs=ModelFittingTestCase.epochs,
-                                     steps_per_epoch=ModelFittingTestCase.steps_per_epoch,
-                                     validation_steps=ModelFittingTestCase.steps_per_epoch,
-                                     callbacks=[self.mock_callback],
-                                     verbose=False)
+        _ = self.model.fit_generator(
+            self.train_generator,
+            self.valid_generator,
+            epochs=ModelFittingTestCase.epochs,
+            steps_per_epoch=ModelFittingTestCase.steps_per_epoch,
+            validation_steps=ModelFittingTestCase.steps_per_epoch,
+            callbacks=[self.mock_callback],
+            verbose=False,
+        )
 
         self.assertStdoutNotContains(["Epoch", "1/5", "2/5"])
 
@@ -118,63 +148,70 @@ class ModelFittingTestCaseProgress(ModelFittingTestCase):
             "ratio_color": "BLACK",
             "metric_value_color": "BLACK",
             "time_color": "BLACK",
-            "progress_bar_color": "BLACK"
+            "progress_bar_color": "BLACK",
         }
-        _ = self.model.fit_generator(self.train_generator,
-                                     self.valid_generator,
-                                     epochs=ModelFittingTestCase.epochs,
-                                     steps_per_epoch=ModelFittingTestCase.steps_per_epoch,
-                                     validation_steps=ModelFittingTestCase.steps_per_epoch,
-                                     callbacks=[self.mock_callback],
-                                     progress_options=dict(coloring=coloring))
+        _ = self.model.fit_generator(
+            self.train_generator,
+            self.valid_generator,
+            epochs=ModelFittingTestCase.epochs,
+            steps_per_epoch=ModelFittingTestCase.steps_per_epoch,
+            validation_steps=ModelFittingTestCase.steps_per_epoch,
+            callbacks=[self.mock_callback],
+            progress_options=dict(coloring=coloring),
+        )
 
         self.assertStdoutContains(["[30m"])
 
     @skipIf(color is None, "Unable to import colorama")
     def test_fitting_with_user_partial_coloring(self):
-        _ = self.model.fit_generator(self.train_generator,
-                                     self.valid_generator,
-                                     epochs=ModelFittingTestCase.epochs,
-                                     steps_per_epoch=ModelFittingTestCase.steps_per_epoch,
-                                     validation_steps=ModelFittingTestCase.steps_per_epoch,
-                                     callbacks=[self.mock_callback],
-                                     progress_options=dict(coloring={
-                                         "text_color": 'BLACK',
-                                         "ratio_color": "BLACK"
-                                     }))
+        _ = self.model.fit_generator(
+            self.train_generator,
+            self.valid_generator,
+            epochs=ModelFittingTestCase.epochs,
+            steps_per_epoch=ModelFittingTestCase.steps_per_epoch,
+            validation_steps=ModelFittingTestCase.steps_per_epoch,
+            callbacks=[self.mock_callback],
+            progress_options=dict(coloring={"text_color": 'BLACK', "ratio_color": "BLACK"}),
+        )
 
         self.assertStdoutContains(["[30m", "[32m", "[35m", "[94m"])
 
     def test_fitting_with_user_coloring_invalid(self):
         with self.assertRaises(KeyError):
-            _ = self.model.fit_generator(self.train_generator,
-                                         self.valid_generator,
-                                         epochs=ModelFittingTestCase.epochs,
-                                         steps_per_epoch=ModelFittingTestCase.steps_per_epoch,
-                                         validation_steps=ModelFittingTestCase.steps_per_epoch,
-                                         callbacks=[self.mock_callback],
-                                         progress_options=dict(coloring={"invalid_name": 'A COLOR'}))
+            _ = self.model.fit_generator(
+                self.train_generator,
+                self.valid_generator,
+                epochs=ModelFittingTestCase.epochs,
+                steps_per_epoch=ModelFittingTestCase.steps_per_epoch,
+                validation_steps=ModelFittingTestCase.steps_per_epoch,
+                callbacks=[self.mock_callback],
+                progress_options=dict(coloring={"invalid_name": 'A COLOR'}),
+            )
 
     def test_fitting_with_no_coloring(self):
-        _ = self.model.fit_generator(self.train_generator,
-                                     self.valid_generator,
-                                     epochs=ModelFittingTestCase.epochs,
-                                     steps_per_epoch=ModelFittingTestCase.steps_per_epoch,
-                                     validation_steps=ModelFittingTestCase.steps_per_epoch,
-                                     callbacks=[self.mock_callback],
-                                     progress_options=dict(coloring=False))
+        _ = self.model.fit_generator(
+            self.train_generator,
+            self.valid_generator,
+            epochs=ModelFittingTestCase.epochs,
+            steps_per_epoch=ModelFittingTestCase.steps_per_epoch,
+            validation_steps=ModelFittingTestCase.steps_per_epoch,
+            callbacks=[self.mock_callback],
+            progress_options=dict(coloring=False),
+        )
 
         self.assertStdoutNotContains(["[32m", "[35m", "[36m", "[94m"])
 
     @skipIf(color is None, "Unable to import colorama")
     def test_fitting_with_progress_bar_default_color(self):
-        _ = self.model.fit_generator(self.train_generator,
-                                     self.valid_generator,
-                                     epochs=ModelFittingTestCase.epochs,
-                                     steps_per_epoch=ModelFittingTestCase.steps_per_epoch,
-                                     validation_steps=ModelFittingTestCase.steps_per_epoch,
-                                     callbacks=[self.mock_callback],
-                                     progress_options=dict(coloring=True, progress_bar=True))
+        _ = self.model.fit_generator(
+            self.train_generator,
+            self.valid_generator,
+            epochs=ModelFittingTestCase.epochs,
+            steps_per_epoch=ModelFittingTestCase.steps_per_epoch,
+            validation_steps=ModelFittingTestCase.steps_per_epoch,
+            callbacks=[self.mock_callback],
+            progress_options=dict(coloring=True, progress_bar=True),
+        )
 
         self.assertStdoutContains(["%", "[32m", "[35m", "[36m", "[94m", "\u2588"])
 
@@ -185,38 +222,44 @@ class ModelFittingTestCaseProgress(ModelFittingTestCase):
             "ratio_color": "BLACK",
             "metric_value_color": "BLACK",
             "time_color": "BLACK",
-            "progress_bar_color": "BLACK"
+            "progress_bar_color": "BLACK",
         }
-        _ = self.model.fit_generator(self.train_generator,
-                                     self.valid_generator,
-                                     epochs=ModelFittingTestCase.epochs,
-                                     steps_per_epoch=ModelFittingTestCase.steps_per_epoch,
-                                     validation_steps=ModelFittingTestCase.steps_per_epoch,
-                                     callbacks=[self.mock_callback],
-                                     progress_options=dict(coloring=coloring, progress_bar=True))
+        _ = self.model.fit_generator(
+            self.train_generator,
+            self.valid_generator,
+            epochs=ModelFittingTestCase.epochs,
+            steps_per_epoch=ModelFittingTestCase.steps_per_epoch,
+            validation_steps=ModelFittingTestCase.steps_per_epoch,
+            callbacks=[self.mock_callback],
+            progress_options=dict(coloring=coloring, progress_bar=True),
+        )
 
         self.assertStdoutContains(["%", "[30m", "\u2588"])
 
     def test_fitting_with_progress_bar_no_color(self):
-        _ = self.model.fit_generator(self.train_generator,
-                                     self.valid_generator,
-                                     epochs=ModelFittingTestCase.epochs,
-                                     steps_per_epoch=ModelFittingTestCase.steps_per_epoch,
-                                     validation_steps=ModelFittingTestCase.steps_per_epoch,
-                                     callbacks=[self.mock_callback],
-                                     progress_options=dict(coloring=False, progress_bar=True))
+        _ = self.model.fit_generator(
+            self.train_generator,
+            self.valid_generator,
+            epochs=ModelFittingTestCase.epochs,
+            steps_per_epoch=ModelFittingTestCase.steps_per_epoch,
+            validation_steps=ModelFittingTestCase.steps_per_epoch,
+            callbacks=[self.mock_callback],
+            progress_options=dict(coloring=False, progress_bar=True),
+        )
 
         self.assertStdoutContains(["%", "\u2588"])
         self.assertStdoutNotContains(["[32m", "[35m", "[36m", "[94m"])
 
     def test_fitting_with_no_progress_bar(self):
-        _ = self.model.fit_generator(self.train_generator,
-                                     self.valid_generator,
-                                     epochs=ModelFittingTestCase.epochs,
-                                     steps_per_epoch=ModelFittingTestCase.steps_per_epoch,
-                                     validation_steps=ModelFittingTestCase.steps_per_epoch,
-                                     callbacks=[self.mock_callback],
-                                     progress_options=dict(coloring=False, progress_bar=False))
+        _ = self.model.fit_generator(
+            self.train_generator,
+            self.valid_generator,
+            epochs=ModelFittingTestCase.epochs,
+            steps_per_epoch=ModelFittingTestCase.steps_per_epoch,
+            validation_steps=ModelFittingTestCase.steps_per_epoch,
+            callbacks=[self.mock_callback],
+            progress_options=dict(coloring=False, progress_bar=False),
+        )
 
         self.assertStdoutNotContains(["%", "\u2588"])
         self.assertStdoutNotContains(["[32m", "[35m", "[36m", "[94m"])
@@ -224,10 +267,12 @@ class ModelFittingTestCaseProgress(ModelFittingTestCase):
     def test_progress_bar_with_step_is_none(self):
         train_generator = SomeDataGeneratorUsingStopIteration(ModelFittingTestCase.batch_size, 10)
         valid_generator = SomeDataGeneratorUsingStopIteration(ModelFittingTestCase.batch_size, 10)
-        _ = self.model.fit_generator(train_generator,
-                                     valid_generator,
-                                     epochs=ModelFittingTestCase.epochs,
-                                     progress_options=dict(coloring=False, progress_bar=True))
+        _ = self.model.fit_generator(
+            train_generator,
+            valid_generator,
+            epochs=ModelFittingTestCase.epochs,
+            progress_options=dict(coloring=False, progress_bar=True),
+        )
 
         self.assertStdoutContains(["s/step"])
         self.assertStdoutNotContains(["[32m", "[35m", "[36m", "[94m", "\u2588", "%"])
@@ -259,13 +304,12 @@ class ModelFittingTestCaseProgress(ModelFittingTestCase):
             "ratio_color": "BLACK",
             "metric_value_color": "BLACK",
             "time_color": "BLACK",
-            "progress_bar_color": "BLACK"
+            "progress_bar_color": "BLACK",
         }
 
-        _, _ = self.model.evaluate(x,
-                                   y,
-                                   batch_size=ModelFittingTestCase.batch_size,
-                                   progress_options=dict(coloring=coloring))
+        _, _ = self.model.evaluate(
+            x, y, batch_size=ModelFittingTestCase.batch_size, progress_options=dict(coloring=coloring)
+        )
 
         self.assertStdoutContains(["[30m"])
 
@@ -274,13 +318,12 @@ class ModelFittingTestCaseProgress(ModelFittingTestCase):
         x = torch.rand(ModelFittingTestCase.evaluate_dataset_len, 1)
         y = torch.rand(ModelFittingTestCase.evaluate_dataset_len, 1)
 
-        _, _ = self.model.evaluate(x,
-                                   y,
-                                   batch_size=ModelFittingTestCase.batch_size,
-                                   progress_options=dict(coloring={
-                                       "text_color": 'BLACK',
-                                       "ratio_color": "BLACK"
-                                   }))
+        _, _ = self.model.evaluate(
+            x,
+            y,
+            batch_size=ModelFittingTestCase.batch_size,
+            progress_options=dict(coloring={"text_color": 'BLACK', "ratio_color": "BLACK"}),
+        )
         self.assertStdoutContains(["[30m", "[32m", "[35m", "[94m"])
 
     def test_evaluate_with_user_coloring_invalid(self):
@@ -288,19 +331,20 @@ class ModelFittingTestCaseProgress(ModelFittingTestCase):
         y = torch.rand(ModelFittingTestCase.evaluate_dataset_len, 1)
 
         with self.assertRaises(KeyError):
-            _, _ = self.model.evaluate(x,
-                                       y,
-                                       batch_size=ModelFittingTestCase.batch_size,
-                                       progress_options=dict(coloring={"invalid_name": 'A COLOR'}))
+            _, _ = self.model.evaluate(
+                x,
+                y,
+                batch_size=ModelFittingTestCase.batch_size,
+                progress_options=dict(coloring={"invalid_name": 'A COLOR'}),
+            )
 
     def test_evaluate_with_no_coloring(self):
         x = torch.rand(ModelFittingTestCase.evaluate_dataset_len, 1)
         y = torch.rand(ModelFittingTestCase.evaluate_dataset_len, 1)
 
-        _, _ = self.model.evaluate(x,
-                                   y,
-                                   batch_size=ModelFittingTestCase.batch_size,
-                                   progress_options=dict(coloring=False))
+        _, _ = self.model.evaluate(
+            x, y, batch_size=ModelFittingTestCase.batch_size, progress_options=dict(coloring=False)
+        )
 
         self.assertStdoutNotContains(["[32m", "[35m", "[36m", "[94m"])
 
@@ -309,10 +353,9 @@ class ModelFittingTestCaseProgress(ModelFittingTestCase):
         x = torch.rand(ModelFittingTestCase.evaluate_dataset_len, 1)
         y = torch.rand(ModelFittingTestCase.evaluate_dataset_len, 1)
 
-        _, _ = self.model.evaluate(x,
-                                   y,
-                                   batch_size=ModelFittingTestCase.batch_size,
-                                   progress_options=dict(coloring=True, progress_bar=True))
+        _, _ = self.model.evaluate(
+            x, y, batch_size=ModelFittingTestCase.batch_size, progress_options=dict(coloring=True, progress_bar=True)
+        )
 
         self.assertStdoutContains(["%", "[32m", "[35m", "[36m", "[94m", "\u2588"])
 
@@ -326,13 +369,15 @@ class ModelFittingTestCaseProgress(ModelFittingTestCase):
             "ratio_color": "BLACK",
             "metric_value_color": "BLACK",
             "time_color": "BLACK",
-            "progress_bar_color": "BLACK"
+            "progress_bar_color": "BLACK",
         }
 
-        _, _ = self.model.evaluate(x,
-                                   y,
-                                   batch_size=ModelFittingTestCase.batch_size,
-                                   progress_options=dict(coloring=coloring, progress_bar=True))
+        _, _ = self.model.evaluate(
+            x,
+            y,
+            batch_size=ModelFittingTestCase.batch_size,
+            progress_options=dict(coloring=coloring, progress_bar=True),
+        )
 
         self.assertStdoutContains(["%", "[30m", "\u2588"])
 
@@ -341,10 +386,9 @@ class ModelFittingTestCaseProgress(ModelFittingTestCase):
         x = torch.rand(ModelFittingTestCase.evaluate_dataset_len, 1)
         y = torch.rand(ModelFittingTestCase.evaluate_dataset_len, 1)
 
-        _, _ = self.model.evaluate(x,
-                                   y,
-                                   batch_size=ModelFittingTestCase.batch_size,
-                                   progress_options=dict(coloring=False, progress_bar=True))
+        _, _ = self.model.evaluate(
+            x, y, batch_size=ModelFittingTestCase.batch_size, progress_options=dict(coloring=False, progress_bar=True)
+        )
 
         self.assertStdoutContains(["%", "\u2588"])
         self.assertStdoutNotContains(["[32m", "[35m", "[36m", "[94m"])
@@ -353,10 +397,9 @@ class ModelFittingTestCaseProgress(ModelFittingTestCase):
         x = torch.rand(ModelFittingTestCase.evaluate_dataset_len, 1)
         y = torch.rand(ModelFittingTestCase.evaluate_dataset_len, 1)
 
-        _, _ = self.model.evaluate(x,
-                                   y,
-                                   batch_size=ModelFittingTestCase.batch_size,
-                                   progress_options=dict(coloring=False, progress_bar=False))
+        _, _ = self.model.evaluate(
+            x, y, batch_size=ModelFittingTestCase.batch_size, progress_options=dict(coloring=False, progress_bar=False)
+        )
 
         self.assertStdoutNotContains(["%", "\u2588"])
         self.assertStdoutNotContains(["[32m", "[35m", "[36m", "[94m"])
@@ -381,10 +424,9 @@ class ModelFittingTestCaseProgress(ModelFittingTestCase):
     def test_evaluate_generator_with_callback_and_progress_bar_coloring(self):
         generator = some_data_tensor_generator(ModelFittingTestCase.batch_size)
 
-        _, _ = self.model.evaluate_generator(generator,
-                                             steps=ModelFittingTestCaseProgress.num_steps,
-                                             callbacks=[self.mock_callback],
-                                             verbose=True)
+        _, _ = self.model.evaluate_generator(
+            generator, steps=ModelFittingTestCaseProgress.num_steps, callbacks=[self.mock_callback], verbose=True
+        )
 
         self.assertStdoutContains(["%", "[32m", "[35m", "[36m", "[94m", "\u2588"])
 
@@ -395,15 +437,17 @@ class ModelFittingTestCaseProgress(ModelFittingTestCase):
             "ratio_color": "WHITE",
             "metric_value_color": "WHITE",
             "time_color": "WHITE",
-            "progress_bar_color": "WHITE"
+            "progress_bar_color": "WHITE",
         }
-        _ = self.model.fit_generator(self.train_generator,
-                                     self.valid_generator,
-                                     epochs=1,
-                                     steps_per_epoch=ModelFittingTestCaseProgress.num_steps,
-                                     validation_steps=ModelFittingTestCaseProgress.num_steps,
-                                     callbacks=[self.mock_callback],
-                                     progress_options=dict(coloring=coloring, progress_bar=False))
+        _ = self.model.fit_generator(
+            self.train_generator,
+            self.valid_generator,
+            epochs=1,
+            steps_per_epoch=ModelFittingTestCaseProgress.num_steps,
+            validation_steps=ModelFittingTestCaseProgress.num_steps,
+            callbacks=[self.mock_callback],
+            progress_options=dict(coloring=coloring, progress_bar=False),
+        )
 
         # We split per step update
         steps_update = self.test_out.getvalue().strip().split("\r")
@@ -412,19 +456,21 @@ class ModelFittingTestCaseProgress(ModelFittingTestCase):
         template_format = r".*Epoch:.*{}\/1.*\[37mStep:.*{}\/5.*{:6.2f}\%.*|{}|.*ETA:"
         epoch = 1
         # the 5 train steps
-        for step, step_update in enumerate(steps_update[:ModelFittingTestCaseProgress.num_steps]):
+        for step, step_update in enumerate(steps_update[: ModelFittingTestCaseProgress.num_steps]):
             step += 1
             progress_Bar = "\u2588" * step * 2 + " " * (20 - step * 2)
-            regex_filled = template_format.format(epoch, step, step / ModelFittingTestCaseProgress.num_steps * 100,
-                                                  progress_Bar)
+            regex_filled = template_format.format(
+                epoch, step, step / ModelFittingTestCaseProgress.num_steps * 100, progress_Bar
+            )
             self.assertRegex(step_update, regex_filled)
 
         # The 5 val steps
-        for step, step_update in enumerate(steps_update[ModelFittingTestCaseProgress.num_steps:-1]):
+        for step, step_update in enumerate(steps_update[ModelFittingTestCaseProgress.num_steps : -1]):
             step += 1
             progress_Bar = "\u2588" * step * 2 + " " * (20 - step * 2)
-            regex_filled = template_format.format(epoch, step, step / ModelFittingTestCaseProgress.num_steps * 100,
-                                                  progress_Bar)
+            regex_filled = template_format.format(
+                epoch, step, step / ModelFittingTestCaseProgress.num_steps * 100, progress_Bar
+            )
             self.assertRegex(step_update, regex_filled)
 
         # last print update templating different
@@ -432,13 +478,15 @@ class ModelFittingTestCaseProgress(ModelFittingTestCase):
         self.assertRegex(steps_update[-1], last_print_regex)
 
     def test_fitting_complete_display_test_with_progress_bar_no_coloring(self):
-        _ = self.model.fit_generator(self.train_generator,
-                                     self.valid_generator,
-                                     epochs=1,
-                                     steps_per_epoch=ModelFittingTestCaseProgress.num_steps,
-                                     validation_steps=ModelFittingTestCaseProgress.num_steps,
-                                     callbacks=[self.mock_callback],
-                                     progress_options=dict(coloring=False, progress_bar=True))
+        _ = self.model.fit_generator(
+            self.train_generator,
+            self.valid_generator,
+            epochs=1,
+            steps_per_epoch=ModelFittingTestCaseProgress.num_steps,
+            validation_steps=ModelFittingTestCaseProgress.num_steps,
+            callbacks=[self.mock_callback],
+            progress_options=dict(coloring=False, progress_bar=True),
+        )
 
         # We split per step update
         steps_update = self.test_out.getvalue().strip().split("\r")
@@ -447,19 +495,21 @@ class ModelFittingTestCaseProgress(ModelFittingTestCase):
         template_format = r".*Epoch:.*{}\/1.*Step:.*{}\/5.*{:6.2f}\%.*|{}|.*ETA:"
         epoch = 1
         # the 5 train steps
-        for step, step_update in enumerate(steps_update[:ModelFittingTestCaseProgress.num_steps]):
+        for step, step_update in enumerate(steps_update[: ModelFittingTestCaseProgress.num_steps]):
             step += 1
             progress_Bar = "\u2588" * step * 2 + " " * (20 - step * 2)
-            regex_filled = template_format.format(epoch, step, step / ModelFittingTestCaseProgress.num_steps * 100,
-                                                  progress_Bar)
+            regex_filled = template_format.format(
+                epoch, step, step / ModelFittingTestCaseProgress.num_steps * 100, progress_Bar
+            )
             self.assertRegex(step_update, regex_filled)
 
         # The 5 val steps
-        for step, step_update in enumerate(steps_update[ModelFittingTestCaseProgress.num_steps:-1]):
+        for step, step_update in enumerate(steps_update[ModelFittingTestCaseProgress.num_steps : -1]):
             step += 1
             progress_Bar = "\u2588" * step * 2 + " " * (20 - step * 2)
-            regex_filled = template_format.format(epoch, step, step / ModelFittingTestCaseProgress.num_steps * 100,
-                                                  progress_Bar)
+            regex_filled = template_format.format(
+                epoch, step, step / ModelFittingTestCaseProgress.num_steps * 100, progress_Bar
+            )
             self.assertRegex(step_update, regex_filled)
 
         # last print update templating different
@@ -467,13 +517,15 @@ class ModelFittingTestCaseProgress(ModelFittingTestCase):
         self.assertRegex(steps_update[-1], last_print_regex)
 
     def test_fitting_complete_display_test_with_no_progress_bar_no_coloring(self):
-        _ = self.model.fit_generator(self.train_generator,
-                                     self.valid_generator,
-                                     epochs=1,
-                                     steps_per_epoch=ModelFittingTestCaseProgress.num_steps,
-                                     validation_steps=ModelFittingTestCaseProgress.num_steps,
-                                     callbacks=[self.mock_callback],
-                                     progress_options=dict(coloring=False, progress_bar=False))
+        _ = self.model.fit_generator(
+            self.train_generator,
+            self.valid_generator,
+            epochs=1,
+            steps_per_epoch=ModelFittingTestCaseProgress.num_steps,
+            validation_steps=ModelFittingTestCaseProgress.num_steps,
+            callbacks=[self.mock_callback],
+            progress_options=dict(coloring=False, progress_bar=False),
+        )
 
         # We split per step update
         steps_update = self.test_out.getvalue().strip().split("\r")
@@ -482,13 +534,13 @@ class ModelFittingTestCaseProgress(ModelFittingTestCase):
         template_format = r".*Epoch:.*{}\/1.*Step:.*{}\/5.*ETA:"
         epoch = 1
         # the 5 train steps
-        for step, step_update in enumerate(steps_update[:ModelFittingTestCaseProgress.num_steps]):
+        for step, step_update in enumerate(steps_update[: ModelFittingTestCaseProgress.num_steps]):
             step += 1
             regex_filled = template_format.format(epoch, step, step / ModelFittingTestCaseProgress.num_steps * 100)
             self.assertRegex(step_update, regex_filled)
 
         # The 5 val steps
-        for step, step_update in enumerate(steps_update[ModelFittingTestCaseProgress.num_steps:-1]):
+        for step, step_update in enumerate(steps_update[ModelFittingTestCaseProgress.num_steps : -1]):
             step += 1
             regex_filled = template_format.format(epoch, step, step / ModelFittingTestCaseProgress.num_steps * 100)
             self.assertRegex(step_update, regex_filled)
@@ -504,14 +556,16 @@ class ModelFittingTestCaseProgress(ModelFittingTestCase):
             "ratio_color": "WHITE",
             "metric_value_color": "WHITE",
             "time_color": "WHITE",
-            "progress_bar_color": "WHITE"
+            "progress_bar_color": "WHITE",
         }
 
-        _, _ = self.model.evaluate_generator(self.test_generator,
-                                             steps=ModelFittingTestCaseProgress.num_steps,
-                                             callbacks=[self.mock_callback],
-                                             verbose=True,
-                                             progress_options=dict(coloring=coloring, progress_bar=True))
+        _, _ = self.model.evaluate_generator(
+            self.test_generator,
+            steps=ModelFittingTestCaseProgress.num_steps,
+            callbacks=[self.mock_callback],
+            verbose=True,
+            progress_options=dict(coloring=coloring, progress_bar=True),
+        )
 
         # We split per step update
         steps_update = self.test_out.getvalue().strip().split("\r")
@@ -521,8 +575,9 @@ class ModelFittingTestCaseProgress(ModelFittingTestCase):
         for step, step_update in enumerate(steps_update[:-1]):
             step += 1
             progress_Bar = "\u2588" * step * 2 + " " * (20 - step * 2)
-            regex_filled = template_format.format(step, step / ModelFittingTestCaseProgress.num_steps * 100,
-                                                  progress_Bar)
+            regex_filled = template_format.format(
+                step, step / ModelFittingTestCaseProgress.num_steps * 100, progress_Bar
+            )
             self.assertRegex(step_update, regex_filled)
 
         # last print update templating different
@@ -530,11 +585,13 @@ class ModelFittingTestCaseProgress(ModelFittingTestCase):
         self.assertRegex(steps_update[-1], last_print_regex)
 
     def test_evaluate_complete_display_test_with_progress_bar_no_coloring(self):
-        _, _ = self.model.evaluate_generator(self.test_generator,
-                                             steps=ModelFittingTestCaseProgress.num_steps,
-                                             callbacks=[self.mock_callback],
-                                             verbose=True,
-                                             progress_options=dict(coloring=False, progress_bar=True))
+        _, _ = self.model.evaluate_generator(
+            self.test_generator,
+            steps=ModelFittingTestCaseProgress.num_steps,
+            callbacks=[self.mock_callback],
+            verbose=True,
+            progress_options=dict(coloring=False, progress_bar=True),
+        )
 
         # We split per step update
         steps_update = self.test_out.getvalue().strip().split("\r")
@@ -544,8 +601,9 @@ class ModelFittingTestCaseProgress(ModelFittingTestCase):
         for step, step_update in enumerate(steps_update[:-1]):
             step += 1
             progress_Bar = "\u2588" * step * 2 + " " * (20 - step * 2)
-            regex_filled = template_format.format(step, step / ModelFittingTestCaseProgress.num_steps * 100,
-                                                  progress_Bar)
+            regex_filled = template_format.format(
+                step, step / ModelFittingTestCaseProgress.num_steps * 100, progress_Bar
+            )
             self.assertRegex(step_update, regex_filled)
 
         # last print update templating different
@@ -553,11 +611,13 @@ class ModelFittingTestCaseProgress(ModelFittingTestCase):
         self.assertRegex(steps_update[-1], last_print_regex)
 
     def test_evaluate_complete_display_test_with_no_progress_bar_no_coloring(self):
-        _, _ = self.model.evaluate_generator(self.test_generator,
-                                             steps=ModelFittingTestCaseProgress.num_steps,
-                                             callbacks=[self.mock_callback],
-                                             verbose=True,
-                                             progress_options=dict(coloring=False, progress_bar=False))
+        _, _ = self.model.evaluate_generator(
+            self.test_generator,
+            steps=ModelFittingTestCaseProgress.num_steps,
+            callbacks=[self.mock_callback],
+            verbose=True,
+            progress_options=dict(coloring=False, progress_bar=False),
+        )
 
         # We split per step update
         steps_update = self.test_out.getvalue().strip().split("\r")
@@ -590,7 +650,7 @@ class ModelFittingTestCaseProgress(ModelFittingTestCase):
             "ratio_color": "BLACK",
             "metric_value_color": "BLACK",
             "time_color": "BLACK",
-            "progress_bar_color": "BLACK"
+            "progress_bar_color": "BLACK",
         }
 
         self.model.predict_dataset(x, progress_options=dict(coloring=coloring, progress_bar=True))
@@ -601,9 +661,11 @@ class ModelFittingTestCaseProgress(ModelFittingTestCase):
         x = torch.rand(ModelFittingTestCase.evaluate_dataset_len, 1)
 
         with self.assertRaises(KeyError):
-            self.model.predict_dataset(x,
-                                       batch_size=ModelFittingTestCase.batch_size,
-                                       progress_options=dict(coloring={"invalid_name": 'A COLOR'}))
+            self.model.predict_dataset(
+                x,
+                batch_size=ModelFittingTestCase.batch_size,
+                progress_options=dict(coloring={"invalid_name": 'A COLOR'}),
+            )
 
     def test_predict_dataset_with_no_coloring(self):
         x = torch.rand(ModelFittingTestCase.evaluate_dataset_len, 1)
@@ -616,9 +678,9 @@ class ModelFittingTestCaseProgress(ModelFittingTestCase):
     def test_predict_dataset_with_progress_bar_default_coloring(self):
         x = torch.rand(ModelFittingTestCase.evaluate_dataset_len, 1)
 
-        self.model.predict_dataset(x,
-                                   batch_size=ModelFittingTestCase.batch_size,
-                                   progress_options=dict(coloring=True, progress_bar=True))
+        self.model.predict_dataset(
+            x, batch_size=ModelFittingTestCase.batch_size, progress_options=dict(coloring=True, progress_bar=True)
+        )
 
         self.assertStdoutContains(["%", "[32m", "[35m", "[36m", "\u2588"])
 
@@ -631,12 +693,12 @@ class ModelFittingTestCaseProgress(ModelFittingTestCase):
             "ratio_color": "BLACK",
             "metric_value_color": "BLACK",
             "time_color": "BLACK",
-            "progress_bar_color": "BLACK"
+            "progress_bar_color": "BLACK",
         }
 
-        self.model.predict_dataset(x,
-                                   batch_size=ModelFittingTestCase.batch_size,
-                                   progress_options=dict(coloring=coloring, progress_bar=True))
+        self.model.predict_dataset(
+            x, batch_size=ModelFittingTestCase.batch_size, progress_options=dict(coloring=coloring, progress_bar=True)
+        )
 
         self.assertStdoutContains(["%", "[30m", "\u2588"])
 
@@ -644,9 +706,9 @@ class ModelFittingTestCaseProgress(ModelFittingTestCase):
     def test_predict_dataset_with_progress_bar_user_no_color(self):
         x = torch.rand(ModelFittingTestCase.evaluate_dataset_len, 1)
 
-        self.model.predict_dataset(x,
-                                   batch_size=ModelFittingTestCase.batch_size,
-                                   progress_options=dict(coloring=False, progress_bar=True))
+        self.model.predict_dataset(
+            x, batch_size=ModelFittingTestCase.batch_size, progress_options=dict(coloring=False, progress_bar=True)
+        )
 
         self.assertStdoutContains(["%", "\u2588"])
         self.assertStdoutNotContains(["[32m", "[35m", "[36m"])
@@ -654,9 +716,9 @@ class ModelFittingTestCaseProgress(ModelFittingTestCase):
     def test_predict_dataset_with_no_progress_bar(self):
         x = torch.rand(ModelFittingTestCase.evaluate_dataset_len, 1)
 
-        self.model.predict_dataset(x,
-                                   batch_size=ModelFittingTestCase.batch_size,
-                                   progress_options=dict(coloring=False, progress_bar=False))
+        self.model.predict_dataset(
+            x, batch_size=ModelFittingTestCase.batch_size, progress_options=dict(coloring=False, progress_bar=False)
+        )
 
         self.assertStdoutNotContains(["%", "\u2588"])
         self.assertStdoutNotContains(["[32m", "[35m", "[36m"])
@@ -669,7 +731,7 @@ class ModelFittingTestCaseProgress(ModelFittingTestCase):
             "ratio_color": "WHITE",
             "metric_value_color": "WHITE",
             "time_color": "WHITE",
-            "progress_bar_color": "WHITE"
+            "progress_bar_color": "WHITE",
         }
 
         self.model.predict_dataset(x, verbose=True, progress_options=dict(coloring=coloring, progress_bar=True))

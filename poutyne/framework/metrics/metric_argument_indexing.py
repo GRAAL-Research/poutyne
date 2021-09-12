@@ -8,17 +8,16 @@ from .epoch_metrics.base import EpochMetric
 
 
 class IndexedArgumentMetric(nn.Module):
-
     def __init__(self, metric, *, index=None, pred_index=None, true_index=None):
         super().__init__()
         names, metric = get_names_of_metric(metric)
         self.__name__ = names
         self.metric = metric
 
-        if index is not None and \
-                (pred_index is not None or true_index is not None):
-            raise ValueError("'pred_index' and 'true_index' arguments should should not be used "
-                             "with the 'index argument.")
+        if index is not None and (pred_index is not None or true_index is not None):
+            raise ValueError(
+                "'pred_index' and 'true_index' arguments should should not be used " "with the 'index argument."
+            )
         if index is not None:
             self.pred_index = index
             self.true_index = index
@@ -35,7 +34,6 @@ class IndexedArgumentMetric(nn.Module):
 
 
 class IndexedArgumentBatchMetric(IndexedArgumentMetric):
-
     def __init__(self, metric, **kwargs):
         if isinstance(metric, str):
             metric = get_loss_or_metric(metric)
@@ -43,7 +41,6 @@ class IndexedArgumentBatchMetric(IndexedArgumentMetric):
 
 
 class IndexedArgumentEpochMetric(IndexedArgumentMetric, EpochMetric):
-
     def __init__(self, metric, **kwargs):
         if isinstance(metric, str):
             metric = get_epoch_metric(metric)

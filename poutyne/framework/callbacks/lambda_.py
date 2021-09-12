@@ -26,27 +26,29 @@ class LambdaCallback(Callback):
             model.fit(...., callbacks=callbacks)
     """
 
-    def __init__(self,
-                 *,
-                 on_epoch_begin=None,
-                 on_epoch_end=None,
-                 on_train_batch_begin=None,
-                 on_train_batch_end=None,
-                 on_valid_batch_begin=None,
-                 on_valid_batch_end=None,
-                 on_test_batch_begin=None,
-                 on_test_batch_end=None,
-                 on_predict_batch_begin=None,
-                 on_predict_batch_end=None,
-                 on_train_begin=None,
-                 on_train_end=None,
-                 on_valid_begin=None,
-                 on_valid_end=None,
-                 on_test_begin=None,
-                 on_test_end=None,
-                 on_predict_begin=None,
-                 on_predict_end=None,
-                 on_backward_end=None):
+    def __init__(
+        self,
+        *,
+        on_epoch_begin=None,
+        on_epoch_end=None,
+        on_train_batch_begin=None,
+        on_train_batch_end=None,
+        on_valid_batch_begin=None,
+        on_valid_batch_end=None,
+        on_test_batch_begin=None,
+        on_test_batch_end=None,
+        on_predict_batch_begin=None,
+        on_predict_batch_end=None,
+        on_train_begin=None,
+        on_train_end=None,
+        on_valid_begin=None,
+        on_valid_end=None,
+        on_test_begin=None,
+        on_test_end=None,
+        on_predict_begin=None,
+        on_predict_end=None,
+        on_backward_end=None
+    ):
         # pylint: disable=too-many-locals
         super().__init__()
         self._on_epoch_begin = self._set_lambda_for_none(on_epoch_begin)

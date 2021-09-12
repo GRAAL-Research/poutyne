@@ -7,7 +7,6 @@ from poutyne import Model
 
 
 class ModelOptimizerInstanciationTest(unittest.TestCase):
-
     def setUp(self):
         torch.manual_seed(42)
         self.pytorch_network = nn.Linear(1, 1)

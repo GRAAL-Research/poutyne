@@ -60,10 +60,9 @@ class MLFlowLogger(Logger):
                              seed=42, callbacks=[mlflow_logger])
     """
 
-    def __init__(self,
-                 experiment_name: str,
-                 tracking_uri: Union[str, None] = None,
-                 batch_granularity: bool = False) -> None:
+    def __init__(
+        self, experiment_name: str, tracking_uri: Union[str, None] = None, batch_granularity: bool = False
+    ) -> None:
         super().__init__(batch_granularity=batch_granularity)
         if mlflow is None:
             raise ImportError("Mlflow needs to be installed to use this callback.")
@@ -225,8 +224,9 @@ def _get_git_commit(path):
     Function to get the git commit from a path.
     """
     if git is None:
-        warnings.warn("Failed to import Git (the Git executable is probably not on your PATH),"
-                      " so Git SHA is not available.")
+        warnings.warn(
+            "Failed to import Git (the Git executable is probably not on your PATH)," " so Git SHA is not available."
+        )
         return None
 
     try:

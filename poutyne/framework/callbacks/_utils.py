@@ -3,13 +3,15 @@ import warnings
 from typing import Callable
 
 
-def atomic_lambda_save(filename: str,
-                       save_lambda: Callable,
-                       args,
-                       *,
-                       temporary_filename: str = None,
-                       open_mode: str = 'w',
-                       atomic: bool = True):
+def atomic_lambda_save(
+    filename: str,
+    save_lambda: Callable,
+    args,
+    *,
+    temporary_filename: str = None,
+    open_mode: str = 'w',
+    atomic: bool = True
+):
     if atomic:
         if temporary_filename is None:
             temporary_filename = filename + '.tmp'
@@ -21,8 +23,10 @@ def atomic_lambda_save(filename: str,
             os.replace(temporary_filename, filename)
         except OSError as e:
             # This may happen if the temp filesystem is not the same as the final destination's.
-            warnings.warn("Impossible to move the file to its final destination: "
-                          "os.replace(%s, %s) -> %s" % (temporary_filename, filename, e))
+            warnings.warn(
+                "Impossible to move the file to its final destination: "
+                "os.replace(%s, %s) -> %s" % (temporary_filename, filename, e)
+            )
             os.remove(temporary_filename)
 
             warnings.warn('Saving %s non-atomically instead.' % filename)

@@ -8,8 +8,9 @@ from poutyne import Model, EpochMetric
 # Instanciate the MNIST dataset
 train_valid_dataset = MNIST('./datasets', train=True, download=True, transform=ToTensor())
 test_dataset = MNIST('./datasets', train=False, download=True, transform=ToTensor())
-train_dataset, valid_dataset = random_split(train_valid_dataset, [50_000, 10_000],
-                                            generator=torch.Generator().manual_seed(42))
+train_dataset, valid_dataset = random_split(
+    train_valid_dataset, [50_000, 10_000], generator=torch.Generator().manual_seed(42)
+)
 
 # Select CUDA device if available
 cuda_device = 0
@@ -29,7 +30,6 @@ def my_accuracy(y_pred, y_true):
 
 # Creating an epoch metric for the accuracy
 class MyEpochMetricAccuracy(EpochMetric):
-
     def __init__(self):
         super().__init__()
         self.reset()
@@ -51,8 +51,7 @@ class MyEpochMetricAccuracy(EpochMetric):
 
 
 # Define the Model and train with our custom metrics
-model = Model(network, 'sgd', 'cross_entropy',
-              batch_metrics=[my_accuracy],
-              epoch_metrics=[MyEpochMetricAccuracy()],
-              device=device)
+model = Model(
+    network, 'sgd', 'cross_entropy', batch_metrics=[my_accuracy], epoch_metrics=[MyEpochMetricAccuracy()], device=device
+)
 model.fit_dataset(train_dataset, valid_dataset, epochs=epochs)

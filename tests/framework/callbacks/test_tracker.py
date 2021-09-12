@@ -17,7 +17,6 @@ from poutyne import Model, TensorBoardGradientTracker, WeightsGradientsStatsTrac
 
 
 class TrackerTest(TestCase):
-
     def test_keep_good_layer(self):
         # pylint: disable=protected-access
         tracker = Tracker(keep_bias=False)
@@ -44,7 +43,6 @@ class TrackerTest(TestCase):
 
 
 class GradientStatsTrackerTest(TestCase):
-
     def setUp(self):
         self.tracker = WeightsGradientsStatsTracker(number_layers=2)
 
@@ -76,7 +74,7 @@ class GradientStatsTrackerTest(TestCase):
                 "min": self.layer_1_min,
                 "abs_min": self.absolute_min_both_layer,
                 "max": self.layer_1_max,
-                "abs_max": self.layer_1_max
+                "abs_max": self.layer_1_max,
             },
             self.layer_2_name: {
                 "mean": mean_2,
@@ -85,8 +83,8 @@ class GradientStatsTrackerTest(TestCase):
                 "min": self.layer_2_min,
                 "abs_min": self.absolute_min_both_layer,
                 "max": self.layer_2_max,
-                "abs_max": math.fabs(self.layer_2_min)  # since the absolute value is higher than the normal max
-            }
+                "abs_max": math.fabs(self.layer_2_min),  # since the absolute value is higher than the normal max
+            },
         }
 
         mean_1 = 0.195
@@ -102,7 +100,7 @@ class GradientStatsTrackerTest(TestCase):
                 "min": self.layer_1_min * 2,
                 "abs_min": self.absolute_min_both_layer,
                 "max": self.layer_1_max * 2,
-                "abs_max": self.layer_1_max * 2
+                "abs_max": self.layer_1_max * 2,
             },
             self.layer_2_name: {
                 "mean": mean_2,
@@ -111,8 +109,8 @@ class GradientStatsTrackerTest(TestCase):
                 "min": self.layer_2_min * 2,
                 "abs_min": self.absolute_min_both_layer,
                 "max": self.layer_2_max * 2,
-                "abs_max": math.fabs(self.layer_2_min * 2)  # since the absolute value is higher than the normal max
-            }
+                "abs_max": math.fabs(self.layer_2_min * 2),  # since the absolute value is higher than the normal max
+            },
         }
 
         mean_1 = 0.26
@@ -128,7 +126,7 @@ class GradientStatsTrackerTest(TestCase):
                 "min": self.layer_1_min * 3,
                 "abs_min": self.absolute_min_both_layer,
                 "max": self.layer_1_max * 3,
-                "abs_max": self.layer_1_max * 3
+                "abs_max": self.layer_1_max * 3,
             },
             self.layer_2_name: {
                 "mean": mean_2,
@@ -137,8 +135,8 @@ class GradientStatsTrackerTest(TestCase):
                 "min": self.layer_2_min * 3,
                 "abs_min": self.absolute_min_both_layer,
                 "max": self.layer_2_max * 3,
-                "abs_max": math.fabs(self.layer_2_min * 3)  # since the absolute value is higher than the normal max
-            }
+                "abs_max": math.fabs(self.layer_2_min * 3),  # since the absolute value is higher than the normal max
+            },
         }
 
     def test_compute_two_layers_statistic(self):
@@ -158,8 +156,9 @@ class GradientStatsTrackerTest(TestCase):
             layer_2_params = MagicMock()
             layer_2_params.grad = self.layer_2_gradients * batch_number
 
-            named_parameters = ((n, p)
-                                for n, p in [(self.layer_1_name, layer_1_params), (self.layer_2_name, layer_2_params)])
+            named_parameters = (
+                (n, p) for n, p in [(self.layer_1_name, layer_1_params), (self.layer_2_name, layer_2_params)]
+            )
 
             self.tracker.batch_statistic_upgrade(named_parameters=named_parameters)
 
@@ -270,19 +269,24 @@ class TensorBoardGradientTrackerTest(TestCase):
             for layer_name in layer_names:
                 expected_calls.append(call('gradient_distributions/{}weight'.format(layer_name), {'mean': ANY}, epoch))
                 expected_calls.append(
-                    call('gradient_distributions/{}weight'.format(layer_name), {'mean_std_dev_up': ANY}, epoch))
+                    call('gradient_distributions/{}weight'.format(layer_name), {'mean_std_dev_up': ANY}, epoch)
+                )
                 expected_calls.append(
-                    call('gradient_distributions/{}weight'.format(layer_name), {'mean_std_dev_down': ANY}, epoch))
+                    call('gradient_distributions/{}weight'.format(layer_name), {'mean_std_dev_down': ANY}, epoch)
+                )
                 expected_calls.append(call('other_gradient_stats/{}weight'.format(layer_name), {'min': ANY}, epoch))
                 expected_calls.append(call('other_gradient_stats/{}weight'.format(layer_name), {'max': ANY}, epoch))
 
                 if keep_bias:
-                    expected_calls.append(call('gradient_distributions/{}bias'.format(layer_name), {'mean': ANY},
-                                               epoch))
                     expected_calls.append(
-                        call('gradient_distributions/{}bias'.format(layer_name), {'mean_std_dev_up': ANY}, epoch))
+                        call('gradient_distributions/{}bias'.format(layer_name), {'mean': ANY}, epoch)
+                    )
                     expected_calls.append(
-                        call('gradient_distributions/{}bias'.format(layer_name), {'mean_std_dev_down': ANY}, epoch))
+                        call('gradient_distributions/{}bias'.format(layer_name), {'mean_std_dev_up': ANY}, epoch)
+                    )
+                    expected_calls.append(
+                        call('gradient_distributions/{}bias'.format(layer_name), {'mean_std_dev_down': ANY}, epoch)
+                    )
                     expected_calls.append(call('other_gradient_stats/{}bias'.format(layer_name), {'min': ANY}, epoch))
                     expected_calls.append(call('other_gradient_stats/{}bias'.format(layer_name), {'max': ANY}, epoch))
 

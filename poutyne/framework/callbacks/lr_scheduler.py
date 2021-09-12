@@ -18,9 +18,11 @@ class _PyTorchLRSchedulerWrapper(Callback):
     def __init__(self, torch_lr_scheduler, *args, **kwargs):
         super().__init__()
         if len(args) > 0 and isinstance(args[0], Optimizer):
-            raise ValueError("In the LR scheduler callbacks, the optimizer is "
-                             "automatically passed to the PyTorch's LR scheduler. "
-                             "You must remove it from the arguments.")
+            raise ValueError(
+                "In the LR scheduler callbacks, the optimizer is "
+                "automatically passed to the PyTorch's LR scheduler. "
+                "You must remove it from the arguments."
+            )
         self.args = args
         self.kwargs = kwargs
         self.scheduler = None
@@ -56,7 +58,6 @@ class _PyTorchLRSchedulerWrapper(Callback):
 
 
 def new_init(torch_lr_scheduler):
-
     def f(self, *args, **kwargs):
         super(type(self), self).__init__(torch_lr_scheduler, *args, **kwargs)
 
@@ -64,19 +65,20 @@ def new_init(torch_lr_scheduler):
 
 
 for name, module_cls in torch.optim.lr_scheduler.__dict__.items():
-    if inspect.isclass(module_cls) and \
-            issubclass(module_cls, _LRScheduler) and \
-            module_cls != _LRScheduler:
+    if inspect.isclass(module_cls) and issubclass(module_cls, _LRScheduler) and module_cls != _LRScheduler:
         _new_cls = type(
-            name, (_PyTorchLRSchedulerWrapper, ), {
-                '__init__':
-                new_init(module_cls),
-                '__doc__':
-                """
+            name,
+            (_PyTorchLRSchedulerWrapper,),
+            {
+                '__init__': new_init(module_cls),
+                '__doc__': """
                             See:
                                 :class:`~torch.optim.lr_scheduler.{name}`
-                            """.format(name=name)
-            })
+                            """.format(
+                    name=name
+                ),
+            },
+        )
         setattr(sys.modules[__name__], name, _new_cls)
 
 

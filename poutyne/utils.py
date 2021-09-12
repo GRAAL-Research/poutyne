@@ -142,7 +142,6 @@ class TensorDataset(Dataset):
         self._len = _rabbit_hole(self.tensors)
 
     def __getitem__(self, index):
-
         def _rabbit_hole(obj, idx):
             if isinstance(obj, (list, tuple)):
                 return type(obj)(_rabbit_hole(o, idx) for o in obj)
