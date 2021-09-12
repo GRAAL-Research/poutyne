@@ -36,7 +36,7 @@ device = torch.device("cuda:%d" % cuda_device if torch.cuda.is_available() else 
 network = nn.Sequential(
     nn.Linear(num_features, hidden_state_size),
     nn.ReLU(),
-    nn.Linear(hidden_state_size, num_classes)
+    nn.Linear(hidden_state_size, num_classes),
 )
 
 # We need to use dataloaders (i.e. an iterable of batches) with Experiment

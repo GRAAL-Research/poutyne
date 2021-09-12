@@ -6,10 +6,12 @@ from unittest import TestCase
 import torch
 import torch.nn as nn
 
-from poutyne import Model, \
-    CSVGradientLogger as NonAtomicCSVGradientLogger, \
-    AtomicCSVGradientLogger, \
-    MemoryGradientLogger
+from poutyne import (
+    Model,
+    CSVGradientLogger as NonAtomicCSVGradientLogger,
+    AtomicCSVGradientLogger,
+    MemoryGradientLogger,
+)
 from tests.framework.tools import some_data_generator
 
 
@@ -36,11 +38,9 @@ class BaseCSVGradientLoggerTest:
         valid_gen = some_data_generator(self.batch_size)
         memgrad = MemoryGradientLogger()
         logger = self.CSVGradientLogger(self.csv_filename)
-        self.model.fit_generator(train_gen,
-                                 valid_gen,
-                                 epochs=self.num_epochs,
-                                 steps_per_epoch=5,
-                                 callbacks=[memgrad, logger])
+        self.model.fit_generator(
+            train_gen, valid_gen, epochs=self.num_epochs, steps_per_epoch=5, callbacks=[memgrad, logger]
+        )
         self._test_logging(memgrad.history)
 
     def test_logging_append(self):
@@ -48,19 +48,19 @@ class BaseCSVGradientLoggerTest:
         valid_gen = some_data_generator(self.batch_size)
         logger = self.CSVGradientLogger(self.csv_filename)
         memgrad = MemoryGradientLogger()
-        self.model.fit_generator(train_gen,
-                                 valid_gen,
-                                 epochs=self.num_epochs,
-                                 steps_per_epoch=5,
-                                 callbacks=[memgrad, logger])
+        self.model.fit_generator(
+            train_gen, valid_gen, epochs=self.num_epochs, steps_per_epoch=5, callbacks=[memgrad, logger]
+        )
         memgrad2 = MemoryGradientLogger()
         logger = self.CSVGradientLogger(self.csv_filename, append=True)
-        self.model.fit_generator(train_gen,
-                                 valid_gen,
-                                 epochs=20,
-                                 steps_per_epoch=5,
-                                 initial_epoch=self.num_epochs,
-                                 callbacks=[memgrad2, logger])
+        self.model.fit_generator(
+            train_gen,
+            valid_gen,
+            epochs=20,
+            steps_per_epoch=5,
+            initial_epoch=self.num_epochs,
+            callbacks=[memgrad2, logger],
+        )
         history = {layer: stats1 + memgrad2.history[layer] for layer, stats1 in memgrad.history.items()}
         self._test_logging(history)
 
@@ -71,12 +71,14 @@ class BaseCSVGradientLoggerTest:
         self.model.fit_generator(train_gen, valid_gen, epochs=self.num_epochs, steps_per_epoch=5, callbacks=[logger])
         memgrad = MemoryGradientLogger()
         logger = self.CSVGradientLogger(self.csv_filename, append=False)
-        self.model.fit_generator(train_gen,
-                                 valid_gen,
-                                 epochs=20,
-                                 steps_per_epoch=5,
-                                 initial_epoch=self.num_epochs,
-                                 callbacks=[memgrad, logger])
+        self.model.fit_generator(
+            train_gen,
+            valid_gen,
+            epochs=20,
+            steps_per_epoch=5,
+            initial_epoch=self.num_epochs,
+            callbacks=[memgrad, logger],
+        )
         self._test_logging(memgrad.history)
 
     def _test_logging(self, history):

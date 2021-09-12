@@ -19,12 +19,14 @@ class ModelBundleTest(TestCase):
         self.temp_dir_obj = TemporaryDirectory()
         self.test_checkpoints_path = os.path.join(self.temp_dir_obj.name, 'expt')
 
-        self.test_experiment = ModelBundle.from_network(self.test_checkpoints_path,
-                                                        nn.Linear(1, 1),
-                                                        optimizer='sgd',
-                                                        loss_function='mse',
-                                                        monitor_metric="loss",
-                                                        monitor_mode="min")
+        self.test_experiment = ModelBundle.from_network(
+            self.test_checkpoints_path,
+            nn.Linear(1, 1),
+            optimizer='sgd',
+            loss_function='mse',
+            monitor_metric="loss",
+            monitor_mode="min",
+        )
         self.ckpt_1_path = os.path.join(self.test_checkpoints_path, "checkpoint_epoch_1.ckpt")
         self.ckpt_last_path = os.path.join(self.test_checkpoints_path, "checkpoint.ckpt")
         self.optim_ckpt_path = os.path.join(self.test_checkpoints_path, "checkpoint.optim")
@@ -64,13 +66,15 @@ class ModelBundleTest(TestCase):
         self._test_train_integration(logs, epochs=epochs, initial_epoch=ModelBundleTest.NUM_EPOCHS + 1)
 
     def test_train_no_log(self):
-        test_experiment = ModelBundle.from_network(self.test_checkpoints_path,
-                                                   nn.Linear(1, 1),
-                                                   optimizer='sgd',
-                                                   loss_function='mse',
-                                                   monitor_metric="loss",
-                                                   monitor_mode="min",
-                                                   logging=False)
+        test_experiment = ModelBundle.from_network(
+            self.test_checkpoints_path,
+            nn.Linear(1, 1),
+            optimizer='sgd',
+            loss_function='mse',
+            monitor_metric="loss",
+            monitor_mode="min",
+            logging=False,
+        )
         train_generator = SomeDataGeneratorWithLen(32, 10, 0)
         valid_generator = SomeDataGeneratorWithLen(32, 10, 0)
         logs = test_experiment.train(train_generator, valid_generator, epochs=ModelBundleTest.NUM_EPOCHS)
@@ -242,28 +246,31 @@ class ModelBundleTest(TestCase):
 
 
 class ModelBundleCheckpointLoadingTest(TestCase):
-
     def setUp(self):
         self.temp_dir_obj = TemporaryDirectory()
         self.test_checkpoints_path = self.temp_dir_obj.name
         self.ckpt_1_path = os.path.join(self.test_checkpoints_path, "checkpoint_epoch_1.ckpt")
         self.ckpt_last_path = os.path.join(self.test_checkpoints_path, "checkpoint.ckpt")
 
-        expt = ModelBundle.from_network(self.test_checkpoints_path,
-                                        nn.Linear(1, 1),
-                                        optimizer='sgd',
-                                        loss_function='mse',
-                                        monitor_metric="loss",
-                                        monitor_mode="min")
+        expt = ModelBundle.from_network(
+            self.test_checkpoints_path,
+            nn.Linear(1, 1),
+            optimizer='sgd',
+            loss_function='mse',
+            monitor_metric="loss",
+            monitor_mode="min",
+        )
         train_generator = SomeDataGeneratorWithLen(2, 32, 0)
         expt.train(train_generator, epochs=1)
 
-        self.test_experiment = ModelBundle.from_network(self.test_checkpoints_path,
-                                                        nn.Linear(1, 1),
-                                                        optimizer='sgd',
-                                                        loss_function='mse',
-                                                        monitor_metric="loss",
-                                                        monitor_mode="min")
+        self.test_experiment = ModelBundle.from_network(
+            self.test_checkpoints_path,
+            nn.Linear(1, 1),
+            optimizer='sgd',
+            loss_function='mse',
+            monitor_metric="loss",
+            monitor_mode="min",
+        )
 
     def tearDown(self):
         self.temp_dir_obj.cleanup()
@@ -271,20 +278,23 @@ class ModelBundleCheckpointLoadingTest(TestCase):
     def test_load_checkpoint_with_int(self):
         self.test_experiment.load_checkpoint(1)
 
-        self.assertEqual(self.test_experiment.model.network.state_dict(),
-                         torch.load(self.ckpt_1_path, map_location="cpu"))
+        self.assertEqual(
+            self.test_experiment.model.network.state_dict(), torch.load(self.ckpt_1_path, map_location="cpu")
+        )
 
     def test_load_checkpoint_best(self):
         self.test_experiment.load_checkpoint("best")
 
-        self.assertEqual(self.test_experiment.model.network.state_dict(),
-                         torch.load(self.ckpt_1_path, map_location="cpu"))
+        self.assertEqual(
+            self.test_experiment.model.network.state_dict(), torch.load(self.ckpt_1_path, map_location="cpu")
+        )
 
     def test_load_checkpoint_last(self):
         self.test_experiment.load_checkpoint("last")
 
-        self.assertEqual(self.test_experiment.model.network.state_dict(),
-                         torch.load(self.ckpt_last_path, map_location="cpu"))
+        self.assertEqual(
+            self.test_experiment.model.network.state_dict(), torch.load(self.ckpt_last_path, map_location="cpu")
+        )
 
     def test_load_checkpoint_path_state_dict(self):
         cpkt_path = os.path.join(self.test_checkpoints_path, "test_model_weights_state_dict.p")

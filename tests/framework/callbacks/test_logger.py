@@ -23,7 +23,6 @@ from poutyne import Model, Callback, TensorBoardLogger, CSVLogger as NonAtomicCS
 
 
 class History(Callback):
-
     def on_epoch_end(self, epoch_number, logs):
         self.history.append(logs)
 
@@ -57,11 +56,9 @@ class BaseCSVLoggerTest:
         train_gen = some_data_generator(20)
         valid_gen = some_data_generator(20)
         logger = self.CSVLogger(self.csv_filename)
-        history = self.model.fit_generator(train_gen,
-                                           valid_gen,
-                                           epochs=self.num_epochs,
-                                           steps_per_epoch=5,
-                                           callbacks=[logger])
+        history = self.model.fit_generator(
+            train_gen, valid_gen, epochs=self.num_epochs, steps_per_epoch=5, callbacks=[logger]
+        )
         self._test_logging(history)
 
     def test_logging_with_batch_granularity(self):
@@ -69,29 +66,22 @@ class BaseCSVLoggerTest:
         valid_gen = some_data_generator(20)
         logger = self.CSVLogger(self.csv_filename, batch_granularity=True)
         history = History()
-        self.model.fit_generator(train_gen,
-                                 valid_gen,
-                                 epochs=self.num_epochs,
-                                 steps_per_epoch=5,
-                                 callbacks=[logger, history])
+        self.model.fit_generator(
+            train_gen, valid_gen, epochs=self.num_epochs, steps_per_epoch=5, callbacks=[logger, history]
+        )
         self._test_logging(history.history)
 
     def test_logging_append(self):
         train_gen = some_data_generator(20)
         valid_gen = some_data_generator(20)
         logger = self.CSVLogger(self.csv_filename)
-        history = self.model.fit_generator(train_gen,
-                                           valid_gen,
-                                           epochs=self.num_epochs,
-                                           steps_per_epoch=5,
-                                           callbacks=[logger])
+        history = self.model.fit_generator(
+            train_gen, valid_gen, epochs=self.num_epochs, steps_per_epoch=5, callbacks=[logger]
+        )
         logger = self.CSVLogger(self.csv_filename, append=True)
-        history2 = self.model.fit_generator(train_gen,
-                                            valid_gen,
-                                            epochs=20,
-                                            steps_per_epoch=5,
-                                            initial_epoch=self.num_epochs,
-                                            callbacks=[logger])
+        history2 = self.model.fit_generator(
+            train_gen, valid_gen, epochs=20, steps_per_epoch=5, initial_epoch=self.num_epochs, callbacks=[logger]
+        )
         self._test_logging(history + history2)
 
     def test_logging_overwrite(self):
@@ -100,12 +90,9 @@ class BaseCSVLoggerTest:
         logger = self.CSVLogger(self.csv_filename)
         self.model.fit_generator(train_gen, valid_gen, epochs=self.num_epochs, steps_per_epoch=5, callbacks=[logger])
         logger = self.CSVLogger(self.csv_filename, append=False)
-        history = self.model.fit_generator(train_gen,
-                                           valid_gen,
-                                           epochs=20,
-                                           steps_per_epoch=5,
-                                           initial_epoch=self.num_epochs,
-                                           callbacks=[logger])
+        history = self.model.fit_generator(
+            train_gen, valid_gen, epochs=20, steps_per_epoch=5, initial_epoch=self.num_epochs, callbacks=[logger]
+        )
         self._test_logging(history)
 
     def test_multiple_learning_rates(self):
@@ -113,16 +100,13 @@ class BaseCSVLoggerTest:
         valid_gen = some_data_generator(20)
         logger = self.CSVLogger(self.csv_filename)
         lrs = [BaseCSVLoggerTest.lr, BaseCSVLoggerTest.lr / 2]
-        optimizer = torch.optim.SGD([
-            dict(params=[self.pytorch_network.weight], lr=lrs[0]),
-            dict(params=[self.pytorch_network.bias], lr=lrs[1])
-        ])
+        optimizer = torch.optim.SGD(
+            [dict(params=[self.pytorch_network.weight], lr=lrs[0]), dict(params=[self.pytorch_network.bias], lr=lrs[1])]
+        )
         model = Model(self.pytorch_network, optimizer, self.loss_function)
-        history = model.fit_generator(train_gen,
-                                      valid_gen,
-                                      epochs=self.num_epochs,
-                                      steps_per_epoch=5,
-                                      callbacks=[logger])
+        history = model.fit_generator(
+            train_gen, valid_gen, epochs=self.num_epochs, steps_per_epoch=5, callbacks=[logger]
+        )
         self._test_logging(history, lrs=lrs)
 
     def _test_logging(self, history, lrs=None):
@@ -185,11 +169,9 @@ class BaseTensorBoardLoggerTest:
         train_gen = some_data_generator(20)
         valid_gen = some_data_generator(20)
         logger = TensorBoardLogger(self.writer)
-        history = self.model.fit_generator(train_gen,
-                                           valid_gen,
-                                           epochs=self.num_epochs,
-                                           steps_per_epoch=5,
-                                           callbacks=[logger])
+        history = self.model.fit_generator(
+            train_gen, valid_gen, epochs=self.num_epochs, steps_per_epoch=5, callbacks=[logger]
+        )
         self._test_logging(history)
 
     def test_multiple_learning_rates(self):
@@ -197,16 +179,13 @@ class BaseTensorBoardLoggerTest:
         valid_gen = some_data_generator(20)
         logger = TensorBoardLogger(self.writer)
         lrs = [BaseCSVLoggerTest.lr, BaseCSVLoggerTest.lr / 2]
-        optimizer = torch.optim.SGD([
-            dict(params=[self.pytorch_network.weight], lr=lrs[0]),
-            dict(params=[self.pytorch_network.bias], lr=lrs[1])
-        ])
+        optimizer = torch.optim.SGD(
+            [dict(params=[self.pytorch_network.weight], lr=lrs[0]), dict(params=[self.pytorch_network.bias], lr=lrs[1])]
+        )
         model = Model(self.pytorch_network, optimizer, self.loss_function)
-        history = model.fit_generator(train_gen,
-                                      valid_gen,
-                                      epochs=self.num_epochs,
-                                      steps_per_epoch=5,
-                                      callbacks=[logger])
+        history = model.fit_generator(
+            train_gen, valid_gen, epochs=self.num_epochs, steps_per_epoch=5, callbacks=[logger]
+        )
         self._test_logging(history, lrs=lrs)
 
     def _test_logging(self, history, lrs=None):

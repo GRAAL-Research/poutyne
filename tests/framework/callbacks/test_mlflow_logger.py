@@ -14,7 +14,6 @@ mlflow_default_git_commit_tag = "mlflow.source.git.commit"
 
 
 class MLFlowLoggerTest(TestCase):
-
     def setUp(self) -> None:
         self.a_experiment_name = "a_name"
         self.a_run_id = "101010"
@@ -35,27 +34,17 @@ class MLFlowLoggerTest(TestCase):
         self.a_log = {"metric_1": 1, "metric_2": 2}
 
         self.settings_in_dict = {"param_1": 1, "param_2": 2, "param_3": "value"}
-        self.settings_in_dictconfig_no_sequence = DictConfig({
-            'param_dict': {
-                'param_1': 1
-            },
-            'param_dict_2': {
-                'param_2"': 2,
-                'param_3"': 3
-            },
-            'param': 'value'
-        })
-        self.settings_in_dictconfig_with_sequence = DictConfig({
-            'param_dict': {
-                'param_1': 1
-            },
-            'param_dict_2': {
-                'param_2"': 2,
-                'param_3"': 3
-            },
-            'param': 'value',
-            'a_list_param': [0, 1]
-        })
+        self.settings_in_dictconfig_no_sequence = DictConfig(
+            {'param_dict': {'param_1': 1}, 'param_dict_2': {'param_2"': 2, 'param_3"': 3}, 'param': 'value'}
+        )
+        self.settings_in_dictconfig_with_sequence = DictConfig(
+            {
+                'param_dict': {'param_1': 1},
+                'param_dict_2': {'param_2"': 2, 'param_3"': 3},
+                'param': 'value',
+                'a_list_param': [0, 1],
+            }
+        )
 
     @patch("poutyne.framework.mlflow_logger._get_git_commit", MagicMock())
     def test_whenNewExperiment_givenAMLFlowInstantiation_thenCreateNewExperiment(self):
@@ -72,14 +61,15 @@ class MLFlowLoggerTest(TestCase):
     def test_whenExperimentAlreadyCreated_givenAMLFlowInstantiation_thenGetExperiment(self):
         with patch("poutyne.framework.mlflow_logger.MlflowClient") as ml_flow_client_patch:
             ml_flow_client_patch.return_value.create_experiment = MagicMock(
-                side_effect=MlflowException(self.a_exception_message))
+                side_effect=MlflowException(self.a_exception_message)
+            )
             ml_flow_client_patch.return_value.get_experiment_by_name = MagicMock(return_value=self.experiment_mock)
 
             MLFlowLogger(self.a_experiment_name)
 
             create_experiment_calls = [
                 call().create_experiment(self.a_experiment_name, self.none_tracking_uri),
-                call().get_experiment_by_name(self.a_experiment_name)
+                call().get_experiment_by_name(self.a_experiment_name),
             ]
 
             ml_flow_client_patch.assert_has_calls(create_experiment_calls)
@@ -94,7 +84,7 @@ class MLFlowLoggerTest(TestCase):
 
             settings_calls = [
                 call().create_experiment(self.a_experiment_name, self.none_tracking_uri),
-                call().create_run(experiment_id=self.a_experiment_id)
+                call().create_run(experiment_id=self.a_experiment_id),
             ]
             ml_flow_client_patch.assert_has_calls(settings_calls)
 
@@ -250,15 +240,15 @@ class MLFlowLoggerTest(TestCase):
             elif isinstance(value, Sequence) and not isinstance(value, str):
                 for idx, value_lower in enumerate(value):
                     good_key = "{}.{}".format(key, idx)
-                    ml_flow_client_calls.append((call().log_param(run_id=self.a_run_id, key=good_key,
-                                                                  value=value_lower)))
+                    ml_flow_client_calls.append(
+                        (call().log_param(run_id=self.a_run_id, key=good_key, value=value_lower))
+                    )
             else:
                 ml_flow_client_calls.append(call().log_param(run_id=self.a_run_id, key=key, value=value))
         return ml_flow_client_calls
 
 
 class GetGitCommitTest(TestCase):
-
     def setUp(self) -> None:
         self.a_fake_path = "a_fake_path"
         self.a_wrong_path = "/a_wrong_path"

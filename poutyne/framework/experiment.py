@@ -16,13 +16,15 @@ except ImportError:
 
 from . import Model
 from ..utils import set_seeds
-from .callbacks import ModelCheckpoint, \
-    OptimizerCheckpoint, \
-    LRSchedulerCheckpoint, \
-    PeriodicSaveLambda, \
-    AtomicCSVLogger, \
-    TensorBoardLogger, \
-    BestModelRestore
+from .callbacks import (
+    ModelCheckpoint,
+    OptimizerCheckpoint,
+    LRSchedulerCheckpoint,
+    PeriodicSaveLambda,
+    AtomicCSVLogger,
+    TensorBoardLogger,
+    BestModelRestore,
+)
 
 
 class Experiment:
@@ -181,6 +183,7 @@ class Experiment:
             exp.train(train_generator, valid_generator, epochs=5)
 
     """
+
     BEST_CHECKPOINT_FILENAME = 'checkpoint_epoch_{epoch}.ckpt'
     MODEL_CHECKPOINT_FILENAME = 'checkpoint.ckpt'
     OPTIMIZER_CHECKPOINT_FILENAME = 'checkpoint.optim'
@@ -190,21 +193,22 @@ class Experiment:
     LR_SCHEDULER_FILENAME = 'lr_sched_%d.lrsched'
     TEST_LOG_FILENAME = '{name}_log.tsv'
 
-    def __init__(self,
-                 directory: str,
-                 network: torch.nn.Module,
-                 *,
-                 device: Union[torch.device, List[torch.device], List[str], None, str] = None,
-                 logging: bool = True,
-                 optimizer: Union[torch.optim.Optimizer, str] = 'sgd',
-                 loss_function: Union[Callable, str] = None,
-                 batch_metrics: Union[List, None] = None,
-                 epoch_metrics: Union[List, None] = None,
-                 monitoring: bool = True,
-                 monitor_metric: Union[str, None] = None,
-                 monitor_mode: Union[str, None] = None,
-                 task: Union[str, None] = None) -> None:
-
+    def __init__(
+        self,
+        directory: str,
+        network: torch.nn.Module,
+        *,
+        device: Union[torch.device, List[torch.device], List[str], None, str] = None,
+        logging: bool = True,
+        optimizer: Union[torch.optim.Optimizer, str] = 'sgd',
+        loss_function: Union[Callable, str] = None,
+        batch_metrics: Union[List, None] = None,
+        epoch_metrics: Union[List, None] = None,
+        monitoring: bool = True,
+        monitor_metric: Union[str, None] = None,
+        monitor_mode: Union[str, None] = None,
+        task: Union[str, None] = None,
+    ) -> None:
         if pd is None:
             raise ImportError("pandas needs to be installed to use the class Experiment.")
 
@@ -227,12 +231,9 @@ class Experiment:
         if self.monitoring:
             self._set_monitor(monitor_metric, monitor_mode, task)
 
-        self.model = Model(network,
-                           optimizer,
-                           loss_function,
-                           batch_metrics=batch_metrics,
-                           epoch_metrics=epoch_metrics,
-                           device=device)
+        self.model = Model(
+            network, optimizer, loss_function, batch_metrics=batch_metrics, epoch_metrics=epoch_metrics, device=device
+        )
 
         self.best_checkpoint_filename = self.get_path(Experiment.BEST_CHECKPOINT_FILENAME)
         self.model_checkpoint_filename = self.get_path(Experiment.MODEL_CHECKPOINT_FILENAME)
@@ -249,8 +250,9 @@ class Experiment:
         """
         return os.path.join(self.directory, *paths)
 
-    def _get_loss_function(self, loss_function: Union[Callable, str], network: torch.nn.Module,
-                           task: Union[str, None]) -> Union[Callable, str]:
+    def _get_loss_function(
+        self, loss_function: Union[Callable, str], network: torch.nn.Module, task: Union[str, None]
+    ) -> Union[Callable, str]:
         if loss_function is None:
             if hasattr(network, 'loss_function'):
                 return network.loss_function
@@ -261,8 +263,9 @@ class Experiment:
                     return 'mse'
         return loss_function
 
-    def _get_batch_metrics(self, batch_metrics: Union[List, None], network: torch.nn.Module,
-                           task: Union[str, None]) -> Union[List, None]:
+    def _get_batch_metrics(
+        self, batch_metrics: Union[List, None], network: torch.nn.Module, task: Union[str, None]
+    ) -> Union[List, None]:
         if batch_metrics is None or len(batch_metrics) == 0:
             if hasattr(network, 'batch_metrics'):
                 return network.batch_metrics
@@ -270,8 +273,9 @@ class Experiment:
                 return ['accuracy']
         return batch_metrics
 
-    def _get_epoch_metrics(self, epoch_metrics: Union[List, None], network, task: Union[str,
-                                                                                        None]) -> Union[List, None]:
+    def _get_epoch_metrics(
+        self, epoch_metrics: Union[List, None], network, task: Union[str, None]
+    ) -> Union[List, None]:
         if epoch_metrics is None or len(epoch_metrics) == 0:
             if hasattr(network, 'epoch_metrics'):
                 return network.epoch_metrics
@@ -279,8 +283,9 @@ class Experiment:
                 return ['f1']
         return epoch_metrics
 
-    def _set_monitor(self, monitor_metric: Union[str, None], monitor_mode: Union[str, None], task: Union[str,
-                                                                                                         None]) -> None:
+    def _set_monitor(
+        self, monitor_metric: Union[str, None], monitor_mode: Union[str, None], task: Union[str, None]
+    ) -> None:
         if monitor_mode is not None and monitor_mode not in ['min', 'max']:
             raise ValueError("Invalid mode '%s'" % monitor_mode)
 
@@ -314,7 +319,7 @@ class Experiment:
             best_epoch_index = history[self.monitor_metric].idxmin()
         else:
             best_epoch_index = history[self.monitor_metric].idxmax()
-        return history.iloc[best_epoch_index:best_epoch_index + 1]
+        return history.iloc[best_epoch_index : best_epoch_index + 1]
 
     def get_saved_epochs(self):
         """
@@ -357,8 +362,10 @@ class Experiment:
                 print(e)
             if os.path.isfile(self.model_checkpoint_filename):
                 try:
-                    print("Loading weights from %s and starting at epoch %d." %
-                          (self.model_checkpoint_filename, initial_epoch))
+                    print(
+                        "Loading weights from %s and starting at epoch %d."
+                        % (self.model_checkpoint_filename, initial_epoch)
+                    )
                     self.model.load_weights(self.model_checkpoint_filename)
                 except Exception as e:
                     print(e)
@@ -366,8 +373,10 @@ class Experiment:
                 self._warn_missing_file(self.model_checkpoint_filename)
             if os.path.isfile(self.optimizer_checkpoint_filename):
                 try:
-                    print("Loading optimizer state from %s and starting at epoch %d." %
-                          (self.optimizer_checkpoint_filename, initial_epoch))
+                    print(
+                        "Loading optimizer state from %s and starting at epoch %d."
+                        % (self.optimizer_checkpoint_filename, initial_epoch)
+                    )
                     self.model.load_optimizer_state(self.optimizer_checkpoint_filename)
                 except Exception as e:
                     print(e)
@@ -377,8 +386,9 @@ class Experiment:
                 filename = self.lr_scheduler_filename % i
                 if os.path.isfile(filename):
                     try:
-                        print("Loading LR scheduler state from %s and starting at epoch %d." %
-                              (filename, initial_epoch))
+                        print(
+                            "Loading LR scheduler state from %s and starting at epoch %d." % (filename, initial_epoch)
+                        )
                         lr_scheduler.load_state(filename)
                     except Exception as e:
                         print(e)
@@ -386,16 +396,19 @@ class Experiment:
                     self._warn_missing_file(filename)
         return initial_epoch
 
-    def _init_model_restoring_callbacks(self, initial_epoch: int, keep_only_last_best: bool,
-                                        save_every_epoch: bool) -> List:
+    def _init_model_restoring_callbacks(
+        self, initial_epoch: int, keep_only_last_best: bool, save_every_epoch: bool
+    ) -> List:
         callbacks = []
-        best_checkpoint = ModelCheckpoint(self.best_checkpoint_filename,
-                                          monitor=self.monitor_metric,
-                                          mode=self.monitor_mode,
-                                          keep_only_last_best=keep_only_last_best,
-                                          save_best_only=not save_every_epoch,
-                                          restore_best=not save_every_epoch,
-                                          verbose=not save_every_epoch)
+        best_checkpoint = ModelCheckpoint(
+            self.best_checkpoint_filename,
+            monitor=self.monitor_metric,
+            mode=self.monitor_mode,
+            keep_only_last_best=keep_only_last_best,
+            save_best_only=not save_every_epoch,
+            restore_best=not save_every_epoch,
+            verbose=not save_every_epoch,
+        )
         callbacks.append(best_checkpoint)
 
         if save_every_epoch:
@@ -427,7 +440,8 @@ class Experiment:
                     "tensorboard does not seem to be installed. "
                     "To remove this warning, set the 'disable_tensorboard' "
                     "flag to True or install tensorboard.",
-                    stacklevel=3)
+                    stacklevel=3,
+                )
             else:
                 tensorboard_writer = SummaryWriter(self.tensorboard_directory)
                 callbacks += [TensorBoardLogger(tensorboard_writer)]
@@ -584,16 +598,18 @@ class Experiment:
         """
         return self._train(self.model.fit, x, y, validation_data, **kwargs)
 
-    def _train(self,
-               training_func,
-               *args,
-               callbacks: Union[List, None] = None,
-               lr_schedulers: Union[List, None] = None,
-               keep_only_last_best: bool = False,
-               save_every_epoch: bool = False,
-               disable_tensorboard: bool = False,
-               seed: int = 42,
-               **kwargs) -> List[Dict]:
+    def _train(
+        self,
+        training_func,
+        *args,
+        callbacks: Union[List, None] = None,
+        lr_schedulers: Union[List, None] = None,
+        keep_only_last_best: bool = False,
+        save_every_epoch: bool = False,
+        disable_tensorboard: bool = False,
+        seed: int = 42,
+        **kwargs,
+    ) -> List[Dict]:
         set_seeds(seed)
 
         lr_schedulers = [] if lr_schedulers is None else lr_schedulers
@@ -612,8 +628,9 @@ class Experiment:
             expt_callbacks += [AtomicCSVLogger(self.log_filename, separator='\t', append=initial_epoch != 1)]
 
             if self.monitoring:
-                expt_callbacks += self._init_model_restoring_callbacks(initial_epoch, keep_only_last_best,
-                                                                       save_every_epoch)
+                expt_callbacks += self._init_model_restoring_callbacks(
+                    initial_epoch, keep_only_last_best, save_every_epoch
+                )
             expt_callbacks += [ModelCheckpoint(self.model_checkpoint_filename, verbose=False)]
             expt_callbacks += [OptimizerCheckpoint(self.optimizer_checkpoint_filename, verbose=False)]
 
@@ -642,11 +659,9 @@ class Experiment:
             if tensorboard_writer is not None:
                 tensorboard_writer.close()
 
-    def load_checkpoint(self,
-                        checkpoint: Union[int, str],
-                        *,
-                        verbose: bool = False,
-                        strict: bool = True) -> Union[Dict, None]:
+    def load_checkpoint(
+        self, checkpoint: Union[int, str], *, verbose: bool = False, strict: bool = True
+    ) -> Union[Dict, None]:
         """
         Loads the model's weights with the weights at a given checkpoint epoch.
 
@@ -680,26 +695,29 @@ class Experiment:
             incompatible_keys = self._load_path_checkpoint(path=checkpoint, verbose=verbose, strict=strict)
 
         if len(incompatible_keys.unexpected_keys) > 0:
-            warnings.warn('Unexpected key(s): {}.'.format(', '.join('"{}"'.format(k)
-                                                                    for k in incompatible_keys.unexpected_keys)),
-                          stacklevel=2)
+            warnings.warn(
+                'Unexpected key(s): {}.'.format(', '.join('"{}"'.format(k) for k in incompatible_keys.unexpected_keys)),
+                stacklevel=2,
+            )
         if len(incompatible_keys.missing_keys) > 0:
-            warnings.warn('Missing key(s): {}.'.format(', '.join('"{}"'.format(k)
-                                                                 for k in incompatible_keys.missing_keys)),
-                          stacklevel=2)
+            warnings.warn(
+                'Missing key(s): {}.'.format(', '.join('"{}"'.format(k) for k in incompatible_keys.missing_keys)),
+                stacklevel=2,
+            )
 
         return epoch_stats
 
     def _print_epoch_stats(self, epoch_stats):
-        metrics_str = ', '.join('%s: %g' % (metric_name, epoch_stats[metric_name].item())
-                                for metric_name in epoch_stats.columns[2:])
+        metrics_str = ', '.join(
+            '%s: %g' % (metric_name, epoch_stats[metric_name].item()) for metric_name in epoch_stats.columns[2:]
+        )
         print(metrics_str)
 
     def _load_epoch_checkpoint(self, epoch: int, *, verbose: bool = False, strict: bool = True) -> None:
         ckpt_filename = self.best_checkpoint_filename.format(epoch=epoch)
 
         history = self.get_stats()
-        epoch_stats = history.iloc[epoch - 1:epoch]
+        epoch_stats = history.iloc[epoch - 1 : epoch]
 
         if verbose:
             print(f"Loading checkpoint {ckpt_filename}")
@@ -848,14 +866,16 @@ class Experiment:
         """
         return self._test(self.model.evaluate, x, y, **kwargs)
 
-    def _test(self,
-              evaluate_func,
-              *args,
-              checkpoint: Union[str, int] = 'best',
-              seed: int = 42,
-              name='test',
-              verbose=True,
-              **kwargs) -> Dict:
+    def _test(
+        self,
+        evaluate_func,
+        *args,
+        checkpoint: Union[str, int] = 'best',
+        seed: int = 42,
+        name='test',
+        verbose=True,
+        **kwargs,
+    ) -> Dict:
         if kwargs.get('return_dict_format') is False:
             raise ValueError("This method only returns a dict.")
         kwargs['return_dict_format'] = True
@@ -959,12 +979,9 @@ class Experiment:
         """
         return self._predict(self.model.predict, x, **kwargs)
 
-    def _predict(self,
-                 evaluate_func: Callable,
-                 *args,
-                 verbose=True,
-                 checkpoint: Union[str, int] = 'best',
-                 **kwargs) -> Any:
+    def _predict(
+        self, evaluate_func: Callable, *args, verbose=True, checkpoint: Union[str, int] = 'best', **kwargs
+    ) -> Any:
         if self.logging:
             if not self.monitoring and checkpoint == 'best':
                 checkpoint = 'last'

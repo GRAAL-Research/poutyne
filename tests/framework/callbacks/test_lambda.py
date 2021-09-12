@@ -9,7 +9,6 @@ from tests.framework.model.base import ModelFittingTestCase
 
 
 class LambdaTest(ModelFittingTestCase):
-
     def setUp(self):
         super().setUp()
         torch.manual_seed(42)
@@ -24,12 +23,14 @@ class LambdaTest(ModelFittingTestCase):
         train_generator = some_data_tensor_generator(LambdaTest.batch_size)
         valid_generator = some_data_tensor_generator(LambdaTest.batch_size)
         test_generator = some_data_tensor_generator(LambdaTest.batch_size)
-        self.model.fit_generator(train_generator,
-                                 valid_generator,
-                                 epochs=LambdaTest.epochs,
-                                 steps_per_epoch=LambdaTest.steps_per_epoch,
-                                 validation_steps=LambdaTest.steps_per_epoch,
-                                 callbacks=[lambda_callback])
+        self.model.fit_generator(
+            train_generator,
+            valid_generator,
+            epochs=LambdaTest.epochs,
+            steps_per_epoch=LambdaTest.steps_per_epoch,
+            validation_steps=LambdaTest.steps_per_epoch,
+            callbacks=[lambda_callback],
+        )
 
         num_steps = 10
         self.model.evaluate_generator(test_generator, steps=num_steps, callbacks=[lambda_callback])
@@ -41,12 +42,14 @@ class LambdaTest(ModelFittingTestCase):
         train_generator = some_data_tensor_generator(LambdaTest.batch_size)
         valid_generator = some_data_tensor_generator(LambdaTest.batch_size)
         test_generator = some_data_tensor_generator(LambdaTest.batch_size)
-        logs = self.model.fit_generator(train_generator,
-                                        valid_generator,
-                                        epochs=LambdaTest.epochs,
-                                        steps_per_epoch=LambdaTest.steps_per_epoch,
-                                        validation_steps=LambdaTest.steps_per_epoch,
-                                        callbacks=[lambda_callback])
+        logs = self.model.fit_generator(
+            train_generator,
+            valid_generator,
+            epochs=LambdaTest.epochs,
+            steps_per_epoch=LambdaTest.steps_per_epoch,
+            validation_steps=LambdaTest.steps_per_epoch,
+            callbacks=[lambda_callback],
+        )
 
         num_steps = 10
         self.model.evaluate_generator(test_generator, steps=num_steps, callbacks=[lambda_callback])
@@ -71,12 +74,14 @@ class LambdaTest(ModelFittingTestCase):
         lambda_callback, mock_calls = self._get_lambda_callback_with_mock_args()
         train_generator = some_data_tensor_generator(LambdaTest.batch_size)
         valid_generator = some_data_tensor_generator(LambdaTest.batch_size)
-        self.model.fit_generator(train_generator,
-                                 valid_generator,
-                                 epochs=LambdaTest.epochs,
-                                 steps_per_epoch=LambdaTest.steps_per_epoch,
-                                 validation_steps=LambdaTest.steps_per_epoch,
-                                 callbacks=[lambda_callback, self.mock_callback])
+        self.model.fit_generator(
+            train_generator,
+            valid_generator,
+            epochs=LambdaTest.epochs,
+            steps_per_epoch=LambdaTest.steps_per_epoch,
+            validation_steps=LambdaTest.steps_per_epoch,
+            callbacks=[lambda_callback, self.mock_callback],
+        )
 
         expected_calls = self.mock_callback.method_calls[2:]
         actual_calls = mock_calls.method_calls
@@ -85,19 +90,21 @@ class LambdaTest(ModelFittingTestCase):
 
     def _get_lambda_callback_with_mock_args(self):
         mock_callback = Mock(spec=Callback())
-        lambda_callback = LambdaCallback(on_epoch_begin=mock_callback.on_epoch_begin,
-                                         on_epoch_end=mock_callback.on_epoch_end,
-                                         on_train_batch_begin=mock_callback.on_train_batch_begin,
-                                         on_train_batch_end=mock_callback.on_train_batch_end,
-                                         on_valid_batch_begin=mock_callback.on_valid_batch_begin,
-                                         on_valid_batch_end=mock_callback.on_valid_batch_end,
-                                         on_test_batch_begin=mock_callback.on_test_batch_begin,
-                                         on_test_batch_end=mock_callback.on_test_batch_end,
-                                         on_train_begin=mock_callback.on_train_begin,
-                                         on_train_end=mock_callback.on_train_end,
-                                         on_valid_begin=mock_callback.on_valid_begin,
-                                         on_valid_end=mock_callback.on_valid_end,
-                                         on_test_begin=mock_callback.on_test_begin,
-                                         on_test_end=mock_callback.on_test_end,
-                                         on_backward_end=mock_callback.on_backward_end)
+        lambda_callback = LambdaCallback(
+            on_epoch_begin=mock_callback.on_epoch_begin,
+            on_epoch_end=mock_callback.on_epoch_end,
+            on_train_batch_begin=mock_callback.on_train_batch_begin,
+            on_train_batch_end=mock_callback.on_train_batch_end,
+            on_valid_batch_begin=mock_callback.on_valid_batch_begin,
+            on_valid_batch_end=mock_callback.on_valid_batch_end,
+            on_test_batch_begin=mock_callback.on_test_batch_begin,
+            on_test_batch_end=mock_callback.on_test_batch_end,
+            on_train_begin=mock_callback.on_train_begin,
+            on_train_end=mock_callback.on_train_end,
+            on_valid_begin=mock_callback.on_valid_begin,
+            on_valid_end=mock_callback.on_valid_end,
+            on_test_begin=mock_callback.on_test_begin,
+            on_test_end=mock_callback.on_test_end,
+            on_backward_end=mock_callback.on_backward_end,
+        )
         return lambda_callback, mock_callback

@@ -28,10 +28,12 @@ class SKLearnMetrics(EpochMetric):
             the names given to the metrics. By default, the names are the names of the functions.
     """
 
-    def __init__(self,
-                 funcs: Union[Callable, List[Callable]],
-                 kwargs: Optional[Union[dict, List[dict]]] = None,
-                 names: Optional[Union[str, List[str]]] = None) -> None:
+    def __init__(
+        self,
+        funcs: Union[Callable, List[Callable]],
+        kwargs: Optional[Union[dict, List[dict]]] = None,
+        names: Optional[Union[str, List[str]]] = None,
+    ) -> None:
         super().__init__()
 
         self.funcs = funcs if isinstance(funcs, (list, tuple)) else [funcs]

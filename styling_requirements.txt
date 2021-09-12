@@ -1,2 +1,3 @@
-yapf==0.31
+black==21.8b0
+black[jupyter]==21.8b0
 pylint==2.9.3

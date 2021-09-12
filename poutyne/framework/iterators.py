@@ -5,7 +5,6 @@ import numpy as np
 
 
 class Step:
-
     def __init__(self, number):
         self.number = number
 
@@ -27,7 +26,6 @@ def _get_step_iterator(steps, generator):
 
 
 class StepIterator:
-
     def __init__(self, generator, steps_per_epoch, batch_metrics_names, epoch_metrics_names, callback=None, mode=None):
         # pylint: disable=too-many-arguments
         self.generator = generator
@@ -49,9 +47,9 @@ class StepIterator:
             self.on_batch_begin = callback.on_valid_batch_begin
             self.on_batch_end = callback.on_valid_batch_end
 
-        self.losses_sum = 0.
+        self.losses_sum = 0.0
         self.metrics_sum = np.zeros(len(self.batch_metrics_names))
-        self.sizes_sum = 0.
+        self.sizes_sum = 0.0
         self.epoch_metrics = None
 
     @property
@@ -93,7 +91,7 @@ class StepIterator:
                 'size': step_data.size,
                 'time': batch_total_time,
                 f'{self.prefix}loss': step_data.loss,
-                **metrics_log
+                **metrics_log,
             }
 
             self.on_batch_end(step, batch_logs)
@@ -104,18 +102,20 @@ class EpochIterator:
     Epoch iterator used in the training phase of the model.
     """
 
-    def __init__(self,
-                 model,
-                 train_generator,
-                 valid_generator,
-                 *,
-                 epochs,
-                 steps_per_epoch,
-                 validation_steps,
-                 initial_epoch=1,
-                 callback,
-                 batch_metrics_names,
-                 epoch_metrics_names):
+    def __init__(
+        self,
+        model,
+        train_generator,
+        valid_generator,
+        *,
+        epochs,
+        steps_per_epoch,
+        validation_steps,
+        initial_epoch=1,
+        callback,
+        batch_metrics_names,
+        epoch_metrics_names,
+    ):
         self.model = model
         self.train_generator = train_generator
         self.valid_generator = valid_generator
@@ -153,21 +153,25 @@ class EpochIterator:
             self.callback.on_epoch_begin(epoch, {})
             epoch_begin_time = timeit.default_timer()
 
-            train_step_iterator = StepIterator(self.train_generator,
-                                               self.steps_per_epoch,
-                                               self.batch_metrics_names,
-                                               self.epoch_metrics_names,
-                                               self.callback,
-                                               mode="train")
+            train_step_iterator = StepIterator(
+                self.train_generator,
+                self.steps_per_epoch,
+                self.batch_metrics_names,
+                self.epoch_metrics_names,
+                self.callback,
+                mode="train",
+            )
 
             valid_step_iterator = None
             if self.valid_generator is not None:
-                valid_step_iterator = StepIterator(self.valid_generator,
-                                                   self.validation_steps,
-                                                   self.batch_metrics_names,
-                                                   self.epoch_metrics_names,
-                                                   self.callback,
-                                                   mode="val")
+                valid_step_iterator = StepIterator(
+                    self.valid_generator,
+                    self.validation_steps,
+                    self.batch_metrics_names,
+                    self.epoch_metrics_names,
+                    self.callback,
+                    mode="val",
+                )
 
             yield train_step_iterator, valid_step_iterator
 
@@ -178,7 +182,7 @@ class EpochIterator:
                 'epoch': epoch,
                 'time': epoch_total_time,
                 **train_step_iterator.metrics_logs,
-                **val_metrics_log
+                **val_metrics_log,
             }
             self.callback.on_epoch_end(epoch, epoch_log)
 

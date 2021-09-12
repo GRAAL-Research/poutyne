@@ -46,7 +46,6 @@ def some_data_tensor_generator_dict_io(batch_size):
 
 
 class ModelMultiDictIOTest(ModelFittingTestCase):
-
     def setUp(self):
         super().setUp()
         torch.manual_seed(42)
@@ -54,25 +53,29 @@ class ModelMultiDictIOTest(ModelFittingTestCase):
         self.loss_function = dict_mse_loss
         self.optimizer = torch.optim.SGD(self.pytorch_network.parameters(), lr=1e-3)
 
-        self.model = Model(self.pytorch_network,
-                           self.optimizer,
-                           self.loss_function,
-                           batch_metrics=self.batch_metrics,
-                           epoch_metrics=self.epoch_metrics)
+        self.model = Model(
+            self.pytorch_network,
+            self.optimizer,
+            self.loss_function,
+            batch_metrics=self.batch_metrics,
+            epoch_metrics=self.epoch_metrics,
+        )
 
     def test_fitting_tensor_generator_multi_dict_io(self):
         train_generator = some_data_tensor_generator_dict_io(ModelMultiDictIOTest.batch_size)
         valid_generator = some_data_tensor_generator_dict_io(ModelMultiDictIOTest.batch_size)
-        logs = self.model.fit_generator(train_generator,
-                                        valid_generator,
-                                        epochs=ModelMultiDictIOTest.epochs,
-                                        steps_per_epoch=ModelMultiDictIOTest.steps_per_epoch,
-                                        validation_steps=ModelMultiDictIOTest.steps_per_epoch,
-                                        callbacks=[self.mock_callback])
+        logs = self.model.fit_generator(
+            train_generator,
+            valid_generator,
+            epochs=ModelMultiDictIOTest.epochs,
+            steps_per_epoch=ModelMultiDictIOTest.steps_per_epoch,
+            validation_steps=ModelMultiDictIOTest.steps_per_epoch,
+            callbacks=[self.mock_callback],
+        )
         params = {
             'epochs': ModelMultiDictIOTest.epochs,
             'steps': ModelMultiDictIOTest.steps_per_epoch,
-            'valid_steps': ModelMultiDictIOTest.steps_per_epoch
+            'valid_steps': ModelMultiDictIOTest.steps_per_epoch,
         }
         self._test_callbacks_train(params, logs, valid_steps=ModelMultiDictIOTest.steps_per_epoch)
 

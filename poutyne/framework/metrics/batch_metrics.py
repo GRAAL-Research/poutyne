@@ -6,7 +6,6 @@ from .metrics_registering import register_batch_metric, register_batch_metric_fu
 
 
 class BatchMetric(nn.Module):
-
     def __init__(self, reduction: str = 'mean'):
         super().__init__()
         REDUCTIONS = ['none', 'mean', 'sum']
@@ -109,7 +108,7 @@ class BinaryAccuracy(BatchMetric):
         - Output: The binary accuracy.
     """
 
-    def __init__(self, *, threshold: float = 0., reduction: str = 'mean'):
+    def __init__(self, *, threshold: float = 0.0, reduction: str = 'mean'):
         super().__init__(reduction)
         self.__name__ = 'bin_acc'
         self.threshold = threshold
@@ -119,7 +118,7 @@ class BinaryAccuracy(BatchMetric):
 
 
 @register_batch_metric('binacc', 'binaryacc', 'binaryaccuracy')
-def bin_acc(y_pred, y_true, *, threshold=0., reduction='mean'):
+def bin_acc(y_pred, y_true, *, threshold=0.0, reduction='mean'):
     """
     Computes the binary accuracy.
 
@@ -212,11 +211,13 @@ def top1(y_pred, y_true, **kwargs):
 
 
 for k_value in range(2, 11):
-    register_batch_metric_function(TopKAccuracy(k_value),
-                                   [f'top{k_value}', f'top{k_value}acc', f'top{k_value}accuracy'])
+    register_batch_metric_function(
+        TopKAccuracy(k_value), [f'top{k_value}', f'top{k_value}acc', f'top{k_value}accuracy']
+    )
 del k_value
 
 for k_value in range(20, 110, 10):
-    register_batch_metric_function(TopKAccuracy(k_value),
-                                   [f'top{k_value}', f'top{k_value}acc', f'top{k_value}accuracy'])
+    register_batch_metric_function(
+        TopKAccuracy(k_value), [f'top{k_value}', f'top{k_value}acc', f'top{k_value}accuracy']
+    )
 del k_value

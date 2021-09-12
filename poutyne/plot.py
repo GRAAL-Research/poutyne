@@ -31,8 +31,9 @@ def _none_to_iterator(value, repeat=None):
 
 def _assert_list_length_with_num_metrics(l, metrics, name):
     if l is not None and len(l) != len(metrics):
-        raise ValueError(f"A {name} was not provided for each metric. "
-                         f"Got {len(l)} {name}s for {len(metrics)} metrics.")
+        raise ValueError(
+            f"A {name} was not provided for each metric. " f"Got {len(l)} {name}s for {len(metrics)} metrics."
+        )
 
 
 def _infer_metrics(history, metrics):
@@ -75,19 +76,21 @@ def _close_figs(figs):
         plt.close(fig)
 
 
-def plot_history(history: Union[List[Dict[str, Union[float, int]]], 'pd.DataFrame'],
-                 *,
-                 metrics: Optional[List[str]] = None,
-                 labels: Optional[List[str]] = None,
-                 titles: Optional[Union[List[str], str]] = None,
-                 axes: Optional[List['matplotlib.axes.Axes']] = None,
-                 show: bool = True,
-                 save: bool = False,
-                 save_filename_template: str = '{metric}',
-                 save_directory: Optional[str] = None,
-                 save_extensions: Union[List[str], Tuple[str]] = ('png', ),
-                 close: Optional[bool] = None,
-                 fig_kwargs: Optional[Dict[str, Any]] = None):
+def plot_history(
+    history: Union[List[Dict[str, Union[float, int]]], 'pd.DataFrame'],
+    *,
+    metrics: Optional[List[str]] = None,
+    labels: Optional[List[str]] = None,
+    titles: Optional[Union[List[str], str]] = None,
+    axes: Optional[List['matplotlib.axes.Axes']] = None,
+    show: bool = True,
+    save: bool = False,
+    save_filename_template: str = '{metric}',
+    save_directory: Optional[str] = None,
+    save_extensions: Union[List[str], Tuple[str]] = ('png',),
+    close: Optional[bool] = None,
+    fig_kwargs: Optional[Dict[str, Any]] = None,
+):
     """[summary]
 
     Args:
@@ -148,12 +151,14 @@ def plot_history(history: Union[List[Dict[str, Union[float, int]]], 'pd.DataFram
     return figs, axes
 
 
-def plot_metric(history: Union[List[Dict[str, Union[float, int]]], 'pd.DataFrame'],
-                metric: str,
-                *,
-                label: Optional[str] = None,
-                title: str = '',
-                ax: Optional['matplotlib.axes.Axes'] = None):
+def plot_metric(
+    history: Union[List[Dict[str, Union[float, int]]], 'pd.DataFrame'],
+    metric: str,
+    *,
+    label: Optional[str] = None,
+    title: str = '',
+    ax: Optional['matplotlib.axes.Axes'] = None,
+):
     """[summary]
 
     Args:

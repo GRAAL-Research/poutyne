@@ -205,21 +205,23 @@ class Model:
             yield
         self.network.train(old_training)
 
-    def fit(self,
-            x,
-            y,
-            validation_data=None,
-            *,
-            batch_size=32,
-            epochs=1000,
-            steps_per_epoch=None,
-            validation_steps=None,
-            batches_per_step=1,
-            initial_epoch=1,
-            verbose=True,
-            progress_options: Union[dict, None] = None,
-            callbacks=None,
-            dataloader_kwargs=None):
+    def fit(
+        self,
+        x,
+        y,
+        validation_data=None,
+        *,
+        batch_size=32,
+        epochs=1000,
+        steps_per_epoch=None,
+        validation_steps=None,
+        batches_per_step=1,
+        initial_epoch=1,
+        verbose=True,
+        progress_options: Union[dict, None] = None,
+        callbacks=None,
+        dataloader_kwargs=None,
+    ):
         # pylint: disable=line-too-long,too-many-locals
         """
         Trains the network on a dataset. This method creates generators and calls
@@ -294,39 +296,43 @@ class Model:
         if validation_data is not None:
             valid_dataset = self._dataset_from_data(validation_data)
 
-        return self.fit_dataset(train_dataset,
-                                valid_dataset=valid_dataset,
-                                epochs=epochs,
-                                batch_size=batch_size,
-                                steps_per_epoch=steps_per_epoch,
-                                validation_steps=validation_steps,
-                                batches_per_step=batches_per_step,
-                                initial_epoch=initial_epoch,
-                                verbose=verbose,
-                                progress_options=progress_options,
-                                callbacks=callbacks,
-                                dataloader_kwargs=dataloader_kwargs)
+        return self.fit_dataset(
+            train_dataset,
+            valid_dataset=valid_dataset,
+            epochs=epochs,
+            batch_size=batch_size,
+            steps_per_epoch=steps_per_epoch,
+            validation_steps=validation_steps,
+            batches_per_step=batches_per_step,
+            initial_epoch=initial_epoch,
+            verbose=verbose,
+            progress_options=progress_options,
+            callbacks=callbacks,
+            dataloader_kwargs=dataloader_kwargs,
+        )
 
     def _dataset_from_data(self, args):
         args = numpy_to_torch(args)
         return TensorDataset(*args) if len(args) > 1 else args[0]
 
-    def fit_dataset(self,
-                    train_dataset,
-                    valid_dataset=None,
-                    *,
-                    batch_size=32,
-                    epochs=1000,
-                    steps_per_epoch=None,
-                    validation_steps=None,
-                    batches_per_step=1,
-                    initial_epoch=1,
-                    verbose=True,
-                    progress_options=None,
-                    callbacks=None,
-                    num_workers=0,
-                    collate_fn=None,
-                    dataloader_kwargs=None):
+    def fit_dataset(
+        self,
+        train_dataset,
+        valid_dataset=None,
+        *,
+        batch_size=32,
+        epochs=1000,
+        steps_per_epoch=None,
+        validation_steps=None,
+        batches_per_step=1,
+        initial_epoch=1,
+        verbose=True,
+        progress_options=None,
+        callbacks=None,
+        num_workers=0,
+        collate_fn=None,
+        dataloader_kwargs=None,
+    ):
         # pylint: disable=line-too-long,too-many-locals
         """
         Trains the network on a dataset. This method creates dataloaders and calls the
@@ -400,7 +406,7 @@ class Model:
             'batch_size': batch_size,
             'num_workers': num_workers,
             'collate_fn': collate_fn,
-            **dataloader_kwargs
+            **dataloader_kwargs,
         }
 
         train_generator = DataLoader(train_dataset, **{'shuffle': True, **dataloader_kwargs})
@@ -408,29 +414,33 @@ class Model:
         if valid_dataset is not None:
             valid_generator = DataLoader(valid_dataset, **dataloader_kwargs)
 
-        return self.fit_generator(train_generator,
-                                  valid_generator=valid_generator,
-                                  epochs=epochs,
-                                  steps_per_epoch=steps_per_epoch,
-                                  validation_steps=validation_steps,
-                                  batches_per_step=batches_per_step,
-                                  initial_epoch=initial_epoch,
-                                  verbose=verbose,
-                                  progress_options=progress_options,
-                                  callbacks=callbacks)
+        return self.fit_generator(
+            train_generator,
+            valid_generator=valid_generator,
+            epochs=epochs,
+            steps_per_epoch=steps_per_epoch,
+            validation_steps=validation_steps,
+            batches_per_step=batches_per_step,
+            initial_epoch=initial_epoch,
+            verbose=verbose,
+            progress_options=progress_options,
+            callbacks=callbacks,
+        )
 
-    def fit_generator(self,
-                      train_generator,
-                      valid_generator=None,
-                      *,
-                      epochs=1000,
-                      steps_per_epoch=None,
-                      validation_steps=None,
-                      batches_per_step=1,
-                      initial_epoch=1,
-                      verbose=True,
-                      progress_options: Union[dict, None] = None,
-                      callbacks=None):
+    def fit_generator(
+        self,
+        train_generator,
+        valid_generator=None,
+        *,
+        epochs=1000,
+        steps_per_epoch=None,
+        validation_steps=None,
+        batches_per_step=1,
+        initial_epoch=1,
+        verbose=True,
+        progress_options: Union[dict, None] = None,
+        callbacks=None,
+    ):
         # pylint: disable=line-too-long
         """
         Trains the network on a dataset using a generator.
@@ -517,16 +527,18 @@ class Model:
 
         self.stop_training = False
 
-        epoch_iterator = EpochIterator(self,
-                                       train_generator,
-                                       valid_generator,
-                                       epochs=epochs,
-                                       steps_per_epoch=steps_per_epoch,
-                                       validation_steps=validation_steps,
-                                       initial_epoch=initial_epoch,
-                                       callback=callback_list,
-                                       batch_metrics_names=self.batch_metrics_names,
-                                       epoch_metrics_names=self.epoch_metrics_names)
+        epoch_iterator = EpochIterator(
+            self,
+            train_generator,
+            valid_generator,
+            epochs=epochs,
+            steps_per_epoch=steps_per_epoch,
+            validation_steps=validation_steps,
+            initial_epoch=initial_epoch,
+            callback=callback_list,
+            batch_metrics_names=self.batch_metrics_names,
+            epoch_metrics_names=self.epoch_metrics_names,
+        )
 
         if batches_per_step > 1:
             self._fit_generator_n_batches_per_step(epoch_iterator, callback_list, batches_per_step)
@@ -546,7 +558,8 @@ class Model:
                     examples_in_step += step.size
 
                     step.loss, step.metrics, did_backprop, _ = self._fit_batch_n_batches_per_step(
-                        x, y, batches_per_step, examples_in_step, callback=callback_list, step=step)
+                        x, y, batches_per_step, examples_in_step, callback=callback_list, step=step
+                    )
 
                     if did_backprop:
                         examples_in_step = 0
@@ -572,26 +585,19 @@ class Model:
 
                 callback_list.on_valid_end(valid_metrics_log)
 
-    def _fit_batch_n_batches_per_step(self,
-                                      x,
-                                      y,
-                                      batches_per_step,
-                                      examples_in_step,
-                                      *,
-                                      callback=Callback(),
-                                      step=None,
-                                      return_pred=False):
+    def _fit_batch_n_batches_per_step(
+        self, x, y, batches_per_step, examples_in_step, *, callback=Callback(), step=None, return_pred=False
+    ):
         # pylint: disable=too-many-locals
-        zero_all_gradients = ((step.number - 1) % batches_per_step == 0)
-        do_backprop = (step.number % batches_per_step == 0)
+        zero_all_gradients = (step.number - 1) % batches_per_step == 0
+        do_backprop = step.number % batches_per_step == 0
 
         if zero_all_gradients:
             self.optimizer.zero_grad()
 
-        loss_tensor, metrics, pred_y = self._compute_loss_and_metrics(x,
-                                                                      y,
-                                                                      return_loss_tensor=True,
-                                                                      return_pred=return_pred)
+        loss_tensor, metrics, pred_y = self._compute_loss_and_metrics(
+            x, y, return_loss_tensor=True, return_pred=return_pred
+        )
 
         adjusted_loss_tensor = loss_tensor * step.size
         adjusted_loss_tensor.backward()
@@ -630,10 +636,9 @@ class Model:
     def _fit_batch(self, x, y, *, callback=Callback(), step=None, return_pred=False):
         self.optimizer.zero_grad()
 
-        loss_tensor, metrics, pred_y = self._compute_loss_and_metrics(x,
-                                                                      y,
-                                                                      return_loss_tensor=True,
-                                                                      return_pred=return_pred)
+        loss_tensor, metrics, pred_y = self._compute_loss_and_metrics(
+            x, y, return_loss_tensor=True, return_pred=return_pred
+        )
 
         loss_tensor.backward()
         callback.on_backward_end(step)
@@ -659,7 +664,7 @@ class Model:
         else:
             x = self._process_input(x)
 
-        x = x if isinstance(x, (tuple, list)) else (x, )
+        x = x if isinstance(x, (tuple, list)) else (x,)
 
         return (x, y) if y is not None else x
 
@@ -702,36 +707,38 @@ class Model:
             logs = dict(loss=loss)
             logs.update(zip(self.batch_metrics_names, metrics))
 
-            return self._format_truth_pred_return((logs, ), pred_y, return_pred)
+            return self._format_truth_pred_return((logs,), pred_y, return_pred)
 
         return self._format_loss_metrics_return(loss, metrics, pred_y, return_pred)
 
     def _format_loss_metrics_return(self, loss, metrics, pred_y, return_pred, true_y=None, return_ground_truth=False):
         # pylint: disable=too-many-arguments
-        ret = (loss, )
+        ret = (loss,)
 
-        ret += tuple(metrics.tolist()) if len(metrics) <= 1 else (metrics, )
+        ret += tuple(metrics.tolist()) if len(metrics) <= 1 else (metrics,)
 
         return self._format_truth_pred_return(ret, pred_y, return_pred, true_y, return_ground_truth)
 
     def _format_truth_pred_return(self, init, pred_y, return_pred, true_y=None, return_ground_truth=False):
         # pylint: disable=too-many-arguments
         if return_pred:
-            init += (pred_y, )
+            init += (pred_y,)
 
         if return_ground_truth:
-            init += (true_y, )
+            init += (true_y,)
 
         return init[0] if len(init) == 1 else init
 
-    def predict(self,
-                x,
-                *,
-                batch_size=32,
-                verbose=True,
-                progress_options: Union[dict, None] = None,
-                callbacks=None,
-                dataloader_kwargs=None) -> Any:
+    def predict(
+        self,
+        x,
+        *,
+        batch_size=32,
+        verbose=True,
+        progress_options: Union[dict, None] = None,
+        callbacks=None,
+        dataloader_kwargs=None,
+    ) -> Any:
         """
         Returns the predictions of the network given a dataset ``x``, where the tensors are
         converted into Numpy arrays.
@@ -755,30 +762,34 @@ class Model:
         Returns:
             Return the predictions in the format outputted by the model.
         """
-        x = x if isinstance(x, (tuple, list)) else (x, )
+        x = x if isinstance(x, (tuple, list)) else (x,)
         dataset = self._dataset_from_data(x)
-        return self.predict_dataset(dataset,
-                                    batch_size=batch_size,
-                                    concatenate_returns=True,
-                                    dataloader_kwargs=dataloader_kwargs,
-                                    verbose=verbose,
-                                    progress_options=progress_options,
-                                    callbacks=callbacks)
+        return self.predict_dataset(
+            dataset,
+            batch_size=batch_size,
+            concatenate_returns=True,
+            dataloader_kwargs=dataloader_kwargs,
+            verbose=verbose,
+            progress_options=progress_options,
+            callbacks=callbacks,
+        )
 
-    def predict_dataset(self,
-                        dataset,
-                        *,
-                        batch_size=32,
-                        steps=None,
-                        has_ground_truth=False,
-                        return_ground_truth=False,
-                        concatenate_returns=True,
-                        num_workers=0,
-                        collate_fn=None,
-                        verbose=True,
-                        progress_options: Union[dict, None] = None,
-                        callbacks=None,
-                        dataloader_kwargs=None) -> Any:
+    def predict_dataset(
+        self,
+        dataset,
+        *,
+        batch_size=32,
+        steps=None,
+        has_ground_truth=False,
+        return_ground_truth=False,
+        concatenate_returns=True,
+        num_workers=0,
+        collate_fn=None,
+        verbose=True,
+        progress_options: Union[dict, None] = None,
+        callbacks=None,
+        dataloader_kwargs=None,
+    ) -> Any:
         """
         Returns the predictions of the network given a dataset ``x``, where the tensors are
         converted into Numpy arrays.
@@ -828,29 +839,33 @@ class Model:
             'batch_size': batch_size,
             'num_workers': num_workers,
             'collate_fn': collate_fn,
-            **dataloader_kwargs
+            **dataloader_kwargs,
         }
 
         generator = DataLoader(dataset, **dataloader_kwargs)
-        return self.predict_generator(generator,
-                                      steps=steps,
-                                      has_ground_truth=has_ground_truth,
-                                      return_ground_truth=return_ground_truth,
-                                      concatenate_returns=concatenate_returns,
-                                      verbose=verbose,
-                                      progress_options=progress_options,
-                                      callbacks=callbacks)
+        return self.predict_generator(
+            generator,
+            steps=steps,
+            has_ground_truth=has_ground_truth,
+            return_ground_truth=return_ground_truth,
+            concatenate_returns=concatenate_returns,
+            verbose=verbose,
+            progress_options=progress_options,
+            callbacks=callbacks,
+        )
 
-    def predict_generator(self,
-                          generator,
-                          *,
-                          steps=None,
-                          has_ground_truth=False,
-                          return_ground_truth=False,
-                          concatenate_returns=True,
-                          verbose=True,
-                          progress_options: Union[dict, None] = None,
-                          callbacks=None) -> Any:
+    def predict_generator(
+        self,
+        generator,
+        *,
+        steps=None,
+        has_ground_truth=False,
+        return_ground_truth=False,
+        concatenate_returns=True,
+        verbose=True,
+        progress_options: Union[dict, None] = None,
+        callbacks=None,
+    ) -> Any:
         """
         Returns the predictions of the network given batches of samples ``x``, where the tensors are
         converted into Numpy arrays.
@@ -948,17 +963,19 @@ class Model:
             x = self.preprocess_input(x)
             return torch_to_numpy(self.network(*x))
 
-    def evaluate(self,
-                 x,
-                 y,
-                 *,
-                 batch_size=32,
-                 return_pred=False,
-                 return_dict_format=False,
-                 callbacks=None,
-                 verbose=True,
-                 progress_options: Union[dict, None] = None,
-                 dataloader_kwargs=None) -> Tuple:
+    def evaluate(
+        self,
+        x,
+        y,
+        *,
+        batch_size=32,
+        return_pred=False,
+        return_dict_format=False,
+        callbacks=None,
+        verbose=True,
+        progress_options: Union[dict, None] = None,
+        dataloader_kwargs=None,
+    ) -> Tuple:
         """
         Computes the loss and the metrics of the network on batches of samples and optionally
         returns the predictions.
@@ -1006,31 +1023,35 @@ class Model:
 
         """
         dataset = self._dataset_from_data((x, y))
-        return self.evaluate_dataset(dataset,
-                                     batch_size=batch_size,
-                                     return_pred=return_pred,
-                                     return_dict_format=return_dict_format,
-                                     concatenate_returns=True,
-                                     callbacks=callbacks,
-                                     verbose=verbose,
-                                     progress_options=progress_options,
-                                     dataloader_kwargs=dataloader_kwargs)
+        return self.evaluate_dataset(
+            dataset,
+            batch_size=batch_size,
+            return_pred=return_pred,
+            return_dict_format=return_dict_format,
+            concatenate_returns=True,
+            callbacks=callbacks,
+            verbose=verbose,
+            progress_options=progress_options,
+            dataloader_kwargs=dataloader_kwargs,
+        )
 
-    def evaluate_dataset(self,
-                         dataset,
-                         *,
-                         batch_size=32,
-                         steps=None,
-                         return_pred=False,
-                         return_ground_truth=False,
-                         return_dict_format=False,
-                         concatenate_returns=True,
-                         callbacks=None,
-                         num_workers=0,
-                         collate_fn=None,
-                         dataloader_kwargs=None,
-                         verbose=True,
-                         progress_options: Union[dict, None] = None) -> Tuple:
+    def evaluate_dataset(
+        self,
+        dataset,
+        *,
+        batch_size=32,
+        steps=None,
+        return_pred=False,
+        return_ground_truth=False,
+        return_dict_format=False,
+        concatenate_returns=True,
+        callbacks=None,
+        num_workers=0,
+        collate_fn=None,
+        dataloader_kwargs=None,
+        verbose=True,
+        progress_options: Union[dict, None] = None,
+    ) -> Tuple:
         """
         Computes the loss and the metrics of the network on batches of samples and optionally
         returns the predictions.
@@ -1090,31 +1111,35 @@ class Model:
             'batch_size': batch_size,
             'num_workers': num_workers,
             'collate_fn': collate_fn,
-            **dataloader_kwargs
+            **dataloader_kwargs,
         }
 
         generator = DataLoader(dataset, **dataloader_kwargs)
-        return self.evaluate_generator(generator,
-                                       steps=steps,
-                                       return_pred=return_pred,
-                                       return_ground_truth=return_ground_truth,
-                                       return_dict_format=return_dict_format,
-                                       concatenate_returns=concatenate_returns,
-                                       callbacks=callbacks,
-                                       verbose=verbose,
-                                       progress_options=progress_options)
+        return self.evaluate_generator(
+            generator,
+            steps=steps,
+            return_pred=return_pred,
+            return_ground_truth=return_ground_truth,
+            return_dict_format=return_dict_format,
+            concatenate_returns=concatenate_returns,
+            callbacks=callbacks,
+            verbose=verbose,
+            progress_options=progress_options,
+        )
 
-    def evaluate_generator(self,
-                           generator,
-                           *,
-                           steps=None,
-                           return_pred=False,
-                           return_ground_truth=False,
-                           return_dict_format=False,
-                           concatenate_returns=True,
-                           verbose=True,
-                           progress_options: Union[dict, None] = None,
-                           callbacks=None) -> Tuple:
+    def evaluate_generator(
+        self,
+        generator,
+        *,
+        steps=None,
+        return_pred=False,
+        return_ground_truth=False,
+        return_dict_format=False,
+        concatenate_returns=True,
+        verbose=True,
+        progress_options: Union[dict, None] = None,
+        callbacks=None,
+    ) -> Tuple:
         # pylint: disable=too-many-locals
         """
         Computes the loss and the metrics of the network on batches of samples and optionally returns
@@ -1237,17 +1262,14 @@ class Model:
         callback_list.set_params({'steps': steps})
         callback_list.on_test_begin({})
 
-        step_iterator = StepIterator(generator,
-                                     steps,
-                                     self.batch_metrics_names,
-                                     self.epoch_metrics_names,
-                                     callback_list,
-                                     mode="test")
+        step_iterator = StepIterator(
+            generator, steps, self.batch_metrics_names, self.epoch_metrics_names, callback_list, mode="test"
+        )
 
         test_begin_time = timeit.default_timer()
-        loss, batch_metrics, pred_y, true_y = self._validate(step_iterator,
-                                                             return_pred=return_pred,
-                                                             return_ground_truth=return_ground_truth)
+        loss, batch_metrics, pred_y, true_y = self._validate(
+            step_iterator, return_pred=return_pred, return_ground_truth=return_ground_truth
+        )
 
         step_iterator.epoch_metrics = self._get_epoch_metrics()
         test_total_time = timeit.default_timer() - test_begin_time
@@ -1263,8 +1285,7 @@ class Model:
         callback_list.on_test_end(test_metrics_log)
 
         if return_dict_format:
-            return self._format_truth_pred_return((test_metrics_log, ), pred_y, return_pred, true_y,
-                                                  return_ground_truth)
+            return self._format_truth_pred_return((test_metrics_log,), pred_y, return_pred, true_y, return_ground_truth)
 
         metrics = np.concatenate((batch_metrics, step_iterator.epoch_metrics))
         return self._format_loss_metrics_return(loss, metrics, pred_y, return_pred, true_y, return_ground_truth)
@@ -1303,7 +1324,7 @@ class Model:
             logs = dict(loss=loss)
             logs.update(zip(self.batch_metrics_names, metrics))
 
-            return self._format_truth_pred_return((logs, ), pred_y, return_pred)
+            return self._format_truth_pred_return((logs,), pred_y, return_pred)
 
         return self._format_loss_metrics_return(loss, metrics, pred_y, return_pred)
 
@@ -1355,7 +1376,6 @@ class Model:
         return self._compute_metric_array(metrics, self.unflatten_epoch_metrics_names)
 
     def _compute_metric_array(self, metrics_list, names_list):
-
         def _get_metric(names, metrics):
             names = [names] if isinstance(names, str) else names
             values = None
@@ -1370,7 +1390,8 @@ class Model:
             return values
 
         return np.array(
-            [metric for names, metrics in zip(names_list, metrics_list) for metric in _get_metric(names, metrics)])
+            [metric for names, metrics in zip(names_list, metrics_list) for metric in _get_metric(names, metrics)]
+        )
 
     def get_batch_size(self, x, y):
         """
@@ -1421,28 +1442,30 @@ class Model:
                     return len(first_value)
 
         if warning_settings['batch_size'] == 'warn':
-            warnings.warn("Inferring the batch size is not possible. Hence, "
-                          "the batch size is set to 1 and, thus, the computed "
-                          "loss and metrics at the end of each epoch is the "
-                          "mean of the batches' losses and metrics. To disable "
-                          "this warning, set\n"
-                          "from poutyne import warning_settings\n"
-                          "warning_settings['batch_size'] = 'ignore'\n\n"
-                          "Here is the inferring algorithm used to compute the "
-                          "batch size. 'x' and 'y' are tested in this order at "
-                          "each step of the inferring algorithm. If one step "
-                          "succeed for one of 'x' or 'y', the algorithm stops.\n\n"
-                          "Step 1: if 'x' or 'y' is a tensor or a Numpy array, "
-                          "then the 'len()' is returned.\n"
-                          "Step 2: if 'x' or 'y' is a list or a tuple, then the "
-                          "'len()' of the first element is returned if it is a "
-                          "tensor or a Numpy array.\n"
-                          "Step 3: if 'x' or 'y' is a dict, then the value for "
-                          "the key 'batch_size' is returned if it is of integral "
-                          "type.\n"
-                          "Step 4: if 'x' or 'y' is a dict, then the 'len()' of "
-                          "the first element of '.values()' is returned if it is a "
-                          "tensor or a Numpy array.\n")
+            warnings.warn(
+                "Inferring the batch size is not possible. Hence, "
+                "the batch size is set to 1 and, thus, the computed "
+                "loss and metrics at the end of each epoch is the "
+                "mean of the batches' losses and metrics. To disable "
+                "this warning, set\n"
+                "from poutyne import warning_settings\n"
+                "warning_settings['batch_size'] = 'ignore'\n\n"
+                "Here is the inferring algorithm used to compute the "
+                "batch size. 'x' and 'y' are tested in this order at "
+                "each step of the inferring algorithm. If one step "
+                "succeed for one of 'x' or 'y', the algorithm stops.\n\n"
+                "Step 1: if 'x' or 'y' is a tensor or a Numpy array, "
+                "then the 'len()' is returned.\n"
+                "Step 2: if 'x' or 'y' is a list or a tuple, then the "
+                "'len()' of the first element is returned if it is a "
+                "tensor or a Numpy array.\n"
+                "Step 3: if 'x' or 'y' is a dict, then the value for "
+                "the key 'batch_size' is returned if it is of integral "
+                "type.\n"
+                "Step 4: if 'x' or 'y' is a dict, then the 'len()' of "
+                "the first element of '.values()' is returned if it is a "
+                "tensor or a Numpy array.\n"
+            )
         return 1
 
     def load_weights(self, f, strict=True):

@@ -89,14 +89,16 @@ class FBeta(EpochMetric):
             (Default value = None)
     """
 
-    def __init__(self,
-                 *,
-                 metric: Optional[str] = None,
-                 average: Union[str, int] = 'micro',
-                 beta: float = 1.0,
-                 pos_label: int = 1,
-                 ignore_index: int = -100,
-                 names: Optional[Union[str, List[str]]] = None) -> None:
+    def __init__(
+        self,
+        *,
+        metric: Optional[str] = None,
+        average: Union[str, int] = 'micro',
+        beta: float = 1.0,
+        pos_label: int = 1,
+        ignore_index: int = -100,
+        names: Optional[Union[str, List[str]]] = None
+    ) -> None:
         super().__init__()
         self.metric_options = ('fscore', 'precision', 'recall')
         if metric is not None and metric not in self.metric_options:
@@ -160,8 +162,9 @@ class FBeta(EpochMetric):
         names_list = [names] if isinstance(names, str) else names
         default_name = [default_name] if isinstance(default_name, str) else default_name
         if len(names_list) != len(default_name):
-            raise ValueError("`names` should contain names for the following metrics: {}.".format(
-                ', '.join(default_name)))
+            raise ValueError(
+                "`names` should contain names for the following metrics: {}.".format(', '.join(default_name))
+            )
 
     def forward(self, y_pred: torch.Tensor, y_true: Union[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]) -> None:
         # pylint: disable=too-many-branches
@@ -193,8 +196,10 @@ class FBeta(EpochMetric):
         # Calculate true_positive_sum, true_negative_sum, pred_sum, true_sum
         num_classes = y_pred.size(1)
         if (y_true >= num_classes).any():
-            raise ValueError("A gold label passed to FBetaMeasure contains "
-                             "an id >= {}, the number of classes.".format(num_classes))
+            raise ValueError(
+                "A gold label passed to FBetaMeasure contains "
+                "an id >= {}, the number of classes.".format(num_classes)
+            )
 
         if self._average == 'binary' and num_classes > 2:
             raise ValueError("When `average` is binary, the number of prediction scores must be 2.")
@@ -256,11 +261,11 @@ class FBeta(EpochMetric):
             pred_sum = pred_sum.sum()
             true_sum = true_sum.sum()
 
-        beta2 = self._beta**2
+        beta2 = self._beta ** 2
         # Finally, we have all our sufficient statistics.
         precision = _prf_divide(tp_sum, pred_sum)
         recall = _prf_divide(tp_sum, true_sum)
-        fscore = ((1 + beta2) * precision * recall / (beta2 * precision + recall))
+        fscore = (1 + beta2) * precision * recall / (beta2 * precision + recall)
         fscore[tp_sum == 0] = 0.0
 
         if self._average == 'macro':
@@ -281,7 +286,7 @@ class FBeta(EpochMetric):
             return fscore.item()
         if self._metric == 'precision':
             return precision.item()
-        #if self._metric == 'recall':
+        # if self._metric == 'recall':
         return recall.item()
 
     def reset(self) -> None:

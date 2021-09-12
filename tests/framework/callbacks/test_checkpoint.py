@@ -38,11 +38,9 @@ class ModelCheckpointTest(TestCase):
         checkpoint_filename = os.path.join(self.temp_dir_obj.name, 'my_checkpoint.ckpt')
         train_gen = some_data_generator(ModelCheckpointTest.batch_size)
         valid_gen = some_data_generator(ModelCheckpointTest.batch_size)
-        checkpointer = ModelCheckpoint(checkpoint_filename,
-                                       monitor='val_loss',
-                                       verbose=True,
-                                       period=1,
-                                       temporary_filename=tmp_filename)
+        checkpointer = ModelCheckpoint(
+            checkpoint_filename, monitor='val_loss', verbose=True, period=1, temporary_filename=tmp_filename
+        )
         self.model.fit_generator(train_gen, valid_gen, epochs=10, steps_per_epoch=5, callbacks=[checkpointer])
         self.assertFalse(os.path.isfile(tmp_filename))
         self.assertTrue(os.path.isfile(checkpoint_filename))
@@ -53,11 +51,9 @@ class ModelCheckpointTest(TestCase):
         checkpoint_filename = os.path.join(self.temp_dir_obj.name, 'my_checkpoint_{epoch}.ckpt')
         train_gen = some_data_generator(ModelCheckpointTest.batch_size)
         valid_gen = some_data_generator(ModelCheckpointTest.batch_size)
-        checkpointer = ModelCheckpoint(checkpoint_filename,
-                                       monitor='val_loss',
-                                       verbose=True,
-                                       period=1,
-                                       temporary_filename=tmp_filename)
+        checkpointer = ModelCheckpoint(
+            checkpoint_filename, monitor='val_loss', verbose=True, period=1, temporary_filename=tmp_filename
+        )
         self.model.fit_generator(train_gen, valid_gen, epochs=epochs, steps_per_epoch=5, callbacks=[checkpointer])
         self.assertFalse(os.path.isfile(tmp_filename))
         for i in range(1, epochs + 1):
@@ -67,11 +63,9 @@ class ModelCheckpointTest(TestCase):
         checkpoint_filename = os.path.join(self.temp_dir_obj.name, 'my_checkpoint.ckpt')
         train_gen = some_data_generator(ModelCheckpointTest.batch_size)
         valid_gen = some_data_generator(ModelCheckpointTest.batch_size)
-        checkpointer = ModelCheckpoint(checkpoint_filename,
-                                       monitor='val_loss',
-                                       verbose=True,
-                                       period=1,
-                                       atomic_write=False)
+        checkpointer = ModelCheckpoint(
+            checkpoint_filename, monitor='val_loss', verbose=True, period=1, atomic_write=False
+        )
         self.model.fit_generator(train_gen, valid_gen, epochs=10, steps_per_epoch=5, callbacks=[checkpointer])
         self.assertTrue(os.path.isfile(checkpoint_filename))
 
@@ -83,11 +77,9 @@ class ModelCheckpointTest(TestCase):
         self._test_checkpointer_with_val_losses(checkpointer, val_losses, has_checkpoints)
 
     def test_save_best_only_with_restore_best(self):
-        checkpointer = ModelCheckpoint(self.checkpoint_filename,
-                                       monitor='val_loss',
-                                       verbose=True,
-                                       save_best_only=True,
-                                       restore_best=True)
+        checkpointer = ModelCheckpoint(
+            self.checkpoint_filename, monitor='val_loss', verbose=True, save_best_only=True, restore_best=True
+        )
 
         val_losses = [10, 3, 8, 5, 2]
         has_checkpoints = [True, True, False, False, True]
@@ -97,43 +89,35 @@ class ModelCheckpointTest(TestCase):
 
     def test_restore_best_without_save_best_only(self):
         with self.assertRaises(ValueError):
-            ModelCheckpoint(self.checkpoint_filename,
-                            monitor='val_loss',
-                            verbose=True,
-                            save_best_only=False,
-                            restore_best=True)
+            ModelCheckpoint(
+                self.checkpoint_filename, monitor='val_loss', verbose=True, save_best_only=False, restore_best=True
+            )
 
         with self.assertRaises(ValueError):
             ModelCheckpoint(self.checkpoint_filename, monitor='val_loss', verbose=True, restore_best=True)
 
     def test_save_best_only_with_max(self):
-        checkpointer = ModelCheckpoint(self.checkpoint_filename,
-                                       monitor='val_loss',
-                                       mode='max',
-                                       verbose=True,
-                                       save_best_only=True)
+        checkpointer = ModelCheckpoint(
+            self.checkpoint_filename, monitor='val_loss', mode='max', verbose=True, save_best_only=True
+        )
 
         val_losses = [2, 3, 8, 5, 2]
         has_checkpoints = [True, True, True, False, False]
         self._test_checkpointer_with_val_losses(checkpointer, val_losses, has_checkpoints)
 
     def test_periodic_with_period_of_1(self):
-        checkpointer = ModelCheckpoint(self.checkpoint_filename,
-                                       monitor='val_loss',
-                                       verbose=True,
-                                       period=1,
-                                       save_best_only=False)
+        checkpointer = ModelCheckpoint(
+            self.checkpoint_filename, monitor='val_loss', verbose=True, period=1, save_best_only=False
+        )
 
         val_losses = [1] * 10
         has_checkpoints = [True] * 10
         self._test_checkpointer_with_val_losses(checkpointer, val_losses, has_checkpoints)
 
     def test_periodic_with_period_of_2(self):
-        checkpointer = ModelCheckpoint(self.checkpoint_filename,
-                                       monitor='val_loss',
-                                       verbose=True,
-                                       period=2,
-                                       save_best_only=False)
+        checkpointer = ModelCheckpoint(
+            self.checkpoint_filename, monitor='val_loss', verbose=True, period=2, save_best_only=False
+        )
 
         val_losses = [1] * 10
         has_checkpoints = [False, True] * 5

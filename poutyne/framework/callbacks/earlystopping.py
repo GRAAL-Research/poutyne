@@ -70,13 +70,15 @@ class EarlyStopping(Callback):
             (Default value = 'min')
     """
 
-    def __init__(self,
-                 *,
-                 monitor: str = 'val_loss',
-                 min_delta: float = 0.,
-                 patience: int = 0,
-                 verbose: bool = False,
-                 mode: str = 'min'):
+    def __init__(
+        self,
+        *,
+        monitor: str = 'val_loss',
+        min_delta: float = 0.0,
+        patience: int = 0,
+        verbose: bool = False,
+        mode: str = 'min',
+    ):
         super().__init__()
 
         self.monitor = monitor

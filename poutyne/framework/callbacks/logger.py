@@ -7,7 +7,6 @@ from .callbacks import Callback
 
 
 class Logger(Callback):
-
     def __init__(self, *, batch_granularity: bool = False):
         super().__init__()
         self.batch_granularity = batch_granularity
@@ -131,13 +130,15 @@ class AtomicCSVLogger(Logger):
         append (bool): Whether to append to an existing file.
     """
 
-    def __init__(self,
-                 filename,
-                 *,
-                 batch_granularity: bool = False,
-                 separator: str = ',',
-                 append: bool = False,
-                 temporary_filename: Optional[str] = None):
+    def __init__(
+        self,
+        filename,
+        *,
+        batch_granularity: bool = False,
+        separator: str = ',',
+        append: bool = False,
+        temporary_filename: Optional[str] = None,
+    ):
         super().__init__(batch_granularity=batch_granularity)
         self.filename = filename
         self.temporary_filename = temporary_filename
@@ -165,11 +166,11 @@ class AtomicCSVLogger(Logger):
             atomic_lambda_save(self.filename, self._write_header, (), temporary_filename=self.temporary_filename)
 
     def _on_train_batch_end_write(self, batch_number: int, logs: Dict):
-        atomic_lambda_save(self.filename, self._save_log, (logs, ), temporary_filename=self.temporary_filename)
+        atomic_lambda_save(self.filename, self._save_log, (logs,), temporary_filename=self.temporary_filename)
 
     def _on_epoch_end_write(self, epoch_number: int, logs: Dict):
         logs = {**logs, **self._get_current_learning_rates()}
-        atomic_lambda_save(self.filename, self._save_log, (logs, ), temporary_filename=self.temporary_filename)
+        atomic_lambda_save(self.filename, self._save_log, (logs,), temporary_filename=self.temporary_filename)
 
 
 class TensorBoardLogger(Logger):
