@@ -35,8 +35,9 @@ jobs:
         python setup.py develop
     - name: Linting
       run: |
-        yapf --diff --recursive poutyne/
-        yapf --diff --recursive tests/
+        black --diff --check poutyne/
+        black --diff --check tests/
+        black --diff --check examples/
         pylint poutyne/
         pylint tests/
     - name: Test with pytest
@@ -75,8 +76,9 @@ jobs:
         python setup.py develop
     - name: Linting
       run: |
-        yapf --diff --recursive poutyne/
-        yapf --diff --recursive tests/
+        black --diff --check poutyne/
+        black --diff --check tests/
+        black --diff --check examples/
         pylint poutyne/
         pylint tests/
     - name: Test with pytest
