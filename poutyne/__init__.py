@@ -2,6 +2,6 @@
 from .version import __version__
 
 from .utils import *
-from .plot import *
+from .plot_utils import *
 from .framework import *
 from .layers import *
