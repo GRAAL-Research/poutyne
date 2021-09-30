@@ -91,21 +91,34 @@ def plot_history(
     close: Optional[bool] = None,
     fig_kwargs: Optional[Dict[str, Any]] = None,
 ):
-    """[summary]
+    """
+    Plot the training history in matplotlib. Every metric is plotted.
 
     Args:
-        history (Union[List[Dict[str, Union[float, int]]], pd.DataFrame]): [description]
-        metrics (Optional[List[str]], optional): [description]. Defaults to None.
-        labels (Optional[List[str]], optional): [description]. Defaults to None.
-        titles (Optional[Union[List[str], str]], optional): [description]. Defaults to None.
-        axes (Optional[List[matplotlib.axes.Axes]], optional): [description]. Defaults to None.
-        show (bool, optional): [description]. Defaults to True.
-        save (bool, optional): [description]. Defaults to False.
-        save_filename_template (str, optional): [description]. Defaults to '{metric}'.
-        save_directory (Optional[str], optional): [description]. Defaults to None.
-        save_extensions (Union[List[str], Tuple[str]], optional): [description]. Defaults to `('png', )`.
-        close (Optional[bool], optional): [description]. Defaults to None.
-        fig_kwargs (Optional[Dict[str, Any]], optional): [description]. Defaults to None.
+        history (Union[List[Dict[str, Union[float, int]]], pandas.DataFrame]): The training history to plot. Can be
+            either a list of dictionary as returned by :func:`~poutyne.Model.fit()` or a Pandas DataFrame as read from a
+            CSV output by the :class:`~poutyne.CSVLogger` callback.
+        metrics (Optional[List[str]], optional): The list of metrics for which to output the plot. By default, every
+            metric in the history is used.
+        labels (Optional[List[str]], optional): A list of labels to use for each metric. Must be of the same length as
+            `metrics`. By default, the names in the history are used.
+        titles (Optional[Union[List[str], str]], optional): A title or a list of titles to use for each metric. If a
+            list, must be of the same length as `metrics`. If a string, the same title will be used for all plots. By
+            default, there is no title.
+        axes (Optional[List[matplotlib.axes.Axes]], optional): A list of matplotlib :class:`~matplotlib.axes.Axes` to
+            use for each metric. Must be of the same length as `metrics`. By default, a new figure and an new axe is
+            created for each plot.
+        show (bool, optional): Whether to show the plots. Defaults to True.
+        save (bool, optional): Whether to save the plots. Defaults to False.
+        save_filename_template (str, optional): The filename without extension for saving the plot. Should contain
+            `{metric}` somewhere in it or all the plots will overwrite each other. Defaults to '{metric}'.
+        save_directory (Optional[str], optional): The directory to save the plots. Default to the current directory.
+        save_extensions (Union[List[str], Tuple[str]], optional): A list of extensions under which to save the plots.
+            Defaults to `('png', )`.
+        close (Optional[bool], optional): Whether to close the matplotlib figures. By default, the figures are closed
+            except when in Jupyter notebooks.
+        fig_kwargs (Optional[Dict[str, Any]], optional): Any keyword arguments to pass to
+            :func:`~matplotlib.pyplot.subplots`.
 
     Returns:
         Tuple[List[matplotlib.figure.Figure], List[matplotlib.axes.Axes]]: [description]
@@ -122,6 +135,8 @@ def plot_history(
         titles = [titles] * len(metrics)
     else:
         _assert_list_length_with_num_metrics(titles, metrics, 'title')
+
+    _assert_list_length_with_num_metrics(axes, metrics, 'axe')
 
     labels = _none_to_iterator(labels)
     titles = _none_to_iterator(titles, repeat='')
@@ -159,14 +174,18 @@ def plot_metric(
     title: str = '',
     ax: Optional['matplotlib.axes.Axes'] = None,
 ):
-    """[summary]
+    """
+    Plot the training history in matplotlib for a given metric.
 
     Args:
-        history (Union[List[Dict[str, Union[float, int]]], pd.DataFrame]): [description]
-        metric (str): [description]
-        label (str, Optional[str]): [description]. Defaults to None.
-        title (str, optional): [description]. Defaults to ''.
-        ax (Optional[matplotlib.axes.Axes], optional): [description]. Defaults to None.
+        history (Union[List[Dict[str, Union[float, int]]], pd.DataFrame]): The training history to plot. Can be
+            either a list of dictionary as returned by :func:`~poutyne.Model.fit()` or a Pandas DataFrame as read from a
+            CSV output by the :class:`~poutyne.CSVLogger` callback.
+        metric (str): The metric for which to output the plot.
+        label (str, Optional[str]): A label for the metric. By default, the label is the same as the name of the metric.
+        title (str, optional): A title for the plot. By default, no title.
+        ax (Optional[matplotlib.axes.Axes], optional): A matplotlib :class:`~matplotlib.axes.Axes` to use. By default,
+            the current axe is used.
     """
     _raise_error_if_matplotlib_not_there()
 
