@@ -67,21 +67,24 @@ jobs:
         python-version: ${{ matrix.python-version }}
     - name: Install dependencies
       run: |
-        pip install -r requirements.txt
-        pip install -r docs/requirements.txt
-        pip install -r tests/requirements.txt
-        pip install -r styling_requirements.txt
-        python setup.py develop
+        .  ./InvokeFunc.ps1
+        Invoke-NativeCommand pip install -r requirements.txt
+        Invoke-NativeCommand pip install -r docs/requirements.txt
+        Invoke-NativeCommand pip install -r tests/requirements.txt
+        Invoke-NativeCommand pip install -r styling_requirements.txt
+        Invoke-NativeCommand python setup.py develop
     - name: Linting
       run: |
-        black --diff --check .
-        pylint poutyne/
-        pylint tests/
+        .  ./InvokeFunc.ps1
+        Invoke-NativeCommand black --diff --check .
+        Invoke-NativeCommand pylint poutyne/
+        Invoke-NativeCommand pylint tests/
     - name: Test with pytest
       run: |
-        pytest tests/
+        .  ./InvokeFunc.ps1
+        Invoke-NativeCommand pytest tests/
     - name: Building doc
       run: |
         cd docs
-        ./rebuild_html_doc.bat
+        ./rebuild_html_doc.ps1
         cd ..
