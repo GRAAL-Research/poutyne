@@ -15,6 +15,7 @@
 import os
 import sys
 import datetime
+
 sys.path.insert(0, os.path.abspath('../..'))
 
 from poutyne import __version__ as version
@@ -42,9 +43,16 @@ release = version
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    'sphinx.ext.autodoc', 'sphinx.ext.doctest', 'sphinx.ext.todo', 'sphinx.ext.coverage', 'sphinx.ext.mathjax',
-    'sphinx.ext.ifconfig', 'sphinx.ext.viewcode', 'sphinx.ext.githubpages', 'sphinx.ext.napoleon',
-    'sphinx.ext.intersphinx'
+    'sphinx.ext.autodoc',
+    'sphinx.ext.doctest',
+    'sphinx.ext.todo',
+    'sphinx.ext.coverage',
+    'sphinx.ext.mathjax',
+    'sphinx.ext.ifconfig',
+    'sphinx.ext.viewcode',
+    'sphinx.ext.githubpages',
+    'sphinx.ext.napoleon',
+    'sphinx.ext.intersphinx',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -119,15 +127,12 @@ latex_elements = {
     # The paper size ('letterpaper' or 'a4paper').
     #
     # 'papersize': 'letterpaper',
-
     # The font size ('10pt', '11pt' or '12pt').
     #
     # 'pointsize': '10pt',
-
     # Additional stuff for the LaTeX preamble.
     #
     # 'preamble': '',
-
     # Latex figure (float) alignment
     #
     # 'figure_align': 'htbp',
@@ -152,8 +157,15 @@ man_pages = [(master_doc, 'poutyne', 'Poutyne Documentation', [author], 1)]
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'Poutyne', 'Poutyne Documentation', author, 'Poutyne', 'One line description of project.',
-     'Miscellaneous'),
+    (
+        master_doc,
+        'Poutyne',
+        'Poutyne Documentation',
+        author,
+        'Poutyne',
+        'One line description of project.',
+        'Miscellaneous',
+    ),
 ]
 
 # -- Intersphinx mappings ----------------------------------------------------
