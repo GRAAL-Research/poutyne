@@ -7,3 +7,5 @@ torchvision
 pandas
 mlflow
 omegaconf
+matplotlib
+pillow
