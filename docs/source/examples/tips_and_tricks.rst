@@ -130,6 +130,33 @@ The following code trains our network in the simplest way possible with Poutyne.
     # Test
     test_loss, test_acc = model.evaluate_generator(test_loader)
 
+Plotting Training
+=================
+
+The training methods in Poutyne returns a list of dictionaries containing the metrics output during training. Using Poutyne, it is then possible to plot this training history.
+
+.. code-block:: python
+
+    _ = plot_history(history)
+
+.. image:: /_static/img/tips_and_tricks/plot_history_time.png
+.. image:: /_static/img/tips_and_tricks/plot_history_loss.png
+.. image:: /_static/img/tips_and_tricks/plot_history_acc.png
+
+It is also possible to restrict the metrics shown and to customize the plots by using custom labels and titles.
+
+.. code-block:: python
+
+    _ = plot_history(
+        history,
+        metrics=['loss', 'acc'],
+        labels=['Loss', 'Accuracy'],
+        titles='Training of MNIST',
+    )
+
+.. image:: /_static/img/tips_and_tricks/plot_history_loss_customized.png
+.. image:: /_static/img/tips_and_tricks/plot_history_acc_customized.png
+
 Initilalizing Your Optimizer and Loss Function Yourself
 =======================================================
 
