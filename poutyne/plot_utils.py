@@ -101,17 +101,17 @@ def plot_history(
         metrics (Optional[List[str]], optional): The list of metrics for which to output the plot. By default, every
             metric in the history is used.
         labels (Optional[List[str]], optional): A list of labels to use for each metric. Must be of the same length as
-            `metrics`. By default, the names in the history are used.
+            ``metrics``. By default, the names in the history are used.
         titles (Optional[Union[List[str], str]], optional): A title or a list of titles to use for each metric. If a
-            list, must be of the same length as `metrics`. If a string, the same title will be used for all plots. By
+            list, must be of the same length as ``metrics``. If a string, the same title will be used for all plots. By
             default, there is no title.
         axes (Optional[List[matplotlib.axes.Axes]], optional): A list of matplotlib :class:`~matplotlib.axes.Axes` to
-            use for each metric. Must be of the same length as `metrics`. By default, a new figure and an new axe is
+            use for each metric. Must be of the same length as ``metrics``. By default, a new figure and an new axe is
             created for each plot.
         show (bool, optional): Whether to show the plots. Defaults to True.
         save (bool, optional): Whether to save the plots. Defaults to False.
         save_filename_template (str, optional): The filename without extension for saving the plot. Should contain
-            `{metric}` somewhere in it or all the plots will overwrite each other. Defaults to '{metric}'.
+            ``{metric}`` somewhere in it or all the plots will overwrite each other. Defaults to ``'{metric}'``.
         save_directory (Optional[str], optional): The directory to save the plots. Default to the current directory.
         save_extensions (Union[List[str], Tuple[str]], optional): A list of extensions under which to save the plots.
             Defaults to `('png', )`.
@@ -121,7 +121,9 @@ def plot_history(
             :func:`~matplotlib.pyplot.subplots`.
 
     Returns:
-        Tuple[List[matplotlib.figure.Figure], List[matplotlib.axes.Axes]]: [description]
+        Tuple[List[matplotlib.figure.Figure], List[matplotlib.axes.Axes]]: A tuple ``(figs, axes)``  where ``figs`` is
+        the list of instanciated matplotlib :class:`~matplotlib.figure.Figure` and ``axes`` is a list of instanciated
+        matplotlib :class:`~matplotlib.figure.Axes`.
     """
 
     # pylint: disable=too-many-locals
