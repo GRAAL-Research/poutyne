@@ -92,7 +92,7 @@ def plot_history(
     fig_kwargs: Optional[Dict[str, Any]] = None,
 ):
     """
-    Plot the training history in matplotlib. All metrics are plotted.
+    Plot the training history in matplotlib. By default, all metrics are plotted.
 
     Args:
         history (Union[List[Dict[str, Union[float, int]]], pandas.DataFrame]): The training history to plot. Can be
