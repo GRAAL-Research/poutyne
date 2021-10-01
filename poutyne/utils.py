@@ -165,3 +165,16 @@ def set_seeds(seed):
         random.seed(seed)
         np.random.seed(seed)
         torch.manual_seed(seed)
+
+
+def is_in_jupyter_notebook():
+    # pylint: disable=import-outside-toplevel
+    try:
+        from IPython import get_ipython
+
+        shell = get_ipython().__class__.__name__
+        jupyter = shell in ['ZMQInteractiveShell', 'Shell']
+    except ImportError:
+        jupyter = False
+
+    return jupyter
