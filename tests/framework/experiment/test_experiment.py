@@ -33,6 +33,10 @@ class ExperimentTest(TestCase):
         self.tsv_log_path = os.path.join(self.test_checkpoints_path, "log.tsv")
         self.tsv_test_log_path = os.path.join(self.test_checkpoints_path, "test_log.tsv")
         self.epoch_file_path = os.path.join(self.test_checkpoints_path, "last.epoch")
+        self.time_metric_plot_png_file_path = os.path.join(self.test_checkpoints_path, "plots", 'time.png')
+        self.time_metric_plot_pdf_file_path = os.path.join(self.test_checkpoints_path, "plots", 'time.pdf')
+        self.loss_metric_plot_png_file_path = os.path.join(self.test_checkpoints_path, "plots", 'loss.png')
+        self.loss_metric_plot_pdf_file_path = os.path.join(self.test_checkpoints_path, "plots", 'loss.pdf')
 
     def tearDown(self):
         self.temp_dir_obj.cleanup()
@@ -86,6 +90,10 @@ class ExperimentTest(TestCase):
         self.assertFalse(os.path.isfile(self.tsv_log_path))
         self.assertFalse(os.path.isfile(self.epoch_file_path))
         self.assertFalse(os.path.isfile(self.tsv_test_log_path))
+        self.assertFalse(os.path.isfile(self.time_metric_plot_png_file_path))
+        self.assertFalse(os.path.isfile(self.time_metric_plot_pdf_file_path))
+        self.assertFalse(os.path.isfile(self.loss_metric_plot_png_file_path))
+        self.assertFalse(os.path.isfile(self.loss_metric_plot_pdf_file_path))
 
         self.assertEqual(len(logs), ExperimentTest.NUM_EPOCHS)
         for i, log in enumerate(logs, 1):
@@ -102,6 +110,10 @@ class ExperimentTest(TestCase):
         self.assertTrue(os.path.isfile(self.optim_ckpt_path))
         self.assertTrue(os.path.isfile(self.tsv_log_path))
         self.assertTrue(os.path.isfile(self.epoch_file_path))
+        self.assertTrue(os.path.isfile(self.time_metric_plot_png_file_path))
+        self.assertTrue(os.path.isfile(self.time_metric_plot_pdf_file_path))
+        self.assertTrue(os.path.isfile(self.loss_metric_plot_png_file_path))
+        self.assertTrue(os.path.isfile(self.loss_metric_plot_pdf_file_path))
         self.assertFalse(os.path.isfile(self.tsv_test_log_path))
 
         self.assertEqual(len(logs), epochs - initial_epoch + 1)

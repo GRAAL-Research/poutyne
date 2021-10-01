@@ -7,6 +7,15 @@ try:
     import pandas as pd
 except ImportError:
     pd = None
+
+try:
+    # pylint: disable=unused-import
+    import matplotlib.pyplot
+
+    matplotlib = True
+except ImportError:
+    matplotlib = False
+
 import torch
 
 try:
@@ -16,6 +25,7 @@ except ImportError:
 
 from . import Model
 from ..utils import set_seeds
+from ..plotting import plot_history
 from .callbacks import (
     ModelCheckpoint,
     OptimizerCheckpoint,
@@ -191,6 +201,7 @@ class Experiment:
     TENSORBOARD_DIRECTORY = 'tensorboard'
     EPOCH_FILENAME = 'last.epoch'
     LR_SCHEDULER_FILENAME = 'lr_sched_%d.lrsched'
+    PLOTS_DIRECTORY = 'plots'
     TEST_LOG_FILENAME = '{name}_log.tsv'
 
     def __init__(
@@ -242,6 +253,7 @@ class Experiment:
         self.tensorboard_directory = self.get_path(Experiment.TENSORBOARD_DIRECTORY)
         self.epoch_filename = self.get_path(Experiment.EPOCH_FILENAME)
         self.lr_scheduler_filename = self.get_path(Experiment.LR_SCHEDULER_FILENAME)
+        self.plots_directory = self.get_path(Experiment.PLOTS_DIRECTORY)
         self.test_log_filename = self.get_path(Experiment.TEST_LOG_FILENAME)
 
     def get_path(self, *paths: str) -> str:
@@ -457,6 +469,13 @@ class Experiment:
             callbacks += lr_schedulers
         return callbacks
 
+    def _save_history(self):
+        if matplotlib:
+            history = self.get_stats()
+            plot_history(
+                history, show=False, save=True, save_directory=self.plots_directory, save_extensions=('png', 'pdf')
+            )
+
     def train(self, train_generator, valid_generator=None, **kwargs) -> List[Dict]:
         """
         Trains or finetunes the model on a dataset using a generator. If a previous training already occurred
@@ -656,6 +675,9 @@ class Experiment:
         try:
             return training_func(*args, initial_epoch=initial_epoch, callbacks=expt_callbacks, **kwargs)
         finally:
+            if self.logging:
+                self._save_history()
+
             if tensorboard_writer is not None:
                 tensorboard_writer.close()
 
