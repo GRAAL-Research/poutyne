@@ -95,7 +95,6 @@ class ModelBundleTest(TestCase):
         self.assertFalse(os.path.isfile(self.loss_metric_plot_png_file_path))
         self.assertFalse(os.path.isfile(self.loss_metric_plot_pdf_file_path))
 
-
         self.assertEqual(len(logs), ModelBundleTest.NUM_EPOCHS)
         for i, log in enumerate(logs, 1):
             self.assertIn('epoch', log)
