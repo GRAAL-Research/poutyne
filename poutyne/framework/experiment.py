@@ -473,7 +473,12 @@ class Experiment:
         if matplotlib:
             history = self.get_stats()
             plot_history(
-                history, show=False, save=True, save_directory=self.plots_directory, save_extensions=('png', 'pdf')
+                history,
+                show=False,
+                save=True,
+                close=True,
+                save_directory=self.plots_directory,
+                save_extensions=('png', 'pdf'),
             )
 
     def train(self, train_generator, valid_generator=None, **kwargs) -> List[Dict]:
