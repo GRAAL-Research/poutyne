@@ -1,8 +1,12 @@
 # v1.x.x
 
+* Add [`plot_history`](https://poutyne.org/utils.html#poutyne.plot_history) and
+  [`plot_metric`](https://poutyne.org/utils.html#poutyne.plot_metric) functions to easily plot the history returned
+  by Poutyne. [`Experiment`](https://poutyne.org/experiment.html#poutyne.Experiment) also saves the figures at the end
+  of the training.
 *
 
-# v1.6
+# v1.6q
 
 * PeriodicSaveCallback and all its subclasses now have the `restore_best` argument.
 * `Experiment` now contains a `monitoring` argument that can be set to false to avoid monitoring any metric and saving uneeded checkpoints.
