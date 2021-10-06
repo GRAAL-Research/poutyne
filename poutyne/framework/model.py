@@ -173,6 +173,7 @@ class Model:
         self.optimizer = get_optimizer(optimizer, self.network)
         self.loss_function = get_loss_or_metric(loss_function)
 
+        self._check_network_optimizer_parameters_match()
         self._set_metrics_attributes(batch_metrics, epoch_metrics)
 
         self.device = None
@@ -180,6 +181,17 @@ class Model:
 
         if device is not None:
             self.to(device)
+
+    def _check_network_optimizer_parameters_match(self):
+        param_set = set(self.network.parameters())
+        for param_group in self.optimizer.param_groups:
+            for param in param_group['params']:
+                if param not in param_set:
+                    raise ValueError(
+                        "All parameters in the optimizer should be part of the network. "
+                        "This is so to insure that weights checkpointing and the likes "
+                        "actually consider all parameters."
+                    )
 
     def _set_metrics_attributes(self, batch_metrics, epoch_metrics):
         batch_metrics = list(map(get_loss_or_metric, batch_metrics))
