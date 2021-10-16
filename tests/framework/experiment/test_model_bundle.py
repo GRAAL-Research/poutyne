@@ -124,7 +124,7 @@ class ModelBundleTest(TestCase):
             self.assertIn('val_loss', log)
             self.assertIn('time', log)
 
-        with open(self.epoch_file_path, 'r') as fd:
+        with open(self.epoch_file_path, 'r', encoding='utf-8') as fd:
             epoch = int(fd.read())
         self.assertEqual(epoch, epochs)
 

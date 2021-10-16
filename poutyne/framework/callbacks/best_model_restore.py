@@ -24,7 +24,7 @@ class BestModelRestore(Callback):
         self.monitor = monitor
 
         if mode not in ['min', 'max']:
-            raise ValueError("Invalid mode '%s'" % mode)
+            raise ValueError(f"Invalid mode '{mode}'")
         if mode == 'min':
             self.monitor_op = lambda x, y: x < y
             self.current_best = float('Inf')
@@ -41,8 +41,7 @@ class BestModelRestore(Callback):
 
             if self.verbose:
                 print(
-                    'Epoch %d: %s improved from %0.5f to %0.5f'
-                    % (epoch_number, self.monitor, old_best, self.current_best)
+                    f'Epoch {epoch_number:d}: {self.monitor} improved from {old_best:0.5f} to {self.current_best:0.5f}'
                 )
             self.best_weights = self.model.get_weight_copies()
 

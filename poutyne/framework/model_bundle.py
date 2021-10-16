@@ -255,7 +255,7 @@ class ModelBundle:
 
         """
         if task is not None and not task.startswith('classif') and not task.startswith('reg'):
-            raise ValueError("Invalid task '%s'" % task)
+            raise ValueError(f"Invalid task '{task}'")
 
         batch_metrics = [] if batch_metrics is None else batch_metrics
         epoch_metrics = [] if epoch_metrics is None else epoch_metrics
@@ -476,7 +476,7 @@ class ModelBundle:
             return False, None, None
 
         if monitor_mode is not None and monitor_mode not in ['min', 'max']:
-            raise ValueError("Invalid mode '%s'" % monitor_mode)
+            raise ValueError(f"Invalid mode '{monitor_mode}'")
 
         if monitor_metric is None:
             if task is not None and task.startswith('classif'):
@@ -540,22 +540,22 @@ class ModelBundle:
         return history.iloc[saved_epoch_indices]
 
     def _warn_missing_file(self, filename: str) -> None:
-        warnings.warn("Missing checkpoint: %s." % filename)
+        warnings.warn(f"Missing checkpoint: {filename}.")
 
     def _load_epoch_state(self, lr_schedulers: List) -> int:
         # pylint: disable=broad-except
         initial_epoch = 1
         if os.path.isfile(self.epoch_filename):
             try:
-                with open(self.epoch_filename, 'r') as f:
+                with open(self.epoch_filename, 'r', encoding='utf-8') as f:
                     initial_epoch = int(f.read()) + 1
             except Exception as e:
                 print(e)
             if os.path.isfile(self.model_checkpoint_filename):
                 try:
                     print(
-                        "Loading weights from %s and starting at epoch %d."
-                        % (self.model_checkpoint_filename, initial_epoch)
+                        f"Loading weights from {self.model_checkpoint_filename} and "
+                        f"starting at epoch {initial_epoch:d}."
                     )
                     self.model.load_weights(self.model_checkpoint_filename)
                 except Exception as e:
@@ -565,8 +565,8 @@ class ModelBundle:
             if os.path.isfile(self.optimizer_checkpoint_filename):
                 try:
                     print(
-                        "Loading optimizer state from %s and starting at epoch %d."
-                        % (self.optimizer_checkpoint_filename, initial_epoch)
+                        f"Loading optimizer state from {self.optimizer_checkpoint_filename} and "
+                        f"starting at epoch {initial_epoch:d}."
                     )
                     self.model.load_optimizer_state(self.optimizer_checkpoint_filename)
                 except Exception as e:
@@ -577,9 +577,7 @@ class ModelBundle:
                 filename = self.lr_scheduler_filename % i
                 if os.path.isfile(filename):
                     try:
-                        print(
-                            "Loading LR scheduler state from %s and starting at epoch %d." % (filename, initial_epoch)
-                        )
+                        print(f"Loading LR scheduler state from {filename} and starting at epoch {initial_epoch:d}.")
                         lr_scheduler.load_state(filename)
                     except Exception as e:
                         print(e)
@@ -897,12 +895,12 @@ class ModelBundle:
 
         if len(incompatible_keys.unexpected_keys) > 0:
             warnings.warn(
-                'Unexpected key(s): {}.'.format(', '.join('"{}"'.format(k) for k in incompatible_keys.unexpected_keys)),
+                'Unexpected key(s): ' + ', '.join(f'"{k}"' for k in incompatible_keys.unexpected_keys) + '.',
                 stacklevel=2,
             )
         if len(incompatible_keys.missing_keys) > 0:
             warnings.warn(
-                'Missing key(s): {}.'.format(', '.join('"{}"'.format(k) for k in incompatible_keys.missing_keys)),
+                'Missing key(s): ' + ', '.join(f'"{k}"' for k in incompatible_keys.missing_keys) + '.',
                 stacklevel=2,
             )
 
@@ -910,7 +908,7 @@ class ModelBundle:
 
     def _print_epoch_stats(self, epoch_stats):
         metrics_str = ', '.join(
-            '%s: %g' % (metric_name, epoch_stats[metric_name].item()) for metric_name in epoch_stats.columns[2:]
+            f'{metric_name}: {epoch_stats[metric_name].item():g}' for metric_name in epoch_stats.columns[2:]
         )
         print(metrics_str)
 

@@ -235,11 +235,11 @@ class MLFlowLoggerTest(TestCase):
         for key, value in config_dict.items():
             if isinstance(value, Mapping):
                 for key_lower, value_lower in value.items():
-                    good_key = "{}.{}".format(key, key_lower)
+                    good_key = f"{key}.{key_lower}"
                     ml_flow_client_calls.append(call().log_param(run_id=self.a_run_id, key=good_key, value=value_lower))
             elif isinstance(value, Sequence) and not isinstance(value, str):
                 for idx, value_lower in enumerate(value):
-                    good_key = "{}.{}".format(key, idx)
+                    good_key = f"{key}.{idx}"
                     ml_flow_client_calls.append(
                         (call().log_param(run_id=self.a_run_id, key=good_key, value=value_lower))
                     )

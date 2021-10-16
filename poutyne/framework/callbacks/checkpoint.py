@@ -69,7 +69,7 @@ class LRSchedulerCheckpoint(PeriodicSaveCallback):
         self.lr_scheduler = lr_scheduler
 
         if not isinstance(self.lr_scheduler, (_PyTorchLRSchedulerWrapper, ReduceLROnPlateau)):
-            raise ValueError("Unknown scheduler callback '%s'." % lr_scheduler)
+            raise ValueError(f"Unknown scheduler callback '{lr_scheduler}'.")
 
     def save_file(self, fd: IO, epoch_number: int, logs: Dict):
         self.lr_scheduler.save_state(fd)
@@ -128,6 +128,8 @@ class StateCheckpoint(PeriodicSaveCallback):
 
         unexpected_keys = set(states.keys()) - set(self.name_to_stateful)
         missing_keys = set(self.name_to_stateful) - set(states.keys())
+        # Fix code below and remove pylint comment.
+        # pylint: disable=consider-using-f-string
         if len(unexpected_keys) > 0:
             warnings.warn('Unexpected key(s): {}.'.format(', '.join('"{}"'.format(*unexpected_keys))))
         if len(missing_keys) > 0:

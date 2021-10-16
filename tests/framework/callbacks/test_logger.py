@@ -112,7 +112,7 @@ class BaseCSVLoggerTest:
     def _test_logging(self, history, lrs=None):
         if lrs is None:
             lrs = [BaseCSVLoggerTest.lr]
-        with open(self.csv_filename) as csvfile:
+        with open(self.csv_filename, 'r', encoding='utf-8') as csvfile:
             reader = csv.DictReader(csvfile)
             rows = []
             for row in reader:
@@ -191,7 +191,7 @@ class BaseTensorBoardLoggerTest:
     def _test_logging(self, history, lrs=None):
         if lrs is None:
             lrs = [BaseCSVLoggerTest.lr]
-        calls = list()
+        calls = []
         for h in history:
             calls.append(call('loss', {'loss': h['loss'], 'val_loss': h['val_loss']}, h['epoch']))
             if len(lrs) == 1:

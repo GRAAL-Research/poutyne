@@ -97,7 +97,7 @@ class CSVLogger(Logger):
 
     def _on_train_begin_write(self, logs: Dict):
         open_flag = 'a' if self.append else 'w'
-        self.csvfile = open(self.filename, open_flag, newline='')
+        self.csvfile = open(self.filename, open_flag, newline='', encoding='utf-8')
         self.writer = csv.DictWriter(self.csvfile, fieldnames=self.fieldnames, delimiter=self.separator)
         if not self.append:
             self.writer.writeheader()
@@ -148,7 +148,7 @@ class AtomicCSVLogger(Logger):
     def _save_log(self, fd: TextIO, logs: Dict):
         olddata = None
         if os.path.exists(self.filename):
-            with open(self.filename, 'r') as oldfile:
+            with open(self.filename, 'r', encoding='utf-8') as oldfile:
                 olddata = list(csv.DictReader(oldfile, delimiter=self.separator))
         csvwriter = csv.DictWriter(fd, fieldnames=self.fieldnames, delimiter=self.separator)
         csvwriter.writeheader()
@@ -204,16 +204,16 @@ class TensorBoardLogger(Logger):
         pass
 
     def _on_epoch_end_write(self, epoch_number: int, logs: dict):
-        grouped_items = dict()
+        grouped_items = {}
         for k, v in logs.items():
             if 'val_' in k:
                 primary_key = k[4:]
                 if primary_key not in grouped_items:
-                    grouped_items[primary_key] = dict()
+                    grouped_items[primary_key] = {}
                 grouped_items[k[4:]][k] = v
             else:
                 if k not in grouped_items:
-                    grouped_items[k] = dict()
+                    grouped_items[k] = {}
                 grouped_items[k][k] = v
         for k, v in grouped_items.items():
             self.writer.add_scalars(k, v, epoch_number)

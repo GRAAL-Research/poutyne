@@ -200,13 +200,13 @@ class TensorBoardGradientTracker(Tracker):
 
             for gradient_distributions_stat in gradient_distributions_stats:
                 self.writer.add_scalars(
-                    'gradient_distributions/{}'.format(layer_name),
+                    f'gradient_distributions/{layer_name}',
                     {gradient_distributions_stat: stats[gradient_distributions_stat]},
                     epoch_number,
                 )
             for other_gradient_stat in other_gradient_stats:
                 self.writer.add_scalars(
-                    'other_gradient_stats/{}'.format(layer_name),
+                    f'other_gradient_stats/{layer_name}',
                     {other_gradient_stat: stats[other_gradient_stat]},
                     epoch_number,
                 )

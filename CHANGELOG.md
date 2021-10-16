@@ -4,7 +4,7 @@
   [`plot_metric`](https://poutyne.org/utils.html#poutyne.plot_metric) functions to easily plot the history returned
   by Poutyne. [`Experiment`](https://poutyne.org/experiment.html#poutyne.Experiment) also saves the figures at the end
   of the training.
-*
+* All text files (e.g. CSVs in CSVLogger) are now saved using UTF-8 on all platforms.
 
 # v1.6q
 

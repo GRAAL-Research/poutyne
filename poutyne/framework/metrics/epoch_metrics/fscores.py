@@ -97,16 +97,16 @@ class FBeta(EpochMetric):
         beta: float = 1.0,
         pos_label: int = 1,
         ignore_index: int = -100,
-        names: Optional[Union[str, List[str]]] = None
+        names: Optional[Union[str, List[str]]] = None,
     ) -> None:
         super().__init__()
         self.metric_options = ('fscore', 'precision', 'recall')
         if metric is not None and metric not in self.metric_options:
-            raise ValueError("`metric` has to be one of {}.".format(self.metric_options))
+            raise ValueError(f"`metric` has to be one of {self.metric_options}.")
 
         average_options = ('binary', 'micro', 'macro')
         if average not in average_options and not isinstance(average, int):
-            raise ValueError("`average` has to be one of {} or an integer.".format(average_options))
+            raise ValueError(f"`average` has to be one of {average_options} or an integer.")
 
         if beta <= 0:
             raise ValueError("`beta` should be >0 in the F-beta score.")
@@ -162,9 +162,7 @@ class FBeta(EpochMetric):
         names_list = [names] if isinstance(names, str) else names
         default_name = [default_name] if isinstance(default_name, str) else default_name
         if len(names_list) != len(default_name):
-            raise ValueError(
-                "`names` should contain names for the following metrics: {}.".format(', '.join(default_name))
-            )
+            raise ValueError(f"`names` should contain names for the following metrics: {', '.join(default_name)}.")
 
     def forward(self, y_pred: torch.Tensor, y_true: Union[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]) -> None:
         # pylint: disable=too-many-branches
@@ -197,8 +195,7 @@ class FBeta(EpochMetric):
         num_classes = y_pred.size(1)
         if (y_true >= num_classes).any():
             raise ValueError(
-                "A gold label passed to FBetaMeasure contains "
-                "an id >= {}, the number of classes.".format(num_classes)
+                f"A gold label passed to FBetaMeasure contains an id >= {num_classes}, the number of classes."
             )
 
         if self._average == 'binary' and num_classes > 2:

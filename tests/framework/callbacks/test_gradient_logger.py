@@ -84,7 +84,7 @@ class BaseCSVGradientLoggerTest:
     def _test_logging(self, history):
         for layer, stats in history.items():
             filename = self.csv_filename.format(layer)
-            with open(filename) as csvfile:
+            with open(filename, 'r', encoding='utf-8') as csvfile:
                 reader = csv.DictReader(csvfile)
                 rows = list(reader)
             self.assertEqual(len(rows), len(stats))

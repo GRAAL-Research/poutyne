@@ -108,7 +108,7 @@ class PeriodicSaveCallback(Callback):
         temporary_filename: Optional[str] = None,
         atomic_write: bool = True,
         open_mode: str = 'wb',
-        read_mode: str = 'rb'
+        read_mode: str = 'rb',
     ):
         super().__init__()
         self.filename = filename
@@ -130,7 +130,7 @@ class PeriodicSaveCallback(Callback):
 
         if self.save_best_only:
             if mode not in ['min', 'max']:
-                raise ValueError("Invalid mode '%s'" % mode)
+                raise ValueError(f"Invalid mode '{mode}'")
             if mode == 'min':
                 self.monitor_op = lambda x, y: x < y
                 self.current_best = float('Inf')
@@ -165,8 +165,8 @@ class PeriodicSaveCallback(Callback):
 
                 if self.verbose:
                     print(
-                        'Epoch %d: %s improved from %0.5f to %0.5f, saving file to %s'
-                        % (epoch_number, self.monitor, old_best, self.current_best, self.best_filename)
+                        f'Epoch {epoch_number:d}: {self.monitor} improved from {old_best:0.5f} '
+                        f'to {self.current_best:0.5f}, saving file to {self.best_filename}'
                     )
                 self._save_file(self.best_filename, epoch_number, logs)
                 if (
@@ -177,7 +177,7 @@ class PeriodicSaveCallback(Callback):
                     os.remove(old_best_filename)
         elif epoch_number % self.period == 0:
             if self.verbose:
-                print('Epoch %d: saving file to %s' % (epoch_number, filename))
+                print(f'Epoch {epoch_number:d}: saving file to {filename}')
             self._save_file(filename, epoch_number, logs)
 
     def restore(self, fd: IO):
@@ -187,8 +187,10 @@ class PeriodicSaveCallback(Callback):
         if self.restore_best:
             if self.best_filename is not None:
                 if self.verbose:
-                    print('Restoring data from %s' % self.best_filename)
-                with open(self.best_filename, self.read_mode) as fd:
+                    print(f'Restoring data from {self.best_filename}')
+                # pylint: disable=unspecified-encoding
+                open_kwargs = dict(encoding='utf-8') if 'b' not in self.read_mode else {}
+                with open(self.best_filename, self.read_mode, **open_kwargs) as fd:
                     self.restore(fd)
             else:
                 warnings.warn('No data to restore!')

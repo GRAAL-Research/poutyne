@@ -50,7 +50,7 @@ class ProgressionCallback(Callback):
         show_on_valid=True,
         show_every_n_train_steps='all',
         show_every_n_valid_steps='all',
-        show_every_n_test_steps='all'
+        show_every_n_test_steps='all',
     ) -> None:
         super().__init__()
         self.color_progress = ColorProgress(coloring=coloring)
@@ -225,12 +225,12 @@ class ProgressionCallback(Callback):
         )
 
     def _get_metrics_string(self, logs: Dict) -> str:
-        train_metrics_str_gen = ('{}: {:f}'.format(k, logs[k]) for k in self.metrics if logs.get(k) is not None)
+        train_metrics_str_gen = (f'{k}: {logs[k]:f}' for k in self.metrics if logs.get(k) is not None)
         val_metrics_str_gen = (
-            '{}: {:f}'.format('val_' + k, logs['val_' + k]) for k in self.metrics if logs.get('val_' + k) is not None
+            f"{'val_' + k}: {logs['val_' + k]:f}" for k in self.metrics if logs.get('val_' + k) is not None
         )
         test_metrics_str_gen = (
-            '{}: {:f}'.format('test_' + k, logs['test_' + k]) for k in self.metrics if logs.get('test_' + k) is not None
+            f"{'test_' + k}: {logs['test_' + k]:f}" for k in self.metrics if logs.get('test_' + k) is not None
         )
         return ', '.join(itertools.chain(train_metrics_str_gen, val_metrics_str_gen, test_metrics_str_gen))
 
@@ -316,8 +316,8 @@ class EpochProgressionCallback(Callback):
             )
 
     def _get_metrics_string(self, logs: Dict) -> str:
-        train_metrics_str_gen = ('{}: {:f}'.format(k, logs[k]) for k in self.metrics if logs.get(k) is not None)
+        train_metrics_str_gen = (f'{k}: {logs[k]:f}' for k in self.metrics if logs.get(k) is not None)
         val_metrics_str_gen = (
-            '{}: {:f}'.format('val_' + k, logs['val_' + k]) for k in self.metrics if logs.get('val_' + k) is not None
+            f"{'val_' + k}: {logs['val_' + k]:f}" for k in self.metrics if logs.get('val_' + k) is not None
         )
         return ', '.join(itertools.chain(train_metrics_str_gen, val_metrics_str_gen))

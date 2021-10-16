@@ -71,12 +71,10 @@ for name, module_cls in torch.optim.lr_scheduler.__dict__.items():
             (_PyTorchLRSchedulerWrapper,),
             {
                 '__init__': new_init(module_cls),
-                '__doc__': """
+                '__doc__': f"""
                             See:
                                 :class:`~torch.optim.lr_scheduler.{name}`
-                            """.format(
-                    name=name
-                ),
+                            """,
             },
         )
         setattr(sys.modules[__name__], name, _new_cls)

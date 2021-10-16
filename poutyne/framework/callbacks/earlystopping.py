@@ -89,7 +89,7 @@ class EarlyStopping(Callback):
         self.stopped_epoch = 0
 
         if mode not in ['min', 'max']:
-            raise ValueError("Invalid mode '%s'" % mode)
+            raise ValueError(f"Invalid mode '{mode}'")
         self.mode = mode
 
         if mode == 'min':

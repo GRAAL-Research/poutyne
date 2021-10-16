@@ -75,7 +75,7 @@ class ColorProgress:
 
             invalid_keys = coloring.keys() - color_settings.keys()
             if len(invalid_keys) != 0:
-                raise KeyError("The key(s) {} are not supported color attributes.".format(', '.join(invalid_keys)))
+                raise KeyError(f"The key(s) {', '.join(invalid_keys)} are not supported color attributes.")
 
             color_settings.update(coloring)
         elif coloring is True and colorama is not None:

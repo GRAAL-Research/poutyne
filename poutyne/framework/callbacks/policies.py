@@ -99,7 +99,7 @@ class Phase:
         return "\n".join(
             [
                 "Phase:",
-                *["    {}: {}".format(name, val) for name, val in self.configuration.items()],
+                *[f"    {name}: {val}" for name, val in self.configuration.items()],
             ]
         )
 
@@ -252,7 +252,7 @@ class OptimizerPolicy(Callback):
         return chain.from_iterable(self.phases)
 
     def __repr__(self):
-        return "OptimizerPolicy:\n    phases: {}\n    current_step: {}".format(self.current_step, len(self.phases))
+        return f"OptimizerPolicy:\n    phases: {self.current_step}\n    current_step: {len(self.phases)}"
 
     def _update_optimizer(self, param_dict: Dict):
         for param_name, param_value in param_dict.items():

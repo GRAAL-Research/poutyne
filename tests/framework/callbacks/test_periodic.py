@@ -187,7 +187,7 @@ class PeriodicSaveTest(TestCase):
             filename = self.save_filename.format(epoch=epoch)
             self.assertEqual(has_checkpoint, os.path.isfile(filename))
             if has_checkpoint:
-                self.assertEqual(f'{epoch}\n', open(filename, 'r').read())
+                self.assertEqual(f'{epoch}\n', open(filename, 'r', encoding='utf-8').read())
                 best_checkpoint_filenames.append(os.path.realpath(filename))
 
         files = [os.path.realpath(os.path.join(self.temp_dir_obj.name, f)) for f in os.listdir(self.temp_dir_obj.name)]

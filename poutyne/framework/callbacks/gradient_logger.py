@@ -88,7 +88,7 @@ class TensorBoardGradientLogger(GradientLoggerBase):
         self.current_step += 1
         for layer, stats in layer_stats.items():
             for name, value in stats.items():
-                self.writer.add_scalars('gradient_stats/{}'.format(layer), {name: value}, self.current_step)
+                self.writer.add_scalars(f'gradient_stats/{layer}', {name: value}, self.current_step)
 
 
 class AtomicCSVGradientLogger(GradientLoggerBase):
@@ -111,7 +111,7 @@ class AtomicCSVGradientLogger(GradientLoggerBase):
     def _save_stats(self, fd: TextIO, filename: str, stats: Dict):
         olddata = None
         if os.path.exists(filename):
-            with open(filename, 'r') as oldfile:
+            with open(filename, 'r', encoding='utf-8') as oldfile:
                 olddata = list(csv.DictReader(oldfile, delimiter=self.separator))
         csvwriter = csv.DictWriter(fd, fieldnames=self.fieldnames, delimiter=self.separator)
         csvwriter.writeheader()
@@ -160,7 +160,7 @@ class CSVGradientLogger(GradientLoggerBase):
         self.writers = {}
         for layer in self.layers:
             filename = self.filename.format(layer)
-            self.csvfiles[layer] = open(filename, open_flag, newline='')
+            self.csvfiles[layer] = open(filename, open_flag, newline='', encoding='utf-8')
             self.writers[layer] = csv.DictWriter(self.csvfiles[layer], fieldnames=fieldnames, delimiter=self.separator)
             if not self.append:
                 self.writers[layer].writeheader()
