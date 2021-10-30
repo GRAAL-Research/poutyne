@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>poutyne.plotting &mdash; Poutyne 1.7 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html">
+            <img src="../../_static/poutyne-light.png" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                1.7
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../model.html">Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../experiment.html">Experiment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../metrics.html">Metrics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../callbacks.html">Callbacks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../layers.html">Layers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../utils.html">Utils</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Examples</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/introduction.html">Introduction to PyTorch and Poutyne</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/tips_and_tricks.html">Tips and Tricks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/sequence_tagging.html">Sequence Tagging With an RNN</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/policy_interface.html">Interface of <code class="docutils literal notranslate"><span class="pre">policy</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/transfer_learning.html">Transfer learning example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/image_reconstruction.html">Image Reconstruction Using Poutyne</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/semantic_segmentation.html">Semantic segmentation using Poutyne</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Poutyne</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+      <li>poutyne.plotting</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for poutyne.plotting</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">itertools</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+    <span class="kn">from</span> <span class="nn">matplotlib.ticker</span> <span class="kn">import</span> <span class="n">MaxNLocator</span>
+
+    <span class="n">matplotlib</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="n">matplotlib</span> <span class="o">=</span> <span class="kc">False</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="n">pd</span> <span class="o">=</span> <span class="kc">None</span>
+
+<span class="kn">from</span> <span class="nn">poutyne</span> <span class="kn">import</span> <span class="n">is_in_jupyter_notebook</span>
+
+<span class="n">jupyter</span> <span class="o">=</span> <span class="n">is_in_jupyter_notebook</span><span class="p">()</span>
+
+
+<span class="k">def</span> <span class="nf">_raise_error_if_matplotlib_not_there</span><span class="p">():</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">matplotlib</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span><span class="s2">&quot;matplotlib needs to be installed to use this function.&quot;</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_none_to_iterator</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">repeat</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">value</span> <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">itertools</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">repeat</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_assert_list_length_with_num_metrics</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">metrics</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">l</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">l</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">metrics</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;A </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> was not provided for each metric. &quot;</span> <span class="sa">f</span><span class="s2">&quot;Got </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">l</span><span class="p">)</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">s for </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">metrics</span><span class="p">)</span><span class="si">}</span><span class="s2"> metrics.&quot;</span>
+        <span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_infer_metrics</span><span class="p">(</span><span class="n">history</span><span class="p">,</span> <span class="n">metrics</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">metrics</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">pd</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">history</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">):</span>
+            <span class="n">cols</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">history</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">cols</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">history</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="n">metrics</span> <span class="o">=</span> <span class="p">[</span><span class="n">col</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">cols</span> <span class="k">if</span> <span class="n">col</span> <span class="o">!=</span> <span class="s1">&#39;epoch&#39;</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">col</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;val_&#39;</span><span class="p">)]</span>
+    <span class="k">return</span> <span class="n">metrics</span>
+
+
+<span class="k">def</span> <span class="nf">_get_figs_and_axes</span><span class="p">(</span><span class="n">axes</span><span class="p">,</span> <span class="n">num_axes</span><span class="p">,</span> <span class="n">fig_kwargs</span><span class="p">):</span>
+    <span class="n">figs</span> <span class="o">=</span> <span class="p">()</span>
+    <span class="k">if</span> <span class="n">axes</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">fig_kwargs</span> <span class="o">=</span> <span class="n">fig_kwargs</span> <span class="k">if</span> <span class="n">fig_kwargs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">{}</span>
+        <span class="n">figs</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="p">(</span><span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="o">**</span><span class="n">fig_kwargs</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_axes</span><span class="p">)))</span>
+    <span class="k">return</span> <span class="n">figs</span><span class="p">,</span> <span class="n">axes</span>
+
+
+<span class="k">def</span> <span class="nf">_save_figs</span><span class="p">(</span><span class="n">figs</span><span class="p">,</span> <span class="n">metrics</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">filename_template</span><span class="p">,</span> <span class="n">directory</span><span class="p">,</span> <span class="n">extensions</span><span class="p">):</span>
+    <span class="n">save_template</span> <span class="o">=</span> <span class="n">filename_template</span>
+    <span class="k">if</span> <span class="n">directory</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">save_template</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="n">filename_template</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">fig</span><span class="p">,</span> <span class="n">metric</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">figs</span><span class="p">,</span> <span class="n">metrics</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">ext</span> <span class="ow">in</span> <span class="n">extensions</span><span class="p">:</span>
+            <span class="n">filename</span> <span class="o">=</span> <span class="n">save_template</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">metric</span><span class="o">=</span><span class="n">metric</span><span class="p">)</span> <span class="o">+</span> <span class="sa">f</span><span class="s1">&#39;.</span><span class="si">{</span><span class="n">ext</span><span class="si">}</span><span class="s1">&#39;</span>
+            <span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_show_figs</span><span class="p">(</span><span class="n">figs</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">fig</span> <span class="ow">in</span> <span class="n">figs</span><span class="p">:</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+
+<span class="k">def</span> <span class="nf">_close_figs</span><span class="p">(</span><span class="n">figs</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">fig</span> <span class="ow">in</span> <span class="n">figs</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="n">fig</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="plot_history"><a class="viewcode-back" href="../../utils.html#poutyne.plot_history">[docs]</a><span class="k">def</span> <span class="nf">plot_history</span><span class="p">(</span>
+    <span class="n">history</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]],</span> <span class="s1">&#39;pd.DataFrame&#39;</span><span class="p">],</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">metrics</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">labels</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">titles</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">axes</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="s1">&#39;matplotlib.axes.Axes&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">show</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">save</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">save_filename_template</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{metric}</span><span class="s1">&#39;</span><span class="p">,</span>
+    <span class="n">save_directory</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">save_extensions</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;png&#39;</span><span class="p">,),</span>
+    <span class="n">close</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">fig_kwargs</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Plot the training history in matplotlib. By default, all metrics are plotted.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        history (Union[List[Dict[str, Union[float, int]]], pandas.DataFrame]): The training history to plot. Can be</span>
+<span class="sd">            either a list of dictionary as returned by :func:`~poutyne.Model.fit()` or a Pandas DataFrame as read from a</span>
+<span class="sd">            CSV output by the :class:`~poutyne.CSVLogger` callback.</span>
+<span class="sd">        metrics (Optional[List[str]], optional): The list of metrics for which to output the plot. By default, every</span>
+<span class="sd">            metric in the history is used.</span>
+<span class="sd">        labels (Optional[List[str]], optional): A list of labels to use for each metric. Must be of the same length as</span>
+<span class="sd">            ``metrics``. By default, the names in the history are used.</span>
+<span class="sd">        titles (Optional[Union[List[str], str]], optional): A title or a list of titles to use for each metric. If a</span>
+<span class="sd">            list, must be of the same length as ``metrics``. If a string, the same title will be used for all plots. By</span>
+<span class="sd">            default, there is no title.</span>
+<span class="sd">        axes (Optional[List[matplotlib.axes.Axes]], optional): A list of matplotlib :class:`~matplotlib.axes.Axes` to</span>
+<span class="sd">            use for each metric. Must be of the same length as ``metrics``. By default, a new figure and an new axe is</span>
+<span class="sd">            created for each plot.</span>
+<span class="sd">        show (bool, optional): Whether to show the plots. Defaults to True.</span>
+<span class="sd">        save (bool, optional): Whether to save the plots. Defaults to False.</span>
+<span class="sd">        save_filename_template (str, optional): The filename without extension for saving the plot. Should contain</span>
+<span class="sd">            ``{metric}`` somewhere in it or all the plots will overwrite each other. Defaults to ``&#39;{metric}&#39;``.</span>
+<span class="sd">        save_directory (Optional[str], optional): The directory to save the plots. Default to the current directory.</span>
+<span class="sd">        save_extensions (Union[List[str], Tuple[str]], optional): A list of extensions under which to save the plots.</span>
+<span class="sd">            Defaults to `(&#39;png&#39;, )`.</span>
+<span class="sd">        close (Optional[bool], optional): Whether to close the matplotlib figures. By default, the figures are closed</span>
+<span class="sd">            except when in Jupyter notebooks.</span>
+<span class="sd">        fig_kwargs (Optional[Dict[str, Any]], optional): Any keyword arguments to pass to</span>
+<span class="sd">            :func:`~matplotlib.pyplot.subplots`.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Tuple[List[matplotlib.figure.Figure], List[matplotlib.axes.Axes]]: A tuple ``(figs, axes)``  where ``figs`` is</span>
+<span class="sd">        the list of instanciated matplotlib :class:`~matplotlib.figure.Figure` and ``axes`` is a list of instanciated</span>
+<span class="sd">        matplotlib :class:`~matplotlib.figure.Axes`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># pylint: disable=too-many-locals</span>
+    <span class="n">_raise_error_if_matplotlib_not_there</span><span class="p">()</span>
+
+    <span class="n">metrics</span> <span class="o">=</span> <span class="n">_infer_metrics</span><span class="p">(</span><span class="n">history</span><span class="p">,</span> <span class="n">metrics</span><span class="p">)</span>
+
+    <span class="n">_assert_list_length_with_num_metrics</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">metrics</span><span class="p">,</span> <span class="s1">&#39;label&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">titles</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="n">titles</span> <span class="o">=</span> <span class="p">[</span><span class="n">titles</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">metrics</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">_assert_list_length_with_num_metrics</span><span class="p">(</span><span class="n">titles</span><span class="p">,</span> <span class="n">metrics</span><span class="p">,</span> <span class="s1">&#39;title&#39;</span><span class="p">)</span>
+
+    <span class="n">_assert_list_length_with_num_metrics</span><span class="p">(</span><span class="n">axes</span><span class="p">,</span> <span class="n">metrics</span><span class="p">,</span> <span class="s1">&#39;axe&#39;</span><span class="p">)</span>
+
+    <span class="n">labels</span> <span class="o">=</span> <span class="n">_none_to_iterator</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span>
+    <span class="n">titles</span> <span class="o">=</span> <span class="n">_none_to_iterator</span><span class="p">(</span><span class="n">titles</span><span class="p">,</span> <span class="n">repeat</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+
+    <span class="n">figs</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">_get_figs_and_axes</span><span class="p">(</span><span class="n">axes</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">metrics</span><span class="p">),</span> <span class="n">fig_kwargs</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">metric</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">title</span><span class="p">,</span> <span class="n">ax</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">metrics</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">titles</span><span class="p">,</span> <span class="n">axes</span><span class="p">):</span>
+        <span class="n">plot_metric</span><span class="p">(</span><span class="n">history</span><span class="p">,</span> <span class="n">metric</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">save</span><span class="p">:</span>
+        <span class="n">_save_figs</span><span class="p">(</span>
+            <span class="n">figs</span><span class="p">,</span>
+            <span class="n">metrics</span><span class="p">,</span>
+            <span class="n">filename_template</span><span class="o">=</span><span class="n">save_filename_template</span><span class="p">,</span>
+            <span class="n">directory</span><span class="o">=</span><span class="n">save_directory</span><span class="p">,</span>
+            <span class="n">extensions</span><span class="o">=</span><span class="n">save_extensions</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">show</span><span class="p">:</span>
+        <span class="n">_show_figs</span><span class="p">(</span><span class="n">figs</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">close</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">close</span> <span class="o">=</span> <span class="ow">not</span> <span class="n">jupyter</span>
+
+    <span class="k">if</span> <span class="n">close</span><span class="p">:</span>
+        <span class="n">_close_figs</span><span class="p">(</span><span class="n">figs</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">figs</span><span class="p">,</span> <span class="n">axes</span></div>
+
+
+<div class="viewcode-block" id="plot_metric"><a class="viewcode-back" href="../../utils.html#poutyne.plot_metric">[docs]</a><span class="k">def</span> <span class="nf">plot_metric</span><span class="p">(</span>
+    <span class="n">history</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]],</span> <span class="s1">&#39;pd.DataFrame&#39;</span><span class="p">],</span>
+    <span class="n">metric</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">label</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">title</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+    <span class="n">ax</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="s1">&#39;matplotlib.axes.Axes&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Plot the training history in matplotlib for a given metric.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        history (Union[List[Dict[str, Union[float, int]]], pd.DataFrame]): The training history to plot. Can be</span>
+<span class="sd">            either a list of dictionary as returned by :func:`~poutyne.Model.fit()` or a Pandas DataFrame as read from a</span>
+<span class="sd">            CSV output by the :class:`~poutyne.CSVLogger` callback.</span>
+<span class="sd">        metric (str): The metric for which to output the plot.</span>
+<span class="sd">        label (str, Optional[str]): A label for the metric. By default, the label is the same as the name of the metric.</span>
+<span class="sd">        title (str, optional): A title for the plot. By default, no title.</span>
+<span class="sd">        ax (Optional[matplotlib.axes.Axes], optional): A matplotlib :class:`~matplotlib.axes.Axes` to use. By default,</span>
+<span class="sd">            the current axe is used.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">_raise_error_if_matplotlib_not_there</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">ax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">label</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">train_label</span> <span class="o">=</span> <span class="n">metric</span>
+        <span class="n">valid_label</span> <span class="o">=</span> <span class="s1">&#39;val_&#39;</span> <span class="o">+</span> <span class="n">metric</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">train_label</span> <span class="o">=</span> <span class="s1">&#39;Training &#39;</span> <span class="o">+</span> <span class="n">label</span>
+        <span class="n">valid_label</span> <span class="o">=</span> <span class="s1">&#39;Validation &#39;</span> <span class="o">+</span> <span class="n">label</span>
+
+    <span class="n">val_metric_values</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="n">pd</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">history</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">):</span>
+        <span class="n">epochs</span> <span class="o">=</span> <span class="n">history</span><span class="p">[</span><span class="s1">&#39;epoch&#39;</span><span class="p">]</span>
+        <span class="n">metric_values</span> <span class="o">=</span> <span class="n">history</span><span class="p">[</span><span class="n">metric</span><span class="p">]</span>
+        <span class="k">if</span> <span class="s1">&#39;val_&#39;</span> <span class="o">+</span> <span class="n">metric</span> <span class="ow">in</span> <span class="n">history</span><span class="p">:</span>
+            <span class="n">val_metric_values</span> <span class="o">=</span> <span class="n">history</span><span class="p">[</span><span class="s1">&#39;val_&#39;</span> <span class="o">+</span> <span class="n">metric</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">epochs</span> <span class="o">=</span> <span class="p">[</span><span class="n">entry</span><span class="p">[</span><span class="s1">&#39;epoch&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">history</span><span class="p">]</span>
+        <span class="n">metric_values</span> <span class="o">=</span> <span class="p">[</span><span class="n">entry</span><span class="p">[</span><span class="n">metric</span><span class="p">]</span> <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">history</span><span class="p">]</span>
+        <span class="k">if</span> <span class="s1">&#39;val_&#39;</span> <span class="o">+</span> <span class="n">metric</span> <span class="ow">in</span> <span class="n">history</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+            <span class="n">val_metric_values</span> <span class="o">=</span> <span class="p">[</span><span class="n">entry</span><span class="p">[</span><span class="s1">&#39;val_&#39;</span> <span class="o">+</span> <span class="n">metric</span><span class="p">]</span> <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">history</span><span class="p">]</span>
+
+    <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">epochs</span><span class="p">,</span> <span class="n">metric_values</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">train_label</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">val_metric_values</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">epochs</span><span class="p">,</span> <span class="n">val_metric_values</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">valid_label</span><span class="p">)</span>
+
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Epochs&#39;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="n">label</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">xaxis</span><span class="o">.</span><span class="n">set_major_locator</span><span class="p">(</span><span class="n">MaxNLocator</span><span class="p">(</span><span class="n">integer</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+
+    <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">title</span><span class="p">)</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2018-2021, Frédérik Paradis.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+ 
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-177874682-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-177874682-1');
+</script>
+
+
+</body>
+</html>

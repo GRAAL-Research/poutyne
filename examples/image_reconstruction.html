@@ -1,80 +1,38 @@
-
-
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" />
-  
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  
-  <title>Image Reconstruction Using Poutyne &mdash; Poutyne 1.6 documentation</title>
-  
-
-  
-  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-
-  
-  
-
-  
-  
-
-  
-
-  
+  <title>Image Reconstruction Using Poutyne &mdash; Poutyne 1.7 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-    
-      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
         <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
         <script src="../_static/doctools.js"></script>
-    
-    <script type="text/javascript" src="../_static/js/theme.js"></script>
-
-    
+    <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Semantic segmentation using Poutyne" href="semantic_segmentation.html" />
     <link rel="prev" title="Transfer learning example" href="transfer_learning.html" /> 
 </head>
 
-<body class="wy-body-for-nav">
-
-   
+<body class="wy-body-for-nav"> 
   <div class="wy-grid-for-nav">
-    
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-          
-
-          
             <a href="../index.html">
-          
-
-          
-            
             <img src="../_static/poutyne-light.png" class="logo" alt="Logo"/>
-          
           </a>
-
-          
-            
-            
               <div class="version">
-                1.6
+                1.7
               </div>
-            
-          
-
-          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" />
@@ -82,18 +40,7 @@
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-
-          
-        </div>
-
-        
-        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-          
-            
-            
-              
-            
-            
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">API</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../model.html">Model</a></li>
@@ -125,73 +72,32 @@
 <li class="toctree-l1"><a class="reference internal" href="semantic_segmentation.html">Semantic segmentation using Poutyne</a></li>
 </ul>
 
-            
-          
         </div>
-        
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-
-      
-      <nav class="wy-nav-top" aria-label="top navigation">
-        
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../index.html">Poutyne</a>
-        
       </nav>
 
-
       <div class="wy-nav-content">
-        
         <div class="rst-content">
-        
-          
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div role="navigation" aria-label="breadcrumbs navigation">
-
+          <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-    
       <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
-        
       <li>Image Reconstruction Using Poutyne</li>
-    
-    
       <li class="wy-breadcrumbs-aside">
-        
-          
             <a href="../_sources/examples/image_reconstruction.rst.txt" rel="nofollow"> View page source</a>
-          
-        
       </li>
-    
   </ul>
-
-  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
-            
-  <div class="section" id="image-reconstruction-using-poutyne">
-<h1>Image Reconstruction Using Poutyne<a class="headerlink" href="#image-reconstruction-using-poutyne" title="Permalink to this headline">¶</a></h1>
+             
+  <section id="image-reconstruction-using-poutyne">
+<h1>Image Reconstruction Using Poutyne<a class="headerlink" href="#image-reconstruction-using-poutyne" title="Permalink to this headline"></a></h1>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <ul class="simple">
@@ -216,8 +122,8 @@
 <span class="kn">from</span> <span class="nn">torchvision.utils</span> <span class="kn">import</span> <span class="n">make_grid</span>
 </pre></div>
 </div>
-<div class="section" id="training-constants">
-<h2>Training Constants<a class="headerlink" href="#training-constants" title="Permalink to this headline">¶</a></h2>
+<section id="training-constants">
+<h2>Training Constants<a class="headerlink" href="#training-constants" title="Permalink to this headline"></a></h2>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">num_epochs</span> <span class="o">=</span> <span class="mi">3</span>
 <span class="n">learning_rate</span> <span class="o">=</span> <span class="mf">0.001</span>
 <span class="n">batch_size</span> <span class="o">=</span> <span class="mi">32</span>
@@ -229,9 +135,9 @@
 <span class="n">set_seeds</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="loading-the-mnist-dataset">
-<h2>Loading the MNIST Dataset<a class="headerlink" href="#loading-the-mnist-dataset" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="loading-the-mnist-dataset">
+<h2>Loading the MNIST Dataset<a class="headerlink" href="#loading-the-mnist-dataset" title="Permalink to this headline"></a></h2>
 <p>The MNIST dataset is directly downloaded from the <code class="docutils literal notranslate"><span class="pre">torchvision.datasets</span></code> package. The training dataset contains 60,000 images of digits of size 28x28. However, we separate 20% of the full train dataset as a validation dataset. Also, by setting the <code class="docutils literal notranslate"><span class="pre">train</span></code> argument to <code class="docutils literal notranslate"><span class="pre">False</span></code>, the test dataset containing 10,000 images is downloaded and saved in the “datasets” directory.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">full_train_dataset</span> <span class="o">=</span> <span class="n">datasets</span><span class="o">.</span><span class="n">MNIST</span><span class="p">(</span><span class="s1">&#39;./datasets/&#39;</span><span class="p">,</span> <span class="n">train</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">download</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">tfms</span><span class="o">.</span><span class="n">ToTensor</span><span class="p">())</span>
 <span class="n">test_dataset</span> <span class="o">=</span> <span class="n">datasets</span><span class="o">.</span><span class="n">MNIST</span><span class="p">(</span><span class="s1">&#39;./datasets/&#39;</span><span class="p">,</span> <span class="n">train</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">download</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">tfms</span><span class="o">.</span><span class="n">ToTensor</span><span class="p">())</span>
@@ -273,9 +179,9 @@
 <span class="n">test_dataloader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">test_dataset_new</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="convolutional-autoencoder">
-<h2>Convolutional Autoencoder<a class="headerlink" href="#convolutional-autoencoder" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="convolutional-autoencoder">
+<h2>Convolutional Autoencoder<a class="headerlink" href="#convolutional-autoencoder" title="Permalink to this headline"></a></h2>
 <p>The most frequently used network for image reconstruction is the autoencoder. In this section, we are going to define our own autoencoder. The encoder section tries to encode the input image into features and consequently, the decoder tries to decode the features and reconstruct the original image. As our input dataset (MNIST) contains images with low resolution and low complexity, we preferred not to design a complex network in order to avoid overfitting.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">ConvAutoencoder</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -327,9 +233,9 @@
 <span class="n">optimizer</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Adam</span><span class="p">(</span><span class="n">network</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="n">learning_rate</span><span class="p">)</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="training">
-<h2>Training<a class="headerlink" href="#training" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="training">
+<h2>Training<a class="headerlink" href="#training" title="Permalink to this headline"></a></h2>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Poutyne Model on GPU</span>
 <span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span><span class="n">network</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">criterion</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
 
@@ -337,9 +243,9 @@
 <span class="n">model</span><span class="o">.</span><span class="n">fit_generator</span><span class="p">(</span><span class="n">train_dataloader</span><span class="p">,</span> <span class="n">valid_dataloader</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="n">num_epochs</span><span class="p">,</span> <span class="n">callbacks</span><span class="o">=</span><span class="n">callbacks</span><span class="p">)</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="a-random-batch-of-the-mnist-dataset-images">
-<h2>A Random Batch of the MNIST Dataset Images<a class="headerlink" href="#a-random-batch-of-the-mnist-dataset-images" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="a-random-batch-of-the-mnist-dataset-images">
+<h2>A Random Batch of the MNIST Dataset Images<a class="headerlink" href="#a-random-batch-of-the-mnist-dataset-images" title="Permalink to this headline"></a></h2>
 <p>Let’s see some of the input samples inside the training dataset.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">inputs</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="n">train_dataloader</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
 <span class="n">input_grid</span> <span class="o">=</span> <span class="n">make_grid</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
@@ -350,9 +256,9 @@
 </pre></div>
 </div>
 <img alt="../_images/mnist_batch.png" src="../_images/mnist_batch.png" />
-</div>
-<div class="section" id="reconstructed-images-after-3-epochs-of-training">
-<h2>Reconstructed Images after 3 Epochs of Training<a class="headerlink" href="#reconstructed-images-after-3-epochs-of-training" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="reconstructed-images-after-3-epochs-of-training">
+<h2>Reconstructed Images after 3 Epochs of Training<a class="headerlink" href="#reconstructed-images-after-3-epochs-of-training" title="Permalink to this headline"></a></h2>
 <p>Here, we show the reconstruction results of the samples shown above to visually evaluate the quality of the results.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Calculating predictions of the trained network on a batch</span>
 <span class="n">outputs</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">predict_on_batch</span><span class="p">(</span><span class="n">inputs</span><span class="p">))</span>
@@ -364,9 +270,9 @@
 </pre></div>
 </div>
 <img alt="../_images/mnist_3epoch.png" src="../_images/mnist_3epoch.png" />
-</div>
-<div class="section" id="evaluation">
-<h2>Evaluation<a class="headerlink" href="#evaluation" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="evaluation">
+<h2>Evaluation<a class="headerlink" href="#evaluation" title="Permalink to this headline"></a></h2>
 <p>One of the useful tools of Poutyne is the <code class="docutils literal notranslate"><span class="pre">evaluate</span></code> methods, which provide you with the evaluation metrics and the ground truths and the predictions if the related arguments have been set to True (as below).</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># evaluating the trained network on test data</span>
 <span class="n">loss</span><span class="p">,</span> <span class="n">predictions</span><span class="p">,</span> <span class="n">ground_truth</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">evaluate_generator</span><span class="p">(</span><span class="n">test_dataloader</span><span class="p">,</span> <span class="n">return_pred</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">return_ground_truth</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -392,16 +298,16 @@
 </pre></div>
 </div>
 <img alt="../_images/rec_error_3epoch.png" src="../_images/rec_error_3epoch.png" />
-</div>
-<div class="section" id="resuming-the-training-for-more-epochs">
-<h2>Resuming the training for more epochs<a class="headerlink" href="#resuming-the-training-for-more-epochs" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="resuming-the-training-for-more-epochs">
+<h2>Resuming the training for more epochs<a class="headerlink" href="#resuming-the-training-for-more-epochs" title="Permalink to this headline"></a></h2>
 <p>If we find the previous epochs’ results not enough, Poutyne allows you to resume the last done epoch’s training, as shown below. Please note that in the <code class="docutils literal notranslate"><span class="pre">callbacks</span></code> that we defined before since we did not set the <code class="docutils literal notranslate"><span class="pre">restore_best</span></code> argument in <code class="docutils literal notranslate"><span class="pre">ModelCheckpoint</span></code> to <code class="docutils literal notranslate"><span class="pre">True</span></code>, our model stays at the last epoch after finishing the first part of the training. Hence, by setting the <code class="docutils literal notranslate"><span class="pre">initial_epoch</span> <span class="pre">+</span> <span class="pre">1</span></code> to the last epoch of the previous training, we can resume our training to train for more epochs, using the last state of the neural network.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="o">.</span><span class="n">fit_generator</span><span class="p">(</span><span class="n">train_dataloader</span><span class="p">,</span> <span class="n">valid_dataloader</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">13</span><span class="p">,</span> <span class="n">callbacks</span><span class="o">=</span><span class="n">callbacks</span><span class="p">,</span> <span class="n">initial_epoch</span><span class="o">=</span><span class="n">num_epochs</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="reconstructed-images-after-the-second-training-process">
-<h2>Reconstructed images after the second training process<a class="headerlink" href="#reconstructed-images-after-the-second-training-process" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="reconstructed-images-after-the-second-training-process">
+<h2>Reconstructed images after the second training process<a class="headerlink" href="#reconstructed-images-after-the-second-training-process" title="Permalink to this headline"></a></h2>
 <p>Now let’s visualize the quality of the results after the second training.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">outputs</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">predict_on_batch</span><span class="p">(</span><span class="n">inputs</span><span class="p">))</span>
 <span class="n">output_grid</span> <span class="o">=</span> <span class="n">make_grid</span><span class="p">(</span><span class="n">outputs</span><span class="p">)</span>
@@ -445,55 +351,38 @@
 </div>
 <img alt="../_images/mnist_compare.png" src="../_images/mnist_compare.png" />
 <p>You can also try finetuning the model to obtain better performance. Such as changing the hyperparameters (network capacity, epochs, etc.).</p>
-</div>
-</div>
+</section>
+</section>
 
 
            </div>
-           
           </div>
-          <footer>
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-        <a href="semantic_segmentation.html" class="btn btn-neutral float-right" title="Semantic segmentation using Poutyne" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="transfer_learning.html" class="btn btn-neutral float-left" title="Transfer learning example" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="semantic_segmentation.html" class="btn btn-neutral float-right" title="Semantic segmentation using Poutyne" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
 
   <div role="contentinfo">
-    <p>
-        &#169; Copyright 2018-2021, Frédérik Paradis.
-
-    </p>
+    <p>&#169; Copyright 2018-2021, Frédérik Paradis.</p>
   </div>
-    
-    
-    
-    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
-    
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
     <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
-    
-    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
 
 </footer>
         </div>
       </div>
-
     </section>
-
   </div>
-  
-
-  <script type="text/javascript">
+  <script>
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
   </script>
-
-  
-  
-    
-  
  
 <!-- Global site tag (gtag.js) - Google Analytics -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=UA-177874682-1"></script>
