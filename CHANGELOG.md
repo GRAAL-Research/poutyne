@@ -1,12 +1,16 @@
 # v1.x.x
 
+*
+
+# v1.7
+
 * Add [`plot_history`](https://poutyne.org/utils.html#poutyne.plot_history) and
   [`plot_metric`](https://poutyne.org/utils.html#poutyne.plot_metric) functions to easily plot the history returned
   by Poutyne. [`Experiment`](https://poutyne.org/experiment.html#poutyne.Experiment) also saves the figures at the end
   of the training.
 * All text files (e.g. CSVs in CSVLogger) are now saved using UTF-8 on all platforms.
 
-# v1.6q
+# v1.6
 
 * PeriodicSaveCallback and all its subclasses now have the `restore_best` argument.
 * `Experiment` now contains a `monitoring` argument that can be set to false to avoid monitoring any metric and saving uneeded checkpoints.
