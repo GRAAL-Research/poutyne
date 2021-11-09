@@ -117,15 +117,15 @@ loss function (either the functional or object name). The loss function must hav
 is the ground truth. If <code class="docutils literal notranslate"><span class="pre">None</span></code>, will default to, in priority order, either the model’s own
 loss function or the default loss function associated with the <code class="docutils literal notranslate"><span class="pre">task</span></code>.
 (Default value = None)</p></li>
-<li><p><strong>batch_metrics</strong> (<em>List</em><em>, </em><em>optional</em>) – List of functions with the same signature as the loss function. Each metric
+<li><p><strong>batch_metrics</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – List of functions with the same signature as the loss function. Each metric
 can be any PyTorch loss function. It can also be a string with the same name as a PyTorch
-loss function (either the functional or object name). ‘accuracy’ (or just ‘acc’) is also a
-valid metric. Each metric function is called on each batch of the optimization and on the
-validation batches at the end of the epoch.
+loss function (either the functional or object name). Furthermore, see <a class="reference internal" href="metrics.html#batch-metrics"><span class="std std-ref">Batch Metrics</span></a>
+for supplementary available batch metrics. ‘accuracy’ (or just ‘acc’) is an often used metric.
+Each metric function is called on each batch of the optimization and on the validation batches
+at the end of the epoch.
 (Default value = None)</p></li>
-<li><p><strong>epoch_metrics</strong> (<em>List</em><em>, </em><em>optional</em>) – List of functions with the same signature as
-<a class="reference internal" href="metrics.html#poutyne.EpochMetric" title="poutyne.EpochMetric"><code class="xref py py-class docutils literal notranslate"><span class="pre">EpochMetric</span></code></a>
-(Default value = None)</p></li>
+<li><p><strong>epoch_metrics</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – List of functions with the same signature as <a class="reference internal" href="metrics.html#poutyne.EpochMetric" title="poutyne.EpochMetric"><code class="xref py py-class docutils literal notranslate"><span class="pre">EpochMetric</span></code></a>.
+See <a class="reference internal" href="metrics.html#epoch-metrics"><span class="std std-ref">Epoch Metrics</span></a> for available epoch metrics. (Default value = None)</p></li>
 <li><p><strong>monitoring</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – Whether or not to monitor the training. If True will track the best epoch.
 If False, <code class="docutils literal notranslate"><span class="pre">monitor_metric</span></code> and <code class="docutils literal notranslate"><span class="pre">monitor_mode</span></code> are not used, and when testing, the last epoch is used to
 test the model instead of the best epoch.

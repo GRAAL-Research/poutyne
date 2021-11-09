@@ -127,40 +127,22 @@
 <span class="sd">            (Default value = None)</span>
 <span class="sd">        batch_metrics (list): List of functions with the same signature as the loss function. Each metric</span>
 <span class="sd">            can be any PyTorch loss function. It can also be a string with the same name as a PyTorch</span>
-<span class="sd">            loss function (either the functional or object name). &#39;accuracy&#39; (or just &#39;acc&#39;) is also a</span>
-<span class="sd">            valid metric. Each metric function is called on each batch of the optimization and on the</span>
-<span class="sd">            validation batches at the end of the epoch.</span>
+<span class="sd">            loss function (either the functional or object name). Furthermore, see :ref:`batch metrics`</span>
+<span class="sd">            for supplementary available batch metrics. &#39;accuracy&#39; (or just &#39;acc&#39;) is an often used metric.</span>
+<span class="sd">            Each metric function is called on each batch of the optimization and on the validation batches</span>
+<span class="sd">            at the end of the epoch.</span>
 <span class="sd">            (Default value = None)</span>
-<span class="sd">        epoch_metrics (list): List of functions with the same signature as</span>
-<span class="sd">            :class:`~poutyne.EpochMetric`</span>
-<span class="sd">            (Default value = None)</span>
+<span class="sd">        epoch_metrics (list): List of functions with the same signature as :class:`~poutyne.EpochMetric`.</span>
+<span class="sd">            See :ref:`epoch metrics` for available epoch metrics. (Default value = None)</span>
 <span class="sd">        device (Union[torch.torch.device, List[torch.torch.device]]): The device to which the network is</span>
 <span class="sd">            sent or the list of device to which the network is sent. See :func:`~Model.to()` for details.</span>
 
 <span class="sd">    Note:</span>
 <span class="sd">        The name of each batch and epoch metric can be change by passing a tuple ``(name, metric)`` instead</span>
 <span class="sd">        of simply the metric function or object, where ``name`` is the alternative name of the metric.</span>
-
 <span class="sd">        Batch and epoch metrics can return multiple metrics (e.g. an epoch metric could return an F1-score</span>
-<span class="sd">        with the associated precision and recall). The metrics can returned via an iterable (tuple, list,</span>
-<span class="sd">        Numpy arrays, tensors, etc.) or via a mapping (e.g. a dict). However, in this case, the names of</span>
-<span class="sd">        the different metric has to be passed in some way. There are two ways to do so. The easiest one</span>
-<span class="sd">        is to pass the metric as a tuple ``(names, metric)`` where ``names`` is a tuple containing a name for</span>
-<span class="sd">        each metric returned. Another way is to override the attribute ``__name__`` of the function or object</span>
-<span class="sd">        so that it returns a tuple containing a name for all metrics returned. Note that, when the metric</span>
-<span class="sd">        returns a mapping, the names of the different metrics must be keys in the mapping.</span>
+<span class="sd">        with the associated precision and recall). See :ref:`multiple metrics at once` for more details.</span>
 
-<span class="sd">        Example:</span>
-
-<span class="sd">        .. code-block:: python</span>
-
-<span class="sd">            # Example with custom batch metrics</span>
-<span class="sd">            my_custom_metric = lambda input, target: 42.</span>
-<span class="sd">            my_custom_metric2 = lambda input, target: torch.tensor([42., 43.])</span>
-<span class="sd">            my_custom_metric3 = lambda input, target: {&#39;a&#39;: 42., &#39;b&#39;: 43.}</span>
-<span class="sd">            batch_metrics = [(&#39;custom_name&#39;, my_custom_metric),</span>
-<span class="sd">                             ((&#39;metric_1&#39;, &#39;metric_2&#39;), my_custom_metric2),</span>
-<span class="sd">                             ((&#39;a&#39;, &#39;b&#39;), my_custom_metric3)]</span>
 
 <span class="sd">    Attributes:</span>
 <span class="sd">        network (torch.nn.Module): The associated PyTorch network.</span>

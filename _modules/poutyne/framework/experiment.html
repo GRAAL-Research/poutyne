@@ -151,15 +151,15 @@
 <span class="sd">            is the ground truth. If ``None``, will default to, in priority order, either the model&#39;s own</span>
 <span class="sd">            loss function or the default loss function associated with the ``task``.</span>
 <span class="sd">            (Default value = None)</span>
-<span class="sd">        batch_metrics (List, optional): List of functions with the same signature as the loss function. Each metric</span>
+<span class="sd">        batch_metrics (list): List of functions with the same signature as the loss function. Each metric</span>
 <span class="sd">            can be any PyTorch loss function. It can also be a string with the same name as a PyTorch</span>
-<span class="sd">            loss function (either the functional or object name). &#39;accuracy&#39; (or just &#39;acc&#39;) is also a</span>
-<span class="sd">            valid metric. Each metric function is called on each batch of the optimization and on the</span>
-<span class="sd">            validation batches at the end of the epoch.</span>
+<span class="sd">            loss function (either the functional or object name). Furthermore, see :ref:`batch metrics`</span>
+<span class="sd">            for supplementary available batch metrics. &#39;accuracy&#39; (or just &#39;acc&#39;) is an often used metric.</span>
+<span class="sd">            Each metric function is called on each batch of the optimization and on the validation batches</span>
+<span class="sd">            at the end of the epoch.</span>
 <span class="sd">            (Default value = None)</span>
-<span class="sd">        epoch_metrics (List, optional): List of functions with the same signature as</span>
-<span class="sd">            :class:`~poutyne.EpochMetric`</span>
-<span class="sd">            (Default value = None)</span>
+<span class="sd">        epoch_metrics (list): List of functions with the same signature as :class:`~poutyne.EpochMetric`.</span>
+<span class="sd">            See :ref:`epoch metrics` for available epoch metrics. (Default value = None)</span>
 <span class="sd">        monitoring (bool): Whether or not to monitor the training. If True will track the best epoch.</span>
 <span class="sd">            If False, ``monitor_metric`` and ``monitor_mode`` are not used, and when testing, the last epoch is used to</span>
 <span class="sd">            test the model instead of the best epoch.</span>

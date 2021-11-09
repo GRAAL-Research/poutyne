@@ -49,7 +49,7 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Metrics</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#batch-metrics">Batch Metrics</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#object-oriented-api">Object-Oriented API</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id1">Functional</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id2">Functional</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#epoch-metrics">Epoch Metrics</a><ul>
@@ -57,6 +57,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#predefined-epoch-metrics">Predefined Epoch Metrics</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="#computing-multiple-metrics-at-once">Computing Multiple Metrics at Once</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="callbacks.html">Callbacks</a></li>
@@ -106,7 +107,7 @@ The main difference between them is that <strong>batch metrics</strong> are comp
 For instance, the predefined <a class="reference internal" href="#poutyne.F1" title="poutyne.F1"><code class="xref py py-class docutils literal notranslate"><span class="pre">F1</span></code></a> epoch metric implements the F1 score.
 One who knows what an F1-score may know that an average of multiple F1 scores is not the equivalent of the overall F1 score.</p>
 <section id="batch-metrics">
-<h2>Batch Metrics<a class="headerlink" href="#batch-metrics" title="Permalink to this headline"></a></h2>
+<span id="id1"></span><h2>Batch Metrics<a class="headerlink" href="#batch-metrics" title="Permalink to this headline"></a></h2>
 <p>Batch metrics are computed at each batch and averaged at the end of an epoch.
 The interface is the same as PyTorch loss function, that is <code class="docutils literal notranslate"><span class="pre">metric(y_pred,</span> <span class="pre">y_true)</span></code>.</p>
 <p>In addition to the predefined batch metrics below, all PyTorch loss functions can be used by string name in the <a class="reference internal" href="model.html#poutyne.Model" title="poutyne.Model"><code class="xref py py-class docutils literal notranslate"><span class="pre">batch_metrics</span> <span class="pre">argument</span></code></a> under their <a class="reference external" href="https://pytorch.org/docs/stable/nn.functional.html">functional</a> name.
@@ -241,8 +242,8 @@ K-dimensional top-k accuracy.</p></li>
 </dd></dl>
 
 </section>
-<section id="id1">
-<h3>Functional<a class="headerlink" href="#id1" title="Permalink to this headline"></a></h3>
+<section id="id2">
+<h3>Functional<a class="headerlink" href="#id2" title="Permalink to this headline"></a></h3>
 <p>Below is the functional version of the classes in the <a class="reference internal" href="#object-oriented-batch-metrics"><span class="std std-ref">Object-Oriented API</span></a> section.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="poutyne.acc">
@@ -271,7 +272,7 @@ K-dimensional top-k accuracy.</p></li>
 </section>
 </section>
 <section id="epoch-metrics">
-<span id="id2"></span><h2>Epoch Metrics<a class="headerlink" href="#epoch-metrics" title="Permalink to this headline"></a></h2>
+<span id="id3"></span><h2>Epoch Metrics<a class="headerlink" href="#epoch-metrics" title="Permalink to this headline"></a></h2>
 <p>Epoch metrics are metrics calculated <strong>only</strong> at the end of every epoch.
 They need to be implemented following the interface class, but we provide an few predefined metrics.</p>
 <section id="interface">
@@ -528,6 +529,72 @@ that a new epoch can be done.</p>
 </dd></dl>
 
 </section>
+</section>
+<section id="computing-multiple-metrics-at-once">
+<span id="multiple-metrics-at-once"></span><h2>Computing Multiple Metrics at Once<a class="headerlink" href="#computing-multiple-metrics-at-once" title="Permalink to this headline"></a></h2>
+<p>When passing the metrics to <a class="reference internal" href="model.html#poutyne.Model" title="poutyne.Model"><code class="xref py py-class docutils literal notranslate"><span class="pre">Model</span></code></a> and <a class="reference internal" href="experiment.html#poutyne.Experiment" title="poutyne.Experiment"><code class="xref py py-class docutils literal notranslate"><span class="pre">Experiment</span></code></a>, the name of each batch and epoch metric can be change by passing a tuple <code class="docutils literal notranslate"><span class="pre">(name,</span> <span class="pre">metric)</span></code> instead of simply the metric function or object, where <code class="docutils literal notranslate"><span class="pre">name</span></code> is the alternative name of the metric.</p>
+<p>Batch and epoch metrics can return multiple metrics (e.g. an epoch metric could return an F1-score with the associated precision and recall).
+The metrics can be returned via an iterable (tuple, list, Numpy arrays, tensors, etc.) or via a mapping (e.g. a dict).
+However, in this case, the names of the different metric has to be passed in some way.</p>
+<p>There are two ways to do so.
+The easiest one is to pass the metric as a tuple <code class="docutils literal notranslate"><span class="pre">(names,</span> <span class="pre">metric)</span></code> where <code class="docutils literal notranslate"><span class="pre">names</span></code> is a tuple containing a name for each metric returned.
+Another way is to override the attribute <code class="docutils literal notranslate"><span class="pre">__name__</span></code> of the function or object so that it returns a tuple containing a name for all metrics returned.
+Note that, when the metric returns a mapping, the names of the different metrics must be keys in the mapping.</p>
+<p>Example with batch metrics:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Example with custom batch metrics</span>
+<span class="n">my_custom_metric</span> <span class="o">=</span> <span class="k">lambda</span> <span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="mf">42.</span>
+<span class="n">my_custom_metric2</span> <span class="o">=</span> <span class="k">lambda</span> <span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mf">42.</span><span class="p">,</span> <span class="mf">43.</span><span class="p">])</span>
+<span class="n">my_custom_metric3</span> <span class="o">=</span> <span class="k">lambda</span> <span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="mf">42.</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="mf">43.</span><span class="p">}</span>
+<span class="n">batch_metrics</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">(</span><span class="s1">&#39;custom_name&#39;</span><span class="p">,</span> <span class="n">my_custom_metric</span><span class="p">),</span>
+    <span class="p">((</span><span class="s1">&#39;metric_1&#39;</span><span class="p">,</span> <span class="s1">&#39;metric_2&#39;</span><span class="p">),</span> <span class="n">my_custom_metric2</span><span class="p">),</span>
+    <span class="p">((</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">),</span> <span class="n">my_custom_metric3</span><span class="p">),</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+<p>Example with epoch metrics:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">CustomEpochMetric</span><span class="p">(</span><span class="n">EpochMetric</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">y_true</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="k">def</span> <span class="nf">get_metric</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mf">42.</span><span class="p">,</span> <span class="mf">43.</span><span class="p">])</span>
+
+    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+<span class="k">class</span> <span class="nc">CustomEpochMetric2</span><span class="p">(</span><span class="n">EpochMetric</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">y_true</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="k">def</span> <span class="nf">get_metric</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="mf">42.</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="mf">43.</span><span class="p">}</span>
+
+    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+
+<span class="k">class</span> <span class="nc">CustomEpochMetric3</span><span class="p">(</span><span class="n">EpochMetric</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;c&#39;</span><span class="p">,</span> <span class="s1">&#39;d&#39;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">y_true</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="k">def</span> <span class="nf">get_metric</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mf">42.</span><span class="p">,</span> <span class="mf">43.</span><span class="p">])</span>
+
+    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+<span class="n">epoch_metrics</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">(</span><span class="s1">&#39;metric_1&#39;</span><span class="p">,</span> <span class="s1">&#39;metric_2&#39;</span><span class="p">),</span> <span class="n">CustomEpochMetric</span><span class="p">()),</span>
+    <span class="p">((</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">),</span> <span class="n">CustomEpochMetric2</span><span class="p">()),</span>
+    <span class="n">CustomEpochMetric3</span><span class="p">(),</span>  <span class="c1"># No need to pass the names since the class sets the attribute __name__.</span>
+<span class="p">]</span>
+</pre></div>
+</div>
 </section>
 </section>
 

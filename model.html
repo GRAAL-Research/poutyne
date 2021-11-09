@@ -108,13 +108,13 @@ object name). The loss function must have the signature <code class="docutils li
 (Default value = None)</p></li>
 <li><p><strong>batch_metrics</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – List of functions with the same signature as the loss function. Each metric
 can be any PyTorch loss function. It can also be a string with the same name as a PyTorch
-loss function (either the functional or object name). ‘accuracy’ (or just ‘acc’) is also a
-valid metric. Each metric function is called on each batch of the optimization and on the
-validation batches at the end of the epoch.
+loss function (either the functional or object name). Furthermore, see <a class="reference internal" href="metrics.html#batch-metrics"><span class="std std-ref">Batch Metrics</span></a>
+for supplementary available batch metrics. ‘accuracy’ (or just ‘acc’) is an often used metric.
+Each metric function is called on each batch of the optimization and on the validation batches
+at the end of the epoch.
 (Default value = None)</p></li>
-<li><p><strong>epoch_metrics</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – List of functions with the same signature as
-<a class="reference internal" href="metrics.html#poutyne.EpochMetric" title="poutyne.EpochMetric"><code class="xref py py-class docutils literal notranslate"><span class="pre">EpochMetric</span></code></a>
-(Default value = None)</p></li>
+<li><p><strong>epoch_metrics</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – List of functions with the same signature as <a class="reference internal" href="metrics.html#poutyne.EpochMetric" title="poutyne.EpochMetric"><code class="xref py py-class docutils literal notranslate"><span class="pre">EpochMetric</span></code></a>.
+See <a class="reference internal" href="metrics.html#epoch-metrics"><span class="std std-ref">Epoch Metrics</span></a> for available epoch metrics. (Default value = None)</p></li>
 <li><p><strong>device</strong> (<em>Union</em><em>[</em><a class="reference external" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.torch.device" title="(in PyTorch v1.10.0)"><em>torch.torch.device</em></a><em>, </em><em>List</em><em>[</em><a class="reference external" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.torch.device" title="(in PyTorch v1.10.0)"><em>torch.torch.device</em></a><em>]</em><em>]</em>) – The device to which the network is
 sent or the list of device to which the network is sent. See <a class="reference internal" href="#poutyne.Model.to" title="poutyne.Model.to"><code class="xref py py-func docutils literal notranslate"><span class="pre">to()</span></code></a> for details.</p></li>
 </ul>
@@ -123,25 +123,9 @@ sent or the list of device to which the network is sent. See <a class="reference
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>The name of each batch and epoch metric can be change by passing a tuple <code class="docutils literal notranslate"><span class="pre">(name,</span> <span class="pre">metric)</span></code> instead
-of simply the metric function or object, where <code class="docutils literal notranslate"><span class="pre">name</span></code> is the alternative name of the metric.</p>
-<p>Batch and epoch metrics can return multiple metrics (e.g. an epoch metric could return an F1-score
-with the associated precision and recall). The metrics can returned via an iterable (tuple, list,
-Numpy arrays, tensors, etc.) or via a mapping (e.g. a dict). However, in this case, the names of
-the different metric has to be passed in some way. There are two ways to do so. The easiest one
-is to pass the metric as a tuple <code class="docutils literal notranslate"><span class="pre">(names,</span> <span class="pre">metric)</span></code> where <code class="docutils literal notranslate"><span class="pre">names</span></code> is a tuple containing a name for
-each metric returned. Another way is to override the attribute <code class="docutils literal notranslate"><span class="pre">__name__</span></code> of the function or object
-so that it returns a tuple containing a name for all metrics returned. Note that, when the metric
-returns a mapping, the names of the different metrics must be keys in the mapping.</p>
-<p>Example:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Example with custom batch metrics</span>
-<span class="n">my_custom_metric</span> <span class="o">=</span> <span class="k">lambda</span> <span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="mf">42.</span>
-<span class="n">my_custom_metric2</span> <span class="o">=</span> <span class="k">lambda</span> <span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mf">42.</span><span class="p">,</span> <span class="mf">43.</span><span class="p">])</span>
-<span class="n">my_custom_metric3</span> <span class="o">=</span> <span class="k">lambda</span> <span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="mf">42.</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="mf">43.</span><span class="p">}</span>
-<span class="n">batch_metrics</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;custom_name&#39;</span><span class="p">,</span> <span class="n">my_custom_metric</span><span class="p">),</span>
-                 <span class="p">((</span><span class="s1">&#39;metric_1&#39;</span><span class="p">,</span> <span class="s1">&#39;metric_2&#39;</span><span class="p">),</span> <span class="n">my_custom_metric2</span><span class="p">),</span>
-                 <span class="p">((</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">),</span> <span class="n">my_custom_metric3</span><span class="p">)]</span>
-</pre></div>
-</div>
+of simply the metric function or object, where <code class="docutils literal notranslate"><span class="pre">name</span></code> is the alternative name of the metric.
+Batch and epoch metrics can return multiple metrics (e.g. an epoch metric could return an F1-score
+with the associated precision and recall). See <a class="reference internal" href="metrics.html#multiple-metrics-at-once"><span class="std std-ref">Computing Multiple Metrics at Once</span></a> for more details.</p>
 </div>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="poutyne.Model.network">
