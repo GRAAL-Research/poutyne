@@ -183,6 +183,7 @@ class Model:
         epoch_metrics = list(map(get_epoch_metric, epoch_metrics))
         self.epoch_metrics, epoch_metrics_names = get_callables_and_names(epoch_metrics)
 
+        self.original_batch_metrics_names, self.original_epoch_metrics_names = batch_metrics_names, epoch_metrics_names
         batch_metrics_names, epoch_metrics_names = rename_doubles(batch_metrics_names, epoch_metrics_names)
 
         self.unflatten_batch_metrics_names = batch_metrics_names
@@ -1362,13 +1363,13 @@ class Model:
 
     def _compute_batch_metrics(self, pred_y, y):
         metrics = [metric(pred_y, y) for metric in self.batch_metrics]
-        return self._compute_metric_array(metrics, self.unflatten_batch_metrics_names)
+        return self._compute_metric_array(metrics, self.original_batch_metrics_names)
 
     def _get_epoch_metrics(self):
         metrics = [epoch_metric.get_metric() for epoch_metric in self.epoch_metrics]
         for epoch_metric in self.epoch_metrics:
             epoch_metric.reset()
-        return self._compute_metric_array(metrics, self.unflatten_epoch_metrics_names)
+        return self._compute_metric_array(metrics, self.original_epoch_metrics_names)
 
     def _compute_metric_array(self, metrics_list, names_list):
         def _get_metric(names, metrics):
