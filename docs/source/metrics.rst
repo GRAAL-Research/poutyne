@@ -106,6 +106,8 @@ Example with epoch metrics:
 
 .. code-block:: python
 
+    from poutyne import EpochMetric
+
     class CustomEpochMetric(EpochMetric):
         def forward(self, y_pred, y_true):
             pass
@@ -142,7 +144,7 @@ Example with epoch metrics:
             pass
 
     epoch_metrics = [
-        ('metric_1', 'metric_2'), CustomEpochMetric()),
+        (('metric_1', 'metric_2'), CustomEpochMetric()),
         (('a', 'b'), CustomEpochMetric2()),
         CustomEpochMetric3(),  # No need to pass the names since the class sets the attribute __name__.
     ]
