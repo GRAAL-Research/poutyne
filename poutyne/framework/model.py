@@ -42,40 +42,22 @@ class Model:
             (Default value = None)
         batch_metrics (list): List of functions with the same signature as the loss function. Each metric
             can be any PyTorch loss function. It can also be a string with the same name as a PyTorch
-            loss function (either the functional or object name). 'accuracy' (or just 'acc') is also a
-            valid metric. Each metric function is called on each batch of the optimization and on the
-            validation batches at the end of the epoch.
+            loss function (either the functional or object name). Furthermore, see :ref:`batch metrics`
+            for supplementary available batch metrics. 'accuracy' (or just 'acc') is an often used metric.
+            Each metric function is called on each batch of the optimization and on the validation batches
+            at the end of the epoch.
             (Default value = None)
-        epoch_metrics (list): List of functions with the same signature as
-            :class:`~poutyne.EpochMetric`
-            (Default value = None)
+        epoch_metrics (list): List of functions with the same signature as :class:`~poutyne.EpochMetric`.
+            See :ref:`epoch metrics` for available epoch metrics. (Default value = None)
         device (Union[torch.torch.device, List[torch.torch.device]]): The device to which the network is
             sent or the list of device to which the network is sent. See :func:`~Model.to()` for details.
 
     Note:
         The name of each batch and epoch metric can be change by passing a tuple ``(name, metric)`` instead
         of simply the metric function or object, where ``name`` is the alternative name of the metric.
-
         Batch and epoch metrics can return multiple metrics (e.g. an epoch metric could return an F1-score
-        with the associated precision and recall). The metrics can returned via an iterable (tuple, list,
-        Numpy arrays, tensors, etc.) or via a mapping (e.g. a dict). However, in this case, the names of
-        the different metric has to be passed in some way. There are two ways to do so. The easiest one
-        is to pass the metric as a tuple ``(names, metric)`` where ``names`` is a tuple containing a name for
-        each metric returned. Another way is to override the attribute ``__name__`` of the function or object
-        so that it returns a tuple containing a name for all metrics returned. Note that, when the metric
-        returns a mapping, the names of the different metrics must be keys in the mapping.
+        with the associated precision and recall). See :ref:`multiple metrics at once` for more details.
 
-        Example:
-
-        .. code-block:: python
-
-            # Example with custom batch metrics
-            my_custom_metric = lambda input, target: 42.
-            my_custom_metric2 = lambda input, target: torch.tensor([42., 43.])
-            my_custom_metric3 = lambda input, target: {'a': 42., 'b': 43.}
-            batch_metrics = [('custom_name', my_custom_metric),
-                             (('metric_1', 'metric_2'), my_custom_metric2),
-                             (('a', 'b'), my_custom_metric3)]
 
     Attributes:
         network (torch.nn.Module): The associated PyTorch network.
