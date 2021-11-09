@@ -553,7 +553,9 @@ Note that, when the metric returns a mapping, the names of the different metrics
 </pre></div>
 </div>
 <p>Example with epoch metrics:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">CustomEpochMetric</span><span class="p">(</span><span class="n">EpochMetric</span><span class="p">):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">poutyne</span> <span class="kn">import</span> <span class="n">EpochMetric</span>
+
+<span class="k">class</span> <span class="nc">CustomEpochMetric</span><span class="p">(</span><span class="n">EpochMetric</span><span class="p">):</span>
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">y_true</span><span class="p">):</span>
         <span class="k">pass</span>
 
@@ -589,7 +591,7 @@ Note that, when the metric returns a mapping, the names of the different metrics
         <span class="k">pass</span>
 
 <span class="n">epoch_metrics</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="p">(</span><span class="s1">&#39;metric_1&#39;</span><span class="p">,</span> <span class="s1">&#39;metric_2&#39;</span><span class="p">),</span> <span class="n">CustomEpochMetric</span><span class="p">()),</span>
+    <span class="p">((</span><span class="s1">&#39;metric_1&#39;</span><span class="p">,</span> <span class="s1">&#39;metric_2&#39;</span><span class="p">),</span> <span class="n">CustomEpochMetric</span><span class="p">()),</span>
     <span class="p">((</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">),</span> <span class="n">CustomEpochMetric2</span><span class="p">()),</span>
     <span class="n">CustomEpochMetric3</span><span class="p">(),</span>  <span class="c1"># No need to pass the names since the class sets the attribute __name__.</span>
 <span class="p">]</span>
