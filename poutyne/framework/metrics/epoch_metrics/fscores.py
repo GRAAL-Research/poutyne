@@ -93,7 +93,7 @@ class FBeta(EpochMetric):
         self,
         *,
         metric: Optional[str] = None,
-        average: Union[str, int] = 'micro',
+        average: Union[str, int] = 'macro',
         beta: float = 1.0,
         pos_label: int = 1,
         ignore_index: int = -100,
@@ -308,7 +308,7 @@ class F1(FBeta):
         where ``{average}`` is replaced by the value of the respective parameter.
     """
 
-    def __init__(self, average='micro'):
+    def __init__(self, average='macro'):
         super().__init__(metric='fscore', average=average, beta=1)
 
 
@@ -327,7 +327,7 @@ class Precision(FBeta):
         where ``{average}`` is replaced by the value of the respective parameter.
     """
 
-    def __init__(self, average='micro'):
+    def __init__(self, average='macro'):
         super().__init__(metric='precision', average=average, beta=1)
 
 
@@ -346,7 +346,7 @@ class Recall(FBeta):
         where ``{average}`` is replaced by the value of the respective parameter.
     """
 
-    def __init__(self, average='micro'):
+    def __init__(self, average='macro'):
         super().__init__(metric='recall', average=average, beta=1)
 
 

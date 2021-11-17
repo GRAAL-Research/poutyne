@@ -1008,7 +1008,7 @@ class ModelDatasetMethodsTest(ModelFittingTestCase):
         self.batch_metrics_names = ['acc']
         self.batch_metrics_values = [ANY]
         self.epoch_metrics = ['f1']
-        self.epoch_metrics_names = ['fscore_micro']
+        self.epoch_metrics_names = ['fscore_macro']
         self.epoch_metrics_values = [ANY]
         self.model = Model(
             self.pytorch_network,
