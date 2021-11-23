@@ -7,11 +7,17 @@ from poutyne import Accuracy, BinaryAccuracy, TopKAccuracy, acc, bin_acc, topk
 
 
 class AccuracyTest(TestCase):
-
     def setUp(self):
-        self.predictions = torch.Tensor([[0.35, 0.25, 0.1, 0.1, 0.2], [0.1, 0.6, 0.1, 0.2, 0.0],
-                                         [0.1, 0.6, 0.1, 0.2, 0.0], [0.1, 0.5, 0.1, 0.2, 0.0],
-                                         [0.1, 0.2, 0.1, 0.7, 0.0], [0.1, 0.6, 0.1, 0.2, 0.0]])
+        self.predictions = torch.Tensor(
+            [
+                [0.35, 0.25, 0.1, 0.1, 0.2],
+                [0.1, 0.6, 0.1, 0.2, 0.0],
+                [0.1, 0.6, 0.1, 0.2, 0.0],
+                [0.1, 0.5, 0.1, 0.2, 0.0],
+                [0.1, 0.2, 0.1, 0.7, 0.0],
+                [0.1, 0.6, 0.1, 0.2, 0.0],
+            ]
+        )
         self.label_predictions = torch.Tensor([0, 1, 1, 1, 3, 1])
         self.targets = torch.Tensor([0, 4, 1, 0, 3, 0])
         self.accuracy_none = (self.label_predictions == self.targets).float() * 100
@@ -32,7 +38,7 @@ class AccuracyTest(TestCase):
         accuracy = Accuracy()
         actual = accuracy(self.predictions, self.label_predictions)
         self.assertEqual((), actual.shape)
-        np.testing.assert_almost_equal(100., actual)
+        np.testing.assert_almost_equal(100.0, actual)
 
     def test_sum(self):
         accuracy = Accuracy(reduction='sum')
@@ -49,7 +55,7 @@ class AccuracyTest(TestCase):
         accuracy = Accuracy(reduction='sum')
         actual = accuracy(self.predictions, self.label_predictions)
         self.assertEqual((), actual.shape)
-        np.testing.assert_almost_equal(100. * len(self.predictions), actual)
+        np.testing.assert_almost_equal(100.0 * len(self.predictions), actual)
 
     def test_none(self):
         accuracy = Accuracy(reduction='none')
@@ -66,7 +72,7 @@ class AccuracyTest(TestCase):
         accuracy = Accuracy(reduction='none')
         actual = accuracy(self.predictions, self.label_predictions)
         self.assertEqual(self.targets.shape, actual.shape)
-        self.assertTrue(torch.all(100. * torch.ones_like(self.label_predictions).float() == actual))
+        self.assertTrue(torch.all(100.0 * torch.ones_like(self.label_predictions).float() == actual))
 
     @skipIf(not torch.cuda.is_available(), "no gpu available")
     def test_on_gpu(self):
@@ -84,14 +90,20 @@ class AccuracyTest(TestCase):
 
 
 class IgnoreIndexAccuracyTest(TestCase):
-
     def setUp(self):
-        self.predictions = torch.Tensor([[0.35, 0.25, 0.1, 0.1, 0.2], [0.1, 0.6, 0.1, 0.2, 0.0],
-                                         [0.1, 0.6, 0.1, 0.2, 0.0], [0.1, 0.5, 0.1, 0.2, 0.0],
-                                         [0.1, 0.2, 0.1, 0.7, 0.0], [0.1, 0.6, 0.1, 0.2, 0.0]])
+        self.predictions = torch.Tensor(
+            [
+                [0.35, 0.25, 0.1, 0.1, 0.2],
+                [0.1, 0.6, 0.1, 0.2, 0.0],
+                [0.1, 0.6, 0.1, 0.2, 0.0],
+                [0.1, 0.5, 0.1, 0.2, 0.0],
+                [0.1, 0.2, 0.1, 0.7, 0.0],
+                [0.1, 0.6, 0.1, 0.2, 0.0],
+            ]
+        )
         self.label_predictions = torch.Tensor([0, 1, 1, 1, 3, 1])
         self.targets = torch.Tensor([-100, 4, 1, -100, 3, 0])
-        self.accuracy = 50.
+        self.accuracy = 50.0
 
     def test_standard(self):
         accuracy = Accuracy()
@@ -119,20 +131,19 @@ class IgnoreIndexAccuracyTest(TestCase):
         accuracy = Accuracy(ignore_index=1)
         actual = accuracy(self.predictions, self.targets)
         self.assertEqual((), actual.shape)
-        np.testing.assert_almost_equal(20., actual)
+        np.testing.assert_almost_equal(20.0, actual)
 
     def test_functional_ignore_index_with_valid_index(self):
         actual = acc(self.predictions, self.targets, ignore_index=1)
         self.assertEqual((), actual.shape)
-        np.testing.assert_almost_equal(20., actual)
+        np.testing.assert_almost_equal(20.0, actual)
 
 
 class BinaryAccuracyTest(TestCase):
-
     def setUp(self):
         self.predictions = torch.Tensor([-0.45, -0.66, 0.8, -1.65, 0.42, -0.04, -0.99, -0.46, 1.12, 1.93])
-        self.label_predictions = torch.Tensor([0., 0., 1., 0., 1., 0., 0., 0., 1., 1.])
-        self.targets = torch.Tensor([1., 0., 0., 0., 1., 0., 0., 1., 1., 0.])
+        self.label_predictions = torch.Tensor([0.0, 0.0, 1.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 1.0])
+        self.targets = torch.Tensor([1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 0.0])
         self.binary_accuracy_none = (self.label_predictions == self.targets).float() * 100
         self.binary_accuracy = self.binary_accuracy_none.mean()
 
@@ -151,7 +162,7 @@ class BinaryAccuracyTest(TestCase):
         binary_accuracy = BinaryAccuracy()
         actual = binary_accuracy(self.predictions, self.label_predictions)
         self.assertEqual((), actual.shape)
-        np.testing.assert_almost_equal(100., actual, decimal=5)
+        np.testing.assert_almost_equal(100.0, actual, decimal=5)
 
     def test_sum(self):
         binary_accuracy = BinaryAccuracy(reduction='sum')
@@ -168,7 +179,7 @@ class BinaryAccuracyTest(TestCase):
         binary_accuracy = BinaryAccuracy(reduction='sum')
         actual = binary_accuracy(self.predictions, self.label_predictions)
         self.assertEqual((), actual.shape)
-        np.testing.assert_almost_equal(100. * len(self.predictions), actual)
+        np.testing.assert_almost_equal(100.0 * len(self.predictions), actual)
 
     def test_none(self):
         binary_accuracy = BinaryAccuracy(reduction='none')
@@ -185,7 +196,7 @@ class BinaryAccuracyTest(TestCase):
         binary_accuracy = BinaryAccuracy(reduction='none')
         actual = binary_accuracy(self.predictions, self.label_predictions)
         self.assertEqual(self.targets.shape, actual.shape)
-        self.assertTrue(torch.all(100. * torch.ones_like(self.label_predictions).float() == actual))
+        self.assertTrue(torch.all(100.0 * torch.ones_like(self.label_predictions).float() == actual))
 
     def test_threshold(self):
         threshold = -0.5
@@ -218,11 +229,17 @@ class BinaryAccuracyTest(TestCase):
 
 
 class TopKAccuracyTest(TestCase):
-
     def setUp(self):
-        self.predictions = torch.Tensor([[0.35, 0.25, 0.1, 0.1, 0.2], [0.1, 0.7, 0.0, 0.2, 0.0],
-                                         [0.0, 0.7, 0.1, 0.2, 0.0], [0.1, 0.5, 0.0, 0.3, 0.0],
-                                         [0.0, 0.3, 0.1, 0.7, 0.0], [0.1, 0.6, 0.0, 0.3, 0.0]])
+        self.predictions = torch.Tensor(
+            [
+                [0.35, 0.25, 0.1, 0.1, 0.2],
+                [0.1, 0.7, 0.0, 0.2, 0.0],
+                [0.0, 0.7, 0.1, 0.2, 0.0],
+                [0.1, 0.5, 0.0, 0.3, 0.0],
+                [0.0, 0.3, 0.1, 0.7, 0.0],
+                [0.1, 0.6, 0.0, 0.3, 0.0],
+            ]
+        )
         self.top_3_label_predictions = torch.Tensor([[0, 1, 4], [1, 3, 0], [1, 3, 0], [1, 3, 0], [3, 1, 2], [1, 3, 0]])
         self.targets = torch.Tensor([0, 4, 1, 2, 3, 0])
         self.top_k_acc_none = (self.top_3_label_predictions == self.targets.unsqueeze(1)).any(1).float() * 100
@@ -243,7 +260,7 @@ class TopKAccuracyTest(TestCase):
         top_k_acc = TopKAccuracy(3)
         actual = top_k_acc(self.predictions, self.top_3_label_predictions[:, 0])
         self.assertEqual((), actual.shape)
-        np.testing.assert_almost_equal(100., actual)
+        np.testing.assert_almost_equal(100.0, actual)
 
     def test_sum(self):
         top_k_acc = TopKAccuracy(3, reduction='sum')
@@ -260,7 +277,7 @@ class TopKAccuracyTest(TestCase):
         top_k_acc = TopKAccuracy(3, reduction='sum')
         actual = top_k_acc(self.predictions, self.top_3_label_predictions[:, 0])
         self.assertEqual((), actual.shape)
-        np.testing.assert_almost_equal(100. * len(self.predictions), actual, decimal=0)
+        np.testing.assert_almost_equal(100.0 * len(self.predictions), actual, decimal=0)
 
     def test_none(self):
         top_k_acc = TopKAccuracy(3, reduction='none')
@@ -277,7 +294,7 @@ class TopKAccuracyTest(TestCase):
         top_k_acc = TopKAccuracy(3, reduction='none')
         actual = top_k_acc(self.predictions, self.top_3_label_predictions[:, 0])
         self.assertEqual(self.targets.shape, actual.shape)
-        self.assertTrue(torch.all(100. * torch.ones_like(self.targets).float() == actual))
+        self.assertTrue(torch.all(100.0 * torch.ones_like(self.targets).float() == actual))
 
     @skipIf(not torch.cuda.is_available(), "no gpu available")
     def test_on_gpu(self):
@@ -295,14 +312,20 @@ class TopKAccuracyTest(TestCase):
 
 
 class IgnoreIndexTopKAccuracyTest(TestCase):
-
     def setUp(self):
-        self.predictions = torch.Tensor([[0.35, 0.25, 0.1, 0.1, 0.2], [0.1, 0.7, 0.0, 0.2, 0.0],
-                                         [0.0, 0.7, 0.1, 0.2, 0.0], [0.1, 0.5, 0.0, 0.3, 0.0],
-                                         [0.0, 0.3, 0.1, 0.7, 0.0], [0.1, 0.6, 0.0, 0.3, 0.0]])
+        self.predictions = torch.Tensor(
+            [
+                [0.35, 0.25, 0.1, 0.1, 0.2],
+                [0.1, 0.7, 0.0, 0.2, 0.0],
+                [0.0, 0.7, 0.1, 0.2, 0.0],
+                [0.1, 0.5, 0.0, 0.3, 0.0],
+                [0.0, 0.3, 0.1, 0.7, 0.0],
+                [0.1, 0.6, 0.0, 0.3, 0.0],
+            ]
+        )
         self.top_3_label_predictions = torch.Tensor([[0, 1, 4], [1, 3, 0], [1, 3, 0], [1, 3, 0], [3, 1, 2], [1, 3, 0]])
         self.targets = torch.Tensor([-100, 4, 1, -100, 3, 0])
-        self.top_k_acc = 75.
+        self.top_k_acc = 75.0
 
     def test_standard(self):
         top_k_acc = TopKAccuracy(3)
@@ -319,20 +342,20 @@ class IgnoreIndexTopKAccuracyTest(TestCase):
         top_k_acc = TopKAccuracy(3, ignore_index=-1)
         actual = top_k_acc(self.predictions, self.targets)
         self.assertEqual((), actual.shape)
-        self.assertAlmostEqual(50., float(actual), places=5)
+        self.assertAlmostEqual(50.0, float(actual), places=5)
 
     def test_functional_ignore_index_with_different_value(self):
         actual = topk(self.predictions, self.targets, 3, ignore_index=-1)
         self.assertEqual((), actual.shape)
-        self.assertAlmostEqual(50., float(actual), places=5)
+        self.assertAlmostEqual(50.0, float(actual), places=5)
 
     def test_ignore_index_with_valid_index(self):
         top_k_acc = TopKAccuracy(3, ignore_index=1)
         actual = top_k_acc(self.predictions, self.targets)
         self.assertEqual((), actual.shape)
-        np.testing.assert_almost_equal(40., actual)
+        np.testing.assert_almost_equal(40.0, actual)
 
     def test_functional_ignore_index_with_valid_index(self):
         actual = topk(self.predictions, self.targets, 3, ignore_index=1)
         self.assertEqual((), actual.shape)
-        np.testing.assert_almost_equal(40., actual)
+        np.testing.assert_almost_equal(40.0, actual)

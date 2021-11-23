@@ -10,13 +10,7 @@ import torch
 import torch.nn as nn
 
 from poutyne import torch_to_numpy, Model, LRSchedulerCheckpoint, ExponentialLR, ReduceLROnPlateau
-
-
-def some_data_generator(batch_size):
-    while True:
-        x = torch.rand(batch_size, 1)
-        y = torch.rand(batch_size, 1)
-        yield x, y
+from tests.framework.tools import some_data_generator
 
 
 class OptimizerCheckpointTest(TestCase):
@@ -40,22 +34,18 @@ class OptimizerCheckpointTest(TestCase):
         valid_gen = some_data_generator(OptimizerCheckpointTest.batch_size)
         lr_scheduler = ExponentialLR(gamma=0.01)
         checkpointer = LRSchedulerCheckpoint(lr_scheduler, self.checkpoint_filename, period=1)
-        self.model.fit_generator(train_gen,
-                                 valid_gen,
-                                 epochs=OptimizerCheckpointTest.epochs,
-                                 steps_per_epoch=5,
-                                 callbacks=[checkpointer])
+        self.model.fit_generator(
+            train_gen, valid_gen, epochs=OptimizerCheckpointTest.epochs, steps_per_epoch=5, callbacks=[checkpointer]
+        )
 
     def test_reduce_lr_on_plateau_integration(self):
         train_gen = some_data_generator(OptimizerCheckpointTest.batch_size)
         valid_gen = some_data_generator(OptimizerCheckpointTest.batch_size)
         reduce_lr = ReduceLROnPlateau(monitor='loss', patience=3)
         checkpointer = LRSchedulerCheckpoint(reduce_lr, self.checkpoint_filename, period=1)
-        self.model.fit_generator(train_gen,
-                                 valid_gen,
-                                 epochs=OptimizerCheckpointTest.epochs,
-                                 steps_per_epoch=5,
-                                 callbacks=[checkpointer])
+        self.model.fit_generator(
+            train_gen, valid_gen, epochs=OptimizerCheckpointTest.epochs, steps_per_epoch=5, callbacks=[checkpointer]
+        )
 
     def test_any_scheduler_checkpoints(self):
         lr_scheduler = ExponentialLR(gamma=0.01)

@@ -5,65 +5,19 @@ from unittest import skipIf
 import torch
 from torch import nn
 
-from poutyne import Model, EpochMetric
+from poutyne import Model
 from .base import ModelFittingTestCase
-
-some_metric_1_value = 1.
-some_metric_2_value = 2.
-repeat_batch_metric_value = 3.
-
-
-def some_batch_metric_1(y_pred, y_true):
-    return torch.FloatTensor([some_metric_1_value])
-
-
-def some_batch_metric_2(y_pred, y_true):
-    return torch.FloatTensor([some_metric_2_value])
-
-
-def repeat_batch_metric(y_pred, y_true):
-    return torch.FloatTensor([repeat_batch_metric_value])
-
-
-class SomeEpochMetric(EpochMetric):
-
-    def __init__(self):
-        super().__init__()
-        self.increment = 0.0
-
-    def forward(self, y_pred, y_true):
-        self.increment += 1
-
-    def get_metric(self):
-        increment_value = self.increment
-        self.increment = 0
-        return increment_value
-
-    def reset(self):
-        pass
-
-
-some_constant_epoch_metric_value = 3
-
-
-class SomeConstantEpochMetric(EpochMetric):
-
-    def forward(self, y_pred, y_true):
-        pass
-
-    def get_metric(self):
-        return torch.FloatTensor([some_constant_epoch_metric_value])
-
-    def reset(self):
-        pass
-
-
-def some_data_tensor_generator(batch_size):
-    while True:
-        x = torch.rand(batch_size, 1)
-        y = torch.rand(batch_size, 1)
-        yield x, y
-
+from ..tools import (
+    some_data_tensor_generator,
+    some_batch_metric_1,
+    some_batch_metric_2,
+    repeat_batch_metric,
+    some_metric_1_value,
+    some_metric_2_value,
+    repeat_batch_metric_value,
+    SomeConstantEpochMetric,
+    some_constant_epoch_metric_value,
+)
 
 TEST_MULTI_GPUS = int(os.environ.get('MULTI_GPUS', 0))
 
@@ -78,25 +32,36 @@ class ModelTestMultiGPU(ModelFittingTestCase):
         torch.manual_seed(42)
         self.pytorch_network = nn.Linear(1, 1)
         self.loss_function = nn.MSELoss()
-        self.optimizer = torch.optim.SGD(self.pytorch_network.parameters(), lr=1e-3)
+        self.optimizer = torch.optim.Adam(self.pytorch_network.parameters(), lr=1e-3)
         self.batch_metrics = [
-            some_batch_metric_1, ('custom_name', some_batch_metric_2), repeat_batch_metric, repeat_batch_metric
+            some_batch_metric_1,
+            ('custom_name', some_batch_metric_2),
+            repeat_batch_metric,
+            repeat_batch_metric,
         ]
         self.batch_metrics_names = [
-            'some_batch_metric_1', 'custom_name', 'repeat_batch_metric1', 'repeat_batch_metric2'
+            'some_batch_metric_1',
+            'custom_name',
+            'repeat_batch_metric1',
+            'repeat_batch_metric2',
         ]
         self.batch_metrics_values = [
-            some_metric_1_value, some_metric_2_value, repeat_batch_metric_value, repeat_batch_metric_value
+            some_metric_1_value,
+            some_metric_2_value,
+            repeat_batch_metric_value,
+            repeat_batch_metric_value,
         ]
         self.epoch_metrics = [SomeConstantEpochMetric()]
         self.epoch_metrics_names = ['some_constant_epoch_metric']
         self.epoch_metrics_values = [some_constant_epoch_metric_value]
 
-        self.model = Model(self.pytorch_network,
-                           self.optimizer,
-                           self.loss_function,
-                           batch_metrics=self.batch_metrics,
-                           epoch_metrics=self.epoch_metrics)
+        self.model = Model(
+            self.pytorch_network,
+            self.optimizer,
+            self.loss_function,
+            batch_metrics=self.batch_metrics,
+            epoch_metrics=self.epoch_metrics,
+        )
 
         self.default_main_device = ModelTestMultiGPU.cuda_device
 
@@ -118,42 +83,50 @@ class ModelTestMultiGPU(ModelFittingTestCase):
 
         with torch.cuda.device(self.default_main_device):
             self.model.to(devices)
-            self.model.fit_generator(train_generator,
-                                     valid_generator,
-                                     epochs=ModelTestMultiGPU.epochs,
-                                     steps_per_epoch=ModelTestMultiGPU.steps_per_epoch,
-                                     validation_steps=ModelTestMultiGPU.steps_per_epoch,
-                                     callbacks=[self.mock_callback])
+            self.model.fit_generator(
+                train_generator,
+                valid_generator,
+                epochs=ModelTestMultiGPU.epochs,
+                steps_per_epoch=ModelTestMultiGPU.steps_per_epoch,
+                validation_steps=ModelTestMultiGPU.steps_per_epoch,
+                callbacks=[self.mock_callback],
+            )
             self._test_device(torch.device('cuda:' + str(self.default_main_device)))
             self._test_multiple_gpu_mode(devices=devices)
 
             self.model.cpu()
-            self.model.fit_generator(train_generator,
-                                     valid_generator,
-                                     epochs=ModelTestMultiGPU.epochs,
-                                     steps_per_epoch=ModelTestMultiGPU.steps_per_epoch,
-                                     validation_steps=ModelTestMultiGPU.steps_per_epoch,
-                                     callbacks=[self.mock_callback])
+            self.model.fit_generator(
+                train_generator,
+                valid_generator,
+                epochs=ModelTestMultiGPU.epochs,
+                steps_per_epoch=ModelTestMultiGPU.steps_per_epoch,
+                validation_steps=ModelTestMultiGPU.steps_per_epoch,
+                callbacks=[self.mock_callback],
+            )
             self._test_device(torch.device('cpu'))
             self._test_single_gpu_mode()
 
             self.model.to(devices)
-            self.model.fit_generator(train_generator,
-                                     valid_generator,
-                                     epochs=ModelTestMultiGPU.epochs,
-                                     steps_per_epoch=ModelTestMultiGPU.steps_per_epoch,
-                                     validation_steps=ModelTestMultiGPU.steps_per_epoch,
-                                     callbacks=[self.mock_callback])
+            self.model.fit_generator(
+                train_generator,
+                valid_generator,
+                epochs=ModelTestMultiGPU.epochs,
+                steps_per_epoch=ModelTestMultiGPU.steps_per_epoch,
+                validation_steps=ModelTestMultiGPU.steps_per_epoch,
+                callbacks=[self.mock_callback],
+            )
             self._test_device(torch.device('cuda:' + str(ModelTestMultiGPU.cuda_device)))
             self._test_multiple_gpu_mode(devices=devices)
 
             self.model.to(torch.device('cpu'))
-            self.model.fit_generator(train_generator,
-                                     valid_generator,
-                                     epochs=ModelTestMultiGPU.epochs,
-                                     steps_per_epoch=ModelTestMultiGPU.steps_per_epoch,
-                                     validation_steps=ModelTestMultiGPU.steps_per_epoch,
-                                     callbacks=[self.mock_callback])
+            self.model.fit_generator(
+                train_generator,
+                valid_generator,
+                epochs=ModelTestMultiGPU.epochs,
+                steps_per_epoch=ModelTestMultiGPU.steps_per_epoch,
+                validation_steps=ModelTestMultiGPU.steps_per_epoch,
+                callbacks=[self.mock_callback],
+            )
             self._test_device(torch.device('cpu'))
             self._test_single_gpu_mode()
 
@@ -163,61 +136,73 @@ class ModelTestMultiGPU(ModelFittingTestCase):
         valid_generator = some_data_tensor_generator(ModelTestMultiGPU.batch_size)
 
         self.model.to(devices)
-        self.model.fit_generator(train_generator,
-                                 valid_generator,
-                                 epochs=ModelTestMultiGPU.epochs,
-                                 steps_per_epoch=ModelTestMultiGPU.steps_per_epoch,
-                                 validation_steps=ModelTestMultiGPU.steps_per_epoch,
-                                 callbacks=[self.mock_callback])
+        self.model.fit_generator(
+            train_generator,
+            valid_generator,
+            epochs=ModelTestMultiGPU.epochs,
+            steps_per_epoch=ModelTestMultiGPU.steps_per_epoch,
+            validation_steps=ModelTestMultiGPU.steps_per_epoch,
+            callbacks=[self.mock_callback],
+        )
 
         with torch.cuda.device(self.default_main_device):
             self.model.cuda()
-            self.model.fit_generator(train_generator,
-                                     valid_generator,
-                                     epochs=ModelTestMultiGPU.epochs,
-                                     steps_per_epoch=ModelTestMultiGPU.steps_per_epoch,
-                                     validation_steps=ModelTestMultiGPU.steps_per_epoch,
-                                     callbacks=[self.mock_callback])
+            self.model.fit_generator(
+                train_generator,
+                valid_generator,
+                epochs=ModelTestMultiGPU.epochs,
+                steps_per_epoch=ModelTestMultiGPU.steps_per_epoch,
+                validation_steps=ModelTestMultiGPU.steps_per_epoch,
+                callbacks=[self.mock_callback],
+            )
             self._test_device(torch.device('cuda:' + str(self.default_main_device)))
             self._test_single_gpu_mode()
 
             self.model.cpu()
-            self.model.fit_generator(train_generator,
-                                     valid_generator,
-                                     epochs=ModelTestMultiGPU.epochs,
-                                     steps_per_epoch=ModelTestMultiGPU.steps_per_epoch,
-                                     validation_steps=ModelTestMultiGPU.steps_per_epoch,
-                                     callbacks=[self.mock_callback])
+            self.model.fit_generator(
+                train_generator,
+                valid_generator,
+                epochs=ModelTestMultiGPU.epochs,
+                steps_per_epoch=ModelTestMultiGPU.steps_per_epoch,
+                validation_steps=ModelTestMultiGPU.steps_per_epoch,
+                callbacks=[self.mock_callback],
+            )
             self._test_device(torch.device('cpu'))
             self._test_single_gpu_mode()
 
             self.model.to(devices)
-            self.model.fit_generator(train_generator,
-                                     valid_generator,
-                                     epochs=ModelTestMultiGPU.epochs,
-                                     steps_per_epoch=ModelTestMultiGPU.steps_per_epoch,
-                                     validation_steps=ModelTestMultiGPU.steps_per_epoch,
-                                     callbacks=[self.mock_callback])
+            self.model.fit_generator(
+                train_generator,
+                valid_generator,
+                epochs=ModelTestMultiGPU.epochs,
+                steps_per_epoch=ModelTestMultiGPU.steps_per_epoch,
+                validation_steps=ModelTestMultiGPU.steps_per_epoch,
+                callbacks=[self.mock_callback],
+            )
             self._test_device(torch.device('cuda:' + str(ModelTestMultiGPU.cuda_device)))
             self._test_multiple_gpu_mode(devices=devices)
 
             self.model.cuda()
-            self.model.fit_generator(train_generator,
-                                     valid_generator,
-                                     epochs=ModelTestMultiGPU.epochs,
-                                     steps_per_epoch=ModelTestMultiGPU.steps_per_epoch,
-                                     validation_steps=ModelTestMultiGPU.steps_per_epoch,
-                                     callbacks=[self.mock_callback])
+            self.model.fit_generator(
+                train_generator,
+                valid_generator,
+                epochs=ModelTestMultiGPU.epochs,
+                steps_per_epoch=ModelTestMultiGPU.steps_per_epoch,
+                validation_steps=ModelTestMultiGPU.steps_per_epoch,
+                callbacks=[self.mock_callback],
+            )
             self._test_device(torch.device('cuda:' + str(self.default_main_device)))
             self._test_single_gpu_mode()
 
             self.model.to(torch.device('cpu'))
-            self.model.fit_generator(train_generator,
-                                     valid_generator,
-                                     epochs=ModelTestMultiGPU.epochs,
-                                     steps_per_epoch=ModelTestMultiGPU.steps_per_epoch,
-                                     validation_steps=ModelTestMultiGPU.steps_per_epoch,
-                                     callbacks=[self.mock_callback])
+            self.model.fit_generator(
+                train_generator,
+                valid_generator,
+                epochs=ModelTestMultiGPU.epochs,
+                steps_per_epoch=ModelTestMultiGPU.steps_per_epoch,
+                validation_steps=ModelTestMultiGPU.steps_per_epoch,
+                callbacks=[self.mock_callback],
+            )
             self._test_device(torch.device('cpu'))
             self._test_single_gpu_mode()
 
@@ -227,42 +212,50 @@ class ModelTestMultiGPU(ModelFittingTestCase):
 
         devices = "all"
         self.model.to(devices)
-        self.model.fit_generator(train_generator,
-                                 valid_generator,
-                                 epochs=ModelTestMultiGPU.epochs,
-                                 steps_per_epoch=ModelTestMultiGPU.steps_per_epoch,
-                                 validation_steps=ModelTestMultiGPU.steps_per_epoch,
-                                 callbacks=[self.mock_callback])
+        self.model.fit_generator(
+            train_generator,
+            valid_generator,
+            epochs=ModelTestMultiGPU.epochs,
+            steps_per_epoch=ModelTestMultiGPU.steps_per_epoch,
+            validation_steps=ModelTestMultiGPU.steps_per_epoch,
+            callbacks=[self.mock_callback],
+        )
         self._test_multiple_gpu_mode(devices=devices)
 
         devices = ["cuda:0", "cuda:1"]
         self.model.to(devices)
-        self.model.fit_generator(train_generator,
-                                 valid_generator,
-                                 epochs=ModelTestMultiGPU.epochs,
-                                 steps_per_epoch=ModelTestMultiGPU.steps_per_epoch,
-                                 validation_steps=ModelTestMultiGPU.steps_per_epoch,
-                                 callbacks=[self.mock_callback])
+        self.model.fit_generator(
+            train_generator,
+            valid_generator,
+            epochs=ModelTestMultiGPU.epochs,
+            steps_per_epoch=ModelTestMultiGPU.steps_per_epoch,
+            validation_steps=ModelTestMultiGPU.steps_per_epoch,
+            callbacks=[self.mock_callback],
+        )
         self._test_multiple_gpu_mode(devices=devices)
 
         devices = [torch.device("cuda:0"), torch.device("cuda:1")]
         self.model.to(devices)
-        self.model.fit_generator(train_generator,
-                                 valid_generator,
-                                 epochs=ModelTestMultiGPU.epochs,
-                                 steps_per_epoch=ModelTestMultiGPU.steps_per_epoch,
-                                 validation_steps=ModelTestMultiGPU.steps_per_epoch,
-                                 callbacks=[self.mock_callback])
+        self.model.fit_generator(
+            train_generator,
+            valid_generator,
+            epochs=ModelTestMultiGPU.epochs,
+            steps_per_epoch=ModelTestMultiGPU.steps_per_epoch,
+            validation_steps=ModelTestMultiGPU.steps_per_epoch,
+            callbacks=[self.mock_callback],
+        )
         self._test_multiple_gpu_mode(devices=devices)
 
-        devices = ["cuda:0"]
+        devices = ["cuda:1"]
         self.model.to(devices)
         self.assertIsNone(self.model.other_device)
-        self.model.fit_generator(train_generator,
-                                 valid_generator,
-                                 epochs=ModelTestMultiGPU.epochs,
-                                 steps_per_epoch=ModelTestMultiGPU.steps_per_epoch,
-                                 validation_steps=ModelTestMultiGPU.steps_per_epoch,
-                                 callbacks=[self.mock_callback])
-        self._test_device(torch.device('cuda:0'))
+        self.model.fit_generator(
+            train_generator,
+            valid_generator,
+            epochs=ModelTestMultiGPU.epochs,
+            steps_per_epoch=ModelTestMultiGPU.steps_per_epoch,
+            validation_steps=ModelTestMultiGPU.steps_per_epoch,
+            callbacks=[self.mock_callback],
+        )
+        self._test_device(torch.device('cuda:1'))
         self._test_single_gpu_mode()

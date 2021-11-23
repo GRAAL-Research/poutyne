@@ -6,13 +6,7 @@ import torch
 import torch.nn as nn
 
 from poutyne import Model, DelayCallback, Callback
-
-
-def some_data_generator(batch_size):
-    while True:
-        x = torch.rand(batch_size, 1)
-        y = torch.rand(batch_size, 1)
-        yield x, y
+from tests.framework.tools import some_data_generator
 
 
 class DelayCallbackTest(TestCase):
@@ -36,13 +30,19 @@ class DelayCallbackTest(TestCase):
         delay_callback = DelayCallback(self.mock_callback, epoch_delay=epoch_delay)
         train_generator = some_data_generator(DelayCallbackTest.batch_size)
         valid_generator = some_data_generator(DelayCallbackTest.batch_size)
-        self.model.fit_generator(train_generator,
-                                 valid_generator,
-                                 epochs=DelayCallbackTest.epochs,
-                                 steps_per_epoch=DelayCallbackTest.steps_per_epoch,
-                                 validation_steps=DelayCallbackTest.steps_per_epoch,
-                                 callbacks=[delay_callback])
-        params = {'epochs': DelayCallbackTest.epochs, 'steps': DelayCallbackTest.steps_per_epoch}
+        self.model.fit_generator(
+            train_generator,
+            valid_generator,
+            epochs=DelayCallbackTest.epochs,
+            steps_per_epoch=DelayCallbackTest.steps_per_epoch,
+            validation_steps=DelayCallbackTest.steps_per_epoch,
+            callbacks=[delay_callback],
+        )
+        params = {
+            'epochs': DelayCallbackTest.epochs,
+            'steps': DelayCallbackTest.steps_per_epoch,
+            'valid_steps': DelayCallbackTest.steps_per_epoch,
+        }
 
         call_list = []
         call_list.append(call.on_train_begin({}))
@@ -52,11 +52,10 @@ class DelayCallbackTest(TestCase):
                 call_list.append(call.on_train_batch_begin(step, {}))
                 call_list.append(call.on_backward_end(step))
                 call_list.append(
-                    call.on_train_batch_end(step, {
-                        'batch': step,
-                        'size': DelayCallbackTest.batch_size,
-                        **self.train_dict
-                    }))
+                    call.on_train_batch_end(
+                        step, {'batch': step, 'size': DelayCallbackTest.batch_size, **self.train_dict}
+                    )
+                )
             call_list.append(call.on_epoch_end(epoch, {'epoch': epoch, **self.log_dict}))
         call_list.append(call.on_train_end({}))
 
@@ -81,13 +80,19 @@ class DelayCallbackTest(TestCase):
         delay_callback = DelayCallback(self.mock_callback, batch_delay=batch_delay)
         train_generator = some_data_generator(DelayCallbackTest.batch_size)
         valid_generator = some_data_generator(DelayCallbackTest.batch_size)
-        self.model.fit_generator(train_generator,
-                                 valid_generator,
-                                 epochs=DelayCallbackTest.epochs,
-                                 steps_per_epoch=DelayCallbackTest.steps_per_epoch,
-                                 validation_steps=DelayCallbackTest.steps_per_epoch,
-                                 callbacks=[delay_callback])
-        params = {'epochs': DelayCallbackTest.epochs, 'steps': DelayCallbackTest.steps_per_epoch}
+        self.model.fit_generator(
+            train_generator,
+            valid_generator,
+            epochs=DelayCallbackTest.epochs,
+            steps_per_epoch=DelayCallbackTest.steps_per_epoch,
+            validation_steps=DelayCallbackTest.steps_per_epoch,
+            callbacks=[delay_callback],
+        )
+        params = {
+            'epochs': DelayCallbackTest.epochs,
+            'steps': DelayCallbackTest.steps_per_epoch,
+            'valid_steps': DelayCallbackTest.steps_per_epoch,
+        }
 
         call_list = []
         call_list.append(call.on_train_begin({}))
@@ -98,11 +103,10 @@ class DelayCallbackTest(TestCase):
                 call_list.append(call.on_train_batch_begin(step, {}))
                 call_list.append(call.on_backward_end(step))
                 call_list.append(
-                    call.on_train_batch_end(step, {
-                        'batch': step,
-                        'size': DelayCallbackTest.batch_size,
-                        **self.train_dict
-                    }))
+                    call.on_train_batch_end(
+                        step, {'batch': step, 'size': DelayCallbackTest.batch_size, **self.train_dict}
+                    )
+                )
             call_list.append(call.on_epoch_end(epoch, {'epoch': epoch, **self.log_dict}))
         call_list.append(call.on_train_end({}))
 

@@ -15,12 +15,19 @@ all_optimizers_dict = dict(
 
 
 def get_optimizer(optimizer, module):
-    if isinstance(optimizer, str):
-        optimizer = optimizer.lower()
-        params = (p for p in module.parameters() if p.requires_grad)
-        if optimizer != 'sgd':
-            return all_optimizers_dict[optimizer](params)
+    if isinstance(optimizer, (str, dict)):
+        kwargs = {}
+        if isinstance(optimizer, dict):
+            optimizer = dict(optimizer)
+            kwargs = optimizer
+            optimizer = optimizer.pop('optim')
 
-        return all_optimizers_dict[optimizer](params, lr=1e-2)
+        optimizer = optimizer.lower()
+
+        if optimizer == 'sgd':
+            kwargs.setdefault('lr', 1e-2)
+
+        params = (p for p in module.parameters() if p.requires_grad)
+        return all_optimizers_dict[optimizer](params, **kwargs)
 
     return optimizer

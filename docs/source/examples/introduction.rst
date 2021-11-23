@@ -435,11 +435,8 @@ That is, only 8 lines of code with a better output.
         optimizer = optim.SGD(pytorch_network.parameters(), lr=learning_rate)
         loss_function = nn.CrossEntropyLoss()
 
-        # Poutyne Model
-        model = Model(pytorch_network, optimizer, loss_function, batch_metrics=['accuracy'])
-
-        # Send model on GPU
-        model.to(device)
+        # Poutyne Model on GPU
+        model = Model(pytorch_network, optimizer, loss_function, batch_metrics=['accuracy'], device=device)
 
         # Train
         model.fit_generator(train_loader, valid_loader, epochs=num_epochs)
@@ -502,8 +499,7 @@ One nice feature of Poutyne is :class:`callbacks <poutyne.Callback>`. Callbacks 
         optimizer = optim.SGD(pytorch_network.parameters(), lr=learning_rate)
         loss_function = nn.CrossEntropyLoss()
 
-        model = Model(pytorch_network, optimizer, loss_function, batch_metrics=['accuracy'])
-        model.to(device)
+        model = Model(pytorch_network, optimizer, loss_function, batch_metrics=['accuracy'], device=device)
         model.fit_generator(train_loader, valid_loader, epochs=num_epochs, callbacks=callbacks)
 
         test_loss, test_acc = model.evaluate_generator(test_loader)
@@ -536,7 +532,7 @@ Poutyne Experiment
 
 Most of the time when using Poutyne (or even Pytorch in general), we will find ourselves in an iterative model hyperparameters finetuning loop. For efficient model search, we will usually wish to save our best performing models, their training and testing statistics and even sometimes wish to retrain an already trained model for further tuning. All of the above can be easily implemented with the flexibility of Poutyne Callbacks, but having to define and initialize each and every Callback object we wish for our model quickly feels cumbersome.
 
-This is why Poutyne provides an :class:`~poutyne.Experiment`, which aims specifically at enabling quick model iteration search, while not sacrifying on the quality of a single experiment - statistics logging, best models saving, etc. Experiment is actually a simple wrapper between a PyTorch network and Poutyne's core Callback objects for logging and saving. Given a working directory where to output the various logging files and a PyTorch network, the Experiment class reduces the whole training loop to a single line.
+This is why Poutyne provides an :class:`~poutyne.Experiment` class, which aims specifically at enabling quick model iteration search, while not sacrifying on the quality of a single experiment - statistics logging, best models saving, etc. Experiment is actually a simple wrapper between a PyTorch network and Poutyne's core Callback objects for logging and saving. Given a working directory where to output the various logging files and a PyTorch network, the Experiment class reduces the whole training loop to a single line.
 
 The following code uses Poutyne's :class:`~poutyne.Experiment` class to train a network for 5 epochs. The code is quite simpler than the code in the Poutyne Callbacks section while doing more (only 3 lines). Once trained for 5 epochs, it is then possible to resume the optimization at the 5th epoch for 5 more epochs until the 10th epoch using the same function.
 

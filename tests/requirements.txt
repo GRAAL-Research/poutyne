@@ -1,5 +1,11 @@
+pytest
 scikit-learn
 tensorboard
 tensorboardX
 colorama
 torchvision
+pandas
+mlflow
+omegaconf
+matplotlib
+pillow

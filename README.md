@@ -1,7 +1,7 @@
 ![Poutyne Logo](https://raw.githubusercontent.com/GRAAL-Research/poutyne/master/docs/source/_static/logos/poutyne-dark.png)
 
 [![License: LGPL v3](https://img.shields.io/badge/License-LGPL%20v3-blue.svg)](http://www.gnu.org/licenses/lgpl-3.0)
-[![Build Status](https://travis-ci.com/GRAAL-Research/poutyne.svg?branch=master)](https://travis-ci.com/GRAAL-Research/poutyne)
+[![Continuous Integration](https://github.com/GRAAL-Research/poutyne/workflows/Continuous%20Integration/badge.svg)](https://github.com/GRAAL-Research/poutyne/actions?query=workflow%3A%22Continuous+Integration%22+branch%3Amaster)
 
 ## Here is Poutyne.
 
@@ -82,8 +82,8 @@ You can now use Poutyne's model to train your network easily:
 
 ```python
 model = Model(network, 'sgd', 'cross_entropy',
-              batch_metrics=['accuracy'], epoch_metrics=['f1'])
-model.to(device)
+              batch_metrics=['accuracy'], epoch_metrics=['f1'],
+              device=device)
 model.fit(
     train_x, train_y,
     validation_data=(valid_x, valid_y),
@@ -153,6 +153,10 @@ pip install -U git+https://github.com/GRAAL-Research/poutyne.git@dev
 
 ## Learning Material
 
+### Blog posts
+
+* [Medium PyTorch post](https://medium.com/pytorch/poutyne-a-simplified-framework-for-deep-learning-in-pytorch-74b1fc1d5a8b) - Presentation of the basics of Poutyne and how it can help you be more efficient when developing neural networks with PyTorch.
+
 ### Examples
 
 Look at notebook files with full working [examples](https://github.com/GRAAL-Research/poutyne/blob/master/examples/):
@@ -162,6 +166,8 @@ Look at notebook files with full working [examples](https://github.com/GRAAL-Res
 * [transfer_learning.ipynb](https://github.com/GRAAL-Research/poutyne/blob/master/examples/transfer_learning.ipynb) - transfer learning on `ResNet-18` on the [CUB-200](http://www.vision.caltech.edu/visipedia/CUB-200-2011.html) dataset.
 * [policy_cifar_example.ipynb](https://github.com/GRAAL-Research/poutyne/blob/master/examples/policy_cifar_example.ipynb) - policies API, FastAI-like learning rate policies
 * [policy_interface.ipynb](https://github.com/GRAAL-Research/poutyne/blob/master/examples/policy_interface.ipynb) - example of policies
+* [image_reconstruction.ipynb](https://github.com/GRAAL-Research/poutyne/blob/master/examples/image_reconstruction.ipynb) - example of image reconstruction
+* [semantic_segmentation.ipynb](https://github.com/GRAAL-Research/poutyne/blob/master/examples/semantic_segmentation.ipynb) - example of semantic segmentation
 
 or in ``Google Colab``:
 
@@ -170,7 +176,8 @@ or in ``Google Colab``:
 * [transfer_learning.ipynb](https://colab.research.google.com/github/GRAAL-Research/poutyne/blob/master/examples/transfer_learning.ipynb) - transfer learning on `ResNet-18` on the [CUB-200](http://www.vision.caltech.edu/visipedia/CUB-200-2011.html) dataset.
 * [policy_cifar_example.ipynb](https://colab.research.google.com/github/GRAAL-Research/poutyne/blob/master/examples/policy_cifar_example.ipynb) - policies API, FastAI-like learning rate policies
 * [policy_interface.ipynb](https://colab.research.google.com/github/GRAAL-Research/poutyne/blob/master/examples/policy_interface.ipynb) - example of policies
-
+* [image_reconstruction.ipynb](https://colab.research.google.com/github/GRAAL-Research/poutyne/blob/master/examples/image_reconstruction.ipynb) - example of image reconstruction
+* [semantic_segmentation.ipynb](https://colab.research.google.com/github/GRAAL-Research/poutyne/blob/master/examples/semantic_segmentation.ipynb) - example of semantic segmentation
 
 ### Videos
 
@@ -192,7 +199,7 @@ Poutyne is LGPLv3 licensed, as found in the [LICENSE file](https://github.com/GR
 
 ## Why this name, Poutyne?
 
-Poutyne (or poutine in Québécois) is now the well-known dish from Quebec composed of French fries, squeaky cheese curds and brown gravy. However, in Quebec, it also has the meaning of something that is an ["ordinary or common subject or activity"](https://fr.wiktionary.org/wiki/poutine). Thus, Poutyne will get rid of the ordinary boilerplate code that plain [PyTorch](https://pytorch.org) training usually entails.
+Poutyne's name comes from [poutine](https://en.wikipedia.org/wiki/Poutine), the well-known dish from Quebec. It is usually composed of French fries, squeaky cheese curds and brown gravy. However, in Quebec, poutine also has the meaning of something that is an ["ordinary or common subject or activity"](https://fr.wiktionary.org/wiki/poutine). Thus, Poutyne will get rid of the ordinary boilerplate code that plain [PyTorch](https://pytorch.org) training usually entails.
 
 ![Poutine](https://upload.wikimedia.org/wikipedia/commons/4/4e/La_Banquise_Poutine_%28cropped%29.jpg)
 *Yuri Long from Arlington, VA, USA \[[CC BY 2.0](https://creativecommons.org/licenses/by/2.0)\]*

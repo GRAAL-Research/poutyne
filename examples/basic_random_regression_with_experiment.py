@@ -36,7 +36,7 @@ device = torch.device("cuda:%d" % cuda_device if torch.cuda.is_available() else 
 network = nn.Sequential(
     nn.Linear(num_features, hidden_state_size),
     nn.ReLU(),
-    nn.Linear(hidden_state_size, 1)
+    nn.Linear(hidden_state_size, 1),
 )
 
 # We need to use dataloaders (i.e. an iterable of batches) with Experiment
@@ -45,8 +45,15 @@ valid_loader = DataLoader(TensorDataset(valid_x, valid_y), batch_size=32)
 test_loader = DataLoader(TensorDataset(test_x, test_y), batch_size=32)
 
 # Everything is saved in ./saves/my_regression_network
-expt = Experiment('./saves/my_regression_network', network, device=device, optimizer='sgd',
-                  task='regression', batch_metrics=['l1'], epoch_metrics=[SKLearnMetrics(r2_score)])
+expt = Experiment(
+    './saves/my_regression_network',
+    network,
+    device=device,
+    optimizer='sgd',
+    task='regression',
+    batch_metrics=['l1'],
+    epoch_metrics=[SKLearnMetrics(r2_score)],
+)
 
 expt.train(train_loader, valid_loader, epochs=5)
 

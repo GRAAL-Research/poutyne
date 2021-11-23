@@ -22,6 +22,8 @@ Callback class
 .. autoclass:: Callback
     :members:
 
+.. autoclass:: LambdaCallback
+
 Poutyne's Callbacks
 -------------------
 
@@ -40,18 +42,35 @@ Poutyne's Callbacks
 Logging
 -------
 
+Training Results
+~~~~~~~~~~~~~~~~
+
 .. autoclass:: CSVLogger
 
 .. autoclass:: AtomicCSVLogger
 
 .. autoclass:: TensorBoardLogger
 
+.. autoclass:: MLFlowLogger
+    :members: log_config_params, log_param, log_metric
+
+Training Progress
+~~~~~~~~~~~~~~~~~
 .. autoclass:: ProgressionCallback
+
 
 Tracking
 --------
 
 .. autoclass:: TensorBoardGradientTracker
+
+Notification
+------------
+
+.. autoclass:: Notificator
+    :members:
+
+.. autoclass:: NotificationCallback
 
 Checkpointing
 -------------

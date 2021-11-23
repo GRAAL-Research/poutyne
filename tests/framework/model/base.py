@@ -1,6 +1,8 @@
 # abstract-method because nn.Module has the abstract method _forward_unimplemented
 # pylint: disable=too-many-locals,abstract-method
+import io
 import os
+import sys
 from unittest import TestCase
 from unittest.mock import MagicMock, call, ANY
 
@@ -30,13 +32,14 @@ class ModelFittingTestCase(TestCase):
         self.epoch_metrics_values = []
         self.model = None
         self.pytorch_network = None
+        self.optimizer = None
 
-    def _test_callbacks_train(self, params, logs, has_valid=True, steps=None):
+    def _get_callback_expected_on_calls_when_training(self, params, logs, has_valid=True, steps=None, valid_steps=10):
         # pylint: disable=too-many-arguments
         if steps is None:
             steps = params['steps']
-        self.assertEqual(len(logs), params['epochs'])
-        train_batch_dict = dict(zip(self.batch_metrics_names, self.batch_metrics_values), loss=ANY, time=ANY)
+
+        train_batch_dict = dict(zip(self.batch_metrics_names, self.batch_metrics_values), time=ANY, loss=ANY)
         train_epochs_dict = dict(zip(self.epoch_metrics_names, self.epoch_metrics_values))
         log_dict = {**train_batch_dict, **train_epochs_dict}
         if has_valid:
@@ -57,8 +60,23 @@ class ModelFittingTestCase(TestCase):
                 call_list.append(call.on_train_batch_begin(step, {}))
                 call_list.append(call.on_backward_end(step))
                 call_list.append(call.on_train_batch_end(step, {'batch': step, 'size': ANY, **train_batch_dict}))
+            if has_valid:
+                call_list.append(call.on_valid_begin({}))
+                for step in range(1, valid_steps + 1):
+                    call_list.append(call.on_valid_batch_begin(step, {}))
+                    call_list.append(
+                        call.on_valid_batch_end(step, {'batch': step, 'size': ANY, 'time': ANY, **val_batch_dict})
+                    )
+                call_list.append(call.on_valid_end({'time': ANY, **val_batch_dict, **val_epochs_dict}))
             call_list.append(call.on_epoch_end(epoch, logs[epoch - 1]))
+
         call_list.append(call.on_train_end({}))
+        return call_list
+
+    def _test_callbacks_train(self, params, logs, *args, **kwargs):
+        self.assertEqual(len(logs), params['epochs'])
+
+        call_list = self._get_callback_expected_on_calls_when_training(params, logs, *args, **kwargs)
 
         method_calls = self.mock_callback.method_calls
         self.assertIn(call.set_model(self.model), method_calls[:2])  # skip set_model and set param call
@@ -67,21 +85,55 @@ class ModelFittingTestCase(TestCase):
         self.assertEqual(len(method_calls), len(call_list) + 2)  # for set_model and set param
         self.assertEqual(method_calls[2:], call_list)
 
-    def _test_callbacks_test(self, params, result_log):
-        test_batch_dict = dict(zip(self.batch_metrics_names, self.batch_metrics_values), loss=ANY, time=ANY)
+    def _get_callback_expected_on_calls_when_testing(self, params):
+        test_batch_dict = {"time": ANY, "test_loss": ANY}
+        test_batch_dict.update(
+            {
+                "test_" + metric_name: metric
+                for metric_name, metric in zip(self.batch_metrics_names, self.batch_metrics_values)
+            }
+        )
 
         call_list = []
         call_list.append(call.on_test_begin({}))
-        for batch in range(1, params['batch'] + 1):
+        for batch in range(1, params['steps'] + 1):
             call_list.append(call.on_test_batch_begin(batch, {}))
             call_list.append(call.on_test_batch_end(batch, {'batch': batch, 'size': ANY, **test_batch_dict}))
-        call_list.append(call.on_test_end(result_log))
+
+        test_batch_dict.update(
+            {
+                "test_" + metric_name: metric
+                for metric_name, metric in zip(self.epoch_metrics_names, self.epoch_metrics_values)
+            }
+        )
+        call_list.append(call.on_test_end({"time": ANY, "test_loss": ANY, **test_batch_dict}))
+        return call_list
+
+    def _test_callbacks_test(self, params):
+        call_list = self._get_callback_expected_on_calls_when_testing(params)
 
         method_calls = self.mock_callback.method_calls
-        self.assertEqual(call.set_model(self.model), method_calls[0])  # skip set_model
+        self.assertEqual(call.set_model(self.model), method_calls[0])  # skip set_model and set param call
+        self.assertEqual(call.set_params(params), method_calls[1])
 
-        self.assertEqual(len(method_calls), len(call_list) + 1)  # for set_model
-        self.assertEqual(method_calls[1:], call_list)
+        self.assertEqual(len(method_calls), len(call_list) + 2)  # for set_model and set param
+        self.assertEqual(method_calls[2:], call_list)
+
+    def _test_return_dict_logs(self, logs):
+        test_logs = {"time": ANY, "test_loss": ANY}
+        test_logs.update(
+            {
+                "test_" + metric_name: metric
+                for metric_name, metric in zip(self.batch_metrics_names, self.batch_metrics_values)
+            }
+        )
+        test_logs.update(
+            {
+                "test_" + metric_name: metric
+                for metric_name, metric in zip(self.epoch_metrics_names, self.epoch_metrics_values)
+            }
+        )
+        self.assertEqual(logs, test_logs)
 
     def _test_size_and_type_for_generator(self, pred_y, expected_size):
         if isinstance(pred_y, (list, tuple)):
@@ -98,12 +150,26 @@ class ModelFittingTestCase(TestCase):
         for p in self.pytorch_network.parameters():
             self.assertEqual(p.device, device)
 
+        for v in self.optimizer.state.values():
+            if torch.is_tensor(v):
+                self.assertEqual(v.device, device)
+
+        for param_group in self.optimizer.param_groups:
+            for param in param_group['params']:
+                if torch.is_tensor(param):
+                    self.assertEqual(param.device, device)
+
+    def _capture_output(self):
+        self.test_out = io.StringIO()
+        self.original_output = sys.stdout
+        sys.stdout = self.test_out
+
 
 class MultiIOModel(nn.Module):
     """Model to test multiple inputs/outputs"""
 
     def __init__(self, num_input=2, num_output=2):
-        super(MultiIOModel, self).__init__()
+        super().__init__()
         inputs = []
         for _ in range(num_input):
             inputs.append(nn.Linear(1, 1))

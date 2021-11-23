@@ -28,16 +28,22 @@ device = torch.device("cuda:%d" % cuda_device if torch.cuda.is_available() else 
 network = nn.Sequential(
     nn.Linear(num_features, hidden_state_size),
     nn.ReLU(),
-    nn.Linear(hidden_state_size, 1)
+    nn.Linear(hidden_state_size, 1),
 )
 
 # Train
-model = Model(network, 'sgd', 'mse',
-              batch_metrics=['l1'], epoch_metrics=[SKLearnMetrics(r2_score)])
-model.to(device)
+model = Model(
+    network,
+    'sgd',
+    'mse',
+    batch_metrics=['l1'],
+    epoch_metrics=[SKLearnMetrics(r2_score)],
+    device=device,
+)
 model.fit(
-    train_x, train_y,
+    train_x,
+    train_y,
     validation_data=(valid_x, valid_y),
     epochs=5,
-    batch_size=32
+    batch_size=32,
 )

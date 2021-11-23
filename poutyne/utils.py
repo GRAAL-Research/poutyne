@@ -37,9 +37,9 @@ def torch_to_numpy(obj, copy=False):
         :meth:`~poutyne.torch_apply` for supported types.
     """
     if copy:
-        func = lambda t: t.cpu().detach().numpy().copy()
+        func = lambda t: t.detach().cpu().numpy().copy()
     else:
-        func = lambda t: t.cpu().detach().numpy()
+        func = lambda t: t.detach().cpu().numpy()
     return torch_apply(obj, func)
 
 
@@ -142,7 +142,6 @@ class TensorDataset(Dataset):
         self._len = _rabbit_hole(self.tensors)
 
     def __getitem__(self, index):
-
         def _rabbit_hole(obj, idx):
             if isinstance(obj, (list, tuple)):
                 return type(obj)(_rabbit_hole(o, idx) for o in obj)
@@ -166,3 +165,16 @@ def set_seeds(seed):
         random.seed(seed)
         np.random.seed(seed)
         torch.manual_seed(seed)
+
+
+def is_in_jupyter_notebook():
+    # pylint: disable=import-outside-toplevel
+    try:
+        from IPython import get_ipython
+
+        shell = get_ipython().__class__.__name__
+        jupyter = shell in ['ZMQInteractiveShell', 'Shell']
+    except ImportError:
+        jupyter = False
+
+    return jupyter
