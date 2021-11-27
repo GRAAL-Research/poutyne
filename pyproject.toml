@@ -1,5 +1,5 @@
 [tool.black]
 line-length = 120
 skip-string-normalization = true
-required-version = '21.9b0'
+required-version = '21.11b1'
 extend-exclude = '/(slides)/'
