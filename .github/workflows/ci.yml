@@ -48,7 +48,7 @@ jobs:
         cd ..
     - name: Deploy
       if: env.POUTYNE_RELEASE_BUILD == '1'
-      uses: peaceiris/actions-gh-pages@v3
+      uses: peaceiris/actions-gh-pages@068dc23d9710f1ba62e86896f84735d869951305
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         publish_dir: ./docs/_build/html/
