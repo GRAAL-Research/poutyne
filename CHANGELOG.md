@@ -1,8 +1,48 @@
 # v1.x.x
 
+Breaking changes:
+
+* When using epoch metrics `'f1'`, `'precision'`, `'recall'` and associated classes, the default average has been changed
+  to `'macro'` instead of `'micro'`. This changes the names of the metrics that is displayed and that is in the log
+  dictionnary in callbacks. This change also applies to `Experiment` when using `task='classif'`.
+
+# v1.7
+
+* Add [`plot_history`](https://poutyne.org/utils.html#poutyne.plot_history) and
+  [`plot_metric`](https://poutyne.org/utils.html#poutyne.plot_metric) functions to easily plot the history returned
+  by Poutyne. [`Experiment`](https://poutyne.org/experiment.html#poutyne.Experiment) also saves the figures at the end
+  of the training.
+* All text files (e.g. CSVs in CSVLogger) are now saved using UTF-8 on all platforms.
+
+# v1.6
+
+* PeriodicSaveCallback and all its subclasses now have the `restore_best` argument.
+* `Experiment` now contains a `monitoring` argument that can be set to false to avoid monitoring any metric and saving uneeded checkpoints.
+* The format of the ETA time and total time now contains days, hours, minutes when appropriate.
+* Add `predict` methods to Callback to allow callback to be call during prediction phase.
+* Add `infer` methods to Experiment to more easily make inference (predictions) with an experiment.
+* Add a progress bar callback during predictions of a model.
+* Add a method to compare the results of two experiments.
+* Add `return_ground_truth` and `has_ground_truth` arguments to
+  [`predict_dataset`](https://poutyne.org/model.html#poutyne.Model.predict_dataset) and
+  [`predict_generator`](https://poutyne.org/model.html#poutyne.Model.predict_generator).
+
+# v1.5
+
 * Add [`LambdaCallback`](https://poutyne.org/callbacks.html#poutyne.LambdaCallback) to more easily define a callback
   from lambdas or functions.
-*
+* In Jupyter Notebooks, when coloring is enabled, the print rate of progress output is limited to one output every
+  0.1 seconds. This solves the slowness problem (and the memory problem on Firefox) when there is a great number of
+  steps per epoch.
+* Add `return_dict_format` argument to [`train_on_batch`](https://poutyne.org/model.html#poutyne.Model.train_on_batch)
+  and [`evaluate_on_batch`](https://poutyne.org/model.html#poutyne.Model.evaluate_on_batch) and allows to return
+  predictions and ground truths in [`evaluate_*`](https://poutyne.org/model.html#poutyne.Model.evaluate) even when
+  `return_dict_format=True`. Furthermore,
+  [`Experiment.test*`](https://poutyne.org/experiment.html#poutyne.Experiment.test_data) now support `return_pred=True`
+  and `return_ground_truth=True`.
+* Split [Tips and Tricks](https://poutyne.org/examples/tips_and_tricks.html) example into two examples:
+  [Tips and Tricks](https://poutyne.org/examples/tips_and_tricks.html) and
+  [Sequence Tagging With an RNN](https://poutyne.org/examples/sequence_tagging.html).
 
 # v1.4
 

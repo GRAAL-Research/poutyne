@@ -65,12 +65,8 @@ class ModelFittingTestCase(TestCase):
                 for step in range(1, valid_steps + 1):
                     call_list.append(call.on_valid_batch_begin(step, {}))
                     call_list.append(
-                        call.on_valid_batch_end(step, {
-                            'batch': step,
-                            'size': ANY,
-                            'time': ANY,
-                            **val_batch_dict
-                        }))
+                        call.on_valid_batch_end(step, {'batch': step, 'size': ANY, 'time': ANY, **val_batch_dict})
+                    )
                 call_list.append(call.on_valid_end({'time': ANY, **val_batch_dict, **val_epochs_dict}))
             call_list.append(call.on_epoch_end(epoch, logs[epoch - 1]))
 
@@ -91,10 +87,12 @@ class ModelFittingTestCase(TestCase):
 
     def _get_callback_expected_on_calls_when_testing(self, params):
         test_batch_dict = {"time": ANY, "test_loss": ANY}
-        test_batch_dict.update({
-            "test_" + metric_name: metric
-            for metric_name, metric in zip(self.batch_metrics_names, self.batch_metrics_values)
-        })
+        test_batch_dict.update(
+            {
+                "test_" + metric_name: metric
+                for metric_name, metric in zip(self.batch_metrics_names, self.batch_metrics_values)
+            }
+        )
 
         call_list = []
         call_list.append(call.on_test_begin({}))
@@ -102,10 +100,12 @@ class ModelFittingTestCase(TestCase):
             call_list.append(call.on_test_batch_begin(batch, {}))
             call_list.append(call.on_test_batch_end(batch, {'batch': batch, 'size': ANY, **test_batch_dict}))
 
-        test_batch_dict.update({
-            "test_" + metric_name: metric
-            for metric_name, metric in zip(self.epoch_metrics_names, self.epoch_metrics_values)
-        })
+        test_batch_dict.update(
+            {
+                "test_" + metric_name: metric
+                for metric_name, metric in zip(self.epoch_metrics_names, self.epoch_metrics_values)
+            }
+        )
         call_list.append(call.on_test_end({"time": ANY, "test_loss": ANY, **test_batch_dict}))
         return call_list
 
@@ -121,14 +121,18 @@ class ModelFittingTestCase(TestCase):
 
     def _test_return_dict_logs(self, logs):
         test_logs = {"time": ANY, "test_loss": ANY}
-        test_logs.update({
-            "test_" + metric_name: metric
-            for metric_name, metric in zip(self.batch_metrics_names, self.batch_metrics_values)
-        })
-        test_logs.update({
-            "test_" + metric_name: metric
-            for metric_name, metric in zip(self.epoch_metrics_names, self.epoch_metrics_values)
-        })
+        test_logs.update(
+            {
+                "test_" + metric_name: metric
+                for metric_name, metric in zip(self.batch_metrics_names, self.batch_metrics_values)
+            }
+        )
+        test_logs.update(
+            {
+                "test_" + metric_name: metric
+                for metric_name, metric in zip(self.epoch_metrics_names, self.epoch_metrics_values)
+            }
+        )
         self.assertEqual(logs, test_logs)
 
     def _test_size_and_type_for_generator(self, pred_y, expected_size):

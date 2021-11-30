@@ -28,16 +28,21 @@ device = torch.device("cuda:%d" % cuda_device if torch.cuda.is_available() else 
 network = nn.Sequential(
     nn.Linear(num_features, hidden_state_size),
     nn.ReLU(),
-    nn.Linear(hidden_state_size, 1)
+    nn.Linear(hidden_state_size, 1),
 )
 
 # Train
-model = Model(network, 'sgd', 'binary_cross_entropy_with_logits',
-              batch_metrics=['binary_accuracy'],
-              device=device)
+model = Model(
+    network,
+    'sgd',
+    'binary_cross_entropy_with_logits',
+    batch_metrics=['binary_accuracy'],
+    device=device,
+)
 model.fit(
-    train_x, train_y,
+    train_x,
+    train_y,
     validation_data=(valid_x, valid_y),
     epochs=5,
-    batch_size=32
+    batch_size=32,
 )

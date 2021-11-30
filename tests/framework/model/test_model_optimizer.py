@@ -7,11 +7,14 @@ from poutyne import Model
 
 
 class ModelOptimizerInstanciationTest(unittest.TestCase):
-
     def setUp(self):
         torch.manual_seed(42)
         self.pytorch_network = nn.Linear(1, 1)
         self.loss_function = nn.MSELoss()
+
+    def test_with_optimizer_none(self):
+        model = Model(self.pytorch_network, None, self.loss_function)
+        self.assertEqual(model.optimizer, None)
 
     def test_with_optimizer_object(self):
         optimizer = optim.SGD(self.pytorch_network.parameters(), lr=0.1)

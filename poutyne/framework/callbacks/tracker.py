@@ -55,8 +55,9 @@ class WeightsGradientsStatsTracker:
 
         self.running_abs_mean = previous_mean + (batch_layer_abs_means - previous_mean) / self.count
 
-        self.running_m2 = self.running_m2 + (batch_layer_abs_means - previous_mean) * (batch_layer_abs_means -
-                                                                                       self.running_abs_mean)
+        self.running_m2 = self.running_m2 + (batch_layer_abs_means - previous_mean) * (
+            batch_layer_abs_means - self.running_abs_mean
+        )
 
         self.running_abs_mean_var = self.running_m2 / (self.count - 1) if self.count > 1 else self.running_abs_mean_var
 
@@ -95,7 +96,7 @@ class WeightsGradientsStatsTracker:
                 "min": self.running_min[index],
                 "abs_min": self.running_abs_min[index],
                 "max": self.running_max[index],
-                "abs_max": self.running_abs_max[index]
+                "abs_max": self.running_abs_max[index],
             }
 
             formatted_stats.update({layer_name: stats})
@@ -118,7 +119,6 @@ class WeightsGradientsStatsTracker:
 
 
 class Tracker(Callback):
-
     def __init__(self, keep_bias: bool = False) -> None:
         super().__init__()
 
@@ -128,7 +128,7 @@ class Tracker(Callback):
 
         self.tracker = None
 
-    def on_train_batch_end(self, batch: int, logs: Dict):
+    def on_train_batch_end(self, batch_number: int, logs: Dict):
         # pylint: disable=unused-argument
         named_parameters = ((n, p) for n, p in self.model.network.named_parameters() if self._keep_layer(p, n))
         self.tracker.batch_statistic_upgrade(named_parameters)
@@ -138,15 +138,15 @@ class Tracker(Callback):
             self._update_layers_to_track(layer_name, layer_params)
         self.tracker = WeightsGradientsStatsTracker(self.number_layers)
 
-    def on_epoch_end(self, epoch: int, logs: Dict):
-        self._on_epoch_end_log(epoch, logs)
+    def on_epoch_end(self, epoch_number: int, logs: Dict):
+        self._on_epoch_end_log(epoch_number, logs)
 
-    def _on_epoch_end_log(self, epoch: int, logs: Dict):
+    def _on_epoch_end_log(self, epoch_number: int, logs: Dict):
         """
         The method to define the behavior of the logging tracker.
 
         Args:
-            epoch (int): The epoch number.
+            epoch_number (int): The epoch number.
             logs (Dict): The epoch logs dictionary.
         """
         pass
@@ -190,7 +190,7 @@ class TensorBoardGradientTracker(Tracker):
 
         self.writer = writer
 
-    def _on_epoch_end_log(self, epoch: int, logs: Dict) -> None:
+    def _on_epoch_end_log(self, epoch_number: int, logs: Dict) -> None:
         gradient_distributions_stats = ["mean", "mean_std_dev_up", "mean_std_dev_down"]
         other_gradient_stats = ["min", "max"]
 
@@ -199,8 +199,14 @@ class TensorBoardGradientTracker(Tracker):
             stats = formatted_stats[layer_name]
 
             for gradient_distributions_stat in gradient_distributions_stats:
-                self.writer.add_scalars('gradient_distributions/{}'.format(layer_name),
-                                        {gradient_distributions_stat: stats[gradient_distributions_stat]}, epoch)
+                self.writer.add_scalars(
+                    f'gradient_distributions/{layer_name}',
+                    {gradient_distributions_stat: stats[gradient_distributions_stat]},
+                    epoch_number,
+                )
             for other_gradient_stat in other_gradient_stats:
-                self.writer.add_scalars('other_gradient_stats/{}'.format(layer_name),
-                                        {other_gradient_stat: stats[other_gradient_stat]}, epoch)
+                self.writer.add_scalars(
+                    f'other_gradient_stats/{layer_name}',
+                    {other_gradient_stat: stats[other_gradient_stat]},
+                    epoch_number,
+                )

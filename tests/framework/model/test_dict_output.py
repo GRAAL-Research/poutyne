@@ -25,7 +25,6 @@ class DictOutputModel(nn.Module):
 
 
 class ModelDictOutputTest(ModelFittingTestCase):
-
     def setUp(self):
         super().setUp()
         torch.manual_seed(42)
@@ -38,14 +37,14 @@ class ModelDictOutputTest(ModelFittingTestCase):
             self.optimizer,
             lambda y_p, y_t: self.loss_function(y_p['out1'], y_t[0]) + self.loss_function(y_p['out2'], y_t[1]),
             batch_metrics=self.batch_metrics,
-            epoch_metrics=self.epoch_metrics)
+            epoch_metrics=self.epoch_metrics,
+        )
 
     def test_fitting_with_tensor_multi_output_dict(self):
         train_real_steps_per_epoch = 30
         train_batch_size = ModelDictOutputTest.batch_size
         train_final_batch_missing_samples = 7
-        train_size = train_real_steps_per_epoch * train_batch_size - \
-                     train_final_batch_missing_samples
+        train_size = train_real_steps_per_epoch * train_batch_size - train_final_batch_missing_samples
         train_x = torch.rand(train_size, 1)
         train_y = (torch.rand(train_size, 1), torch.rand(train_size, 1))
 
@@ -53,23 +52,24 @@ class ModelDictOutputTest(ModelFittingTestCase):
         # valid_batch_size will be the same as train_batch_size in the fit method.
         valid_batch_size = train_batch_size
         valid_final_batch_missing_samples = 3
-        valid_size = valid_real_steps_per_epoch * valid_batch_size - \
-                     valid_final_batch_missing_samples
+        valid_size = valid_real_steps_per_epoch * valid_batch_size - valid_final_batch_missing_samples
         valid_x = torch.rand(valid_size, 1)
         valid_y = (torch.rand(valid_size, 1), torch.rand(valid_size, 1))
 
-        logs = self.model.fit(train_x,
-                              train_y,
-                              validation_data=(valid_x, valid_y),
-                              epochs=ModelDictOutputTest.epochs,
-                              batch_size=train_batch_size,
-                              steps_per_epoch=None,
-                              validation_steps=None,
-                              callbacks=[self.mock_callback])
+        logs = self.model.fit(
+            train_x,
+            train_y,
+            validation_data=(valid_x, valid_y),
+            epochs=ModelDictOutputTest.epochs,
+            batch_size=train_batch_size,
+            steps_per_epoch=None,
+            validation_steps=None,
+            callbacks=[self.mock_callback],
+        )
         params = {
             'epochs': ModelDictOutputTest.epochs,
             'steps': train_real_steps_per_epoch,
-            'valid_steps': valid_real_steps_per_epoch
+            'valid_steps': valid_real_steps_per_epoch,
         }
         self._test_callbacks_train(params, logs, valid_steps=valid_real_steps_per_epoch)
 
@@ -81,8 +81,10 @@ class ModelDictOutputTest(ModelFittingTestCase):
         self.assertEqual(type(loss), float)
 
     def test_evaluate_with_pred_dict_output(self):
-        y = (torch.rand(ModelDictOutputTest.evaluate_dataset_len,
-                        1), torch.rand(ModelDictOutputTest.evaluate_dataset_len, 1))
+        y = (
+            torch.rand(ModelDictOutputTest.evaluate_dataset_len, 1),
+            torch.rand(ModelDictOutputTest.evaluate_dataset_len, 1),
+        )
         x = torch.rand(ModelDictOutputTest.evaluate_dataset_len, 1)
         # We also test the unpacking.
         _, pred_y = self.model.evaluate(x, y, batch_size=ModelDictOutputTest.batch_size, return_pred=True)

@@ -29,7 +29,7 @@ def get_names_of_metric(metric):
 
 
 def flatten_metric_names(metric_names):
-    to_list = lambda names: names if isinstance(names, list) else [names]
+    to_list = lambda names: names if isinstance(names, (tuple, list)) else [names]
     return [name for names in metric_names for name in to_list(names)]
 
 
@@ -55,8 +55,9 @@ def rename_doubles_from_counts(metric_names, counts, numbering):
             return name + str(numbering[name])
         return name
 
-    return [[get_name(name) for name in names] if not isinstance(names, str) else get_name(names)
-            for names in metric_names]
+    return [
+        [get_name(name) for name in names] if not isinstance(names, str) else get_name(names) for names in metric_names
+    ]
 
 
 def get_callables_and_names(metrics):

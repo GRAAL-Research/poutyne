@@ -9,8 +9,7 @@ from .callbacks import Callback
 
 
 class GradientLoggerBase(Callback):
-
-    def __init__(self, keep_bias: bool = False, norm_type: Union[float, List[float]] = 2.) -> None:
+    def __init__(self, keep_bias: bool = False, norm_type: Union[float, List[float]] = 2.0) -> None:
         super().__init__()
         self.keep_bias = keep_bias
         self.norm_type = [norm_type] if isinstance(norm_type, (float, int)) else norm_type
@@ -23,10 +22,10 @@ class GradientLoggerBase(Callback):
     def on_train_begin(self, logs: Dict):
         self.layers = [n for n, p in self.model.network.named_parameters() if self._keep_layer(p, n)]
 
-    def on_epoch_begin(self, epoch: int, logs: Dict):
-        self.epoch = epoch
+    def on_epoch_begin(self, epoch_number: int, logs: Dict):
+        self.epoch = epoch_number
 
-    def on_train_batch_end(self, batch: int, logs: Dict):
+    def on_train_batch_end(self, batch_number: int, logs: Dict):
         # Just in case we want to support second-order derivatives
         with torch.no_grad():
             layer_stats = {}
@@ -46,9 +45,11 @@ class GradientLoggerBase(Callback):
                         stats[f'l{norm}'] = grad_abs_values.norm(norm).item()
 
                     layer_stats[name] = stats
-        self.log_stats(self.epoch, batch, logs, layer_stats)
+        self.log_stats(self.epoch, batch_number, logs, layer_stats)
 
-    def log_stats(self, epoch: int, batch: int, logs: Dict, layer_stats: Dict[str, Dict[str, float]]) -> None:
+    def log_stats(
+        self, epoch_number: int, batch_number: int, logs: Dict, layer_stats: Dict[str, Dict[str, float]]
+    ) -> None:
         raise NotImplementedError
 
     def _keep_layer(self, param: torch.nn.parameter.Parameter, name: str):
@@ -58,7 +59,6 @@ class GradientLoggerBase(Callback):
 
 
 class MemoryGradientLogger(GradientLoggerBase):
-
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         self.history = []
@@ -67,36 +67,40 @@ class MemoryGradientLogger(GradientLoggerBase):
         super().on_train_begin(logs)
         self.history = {layer: [] for layer in self.layers}
 
-    def log_stats(self, epoch: int, batch: int, logs: Dict, layer_stats: Dict[str, Dict[str, float]]) -> None:
+    def log_stats(
+        self, epoch_number: int, batch_number: int, logs: Dict, layer_stats: Dict[str, Dict[str, float]]
+    ) -> None:
         for layer, stats in layer_stats.items():
-            stats['epoch'] = epoch
-            stats['batch'] = batch
+            stats['epoch'] = epoch_number
+            stats['batch'] = batch_number
             self.history[layer].append(stats)
 
 
 class TensorBoardGradientLogger(GradientLoggerBase):
-
     def __init__(self, writer, initial_step: int = 0, **kwargs) -> None:
         super().__init__(**kwargs)
         self.writer = writer
         self.current_step = initial_step
 
-    def log_stats(self, epoch: int, batch: int, logs: Dict, layer_stats: Dict[str, Dict[str, float]]) -> None:
+    def log_stats(
+        self, epoch_number: int, batch_number: int, logs: Dict, layer_stats: Dict[str, Dict[str, float]]
+    ) -> None:
         self.current_step += 1
         for layer, stats in layer_stats.items():
             for name, value in stats.items():
-                self.writer.add_scalars('gradient_stats/{}'.format(layer), {name: value}, self.current_step)
+                self.writer.add_scalars(f'gradient_stats/{layer}', {name: value}, self.current_step)
 
 
 class AtomicCSVGradientLogger(GradientLoggerBase):
-
-    def __init__(self,
-                 filename,
-                 *,
-                 separator: str = ',',
-                 append: bool = False,
-                 temporary_filename: Optional[str] = None,
-                 **kwargs) -> None:
+    def __init__(
+        self,
+        filename,
+        *,
+        separator: str = ',',
+        append: bool = False,
+        temporary_filename: Optional[str] = None,
+        **kwargs,
+    ) -> None:
         super().__init__(**kwargs)
         self.filename = filename
         self.temporary_filename = temporary_filename
@@ -107,7 +111,7 @@ class AtomicCSVGradientLogger(GradientLoggerBase):
     def _save_stats(self, fd: TextIO, filename: str, stats: Dict):
         olddata = None
         if os.path.exists(filename):
-            with open(filename, 'r') as oldfile:
+            with open(filename, 'r', encoding='utf-8') as oldfile:
                 olddata = list(csv.DictReader(oldfile, delimiter=self.separator))
         csvwriter = csv.DictWriter(fd, fieldnames=self.fieldnames, delimiter=self.separator)
         csvwriter.writeheader()
@@ -128,18 +132,19 @@ class AtomicCSVGradientLogger(GradientLoggerBase):
                 filename = self.filename.format(layer)
                 atomic_lambda_save(filename, self._write_header, (), temporary_filename=self.temporary_filename)
 
-    def log_stats(self, epoch: int, batch: int, logs: Dict, layer_stats: Dict[str, Dict[str, float]]) -> None:
+    def log_stats(
+        self, epoch_number: int, batch_number: int, logs: Dict, layer_stats: Dict[str, Dict[str, float]]
+    ) -> None:
         for layer, stats in layer_stats.items():
             filename = self.filename.format(layer)
-            stats['epoch'] = epoch
-            stats['batch'] = batch
-            atomic_lambda_save(filename,
-                               self._save_stats, (filename, stats),
-                               temporary_filename=self.temporary_filename)
+            stats['epoch'] = epoch_number
+            stats['batch'] = batch_number
+            atomic_lambda_save(
+                filename, self._save_stats, (filename, stats), temporary_filename=self.temporary_filename
+            )
 
 
 class CSVGradientLogger(GradientLoggerBase):
-
     def __init__(self, filename, *, separator: str = ',', append: bool = False, **kwargs) -> None:
         super().__init__(**kwargs)
         self.filename = filename
@@ -155,16 +160,18 @@ class CSVGradientLogger(GradientLoggerBase):
         self.writers = {}
         for layer in self.layers:
             filename = self.filename.format(layer)
-            self.csvfiles[layer] = open(filename, open_flag, newline='')
+            self.csvfiles[layer] = open(filename, open_flag, newline='', encoding='utf-8')
             self.writers[layer] = csv.DictWriter(self.csvfiles[layer], fieldnames=fieldnames, delimiter=self.separator)
             if not self.append:
                 self.writers[layer].writeheader()
                 self.csvfiles[layer].flush()
 
-    def log_stats(self, epoch: int, batch: int, logs: Dict, layer_stats: Dict[str, Dict[str, float]]) -> None:
+    def log_stats(
+        self, epoch_number: int, batch_number: int, logs: Dict, layer_stats: Dict[str, Dict[str, float]]
+    ) -> None:
         for layer, stats in layer_stats.items():
-            stats['epoch'] = epoch
-            stats['batch'] = batch
+            stats['epoch'] = epoch_number
+            stats['batch'] = batch_number
             self.writers[layer].writerow(stats)
             self.csvfiles[layer].flush()
 

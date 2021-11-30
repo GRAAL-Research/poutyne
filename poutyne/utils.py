@@ -142,7 +142,6 @@ class TensorDataset(Dataset):
         self._len = _rabbit_hole(self.tensors)
 
     def __getitem__(self, index):
-
         def _rabbit_hole(obj, idx):
             if isinstance(obj, (list, tuple)):
                 return type(obj)(_rabbit_hole(o, idx) for o in obj)
@@ -166,3 +165,16 @@ def set_seeds(seed):
         random.seed(seed)
         np.random.seed(seed)
         torch.manual_seed(seed)
+
+
+def is_in_jupyter_notebook():
+    # pylint: disable=import-outside-toplevel
+    try:
+        from IPython import get_ipython
+
+        shell = get_ipython().__class__.__name__
+        jupyter = shell in ['ZMQInteractiveShell', 'Shell']
+    except ImportError:
+        jupyter = False
+
+    return jupyter

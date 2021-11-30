@@ -19,7 +19,6 @@ def some_data_tensor_generator_multi_io(batch_size):
 
 
 class ModelMultiIOTest(ModelFittingTestCase):
-
     def setUp(self):
         super().setUp()
         torch.manual_seed(42)
@@ -32,21 +31,24 @@ class ModelMultiIOTest(ModelFittingTestCase):
             self.optimizer,
             lambda y_pred, y_true: self.loss_function(y_pred[0], y_true[0]) + self.loss_function(y_pred[1], y_true[1]),
             batch_metrics=self.batch_metrics,
-            epoch_metrics=self.epoch_metrics)
+            epoch_metrics=self.epoch_metrics,
+        )
 
     def test_fitting_tensor_generator_multi_io(self):
         train_generator = some_data_tensor_generator_multi_io(ModelMultiIOTest.batch_size)
         valid_generator = some_data_tensor_generator_multi_io(ModelMultiIOTest.batch_size)
-        logs = self.model.fit_generator(train_generator,
-                                        valid_generator,
-                                        epochs=ModelMultiIOTest.epochs,
-                                        steps_per_epoch=ModelMultiIOTest.steps_per_epoch,
-                                        validation_steps=ModelMultiIOTest.steps_per_epoch,
-                                        callbacks=[self.mock_callback])
+        logs = self.model.fit_generator(
+            train_generator,
+            valid_generator,
+            epochs=ModelMultiIOTest.epochs,
+            steps_per_epoch=ModelMultiIOTest.steps_per_epoch,
+            validation_steps=ModelMultiIOTest.steps_per_epoch,
+            callbacks=[self.mock_callback],
+        )
         params = {
             'epochs': ModelMultiIOTest.epochs,
             'steps': ModelMultiIOTest.steps_per_epoch,
-            'valid_steps': ModelMultiIOTest.steps_per_epoch
+            'valid_steps': ModelMultiIOTest.steps_per_epoch,
         }
         self._test_callbacks_train(params, logs, valid_steps=ModelMultiIOTest.steps_per_epoch)
 
@@ -54,8 +56,7 @@ class ModelMultiIOTest(ModelFittingTestCase):
         train_real_steps_per_epoch = 30
         train_batch_size = ModelMultiIOTest.batch_size
         train_final_batch_missing_samples = 7
-        train_size = train_real_steps_per_epoch * train_batch_size - \
-                     train_final_batch_missing_samples
+        train_size = train_real_steps_per_epoch * train_batch_size - train_final_batch_missing_samples
         train_x = (torch.rand(train_size, 1), torch.rand(train_size, 1))
         train_y = (torch.rand(train_size, 1), torch.rand(train_size, 1))
 
@@ -63,23 +64,24 @@ class ModelMultiIOTest(ModelFittingTestCase):
         # valid_batch_size will be the same as train_batch_size in the fit method.
         valid_batch_size = train_batch_size
         valid_final_batch_missing_samples = 3
-        valid_size = valid_real_steps_per_epoch * valid_batch_size - \
-                     valid_final_batch_missing_samples
+        valid_size = valid_real_steps_per_epoch * valid_batch_size - valid_final_batch_missing_samples
         valid_x = (torch.rand(valid_size, 1), torch.rand(valid_size, 1))
         valid_y = (torch.rand(valid_size, 1), torch.rand(valid_size, 1))
 
-        logs = self.model.fit(train_x,
-                              train_y,
-                              validation_data=(valid_x, valid_y),
-                              epochs=ModelMultiIOTest.epochs,
-                              batch_size=train_batch_size,
-                              steps_per_epoch=None,
-                              validation_steps=None,
-                              callbacks=[self.mock_callback])
+        logs = self.model.fit(
+            train_x,
+            train_y,
+            validation_data=(valid_x, valid_y),
+            epochs=ModelMultiIOTest.epochs,
+            batch_size=train_batch_size,
+            steps_per_epoch=None,
+            validation_steps=None,
+            callbacks=[self.mock_callback],
+        )
         params = {
             'epochs': ModelMultiIOTest.epochs,
             'steps': train_real_steps_per_epoch,
-            'valid_steps': valid_real_steps_per_epoch
+            'valid_steps': valid_real_steps_per_epoch,
         }
         self._test_callbacks_train(params, logs)
 

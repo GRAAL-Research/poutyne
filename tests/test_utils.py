@@ -9,7 +9,6 @@ from poutyne import TensorDataset, torch_apply
 
 
 class TorchApplyTest(TestCase):
-
     def test_apply_on_list(self):
         my_list = [MagicMock(spec=torch.Tensor) for _ in range(10)]
         torch_apply(my_list, lambda t: t.cpu())
@@ -29,7 +28,7 @@ class TorchApplyTest(TestCase):
 
     def test_apply_on_recursive_tuple(self):
         my_tuple = tuple(MagicMock(spec=torch.Tensor) for _ in range(2))
-        my_tuple += (tuple(MagicMock(spec=torch.Tensor) for _ in range(3)), )
+        my_tuple += (tuple(MagicMock(spec=torch.Tensor) for _ in range(3)),)
         my_tuple += tuple(MagicMock(spec=torch.Tensor) for _ in range(1))
         torch_apply(my_tuple, lambda t: t.cpu())
         self._test_method_calls(my_tuple[:2] + my_tuple[2] + my_tuple[3:])
@@ -54,10 +53,8 @@ class TorchApplyTest(TestCase):
         my_obj = {
             'a': [MagicMock(spec=torch.Tensor) for _ in range(3)],
             'b': tuple(MagicMock(spec=torch.Tensor) for _ in range(2)),
-            'c': {
-                'd': [MagicMock(spec=torch.Tensor) for _ in range(3)]
-            },
-            'e': MagicMock(spec=torch.Tensor)
+            'c': {'d': [MagicMock(spec=torch.Tensor) for _ in range(3)]},
+            'e': MagicMock(spec=torch.Tensor),
         }
         torch_apply(my_obj, lambda t: t.cpu())
         self._test_method_calls(my_obj['a'] + list(my_obj['b']) + my_obj['c']['d'] + [my_obj['e']])
@@ -80,7 +77,6 @@ class TorchApplyTest(TestCase):
 
 
 class TensorDatasetTest(TestCase):
-
     def test_one_tensor(self):
         range20 = np.expand_dims(np.arange(20), 1)
         dataset = TensorDataset(range20)
@@ -129,14 +125,13 @@ class TensorDatasetTest(TestCase):
 
 
 class ConcatTest(TestCase):
-
     def test_single_array(self):
         """
         Test the concatenation of a single array
         """
         obj = [np.arange(5)] * 5
         concat = _concat(obj)
-        self.assertEqual(concat.shape, (25, ))
+        self.assertEqual(concat.shape, (25,))
 
     def test_tuple_1(self):
         """
@@ -144,8 +139,8 @@ class ConcatTest(TestCase):
         """
         obj = [(np.arange(5), np.ones(5) * 2)] * 5
         concat = _concat(obj)
-        self.assertEqual(concat[0].shape, (25, ))
-        self.assertEqual(concat[1].shape, (25, ))
+        self.assertEqual(concat[0].shape, (25,))
+        self.assertEqual(concat[1].shape, (25,))
         for i in range(5):
             for j in range(5):
                 self.assertTrue(concat[0][i * 5 + j] == j)
@@ -157,9 +152,9 @@ class ConcatTest(TestCase):
         """
         obj = [(np.arange(5), (np.ones(5) * 2, np.ones(5) * 3))] * 5
         concat = _concat(obj)
-        self.assertEqual(concat[0].shape, (25, ))
-        self.assertEqual(concat[1][0].shape, (25, ))
-        self.assertEqual(concat[1][1].shape, (25, ))
+        self.assertEqual(concat[0].shape, (25,))
+        self.assertEqual(concat[1][0].shape, (25,))
+        self.assertEqual(concat[1][1].shape, (25,))
         for i in range(5):
             for j in range(5):
                 self.assertTrue(concat[0][i * 5 + j] == j)
@@ -172,10 +167,10 @@ class ConcatTest(TestCase):
         """
         obj = [((np.arange(5), np.ones(5)), (np.ones(5) * 2, np.ones(5) * 3))] * 5
         concat = _concat(obj)
-        self.assertEqual(concat[0][0].shape, (25, ))
-        self.assertEqual(concat[0][1].shape, (25, ))
-        self.assertEqual(concat[1][0].shape, (25, ))
-        self.assertEqual(concat[1][1].shape, (25, ))
+        self.assertEqual(concat[0][0].shape, (25,))
+        self.assertEqual(concat[0][1].shape, (25,))
+        self.assertEqual(concat[1][0].shape, (25,))
+        self.assertEqual(concat[1][1].shape, (25,))
         for i in range(5):
             for j in range(5):
                 self.assertTrue(concat[0][0][i * 5 + j] == j)
@@ -189,8 +184,8 @@ class ConcatTest(TestCase):
         """
         obj = [[np.arange(5), np.ones(5) * 2]] * 5
         concat = _concat(obj)
-        self.assertEqual(concat[0].shape, (25, ))
-        self.assertEqual(concat[1].shape, (25, ))
+        self.assertEqual(concat[0].shape, (25,))
+        self.assertEqual(concat[1].shape, (25,))
         for i in range(5):
             for j in range(5):
                 self.assertTrue(concat[0][i * 5 + j] == j)
@@ -202,9 +197,9 @@ class ConcatTest(TestCase):
         """
         obj = [[np.arange(5), [np.ones(5) * 2, np.ones(5) * 3]]] * 5
         concat = _concat(obj)
-        self.assertEqual(concat[0].shape, (25, ))
-        self.assertEqual(concat[1][0].shape, (25, ))
-        self.assertEqual(concat[1][1].shape, (25, ))
+        self.assertEqual(concat[0].shape, (25,))
+        self.assertEqual(concat[1][0].shape, (25,))
+        self.assertEqual(concat[1][1].shape, (25,))
         for i in range(5):
             for j in range(5):
                 self.assertTrue(concat[0][i * 5 + j] == j)
@@ -217,10 +212,10 @@ class ConcatTest(TestCase):
         """
         obj = [[[np.arange(5), np.ones(5)], [np.ones(5) * 2, np.ones(5) * 3]]] * 5
         concat = _concat(obj)
-        self.assertEqual(concat[0][0].shape, (25, ))
-        self.assertEqual(concat[0][1].shape, (25, ))
-        self.assertEqual(concat[1][0].shape, (25, ))
-        self.assertEqual(concat[1][1].shape, (25, ))
+        self.assertEqual(concat[0][0].shape, (25,))
+        self.assertEqual(concat[0][1].shape, (25,))
+        self.assertEqual(concat[1][0].shape, (25,))
+        self.assertEqual(concat[1][1].shape, (25,))
         for i in range(5):
             for j in range(5):
                 self.assertTrue(concat[0][0][i * 5 + j] == j)
@@ -234,8 +229,8 @@ class ConcatTest(TestCase):
         """
         obj = [{'a': np.arange(5), 'b': np.ones(5) * 2}] * 5
         concat = _concat(obj)
-        self.assertEqual(concat['a'].shape, (25, ))
-        self.assertEqual(concat['b'].shape, (25, ))
+        self.assertEqual(concat['a'].shape, (25,))
+        self.assertEqual(concat['b'].shape, (25,))
         for i in range(5):
             for j in range(5):
                 self.assertTrue(concat['a'][i * 5 + j] == j)
@@ -247,9 +242,9 @@ class ConcatTest(TestCase):
         """
         obj = [{'a': (np.arange(5), np.ones(5)), 'b': np.ones(5) * 2}] * 5
         concat = _concat(obj)
-        self.assertEqual(concat['a'][0].shape, (25, ))
-        self.assertEqual(concat['a'][1].shape, (25, ))
-        self.assertEqual(concat['b'].shape, (25, ))
+        self.assertEqual(concat['a'][0].shape, (25,))
+        self.assertEqual(concat['a'][1].shape, (25,))
+        self.assertEqual(concat['b'].shape, (25,))
 
         for i in range(5):
             for j in range(5):
@@ -266,9 +261,9 @@ class ConcatTest(TestCase):
     def test_non_concatenable_values2(self):
         obj = [{'a': (np.arange(5), np.ones(5), 2), 'b': 3, 'c': np.array(4)}] * 5
         concat = _concat(obj)
-        self.assertEqual(concat['a'][0].shape, (25, ))
-        self.assertEqual(concat['a'][1].shape, (25, ))
-        self.assertEqual(concat['a'][2], (2, ) * 5)
+        self.assertEqual(concat['a'][0].shape, (25,))
+        self.assertEqual(concat['a'][1].shape, (25,))
+        self.assertEqual(concat['a'][2], (2,) * 5)
         self.assertEqual(concat['b'], [3] * 5)
         self.assertEqual(concat['c'], [4] * 5)
 
