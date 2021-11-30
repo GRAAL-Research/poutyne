@@ -91,6 +91,7 @@ The section below consists of a few lines of codes that help us download the Cel
         url = f"{base_url}/{file}"
         if not os.path.exists(f"{dataset_folder}/{file}"):
             wget.download(url, f"{dataset_folder}/{file}")
+
     with zipfile.ZipFile(f"{dataset_folder}/img_align_celeba.zip", "r") as ziphandler:
         ziphandler.extractall(dataset_folder)
    
@@ -105,15 +106,9 @@ Now, as the dataset is downloaded, we can define our datasets and dataloaders in
             tfms.Normalize(imagenet_mean, imagenet_std),
         ]
     )
-    train_dataset = datasets.CelebA(
-        data_root, split="train", target_type=["attr", "landmarks"], transform=transforms
-    )
-    valid_dataset = datasets.CelebA(
-        data_root, split="valid", target_type=["attr", "landmarks"], transform=transforms
-    )
-    test_dataset = datasets.CelebA(
-        data_root, split="test", target_type=["attr", "landmarks"], transform=transforms
-    )
+    train_dataset = datasets.CelebA(data_root, split="train", target_type=["attr", "landmarks"], transform=transforms)
+    valid_dataset = datasets.CelebA(data_root, split="valid", target_type=["attr", "landmarks"], transform=transforms)
+    test_dataset = datasets.CelebA(data_root, split="test", target_type=["attr", "landmarks"], transform=transforms)
     
 Here we can see how each dataset sample looks like:
 
@@ -143,9 +138,7 @@ Here, we can see an example from the training dataset. It shows an image of a pe
     image = image.permute(1, 2, 0).detach().numpy()
     image_rgb = cv2.cvtColor(np.float32(image), cv2.COLOR_BGR2RGB)
     image_rgb = image_rgb * imagenet_std + imagenet_mean
-    gender = (
-        "male" if int(train_dataset[sample_number][1][0][gender_index]) == 1 else "female"
-    )
+    gender = "male" if int(train_dataset[sample_number][1][0][gender_index]) == 1 else "female"
     print("Gender is:", gender)
     w, h = 218, 178
     (x_L, y_L) = train_dataset[sample_number][1][1][
@@ -154,9 +147,7 @@ Here, we can see an example from the training dataset. It shows an image of a pe
     (x_R, y_R) = train_dataset[sample_number][1][1][2:4]
     w_scale = image_size / w
     h_scale = image_size / h
-    x_L, x_R = (x_L * h_scale), (
-        x_R * h_scale
-    )  # rescaling for the size of (224,224) and finaly to the range of [0,1]
+    x_L, x_R = (x_L * h_scale), (x_R * h_scale)  # rescaling for the size of (224,224) and finaly to the range of [0,1]
     y_L, y_R = (y_L * w_scale), (y_R * w_scale)
     x_L, x_R = int(x_L), int(x_R)
     y_L, y_R = int(y_L), int(y_R)
@@ -216,21 +207,11 @@ As we discussed before, we have two different tasks in this example. These tasks
 
         def forward(self, y_pred, y_true):
             # print(y_true[0][:,20])
-            loss_cls = self.ce_loss(
-                y_pred[0], y_true[0][:, 20]
-            )  # Cross Entropy Error (for classification)
-            loss_reg1 = self.mse_loss(
-                y_pred[1][:, 0], y_true[1][:, 0] / h
-            )  # Mean Squared Error for X_L
-            loss_reg2 = self.mse_loss(
-                y_pred[1][:, 1], y_true[1][:, 1] / w
-            )  # Mean Squared Error for Y_L
-            loss_reg3 = self.mse_loss(
-                y_pred[1][:, 2], y_true[1][:, 2] / h
-            )  # Mean Squared Error for X_R
-            loss_reg4 = self.mse_loss(
-                y_pred[1][:, 3], y_true[1][:, 3] / w
-            )  # Mean Squared Error for Y_R
+            loss_cls = self.ce_loss(y_pred[0], y_true[0][:, 20])  # Cross Entropy Error (for classification)
+            loss_reg1 = self.mse_loss(y_pred[1][:, 0], y_true[1][:, 0] / h)  # Mean Squared Error for X_L
+            loss_reg2 = self.mse_loss(y_pred[1][:, 1], y_true[1][:, 1] / w)  # Mean Squared Error for Y_L
+            loss_reg3 = self.mse_loss(y_pred[1][:, 2], y_true[1][:, 2] / h)  # Mean Squared Error for X_R
+            loss_reg4 = self.mse_loss(y_pred[1][:, 3], y_true[1][:, 3] / w)  # Mean Squared Error for Y_R
             total_loss = loss_cls + self.W * (loss_reg1 + loss_reg2 + loss_reg3 + loss_reg4)
             return total_loss
 
@@ -259,9 +240,7 @@ As you have also noticed from the training logs, in this try we achieved the bes
 
     exp.load_checkpoint("best")
     model = exp.model
-    loss, predictions, ground_truth = model.evaluate_generator(
-        test_dataloader, return_pred=True, return_ground_truth=True
-    )
+    loss, predictions, ground_truth = model.evaluate_generator(test_dataloader, return_pred=True, return_ground_truth=True)
 
 
 The ``callbacks`` feature of Poutyne, also used by the Experiment class, records the training logs. We can use this information to monitor and analyze the training process.
