@@ -138,7 +138,8 @@ disable=print-statement,
         unnecessary-pass,
         cyclic-import,
         arguments-differ,
-        isinstance-second-argument-not-valid-type # Not working with typing
+        consider-using-from-import,
+        consider-using-with
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option

@@ -13,5 +13,5 @@ class TerminateOnNaN(Callback):
     def on_train_batch_end(self, batch_number: int, logs: Dict):
         loss = logs['loss']
         if np.isnan(loss) or np.isinf(loss):
-            print('Batch %d: Invalid loss, terminating training' % (batch_number))
+            print(f'Batch {batch_number:d}: Invalid loss, terminating training')
             self.model.stop_training = True

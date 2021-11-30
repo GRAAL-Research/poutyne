@@ -5,9 +5,9 @@ import torch
 
 from poutyne import EpochMetric
 
-some_metric_1_value = 1.
-some_metric_2_value = 2.
-repeat_batch_metric_value = 3.
+some_metric_1_value = 1.0
+some_metric_2_value = 2.0
+repeat_batch_metric_value = 3.0
 
 some_constant_epoch_metric_value = 3
 
@@ -27,19 +27,21 @@ def some_data_generator(batch_size):
 
 
 class SomeDataGeneratorUsingStopIteration:
-
     def __init__(self, batch_size, length):
         self.batch_size = batch_size
         self.length = length
 
     def __iter__(self):
-        return ((np.random.rand(self.batch_size, 1).astype(np.float32), np.random.rand(self.batch_size,
-                                                                                       1).astype(np.float32))
-                for _ in range(self.length))
+        return (
+            (
+                np.random.rand(self.batch_size, 1).astype(np.float32),
+                np.random.rand(self.batch_size, 1).astype(np.float32),
+            )
+            for _ in range(self.length)
+        )
 
 
 class SomeDataGeneratorWithLen:
-
     def __init__(self, batch_size, length, num_missing_samples):
         self.batch_size = batch_size
         self.length = length
@@ -77,7 +79,6 @@ def repeat_batch_metric(y_pred, y_true):
 
 
 class SomeConstantEpochMetric(EpochMetric):
-
     def forward(self, y_pred, y_true):
         pass
 
@@ -89,7 +90,6 @@ class SomeConstantEpochMetric(EpochMetric):
 
 
 class SomeEpochMetric(EpochMetric):
-
     def __init__(self):
         super().__init__()
         self.increment = 0.0

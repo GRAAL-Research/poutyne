@@ -1,11 +1,21 @@
+# pylint: disable=too-many-lines
 import os
 import warnings
-from typing import Union, Callable, List, Dict, Tuple
+from typing import Union, Callable, List, Dict, Tuple, Any
 
 try:
     import pandas as pd
 except ImportError:
     pd = None
+
+try:
+    # pylint: disable=unused-import
+    import matplotlib.pyplot
+
+    matplotlib = True
+except ImportError:
+    matplotlib = False
+
 import torch
 
 try:
@@ -15,13 +25,16 @@ except ImportError:
 
 from . import Model
 from ..utils import set_seeds
-from .callbacks import ModelCheckpoint, \
-    OptimizerCheckpoint, \
-    LRSchedulerCheckpoint, \
-    PeriodicSaveLambda, \
-    AtomicCSVLogger, \
-    TensorBoardLogger, \
-    BestModelRestore
+from ..plotting import plot_history
+from .callbacks import (
+    ModelCheckpoint,
+    OptimizerCheckpoint,
+    LRSchedulerCheckpoint,
+    PeriodicSaveLambda,
+    AtomicCSVLogger,
+    TensorBoardLogger,
+    BestModelRestore,
+)
 
 
 class Experiment:
@@ -32,17 +45,16 @@ class Experiment:
     keep traces of all pertinent information via the automatic logging option.
 
     Args:
-        directory (str): Path to the experiment's working directory. Will be used for the automatic logging.
+        directory (str): Path to the experiment's working directory. Will be used for automatic logging.
         network (torch.nn.Module): A PyTorch network.
-        device (Union[torch.device, List[torch.device], str, None]): The device to which the model is sent
+        device (Union[torch.torch.device, List[torch.torch.device], str, None]): The device to which the model is sent
             or for multi-GPUs, the list of devices to which the model is to be sent. When using a string for a multiple
-            GPUs the option is "all", for take them all, by default the current device is use as the main one.
+            GPUs, the option is "all", for "take them all." By default, the current device is used as the main one.
             If None, the model will be kept on its current device.
             (Default value = None)
         logging (bool): Whether or not to log the experiment's progress. If true, various logging
-            callbacks will be inserted to output training and testing stats as well as to automatically
-            save model checkpoints, for example. See :func:`~Experiment.train()` and :func:`~Experiment.test()`
-            for more details.
+            callbacks will be inserted to output training and testing stats as well as to save model checkpoints,
+            for example, automatically. See :func:`~Experiment.train()` and :func:`~Experiment.test()` for more details.
             (Default value = True)
         optimizer (Union[torch.optim.Optimizer, str]): If Pytorch Optimizer, must already be initialized.
             If str, should be the optimizer's name in Pytorch (i.e. 'Adam' for torch.optim.Adam).
@@ -54,32 +66,37 @@ class Experiment:
             is the ground truth. If ``None``, will default to, in priority order, either the model's own
             loss function or the default loss function associated with the ``task``.
             (Default value = None)
-        batch_metrics (List, optional): List of functions with the same signature as the loss function. Each metric
+        batch_metrics (list): List of functions with the same signature as the loss function. Each metric
             can be any PyTorch loss function. It can also be a string with the same name as a PyTorch
-            loss function (either the functional or object name). 'accuracy' (or just 'acc') is also a
-            valid metric. Each metric function is called on each batch of the optimization and on the
-            validation batches at the end of the epoch.
+            loss function (either the functional or object name). Furthermore, see :ref:`batch metrics`
+            for supplementary available batch metrics. 'accuracy' (or just 'acc') is an often used metric.
+            Each metric function is called on each batch of the optimization and on the validation batches
+            at the end of the epoch.
             (Default value = None)
-        epoch_metrics (List, optional): List of functions with the same signature as
-            :class:`~poutyne.EpochMetric`
-            (Default value = None)
+        epoch_metrics (list): List of functions with the same signature as :class:`~poutyne.EpochMetric`.
+            See :ref:`epoch metrics` for available epoch metrics. (Default value = None)
+        monitoring (bool): Whether or not to monitor the training. If True will track the best epoch.
+            If False, ``monitor_metric`` and ``monitor_mode`` are not used, and when testing, the last epoch is used to
+            test the model instead of the best epoch.
+            (Default value = True)
         monitor_metric (str, optional): Which metric to consider for best model performance calculation. Should be in
             the format '{metric_name}' or 'val_{metric_name}' (i.e. 'val_loss'). If None, will follow the value
-            suggested by ``task`` or default to 'val_loss'.
+            suggested by ``task`` or default to 'val_loss'. If ``monitoring`` is set to False, will be ignore.
 
             .. warning:: If you do not plan on using a validation set, you must set the monitor metric to another
                 value.
         monitor_mode (str, optional): Which mode, either 'min' or 'max', should be used when considering the
             ``monitor_metric`` value. If None, will follow the value suggested by ``task`` or default to 'min'.
+            If ``monitoring`` is set to False, will be ignore.
         task (str, optional): Any str beginning with either 'classif' or 'reg'. Specifying a ``task``
             can assign default values to the ``loss_function``, ``batch_metrics``, ``monitor_mode`` and
             ``monitor_mode``. For ``task`` that begins with 'reg', the only default value is the loss function
             that is the mean squared error. When beginning with 'classif', the default loss function is the
-            cross-entropy loss, the default batch metrics will be the accuracy, the default epoch metrics will be
+            cross-entropy loss. The default batch metrics will be the accuracy, the default epoch metrics will be
             the F1 score and the default monitoring will be set on 'val_acc' with a 'max' mode.
             (Default value = None)
 
-    Example:
+    Examples:
         Using a PyTorch DataLoader, on classification task with SGD optimizer::
 
             import torch
@@ -176,6 +193,7 @@ class Experiment:
             exp.train(train_generator, valid_generator, epochs=5)
 
     """
+
     BEST_CHECKPOINT_FILENAME = 'checkpoint_epoch_{epoch}.ckpt'
     MODEL_CHECKPOINT_FILENAME = 'checkpoint.ckpt'
     OPTIMIZER_CHECKPOINT_FILENAME = 'checkpoint.optim'
@@ -183,26 +201,33 @@ class Experiment:
     TENSORBOARD_DIRECTORY = 'tensorboard'
     EPOCH_FILENAME = 'last.epoch'
     LR_SCHEDULER_FILENAME = 'lr_sched_%d.lrsched'
+    PLOTS_DIRECTORY = 'plots'
     TEST_LOG_FILENAME = '{name}_log.tsv'
 
-    def __init__(self,
-                 directory: str,
-                 network: torch.nn.Module,
-                 *,
-                 device: Union[torch.device, List[torch.device], List[str], None, str] = None,
-                 logging: bool = True,
-                 optimizer: Union[torch.optim.Optimizer, str] = 'sgd',
-                 loss_function: Union[Callable, str] = None,
-                 batch_metrics: Union[List, None] = None,
-                 epoch_metrics: Union[List, None] = None,
-                 monitor_metric: Union[str, None] = None,
-                 monitor_mode: Union[str, None] = None,
-                 task: Union[str, None] = None) -> None:
+    def __init__(
+        self,
+        directory: str,
+        network: torch.nn.Module,
+        *,
+        device: Union[torch.device, List[torch.device], List[str], None, str] = None,
+        logging: bool = True,
+        optimizer: Union[torch.optim.Optimizer, str] = 'sgd',
+        loss_function: Union[Callable, str] = None,
+        batch_metrics: Union[List, None] = None,
+        epoch_metrics: Union[List, None] = None,
+        monitoring: bool = True,
+        monitor_metric: Union[str, None] = None,
+        monitor_mode: Union[str, None] = None,
+        task: Union[str, None] = None,
+    ) -> None:
+        if pd is None:
+            raise ImportError("pandas needs to be installed to use the class Experiment.")
+
         self.directory = directory
         self.logging = logging
 
         if task is not None and not task.startswith('classif') and not task.startswith('reg'):
-            raise ValueError("Invalid task '%s'" % task)
+            raise ValueError(f"Invalid task '{task}'")
 
         batch_metrics = [] if batch_metrics is None else batch_metrics
         epoch_metrics = [] if epoch_metrics is None else epoch_metrics
@@ -210,14 +235,16 @@ class Experiment:
         loss_function = self._get_loss_function(loss_function, network, task)
         batch_metrics = self._get_batch_metrics(batch_metrics, network, task)
         epoch_metrics = self._get_epoch_metrics(epoch_metrics, network, task)
-        self._set_monitor(monitor_metric, monitor_mode, task)
 
-        self.model = Model(network,
-                           optimizer,
-                           loss_function,
-                           batch_metrics=batch_metrics,
-                           epoch_metrics=epoch_metrics,
-                           device=device)
+        self.monitoring = monitoring
+        self.monitor_metric = None
+        self.monitor_mode = None
+        if self.monitoring:
+            self._set_monitor(monitor_metric, monitor_mode, task)
+
+        self.model = Model(
+            network, optimizer, loss_function, batch_metrics=batch_metrics, epoch_metrics=epoch_metrics, device=device
+        )
 
         self.best_checkpoint_filename = self.get_path(Experiment.BEST_CHECKPOINT_FILENAME)
         self.model_checkpoint_filename = self.get_path(Experiment.MODEL_CHECKPOINT_FILENAME)
@@ -226,6 +253,7 @@ class Experiment:
         self.tensorboard_directory = self.get_path(Experiment.TENSORBOARD_DIRECTORY)
         self.epoch_filename = self.get_path(Experiment.EPOCH_FILENAME)
         self.lr_scheduler_filename = self.get_path(Experiment.LR_SCHEDULER_FILENAME)
+        self.plots_directory = self.get_path(Experiment.PLOTS_DIRECTORY)
         self.test_log_filename = self.get_path(Experiment.TEST_LOG_FILENAME)
 
     def get_path(self, *paths: str) -> str:
@@ -234,8 +262,9 @@ class Experiment:
         """
         return os.path.join(self.directory, *paths)
 
-    def _get_loss_function(self, loss_function: Union[Callable, str], network: torch.nn.Module,
-                           task: Union[str, None]) -> Union[Callable, str]:
+    def _get_loss_function(
+        self, loss_function: Union[Callable, str], network: torch.nn.Module, task: Union[str, None]
+    ) -> Union[Callable, str]:
         if loss_function is None:
             if hasattr(network, 'loss_function'):
                 return network.loss_function
@@ -246,8 +275,9 @@ class Experiment:
                     return 'mse'
         return loss_function
 
-    def _get_batch_metrics(self, batch_metrics: Union[List, None], network: torch.nn.Module,
-                           task: Union[str, None]) -> Union[List, None]:
+    def _get_batch_metrics(
+        self, batch_metrics: Union[List, None], network: torch.nn.Module, task: Union[str, None]
+    ) -> Union[List, None]:
         if batch_metrics is None or len(batch_metrics) == 0:
             if hasattr(network, 'batch_metrics'):
                 return network.batch_metrics
@@ -255,8 +285,9 @@ class Experiment:
                 return ['accuracy']
         return batch_metrics
 
-    def _get_epoch_metrics(self, epoch_metrics: Union[List, None], network, task: Union[str,
-                                                                                        None]) -> Union[List, None]:
+    def _get_epoch_metrics(
+        self, epoch_metrics: Union[List, None], network, task: Union[str, None]
+    ) -> Union[List, None]:
         if epoch_metrics is None or len(epoch_metrics) == 0:
             if hasattr(network, 'epoch_metrics'):
                 return network.epoch_metrics
@@ -264,10 +295,11 @@ class Experiment:
                 return ['f1']
         return epoch_metrics
 
-    def _set_monitor(self, monitor_metric: Union[str, None], monitor_mode: Union[str, None], task: Union[str,
-                                                                                                         None]) -> None:
+    def _set_monitor(
+        self, monitor_metric: Union[str, None], monitor_mode: Union[str, None], task: Union[str, None]
+    ) -> None:
         if monitor_mode is not None and monitor_mode not in ['min', 'max']:
-            raise ValueError("Invalid mode '%s'" % monitor_mode)
+            raise ValueError(f"Invalid mode '{monitor_mode}'")
 
         self.monitor_metric = 'val_loss'
         self.monitor_mode = 'min'
@@ -279,6 +311,9 @@ class Experiment:
             self.monitor_metric = 'val_acc'
             self.monitor_mode = 'max'
 
+    def get_stats(self):
+        return pd.read_csv(self.log_filename, sep='\t')
+
     def get_best_epoch_stats(self) -> Dict:
         """
         Returns all computed statistics corresponding to the best epoch according to the
@@ -288,15 +323,15 @@ class Experiment:
             dict where each key is a column name in the logging output file
             and values are the ones found at the best epoch.
         """
-        if pd is None:
-            raise ImportError("pandas needs to be installed to use this function.")
+        if not self.monitoring:
+            raise ValueError("Monitoring was disabled. Cannot get best epoch.")
 
-        history = pd.read_csv(self.log_filename, sep='\t')
+        history = self.get_stats()
         if self.monitor_mode == 'min':
             best_epoch_index = history[self.monitor_metric].idxmin()
         else:
             best_epoch_index = history[self.monitor_metric].idxmax()
-        return history.iloc[best_epoch_index:best_epoch_index + 1]
+        return history.iloc[best_epoch_index : best_epoch_index + 1]
 
     def get_saved_epochs(self):
         """
@@ -307,10 +342,10 @@ class Experiment:
             pandas DataFrame which each row corresponds to an epoch having a saved
             checkpoint.
         """
-        if pd is None:
-            raise ImportError("pandas needs to be installed to use this function.")
+        if not self.monitoring:
+            raise ValueError("Monitoring was disabled. Except the last epoch, no epoch checkpoint were saved.")
 
-        history = pd.read_csv(self.log_filename, sep='\t')
+        history = self.get_stats()
         metrics = history[self.monitor_metric].tolist()
         if self.monitor_mode == 'min':
             monitor_op = lambda x, y: x < y
@@ -326,21 +361,23 @@ class Experiment:
         return history.iloc[saved_epoch_indices]
 
     def _warn_missing_file(self, filename: str) -> None:
-        warnings.warn("Missing checkpoint: %s." % filename)
+        warnings.warn(f"Missing checkpoint: {filename}.")
 
     def _load_epoch_state(self, lr_schedulers: List) -> int:
         # pylint: disable=broad-except
         initial_epoch = 1
         if os.path.isfile(self.epoch_filename):
             try:
-                with open(self.epoch_filename, 'r') as f:
+                with open(self.epoch_filename, 'r', encoding='utf-8') as f:
                     initial_epoch = int(f.read()) + 1
             except Exception as e:
                 print(e)
             if os.path.isfile(self.model_checkpoint_filename):
                 try:
-                    print("Loading weights from %s and starting at epoch %d." %
-                          (self.model_checkpoint_filename, initial_epoch))
+                    print(
+                        f"Loading weights from {self.model_checkpoint_filename} and "
+                        f"starting at epoch {initial_epoch:d}."
+                    )
                     self.model.load_weights(self.model_checkpoint_filename)
                 except Exception as e:
                     print(e)
@@ -348,8 +385,10 @@ class Experiment:
                 self._warn_missing_file(self.model_checkpoint_filename)
             if os.path.isfile(self.optimizer_checkpoint_filename):
                 try:
-                    print("Loading optimizer state from %s and starting at epoch %d." %
-                          (self.optimizer_checkpoint_filename, initial_epoch))
+                    print(
+                        f"Loading optimizer state from {self.optimizer_checkpoint_filename} and "
+                        f"starting at epoch {initial_epoch:d}."
+                    )
                     self.model.load_optimizer_state(self.optimizer_checkpoint_filename)
                 except Exception as e:
                     print(e)
@@ -359,8 +398,7 @@ class Experiment:
                 filename = self.lr_scheduler_filename % i
                 if os.path.isfile(filename):
                     try:
-                        print("Loading LR scheduler state from %s and starting at epoch %d." %
-                              (filename, initial_epoch))
+                        print(f"Loading LR scheduler state from {filename} and starting at epoch {initial_epoch:d}.")
                         lr_scheduler.load_state(filename)
                     except Exception as e:
                         print(e)
@@ -368,16 +406,19 @@ class Experiment:
                     self._warn_missing_file(filename)
         return initial_epoch
 
-    def _init_model_restoring_callbacks(self, initial_epoch: int, keep_only_last_best: bool,
-                                        save_every_epoch: bool) -> List:
+    def _init_model_restoring_callbacks(
+        self, initial_epoch: int, keep_only_last_best: bool, save_every_epoch: bool
+    ) -> List:
         callbacks = []
-        best_checkpoint = ModelCheckpoint(self.best_checkpoint_filename,
-                                          monitor=self.monitor_metric,
-                                          mode=self.monitor_mode,
-                                          keep_only_last_best=keep_only_last_best,
-                                          save_best_only=not save_every_epoch,
-                                          restore_best=not save_every_epoch,
-                                          verbose=not save_every_epoch)
+        best_checkpoint = ModelCheckpoint(
+            self.best_checkpoint_filename,
+            monitor=self.monitor_metric,
+            mode=self.monitor_mode,
+            keep_only_last_best=keep_only_last_best,
+            save_best_only=not save_every_epoch,
+            restore_best=not save_every_epoch,
+            verbose=not save_every_epoch,
+        )
         callbacks.append(best_checkpoint)
 
         if save_every_epoch:
@@ -409,7 +450,8 @@ class Experiment:
                     "tensorboard does not seem to be installed. "
                     "To remove this warning, set the 'disable_tensorboard' "
                     "flag to True or install tensorboard.",
-                    stacklevel=3)
+                    stacklevel=3,
+                )
             else:
                 tensorboard_writer = SummaryWriter(self.tensorboard_directory)
                 callbacks += [TensorBoardLogger(tensorboard_writer)]
@@ -423,12 +465,23 @@ class Experiment:
                 callbacks += [LRSchedulerCheckpoint(lr_scheduler, filename, verbose=False)]
         else:
             callbacks += lr_schedulers
-            callbacks += [BestModelRestore(monitor=self.monitor_metric, mode=self.monitor_mode, verbose=True)]
         return callbacks
+
+    def _save_history(self):
+        if matplotlib:
+            history = self.get_stats()
+            plot_history(
+                history,
+                show=False,
+                save=True,
+                close=True,
+                save_directory=self.plots_directory,
+                save_extensions=('png', 'pdf'),
+            )
 
     def train(self, train_generator, valid_generator=None, **kwargs) -> List[Dict]:
         """
-        Trains or finetunes the attribute model on a dataset using a generator. If a previous training already occured
+        Trains or finetunes the model on a dataset using a generator. If a previous training already occurred
         and lasted a total of `n_previous` epochs, then the model's weights will be set to the last checkpoint and the
         training will be resumed for epochs range (`n_previous`, `epochs`].
 
@@ -478,7 +531,7 @@ class Experiment:
 
     def train_dataset(self, train_dataset, valid_dataset=None, **kwargs) -> List[Dict]:
         """
-        Trains or finetunes the attribute model on a dataset. If a previous training already occured
+        Trains or finetunes the model on a dataset. If a previous training already occurred
         and lasted a total of `n_previous` epochs, then the model's weights will be set to the last checkpoint and the
         training will be resumed for epochs range (`n_previous`, `epochs`].
 
@@ -519,8 +572,8 @@ class Experiment:
 
     def train_data(self, x, y, validation_data=None, **kwargs) -> List[Dict]:
         """
-        Trains or finetunes the attribute model on data under the form of NumPy arrays or torch tensors. If a previous
-        training already occured and lasted a total of `n_previous` epochs, then the model's weights will be set to the
+        Trains or finetunes the model on data under the form of NumPy arrays or torch tensors. If a previous
+        training already occurred and lasted a total of `n_previous` epochs, then the model's weights will be set to the
         last checkpoint and the training will be resumed for epochs range (`n_previous`, `epochs`].
 
         If the Experiment has logging enabled (i.e. self.logging is True), numerous callbacks will be automatically
@@ -567,16 +620,18 @@ class Experiment:
         """
         return self._train(self.model.fit, x, y, validation_data, **kwargs)
 
-    def _train(self,
-               training_func,
-               *args,
-               callbacks: Union[List, None] = None,
-               lr_schedulers: Union[List, None] = None,
-               keep_only_last_best: bool = False,
-               save_every_epoch: bool = False,
-               disable_tensorboard: bool = False,
-               seed: int = 42,
-               **kwargs) -> List[Dict]:
+    def _train(
+        self,
+        training_func,
+        *args,
+        callbacks: Union[List, None] = None,
+        lr_schedulers: Union[List, None] = None,
+        keep_only_last_best: bool = False,
+        save_every_epoch: bool = False,
+        disable_tensorboard: bool = False,
+        seed: int = 42,
+        **kwargs,
+    ) -> List[Dict]:
         set_seeds(seed)
 
         lr_schedulers = [] if lr_schedulers is None else lr_schedulers
@@ -594,7 +649,10 @@ class Experiment:
 
             expt_callbacks += [AtomicCSVLogger(self.log_filename, separator='\t', append=initial_epoch != 1)]
 
-            expt_callbacks += self._init_model_restoring_callbacks(initial_epoch, keep_only_last_best, save_every_epoch)
+            if self.monitoring:
+                expt_callbacks += self._init_model_restoring_callbacks(
+                    initial_epoch, keep_only_last_best, save_every_epoch
+                )
             expt_callbacks += [ModelCheckpoint(self.model_checkpoint_filename, verbose=False)]
             expt_callbacks += [OptimizerCheckpoint(self.optimizer_checkpoint_filename, verbose=False)]
 
@@ -606,6 +664,9 @@ class Experiment:
 
             tensorboard_writer, cb_list = self._init_tensorboard_callbacks(disable_tensorboard)
             expt_callbacks += cb_list
+        else:
+            if self.monitoring:
+                expt_callbacks += [BestModelRestore(monitor=self.monitor_metric, mode=self.monitor_mode, verbose=True)]
 
         # This method returns callbacks that checkpoints the LR scheduler if logging is enabled.
         # Otherwise, it just returns the list of LR schedulers with a BestModelRestore callback.
@@ -617,16 +678,17 @@ class Experiment:
         try:
             return training_func(*args, initial_epoch=initial_epoch, callbacks=expt_callbacks, **kwargs)
         finally:
+            if self.logging:
+                self._save_history()
+
             if tensorboard_writer is not None:
                 tensorboard_writer.close()
 
-    def load_checkpoint(self,
-                        checkpoint: Union[int, str],
-                        *,
-                        verbose: bool = False,
-                        strict: bool = True) -> Union[Dict, None]:
+    def load_checkpoint(
+        self, checkpoint: Union[int, str], *, verbose: bool = False, strict: bool = True
+    ) -> Union[Dict, None]:
         """
-        Loads the attribute model's weights with the weights at a given checkpoint epoch.
+        Loads the model's weights with the weights at a given checkpoint epoch.
 
         Args:
             checkpoint (Union[int, str]): Which checkpoint to load the model's weights form.
@@ -646,57 +708,76 @@ class Experiment:
             epoch number stats, if a path, will return the stats of that specific checkpoint.
             else None.
         """
-        best_epoch_stats = None
 
+        epoch_stats = None
         if isinstance(checkpoint, int):
-            incompatible_keys = self._load_epoch_checkpoint(checkpoint, verbose=verbose, strict=strict)
+            epoch_stats, incompatible_keys = self._load_epoch_checkpoint(checkpoint, verbose=verbose, strict=strict)
         elif checkpoint == 'best':
-            best_epoch_stats, incompatible_keys = self._load_best_checkpoint(verbose=verbose, strict=strict)
+            epoch_stats, incompatible_keys = self._load_best_checkpoint(verbose=verbose, strict=strict)
         elif checkpoint == 'last':
-            incompatible_keys = self._load_last_checkpoint(verbose=verbose, strict=strict)
+            epoch_stats, incompatible_keys = self._load_last_checkpoint(verbose=verbose, strict=strict)
         else:
             incompatible_keys = self._load_path_checkpoint(path=checkpoint, verbose=verbose, strict=strict)
 
         if len(incompatible_keys.unexpected_keys) > 0:
-            warnings.warn('Unexpected key(s): {}.'.format(', '.join('"{}"'.format(k)
-                                                                    for k in incompatible_keys.unexpected_keys)),
-                          stacklevel=2)
+            warnings.warn(
+                'Unexpected key(s): ' + ', '.join(f'"{k}"' for k in incompatible_keys.unexpected_keys) + '.',
+                stacklevel=2,
+            )
         if len(incompatible_keys.missing_keys) > 0:
-            warnings.warn('Missing key(s): {}.'.format(', '.join('"{}"'.format(k)
-                                                                 for k in incompatible_keys.missing_keys)),
-                          stacklevel=2)
+            warnings.warn(
+                'Missing key(s): ' + ', '.join(f'"{k}"' for k in incompatible_keys.missing_keys) + '.',
+                stacklevel=2,
+            )
 
-        return best_epoch_stats
+        return epoch_stats
+
+    def _print_epoch_stats(self, epoch_stats):
+        metrics_str = ', '.join(
+            f'{metric_name}: {epoch_stats[metric_name].item():g}' for metric_name in epoch_stats.columns[2:]
+        )
+        print(metrics_str)
 
     def _load_epoch_checkpoint(self, epoch: int, *, verbose: bool = False, strict: bool = True) -> None:
         ckpt_filename = self.best_checkpoint_filename.format(epoch=epoch)
 
+        history = self.get_stats()
+        epoch_stats = history.iloc[epoch - 1 : epoch]
+
         if verbose:
             print(f"Loading checkpoint {ckpt_filename}")
+            self._print_epoch_stats(epoch_stats)
 
         if not os.path.isfile(ckpt_filename):
             raise ValueError(f"No checkpoint found for epoch {epoch}")
 
-        return self.model.load_weights(ckpt_filename, strict=strict)
+        return epoch_stats, self.model.load_weights(ckpt_filename, strict=strict)
 
     def _load_best_checkpoint(self, *, verbose: bool = False, strict: bool = True) -> Dict:
         best_epoch_stats = self.get_best_epoch_stats()
         best_epoch = best_epoch_stats['epoch'].item()
 
-        if verbose:
-            metrics_str = ', '.join('%s: %g' % (metric_name, best_epoch_stats[metric_name].item())
-                                    for metric_name in best_epoch_stats.columns[2:])
-            print(f"Found best checkpoint at epoch: {best_epoch}")
-            print(metrics_str)
+        ckpt_filename = self.best_checkpoint_filename.format(epoch=best_epoch)
 
-        incompatible_keys = self._load_epoch_checkpoint(best_epoch, verbose=verbose, strict=strict)
-        return best_epoch_stats, incompatible_keys
+        if verbose:
+            print(f"Found best checkpoint at epoch: {best_epoch}")
+            self._print_epoch_stats(best_epoch_stats)
+            print(f"Loading checkpoint {ckpt_filename}")
+
+        if not os.path.isfile(ckpt_filename):
+            raise ValueError(f"No checkpoint found for epoch {best_epoch}")
+
+        return best_epoch_stats, self.model.load_weights(ckpt_filename, strict=strict)
 
     def _load_last_checkpoint(self, *, verbose: bool = False, strict: bool = True) -> None:
+        history = self.get_stats()
+        epoch_stats = history.iloc[-1:]
+
         if verbose:
             print(f"Loading checkpoint {self.model_checkpoint_filename}")
+            self._print_epoch_stats(epoch_stats)
 
-        return self.model.load_weights(self.model_checkpoint_filename, strict=strict)
+        return epoch_stats, self.model.load_weights(self.model_checkpoint_filename, strict=strict)
 
     def _load_path_checkpoint(self, path, verbose: bool = False, strict: bool = True) -> None:
         if verbose:
@@ -706,7 +787,7 @@ class Experiment:
 
     def test(self, test_generator, **kwargs):
         """
-        Computes and returns the loss and the metrics of the attribute model on a given test examples
+        Computes and returns the loss and the metrics of the model on a given test examples
         generator.
 
         If the Experiment has logging enabled (i.e. self.logging is True), a checkpoint (the best one by default)
@@ -741,7 +822,7 @@ class Experiment:
 
     def test_dataset(self, test_dataset, **kwargs) -> Dict:
         """
-        Computes and returns the loss and the metrics of the attribute model on a given test dataset.
+        Computes and returns the loss and the metrics of the model on a given test dataset.
 
         If the Experiment has logging enabled (i.e. self.logging is True), a checkpoint (the best one by default)
         is loaded and test and validation statistics are saved in a specific test output .tsv file. Otherwise, the
@@ -774,7 +855,7 @@ class Experiment:
 
     def test_data(self, x, y, **kwargs) -> Dict:
         """
-        Computes and returns the loss and the metrics of the attribute model on a given test dataset.
+        Computes and returns the loss and the metrics of the model on a given test dataset.
 
         If the Experiment has logging enabled (i.e. self.logging is True), a checkpoint (the best one by default)
         is loaded and test and validation statistics are saved in a specific test output .tsv file. Otherwise, the
@@ -810,35 +891,166 @@ class Experiment:
         """
         return self._test(self.model.evaluate, x, y, **kwargs)
 
-    def _test(self,
-              evaluate_func,
-              *args,
-              checkpoint: Union[str, int] = 'best',
-              seed: int = 42,
-              name='test',
-              verbose=True,
-              **kwargs) -> Dict:
-        if kwargs.get('return_ground_truth') is True or kwargs.get('return_pred') is True:
-            raise ValueError("This method does not return predictions or ground truth data.")
+    def _test(
+        self,
+        evaluate_func,
+        *args,
+        checkpoint: Union[str, int] = 'best',
+        seed: int = 42,
+        name='test',
+        verbose=True,
+        **kwargs,
+    ) -> Dict:
         if kwargs.get('return_dict_format') is False:
-            raise ValueError("This method return a dict.")
+            raise ValueError("This method only returns a dict.")
         kwargs['return_dict_format'] = True
 
         set_seeds(seed)
 
         if self.logging:
-            best_epoch_stats = self.load_checkpoint(checkpoint, verbose=verbose)
+            if not self.monitoring and checkpoint == 'best':
+                checkpoint = 'last'
+            epoch_stats = self.load_checkpoint(checkpoint, verbose=verbose)
 
         if verbose:
             print(f"Running {name}")
-        test_metrics_dict = evaluate_func(*args, **kwargs, verbose=verbose)
+        ret = evaluate_func(*args, **kwargs, verbose=verbose)
 
         if self.logging:
+            test_metrics_dict = ret[0] if isinstance(ret, tuple) else ret
             test_stats = pd.DataFrame([list(test_metrics_dict.values())], columns=list(test_metrics_dict.keys()))
             test_stats.drop(['time'], axis=1, inplace=True)
-            if best_epoch_stats is not None:
-                best_epoch_stats = best_epoch_stats.reset_index(drop=True)
-                test_stats = best_epoch_stats.join(test_stats)
+            if epoch_stats is not None:
+                epoch_stats = epoch_stats.reset_index(drop=True)
+                test_stats = epoch_stats.join(test_stats)
             test_stats.to_csv(self.test_log_filename.format(name=name), sep='\t', index=False)
 
-        return test_metrics_dict
+        return ret
+
+    def infer(self, generator, **kwargs) -> Any:
+        """
+        Returns the predictions of the network given batches of samples ``x``, where the tensors are
+        converted into Numpy arrays.
+
+        Args:
+            generator: Generator-like object for the dataset. The generator must yield a batch of
+                samples. See the :func:`fit_generator()` method for details on the types of generators
+                supported. This should only yield input data ``x`` and NOT the target ``y``.
+            checkpoint (Union[str, int]): Which model checkpoint weights to load for the prediction.
+
+                - If 'best', will load the best weights according to ``monitor_metric`` and ``monitor_mode``.
+                - If 'last', will load the last model checkpoint.
+                - If int, will load the checkpoint of the specified epoch.
+                - If a path (str), will load the model pickled state_dict weights (for instance, saved as
+                  ``torch.save(a_pytorch_network.state_dict(), "./a_path.p")``).
+
+                This argument has no effect when logging is disabled. (Default value = 'best')
+            kwargs: Any keyword arguments to pass to :func:`~Model.predict_generator()`.
+
+        Returns:
+            Depends on the value of ``concatenate_returns``. By default, (``concatenate_returns`` is true),
+            the data structures (tensor, tuple, list, dict) returned as predictions for the batches are
+            merged together. In the merge, the tensors are converted into Numpy arrays and are then
+            concatenated together. If ``concatenate_returns`` is false, then a list of the predictions
+            for the batches is returned with tensors converted into Numpy arrays.
+        """
+        return self._predict(self.model.predict_generator, generator, **kwargs)
+
+    def infer_dataset(self, dataset, **kwargs) -> Any:
+        """
+        Returns the inferred predictions of the network given a dataset, where the tensors are
+        converted into Numpy arrays.
+
+        Args:
+            dataset (~torch.utils.data.Dataset): Dataset. Must not return ``y``, just ``x``.
+            checkpoint (Union[str, int]): Which model checkpoint weights to load for the prediction.
+
+                - If 'best', will load the best weights according to ``monitor_metric`` and ``monitor_mode``.
+                - If 'last', will load the last model checkpoint.
+                - If int, will load the checkpoint of the specified epoch.
+                - If a path (str), will load the model pickled state_dict weights (for instance, saved as
+                  ``torch.save(a_pytorch_network.state_dict(), "./a_path.p")``).
+
+                This argument has no effect when logging is disabled. (Default value = 'best')
+            kwargs: Any keyword arguments to pass to :func:`~Model.predict_dataset()`.
+
+        Returns:
+            Return the predictions in the format outputted by the model.
+        """
+        return self._predict(self.model.predict_dataset, dataset, **kwargs)
+
+    def infer_data(self, x, **kwargs) -> Any:
+        """
+        Returns the inferred predictions of the network given a dataset ``x``, where the tensors are
+        converted into Numpy arrays.
+
+        Args:
+            x (Union[~torch.Tensor, ~numpy.ndarray] or Union[tuple, list] of Union[~torch.Tensor, ~numpy.ndarray]):
+                Input to the model. Union[Tensor, ndarray] if the model has a single input.
+                Union[tuple, list] of Union[Tensor, ndarray] if the model has multiple inputs.
+            checkpoint (Union[str, int]): Which model checkpoint weights to load for the prediction.
+
+                - If 'best', will load the best weights according to ``monitor_metric`` and ``monitor_mode``.
+                - If 'last', will load the last model checkpoint.
+                - If int, will load the checkpoint of the specified epoch.
+                - If a path (str), will load the model pickled state_dict weights (for instance, saved as
+                  ``torch.save(a_pytorch_network.state_dict(), "./a_path.p")``).
+
+                This argument has no effect when logging is disabled. (Default value = 'best')
+            kwargs: Any keyword arguments to pass to :func:`~Model.predict()`.
+
+        Returns:
+            Return the predictions in the format outputted by the model.
+        """
+        return self._predict(self.model.predict, x, **kwargs)
+
+    def _predict(
+        self, evaluate_func: Callable, *args, verbose=True, checkpoint: Union[str, int] = 'best', **kwargs
+    ) -> Any:
+        if self.logging:
+            if not self.monitoring and checkpoint == 'best':
+                checkpoint = 'last'
+            self.load_checkpoint(checkpoint, verbose=verbose)
+
+        ret = evaluate_func(*args, verbose=verbose, **kwargs)
+        return ret
+
+    def is_better_than(self, another_experiment) -> bool:
+        """
+        Compare the results of the Experiment with another experiment. To compare, both Experiments need to be
+        logged, monitor the same metric and the same monitor mode ("min" or "max").
+
+        Args:
+            another_experiment (~poutyne. Experiment): Another Poutyne experiment to compare results with.
+
+        Return:
+            Whether the Experiment is better than the Experiment to compare with.
+        """
+        if not self.logging:
+            raise ValueError("The experiment is not logged.")
+        if not another_experiment.logging:
+            raise ValueError("The experiment to compare to is not logged.")
+
+        if self.monitor_metric != another_experiment.monitor_metric:
+            raise ValueError("The monitored metric is not the same between the two experiment.")
+        monitored_metric = self.monitor_metric
+
+        if self.monitor_mode != another_experiment.monitor_mode:
+            raise ValueError("The monitored mode is not the same between the two experiment.")
+        monitor_mode = self.monitor_mode
+
+        checkpoint = 'best' if self.monitoring else 'last'
+        self_stats = self.load_checkpoint(checkpoint, verbose=False)
+        self_monitored_metric = self_stats[monitored_metric]
+        self_monitored_metric_value = self_monitored_metric.item()
+
+        other_checkpoint = 'best' if another_experiment.monitoring else 'last'
+        other_stats = self.load_checkpoint(other_checkpoint, verbose=False)
+        other_monitored_metric = other_stats[monitored_metric]
+        other_monitored_metric_value = other_monitored_metric.item()
+
+        if monitor_mode == 'min':
+            is_better_than = self_monitored_metric_value < other_monitored_metric_value
+        else:
+            is_better_than = self_monitored_metric_value > other_monitored_metric_value
+        return is_better_than

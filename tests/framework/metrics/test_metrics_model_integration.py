@@ -14,7 +14,6 @@ from poutyne import Model, EpochMetric, rename_doubles
 
 
 class ConstEpochMetric(EpochMetric):
-
     def __init__(self, value):
         super().__init__()
         self.value = value
@@ -30,7 +29,6 @@ class ConstEpochMetric(EpochMetric):
 
 
 def get_batch_metric(value):
-
     def some_metric_name(y_pred, y_true):
         return torch.FloatTensor([value])
 
@@ -38,7 +36,6 @@ def get_batch_metric(value):
 
 
 class SomeMetricName(ConstEpochMetric):
-
     def get_metric(self):
         return torch.FloatTensor([self.value])
 
@@ -47,7 +44,6 @@ class SomeMetricName(ConstEpochMetric):
 
 
 def get_const_batch_metric(value):
-
     def const_batch_metric(y_pred, y_true):
         return value
 
@@ -77,65 +73,66 @@ class MetricsModelIntegrationTest(unittest.TestCase):
 
     def test_repeated_batch_metrics_handling(self):
         expected_names = ['some_metric_name1', 'some_metric_name2']
-        model = Model(self.pytorch_network,
-                      self.optimizer,
-                      self.loss_function,
-                      batch_metrics=[get_batch_metric(1), get_batch_metric(2)])
+        model = Model(
+            self.pytorch_network,
+            self.optimizer,
+            self.loss_function,
+            batch_metrics=[get_batch_metric(1), get_batch_metric(2)],
+        )
         self._test_history(model, expected_names, [1, 2])
 
     def test_repeated_epoch_metrics_handling(self):
         expected_names = ['some_metric_name1', 'some_metric_name2']
-        model = Model(self.pytorch_network,
-                      self.optimizer,
-                      self.loss_function,
-                      epoch_metrics=[SomeMetricName(1), SomeMetricName(2)])
+        model = Model(
+            self.pytorch_network,
+            self.optimizer,
+            self.loss_function,
+            epoch_metrics=[SomeMetricName(1), SomeMetricName(2)],
+        )
         self._test_history(model, expected_names, [1, 2])
 
     def test_repeated_batch_epoch_metrics_handling(self):
         expected_names = ['some_metric_name1', 'some_metric_name2']
-        model = Model(self.pytorch_network,
-                      self.optimizer,
-                      self.loss_function,
-                      batch_metrics=[get_batch_metric(1)],
-                      epoch_metrics=[SomeMetricName(2)])
+        model = Model(
+            self.pytorch_network,
+            self.optimizer,
+            self.loss_function,
+            batch_metrics=[get_batch_metric(1)],
+            epoch_metrics=[SomeMetricName(2)],
+        )
         self._test_history(model, expected_names, [1, 2])
 
     def test_batch_metrics_with_multiple_names_returned_by_dict(self):
         d = dict(zip(self.metric_names, self.metric_values))
         batch_metric = get_const_batch_metric(d)
-        model = Model(self.pytorch_network,
-                      self.optimizer,
-                      self.loss_function,
-                      batch_metrics=[(self.metric_names, batch_metric)])
+        model = Model(
+            self.pytorch_network, self.optimizer, self.loss_function, batch_metrics=[(self.metric_names, batch_metric)]
+        )
         self._test_history(model, d.keys(), d.values())
 
     def test_epoch_metrics_with_multiple_names_returned_by_dict(self):
         d = dict(zip(self.metric_names, self.metric_values))
         epoch_metric = ConstEpochMetric(d)
-        model = Model(self.pytorch_network,
-                      self.optimizer,
-                      self.loss_function,
-                      epoch_metrics=[(self.metric_names, epoch_metric)])
+        model = Model(
+            self.pytorch_network, self.optimizer, self.loss_function, epoch_metrics=[(self.metric_names, epoch_metric)]
+        )
         self._test_history(model, d.keys(), d.values())
 
     def test_batch_metrics_with_multiple_names_returned_by_tensor(self):
         batch_metric = get_const_batch_metric(torch.tensor(self.metric_values))
-        model = Model(self.pytorch_network,
-                      self.optimizer,
-                      self.loss_function,
-                      batch_metrics=[(self.metric_names, batch_metric)])
+        model = Model(
+            self.pytorch_network, self.optimizer, self.loss_function, batch_metrics=[(self.metric_names, batch_metric)]
+        )
         self._test_history(model, self.metric_names, self.metric_values)
 
     def test_epoch_metrics_with_multiple_names_returned_by_tensor(self):
         epoch_metric = ConstEpochMetric(torch.tensor(self.metric_values))
-        model = Model(self.pytorch_network,
-                      self.optimizer,
-                      self.loss_function,
-                      epoch_metrics=[(self.metric_names, epoch_metric)])
+        model = Model(
+            self.pytorch_network, self.optimizer, self.loss_function, epoch_metrics=[(self.metric_names, epoch_metric)]
+        )
         self._test_history(model, self.metric_names, self.metric_values)
 
     def test_epoch_metrics_with_name_with_multiple_names_returned_by_tensor(self):
-
         class EpochMetricWithName(ConstEpochMetric):
             __name__ = self.metric_names
 
@@ -147,10 +144,12 @@ class MetricsModelIntegrationTest(unittest.TestCase):
     def test_batch_metrics_with_multiple_names_returned_by_tensor_on_gpu(self):
         with torch.cuda.device(MetricsModelIntegrationTest.cuda_device):
             batch_metric = get_const_batch_metric(torch.tensor(self.metric_values).cuda())
-            model = Model(self.pytorch_network,
-                          self.optimizer,
-                          self.loss_function,
-                          batch_metrics=[(self.metric_names, batch_metric)])
+            model = Model(
+                self.pytorch_network,
+                self.optimizer,
+                self.loss_function,
+                batch_metrics=[(self.metric_names, batch_metric)],
+            )
             model.cuda()
             self._test_history(model, self.metric_names, self.metric_values)
 
@@ -158,59 +157,55 @@ class MetricsModelIntegrationTest(unittest.TestCase):
     def test_epoch_metrics_with_multiple_names_returned_by_tensor_on_gpu(self):
         with torch.cuda.device(MetricsModelIntegrationTest.cuda_device):
             epoch_metric = ConstEpochMetric(torch.tensor(self.metric_values).cuda())
-            model = Model(self.pytorch_network,
-                          self.optimizer,
-                          self.loss_function,
-                          epoch_metrics=[(self.metric_names, epoch_metric)])
+            model = Model(
+                self.pytorch_network,
+                self.optimizer,
+                self.loss_function,
+                epoch_metrics=[(self.metric_names, epoch_metric)],
+            )
             model.cuda()
             self._test_history(model, self.metric_names, self.metric_values)
 
     def test_batch_metrics_with_multiple_names_returned_by_ndarray(self):
         batch_metric = get_const_batch_metric(np.array(self.metric_values))
-        model = Model(self.pytorch_network,
-                      self.optimizer,
-                      self.loss_function,
-                      batch_metrics=[(self.metric_names, batch_metric)])
+        model = Model(
+            self.pytorch_network, self.optimizer, self.loss_function, batch_metrics=[(self.metric_names, batch_metric)]
+        )
         self._test_history(model, self.metric_names, self.metric_values)
 
     def test_epoch_metrics_with_multiple_names_returned_by_ndarray(self):
         epoch_metric = ConstEpochMetric(np.array(self.metric_values))
-        model = Model(self.pytorch_network,
-                      self.optimizer,
-                      self.loss_function,
-                      epoch_metrics=[(self.metric_names, epoch_metric)])
+        model = Model(
+            self.pytorch_network, self.optimizer, self.loss_function, epoch_metrics=[(self.metric_names, epoch_metric)]
+        )
         self._test_history(model, self.metric_names, self.metric_values)
 
     def test_batch_metrics_with_multiple_names_returned_by_list(self):
         batch_metric = get_const_batch_metric(list(self.metric_values))
-        model = Model(self.pytorch_network,
-                      self.optimizer,
-                      self.loss_function,
-                      batch_metrics=[(self.metric_names, batch_metric)])
+        model = Model(
+            self.pytorch_network, self.optimizer, self.loss_function, batch_metrics=[(self.metric_names, batch_metric)]
+        )
         self._test_history(model, self.metric_names, self.metric_values)
 
     def test_epoch_metrics_with_multiple_names_returned_by_list(self):
         epoch_metric = ConstEpochMetric(list(self.metric_values))
-        model = Model(self.pytorch_network,
-                      self.optimizer,
-                      self.loss_function,
-                      epoch_metrics=[(self.metric_names, epoch_metric)])
+        model = Model(
+            self.pytorch_network, self.optimizer, self.loss_function, epoch_metrics=[(self.metric_names, epoch_metric)]
+        )
         self._test_history(model, self.metric_names, self.metric_values)
 
     def test_batch_metrics_with_multiple_names_returned_by_tuple(self):
         batch_metric = get_const_batch_metric(tuple(self.metric_values))
-        model = Model(self.pytorch_network,
-                      self.optimizer,
-                      self.loss_function,
-                      batch_metrics=[(self.metric_names, batch_metric)])
+        model = Model(
+            self.pytorch_network, self.optimizer, self.loss_function, batch_metrics=[(self.metric_names, batch_metric)]
+        )
         self._test_history(model, self.metric_names, self.metric_values)
 
     def test_epoch_metrics_with_multiple_names_returned_by_tuple(self):
         epoch_metric = ConstEpochMetric(tuple(self.metric_values))
-        model = Model(self.pytorch_network,
-                      self.optimizer,
-                      self.loss_function,
-                      epoch_metrics=[(self.metric_names, epoch_metric)])
+        model = Model(
+            self.pytorch_network, self.optimizer, self.loss_function, epoch_metrics=[(self.metric_names, epoch_metric)]
+        )
         self._test_history(model, self.metric_names, self.metric_values)
 
     def test_batch_metrics_with_str_str_tuple(self):
@@ -218,11 +213,13 @@ class MetricsModelIntegrationTest(unittest.TestCase):
         self._test_history(model, ['mse', 'mse2'], [ANY, ANY])
 
     def _test_history(self, model, names, values):
-        history = model.fit(self.train_x,
-                            self.train_y,
-                            validation_data=(self.valid_x, self.valid_y),
-                            batch_size=MetricsModelIntegrationTest.batch_size,
-                            epochs=MetricsModelIntegrationTest.epochs)
+        history = model.fit(
+            self.train_x,
+            self.train_y,
+            validation_data=(self.valid_x, self.valid_y),
+            batch_size=MetricsModelIntegrationTest.batch_size,
+            epochs=MetricsModelIntegrationTest.epochs,
+        )
         for logs in history:
             for name, value in zip(names, values):
                 self.assertIn(name, logs)
@@ -232,7 +229,6 @@ class MetricsModelIntegrationTest(unittest.TestCase):
 
 
 class MetricsRenamingTest(unittest.TestCase):
-
     def test_batch_metrics(self):
         actual = rename_doubles(['a', 'a'], [])
         expected = ['a1', 'a2'], []

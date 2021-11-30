@@ -1,14 +1,14 @@
 import os
-from unittest import TestCase
-
 from tempfile import TemporaryDirectory
+from unittest import TestCase
+from unittest.mock import patch, MagicMock
 
 import torch
+from pandas import DataFrame, Series
 from torch import nn
 from torch.utils.data import TensorDataset
 
 from poutyne import Experiment
-
 from tests.framework.tools import SomeDataGeneratorWithLen
 
 
@@ -19,18 +19,24 @@ class ExperimentTest(TestCase):
         self.temp_dir_obj = TemporaryDirectory()
         self.test_checkpoints_path = os.path.join(self.temp_dir_obj.name, 'expt')
 
-        self.test_experiment = Experiment(self.test_checkpoints_path,
-                                          nn.Linear(1, 1),
-                                          optimizer='sgd',
-                                          loss_function='mse',
-                                          monitor_metric="loss",
-                                          monitor_mode="min")
+        self.test_experiment = Experiment(
+            self.test_checkpoints_path,
+            nn.Linear(1, 1),
+            optimizer='sgd',
+            loss_function='mse',
+            monitor_metric="loss",
+            monitor_mode="min",
+        )
         self.ckpt_1_path = os.path.join(self.test_checkpoints_path, "checkpoint_epoch_1.ckpt")
         self.ckpt_last_path = os.path.join(self.test_checkpoints_path, "checkpoint.ckpt")
         self.optim_ckpt_path = os.path.join(self.test_checkpoints_path, "checkpoint.optim")
         self.tsv_log_path = os.path.join(self.test_checkpoints_path, "log.tsv")
         self.tsv_test_log_path = os.path.join(self.test_checkpoints_path, "test_log.tsv")
         self.epoch_file_path = os.path.join(self.test_checkpoints_path, "last.epoch")
+        self.time_metric_plot_png_file_path = os.path.join(self.test_checkpoints_path, "plots", 'time.png')
+        self.time_metric_plot_pdf_file_path = os.path.join(self.test_checkpoints_path, "plots", 'time.pdf')
+        self.loss_metric_plot_png_file_path = os.path.join(self.test_checkpoints_path, "plots", 'loss.png')
+        self.loss_metric_plot_pdf_file_path = os.path.join(self.test_checkpoints_path, "plots", 'loss.pdf')
 
     def tearDown(self):
         self.temp_dir_obj.cleanup()
@@ -64,13 +70,15 @@ class ExperimentTest(TestCase):
         self._test_train_integration(logs, epochs=epochs, initial_epoch=ExperimentTest.NUM_EPOCHS + 1)
 
     def test_train_no_log(self):
-        test_experiment = Experiment(self.test_checkpoints_path,
-                                     nn.Linear(1, 1),
-                                     optimizer='sgd',
-                                     loss_function='mse',
-                                     monitor_metric="loss",
-                                     monitor_mode="min",
-                                     logging=False)
+        test_experiment = Experiment(
+            self.test_checkpoints_path,
+            nn.Linear(1, 1),
+            optimizer='sgd',
+            loss_function='mse',
+            monitor_metric="loss",
+            monitor_mode="min",
+            logging=False,
+        )
         train_generator = SomeDataGeneratorWithLen(32, 10, 0)
         valid_generator = SomeDataGeneratorWithLen(32, 10, 0)
         logs = test_experiment.train(train_generator, valid_generator, epochs=ExperimentTest.NUM_EPOCHS)
@@ -82,6 +90,10 @@ class ExperimentTest(TestCase):
         self.assertFalse(os.path.isfile(self.tsv_log_path))
         self.assertFalse(os.path.isfile(self.epoch_file_path))
         self.assertFalse(os.path.isfile(self.tsv_test_log_path))
+        self.assertFalse(os.path.isfile(self.time_metric_plot_png_file_path))
+        self.assertFalse(os.path.isfile(self.time_metric_plot_pdf_file_path))
+        self.assertFalse(os.path.isfile(self.loss_metric_plot_png_file_path))
+        self.assertFalse(os.path.isfile(self.loss_metric_plot_pdf_file_path))
 
         self.assertEqual(len(logs), ExperimentTest.NUM_EPOCHS)
         for i, log in enumerate(logs, 1):
@@ -98,6 +110,10 @@ class ExperimentTest(TestCase):
         self.assertTrue(os.path.isfile(self.optim_ckpt_path))
         self.assertTrue(os.path.isfile(self.tsv_log_path))
         self.assertTrue(os.path.isfile(self.epoch_file_path))
+        self.assertTrue(os.path.isfile(self.time_metric_plot_png_file_path))
+        self.assertTrue(os.path.isfile(self.time_metric_plot_pdf_file_path))
+        self.assertTrue(os.path.isfile(self.loss_metric_plot_png_file_path))
+        self.assertTrue(os.path.isfile(self.loss_metric_plot_pdf_file_path))
         self.assertFalse(os.path.isfile(self.tsv_test_log_path))
 
         self.assertEqual(len(logs), epochs - initial_epoch + 1)
@@ -108,7 +124,7 @@ class ExperimentTest(TestCase):
             self.assertIn('val_loss', log)
             self.assertIn('time', log)
 
-        with open(self.epoch_file_path, 'r') as fd:
+        with open(self.epoch_file_path, 'r', encoding='utf-8') as fd:
             epoch = int(fd.read())
         self.assertEqual(epoch, epochs)
 
@@ -141,30 +157,132 @@ class ExperimentTest(TestCase):
         self.assertIn('test_loss', log)
         self.assertIn('time', log)
 
+    def setUpTwoExperiment(self, a_params=None, b_params=None):
+        self.test_checkpoints_path_b = os.path.join(self.temp_dir_obj.name, 'expt_b')
+        self.test_checkpoints_path_a = os.path.join(self.temp_dir_obj.name, 'expt_a')
+
+        if a_params is None:
+            a_params = {}
+
+        self.test_experiment_a = Experiment(self.test_checkpoints_path_a, nn.Linear(1, 1), **a_params)
+
+        if b_params is None:
+            b_params = {}
+
+        self.test_experiment_b = Experiment(self.test_checkpoints_path_b, nn.Linear(1, 1), **b_params)
+
+    def test_givenAIsSmallerThanBMinMonitoring_thenReturnTrue(self):
+        self.setUpTwoExperiment()
+
+        with patch.object(Experiment, "load_checkpoint") as load_checkpoint_mock:
+            mocked_stats = MagicMock(spec=DataFrame)
+            series_mock = MagicMock(spec=Series)
+            series_mock.item.side_effect = [[1], [2]]  # The monitored metric values
+            mocked_stats.__getitem__.return_value = series_mock
+            load_checkpoint_mock.return_value = mocked_stats
+
+            self.assertTrue(self.test_experiment_a.is_better_than(self.test_experiment_b))
+
+    def test_givenAIsGreaterThanBMinMonitoring_thenReturnFalse(self):
+        self.setUpTwoExperiment()
+
+        with patch.object(Experiment, "load_checkpoint") as load_checkpoint_mock:
+            mocked_stats = MagicMock(spec=DataFrame)
+            series_mock = MagicMock(spec=Series)
+            series_mock.item.side_effect = [[2], [1]]  # The monitored metric values
+            mocked_stats.__getitem__.return_value = series_mock
+            load_checkpoint_mock.return_value = mocked_stats
+
+            self.assertFalse(self.test_experiment_a.is_better_than(self.test_experiment_b))
+
+    def test_givenAIsSmallerThanBMaxMonitoring_thenReturnFalse(self):
+        # We need to specify the metric for the mode to be properly set to "max"
+        params = {"monitor_mode": "max", "monitor_metric": "loss"}
+        self.setUpTwoExperiment(a_params=params, b_params=params)
+
+        with patch.object(Experiment, "load_checkpoint") as load_checkpoint_mock:
+            mocked_stats = MagicMock(spec=DataFrame)
+            series_mock = MagicMock(spec=Series)
+            series_mock.item.side_effect = [[1], [2]]  # The monitored metric values
+            mocked_stats.__getitem__.return_value = series_mock
+            load_checkpoint_mock.return_value = mocked_stats
+
+            self.assertFalse(self.test_experiment_a.is_better_than(self.test_experiment_b))
+
+    def test_givenAIsGreaterThanBMaxMonitoring_thenReturnTrue(self):
+        # We need to specify the metric for the mode to be properly set to "max"
+        params = {"monitor_mode": "max", "monitor_metric": "loss"}
+        self.setUpTwoExperiment(a_params=params, b_params=params)
+
+        with patch.object(Experiment, "load_checkpoint") as load_checkpoint_mock:
+            mocked_stats = MagicMock(spec=DataFrame)
+            series_mock = MagicMock(spec=Series)
+            series_mock.item.side_effect = [[2], [1]]  # The monitored metric values
+            mocked_stats.__getitem__.return_value = series_mock
+            load_checkpoint_mock.return_value = mocked_stats
+
+            self.assertTrue(self.test_experiment_a.is_better_than(self.test_experiment_b))
+
+    def test_givenSomeExperimentNotLogging_thenRaiseValueError(self):
+        params_a = {"logging": False}
+        params_b = {"logging": True}
+        self.setUpTwoExperiment(a_params=params_a, b_params=params_b)
+        with self.assertRaises(ValueError):
+            self.test_experiment_a.is_better_than(self.test_experiment_b)
+
+        params_a = {"logging": True}
+        params_b = {"logging": False}
+        self.setUpTwoExperiment(a_params=params_a, b_params=params_b)
+        with self.assertRaises(ValueError):
+            self.test_experiment_a.is_better_than(self.test_experiment_b)
+
+        params = {"logging": False}
+        self.setUpTwoExperiment(a_params=params, b_params=params)
+        with self.assertRaises(ValueError):
+            self.test_experiment_a.is_better_than(self.test_experiment_b)
+
+    def test_givenDifferentMonitorMetric_thenRaiseValueError(self):
+        params_a = {"monitor_metric": "loss"}
+        params_b = {"monitor_metric": "acc"}
+        self.setUpTwoExperiment(a_params=params_a, b_params=params_b)
+        with self.assertRaises(ValueError):
+            self.test_experiment_a.is_better_than(self.test_experiment_b)
+
+    def test_givenDifferentMonitorMode_thenRaiseValueError(self):
+        # We need to specify the metric for the mode to be properly set to "max"
+        params_a = {"monitor_mode": "max", "monitor_metric": "loss"}
+        params_b = {"monitor_mode": "min"}
+        self.setUpTwoExperiment(a_params=params_a, b_params=params_b)
+        with self.assertRaises(ValueError):
+            self.test_experiment_a.is_better_than(self.test_experiment_b)
+
 
 class ExperimentCheckpointLoadingTest(TestCase):
-
     def setUp(self):
         self.temp_dir_obj = TemporaryDirectory()
         self.test_checkpoints_path = self.temp_dir_obj.name
         self.ckpt_1_path = os.path.join(self.test_checkpoints_path, "checkpoint_epoch_1.ckpt")
         self.ckpt_last_path = os.path.join(self.test_checkpoints_path, "checkpoint.ckpt")
 
-        expt = Experiment(self.test_checkpoints_path,
-                          nn.Linear(1, 1),
-                          optimizer='sgd',
-                          loss_function='mse',
-                          monitor_metric="loss",
-                          monitor_mode="min")
+        expt = Experiment(
+            self.test_checkpoints_path,
+            nn.Linear(1, 1),
+            optimizer='sgd',
+            loss_function='mse',
+            monitor_metric="loss",
+            monitor_mode="min",
+        )
         train_generator = SomeDataGeneratorWithLen(2, 32, 0)
         expt.train(train_generator, epochs=1)
 
-        self.test_experiment = Experiment(self.test_checkpoints_path,
-                                          nn.Linear(1, 1),
-                                          optimizer='sgd',
-                                          loss_function='mse',
-                                          monitor_metric="loss",
-                                          monitor_mode="min")
+        self.test_experiment = Experiment(
+            self.test_checkpoints_path,
+            nn.Linear(1, 1),
+            optimizer='sgd',
+            loss_function='mse',
+            monitor_metric="loss",
+            monitor_mode="min",
+        )
 
     def tearDown(self):
         self.temp_dir_obj.cleanup()
@@ -172,20 +290,23 @@ class ExperimentCheckpointLoadingTest(TestCase):
     def test_load_checkpoint_with_int(self):
         self.test_experiment.load_checkpoint(1)
 
-        self.assertEqual(self.test_experiment.model.network.state_dict(),
-                         torch.load(self.ckpt_1_path, map_location="cpu"))
+        self.assertEqual(
+            self.test_experiment.model.network.state_dict(), torch.load(self.ckpt_1_path, map_location="cpu")
+        )
 
     def test_load_checkpoint_best(self):
         self.test_experiment.load_checkpoint("best")
 
-        self.assertEqual(self.test_experiment.model.network.state_dict(),
-                         torch.load(self.ckpt_1_path, map_location="cpu"))
+        self.assertEqual(
+            self.test_experiment.model.network.state_dict(), torch.load(self.ckpt_1_path, map_location="cpu")
+        )
 
     def test_load_checkpoint_last(self):
         self.test_experiment.load_checkpoint("last")
 
-        self.assertEqual(self.test_experiment.model.network.state_dict(),
-                         torch.load(self.ckpt_last_path, map_location="cpu"))
+        self.assertEqual(
+            self.test_experiment.model.network.state_dict(), torch.load(self.ckpt_last_path, map_location="cpu")
+        )
 
     def test_load_checkpoint_path_state_dict(self):
         cpkt_path = os.path.join(self.test_checkpoints_path, "test_model_weights_state_dict.p")

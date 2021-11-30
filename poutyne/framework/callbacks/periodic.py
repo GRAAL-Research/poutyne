@@ -43,7 +43,8 @@ OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 import os
-from typing import BinaryIO, Dict, Optional, Callable
+import warnings
+from typing import IO, Dict, Optional, Callable
 
 from ._utils import atomic_lambda_save
 from .callbacks import Callback
@@ -75,6 +76,8 @@ class PeriodicSaveCallback(Callback):
         keep_only_last_best (bool): Whether only the last saved best checkpoint is kept. Applies only when
              `save_best_only` is true.
              (Default value = False)
+        restore_best (bool): If `restore_best` is true, the model will be reset to the last best checkpoint done.
+            This option only works when `save_best_only` is also true. (Default value = False)
         mode (str): One of {'min', 'max'}.
             If `save_best_only` is true, the decision to overwrite the current save file is made based
             on either the maximization or the minimization of the monitored quantity. For
@@ -91,35 +94,43 @@ class PeriodicSaveCallback(Callback):
             (Default value = 'wb')
     """
 
-    def __init__(self,
-                 filename: str,
-                 *,
-                 monitor: str = 'val_loss',
-                 mode: str = 'min',
-                 save_best_only: bool = False,
-                 keep_only_last_best: bool = False,
-                 period: int = 1,
-                 verbose: bool = False,
-                 temporary_filename: Optional[str] = None,
-                 atomic_write: bool = True,
-                 open_mode: str = 'wb'):
+    def __init__(
+        self,
+        filename: str,
+        *,
+        monitor: str = 'val_loss',
+        mode: str = 'min',
+        save_best_only: bool = False,
+        keep_only_last_best: bool = False,
+        restore_best: bool = False,
+        period: int = 1,
+        verbose: bool = False,
+        temporary_filename: Optional[str] = None,
+        atomic_write: bool = True,
+        open_mode: str = 'wb',
+        read_mode: str = 'rb',
+    ):
         super().__init__()
         self.filename = filename
         self.monitor = monitor
         self.verbose = verbose
         self.save_best_only = save_best_only
         self.keep_only_last_best = keep_only_last_best
+        self.restore_best = restore_best
         self.temporary_filename = temporary_filename
         self.atomic_write = atomic_write
         self.open_mode = open_mode
+        self.read_mode = read_mode
         self.best_filename = None
 
         if self.keep_only_last_best and not self.save_best_only:
             raise ValueError("The 'keep_only_last_best' argument only works when 'save_best_only' is also true.")
+        if self.restore_best and not self.save_best_only:
+            raise ValueError("The 'restore_best' argument only works when 'save_best_only' is also true.")
 
         if self.save_best_only:
             if mode not in ['min', 'max']:
-                raise ValueError("Invalid mode '%s'" % mode)
+                raise ValueError(f"Invalid mode '{mode}'")
             if mode == 'min':
                 self.monitor_op = lambda x, y: x < y
                 self.current_best = float('Inf')
@@ -129,15 +140,18 @@ class PeriodicSaveCallback(Callback):
 
         self.period = period
 
-    def save_file(self, fd: BinaryIO, epoch_number: int, logs: Dict):
+    def save_file(self, fd: IO, epoch_number: int, logs: Dict):
         raise NotImplementedError
 
     def _save_file(self, filename: str, epoch_number: int, logs: Dict):
-        atomic_lambda_save(filename,
-                           self.save_file, (epoch_number, logs),
-                           temporary_filename=self.temporary_filename,
-                           open_mode=self.open_mode,
-                           atomic=self.atomic_write)
+        atomic_lambda_save(
+            filename,
+            self.save_file,
+            (epoch_number, logs),
+            temporary_filename=self.temporary_filename,
+            open_mode=self.open_mode,
+            atomic=self.atomic_write,
+        )
 
     def on_epoch_end(self, epoch_number: int, logs: Dict):
         filename = self.filename.format_map(logs)
@@ -150,17 +164,36 @@ class PeriodicSaveCallback(Callback):
                 self.best_filename = filename
 
                 if self.verbose:
-                    print('Epoch %d: %s improved from %0.5f to %0.5f, saving file to %s' %
-                          (epoch_number, self.monitor, old_best, self.current_best, self.best_filename))
+                    print(
+                        f'Epoch {epoch_number:d}: {self.monitor} improved from {old_best:0.5f} '
+                        f'to {self.current_best:0.5f}, saving file to {self.best_filename}'
+                    )
                 self._save_file(self.best_filename, epoch_number, logs)
-                if self.keep_only_last_best and \
-                        self.best_filename != old_best_filename and \
-                        old_best_filename is not None:
+                if (
+                    self.keep_only_last_best
+                    and self.best_filename != old_best_filename
+                    and old_best_filename is not None
+                ):
                     os.remove(old_best_filename)
         elif epoch_number % self.period == 0:
             if self.verbose:
-                print('Epoch %d: saving file to %s' % (epoch_number, filename))
+                print(f'Epoch {epoch_number:d}: saving file to {filename}')
             self._save_file(filename, epoch_number, logs)
+
+    def restore(self, fd: IO):
+        raise NotImplementedError
+
+    def on_train_end(self, logs: Dict):
+        if self.restore_best:
+            if self.best_filename is not None:
+                if self.verbose:
+                    print(f'Restoring data from {self.best_filename}')
+                # pylint: disable=unspecified-encoding
+                open_kwargs = dict(encoding='utf-8') if 'b' not in self.read_mode else {}
+                with open(self.best_filename, self.read_mode, **open_kwargs) as fd:
+                    self.restore(fd)
+            else:
+                warnings.warn('No data to restore!')
 
 
 class PeriodicSaveLambda(PeriodicSaveCallback):
@@ -171,14 +204,21 @@ class PeriodicSaveLambda(PeriodicSaveCallback):
     Args:
         func (Callable[[fd, int, dict], None]): The lambda that will be called with a file descriptor, the
             epoch number and the epoch logs.
+        restore (Callable[[fd], None]): The lambda that will be called with a file descriptor to restore
+            the state if necessary.
 
     See:
         :class:`~poutyne.PeriodicSaveCallback`
     """
 
-    def __init__(self, func: Callable, *args, **kwargs):
+    def __init__(self, func: Callable, *args, restore: Optional[Callable] = None, **kwargs):
         super().__init__(*args, **kwargs)
         self.func = func
+        self._restore = restore
 
-    def save_file(self, fd: str, epoch_number: int, logs: Dict):
+    def save_file(self, fd: IO, epoch_number: int, logs: Dict):
         self.func(fd, epoch_number, logs)
+
+    def restore(self, fd: IO):
+        if self._restore is not None:
+            self._restore(fd)

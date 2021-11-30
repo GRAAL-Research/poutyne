@@ -8,8 +8,9 @@ from poutyne import Experiment
 # Instanciate the MNIST dataset
 train_valid_dataset = MNIST('./datasets', train=True, download=True, transform=ToTensor())
 test_dataset = MNIST('./datasets', train=False, download=True, transform=ToTensor())
-train_dataset, valid_dataset = random_split(train_valid_dataset, [50_000, 10_000],
-                                            generator=torch.Generator().manual_seed(42))
+train_dataset, valid_dataset = random_split(
+    train_valid_dataset, [50_000, 10_000], generator=torch.Generator().manual_seed(42)
+)
 
 # Select CUDA device if available
 cuda_device = 0
@@ -25,6 +26,6 @@ experiment = Experiment(
     network,
     optimizer='sgd',
     loss_function='cross_entropy',
-    device=device
+    device=device,
 )
 experiment.train_dataset(train_dataset, valid_dataset, epochs=epochs)

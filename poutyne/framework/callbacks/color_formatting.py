@@ -1,8 +1,10 @@
 import math
 import sys
+import time
 import warnings
 from typing import Dict, Union
 
+from poutyne import is_in_jupyter_notebook
 from .progress_bar import ProgressBar
 
 
@@ -20,21 +22,11 @@ try:
 
     colorama = True
 
-    try:
-        # We don't init when Jupyter Notebook see issue https://github.com/jupyter/notebook/issues/2284
-        from IPython import get_ipython
+    jupyter = is_in_jupyter_notebook()
 
-        shell = get_ipython().__class__.__name__
-        if shell in ['ZMQInteractiveShell', 'Shell']:
-            jupyter = True
-        else:
-            init()
-            jupyter = False
-
-    except ImportError:
+    # We don't init when Jupyter Notebook see issue https://github.com/jupyter/notebook/issues/2284
+    if not jupyter:
         init()
-        jupyter = False
-
 except ImportError:
     colorama = None
     jupyter = False
@@ -47,11 +39,12 @@ default_color_settings = {
     "ratio_color": "CYAN",
     "metric_value_color": "LIGHTBLUE_EX",
     "time_color": "GREEN",
-    "progress_bar_color": "MAGENTA"
+    "progress_bar_color": "MAGENTA",
 }
 
 
 class ColorProgress:
+    JUPYTER_COLORING_PRINT_RATE = 0.1
     """
     Class to managed the color templating of the training progress.
 
@@ -82,21 +75,22 @@ class ColorProgress:
 
             invalid_keys = coloring.keys() - color_settings.keys()
             if len(invalid_keys) != 0:
-                raise KeyError("The key(s) {} are not supported color attributes.".format(', '.join(invalid_keys)))
+                raise KeyError(f"The key(s) {', '.join(invalid_keys)} are not supported color attributes.")
 
             color_settings.update(coloring)
-        elif coloring:
+        elif coloring is True and colorama is not None:
             color_settings = default_color_settings
 
         if color_settings is not None:
+            self.coloring_enabled = True
             self.style_reset = True
             self.text_color = getattr(Fore, color_settings["text_color"])
             self.ratio_color = getattr(Fore, color_settings["ratio_color"])
             self.metric_value_color = getattr(Fore, color_settings["metric_value_color"])
             self.time_color = getattr(Fore, color_settings["time_color"])
             self.progress_bar_color = getattr(Fore, color_settings["progress_bar_color"])
-
         else:
+            self.coloring_enabled = False
             self.style_reset = False
             self.text_color = ""
             self.ratio_color = ""
@@ -108,13 +102,19 @@ class ColorProgress:
         self.steps_progress_bar = None
         self.formatted_text = "\r"
         self.bar_format = f"{self.text_color}{{percentage}} |{self.progress_bar_color}{{bar}}{self.text_color}|"
+        self.prev_print_time = None
         self.prev_message_length = 0
 
     def on_valid_begin(self) -> None:
-        if self.progress_bar:
-            self.steps_progress_bar.reset()
+        self._on_phase_begin()
 
     def on_test_begin(self) -> None:
+        self._on_phase_begin()
+
+    def on_predict_begin(self) -> None:
+        self._on_phase_begin()
+
+    def _on_phase_begin(self) -> None:
         if self.progress_bar:
             self.steps_progress_bar.reset()
 
@@ -124,13 +124,15 @@ class ColorProgress:
 
         self._set_epoch_formatted_text(epoch_number, epochs)
 
-    def on_train_batch_end(self,
-                           *,
-                           remaining_time: float,
-                           batch_number: int,
-                           metrics_str: str,
-                           steps: Union[int, None] = None,
-                           do_print: bool = True) -> None:
+    def on_train_batch_end(
+        self,
+        *,
+        remaining_time: float,
+        batch_number: int,
+        metrics_str: str,
+        steps: Union[int, None] = None,
+        do_print: bool = True,
+    ) -> None:
         """
         Format on train batch end for a steps the epoch ratio (so far / to do), the total time for the epoch, the steps
         done and the metrics name and values.
@@ -138,13 +140,15 @@ class ColorProgress:
         update = self.epoch_formatted_text
         self._on_batch_end(update, remaining_time, batch_number, metrics_str, steps, do_print)
 
-    def on_valid_batch_end(self,
-                           *,
-                           remaining_time: float,
-                           batch_number: int,
-                           metrics_str: str,
-                           steps: Union[int, None] = None,
-                           do_print: bool = True) -> None:
+    def on_valid_batch_end(
+        self,
+        *,
+        remaining_time: float,
+        batch_number: int,
+        metrics_str: str,
+        steps: Union[int, None] = None,
+        do_print: bool = True,
+    ) -> None:
         """
         Format on valid batch end for a steps the epoch ratio (so far / to do), the total time, the steps
         done and the metrics name and values.
@@ -152,13 +156,15 @@ class ColorProgress:
         update = self.epoch_formatted_text
         self._on_batch_end(update, remaining_time, batch_number, metrics_str, steps, do_print)
 
-    def on_test_batch_end(self,
-                          *,
-                          remaining_time: float,
-                          batch_number: int,
-                          metrics_str: str,
-                          steps: Union[int, None] = None,
-                          do_print: bool = True) -> None:
+    def on_test_batch_end(
+        self,
+        *,
+        remaining_time: float,
+        batch_number: int,
+        metrics_str: str,
+        steps: Union[int, None] = None,
+        do_print: bool = True,
+    ) -> None:
         """
         Format on test batch end for a steps the epoch ratio (so far / to do), the total time, the steps
         done and the metrics name and values.
@@ -166,13 +172,30 @@ class ColorProgress:
         update = self.formatted_text
         self._on_batch_end(update, remaining_time, batch_number, metrics_str, steps, do_print)
 
-    def _on_batch_end(self,
-                      update: str,
-                      remaining_time: float,
-                      batch_number: int,
-                      metrics_str: str,
-                      steps: Union[int, None] = None,
-                      do_print: bool = True) -> None:
+    def on_predict_batch_end(
+        self,
+        *,
+        remaining_time: float,
+        batch_number: int,
+        metrics_str: str,
+        steps: Union[int, None] = None,
+        do_print: bool = True,
+    ) -> None:
+        """
+        Format on predict batch end for a steps, the total time and the steps ratio done.
+        """
+        update = self.formatted_text
+        self._on_batch_end(update, remaining_time, batch_number, metrics_str, steps, do_print)
+
+    def _on_batch_end(
+        self,
+        update: str,
+        remaining_time: float,
+        batch_number: int,
+        metrics_str: str,
+        steps: Union[int, None] = None,
+        do_print: bool = True,
+    ) -> None:
         # pylint: disable=too-many-arguments
         update += self._batch_update(remaining_time, batch_number, metrics_str, steps)
 
@@ -185,17 +208,13 @@ class ColorProgress:
         metrics name and values.
         """
         update = self.epoch_formatted_text
-        steps_text = self._get_formatted_step(train_last_steps,
-                                              train_last_steps,
-                                              prefix="train ",
-                                              suffix="s",
-                                              ratio=False)
+        steps_text = self._get_formatted_step(
+            train_last_steps, train_last_steps, prefix="train ", suffix="s", ratio=False
+        )
         if valid_last_steps is not None:
-            valid_steps = self._get_formatted_step(valid_last_steps,
-                                                   valid_last_steps,
-                                                   prefix="val ",
-                                                   suffix="s",
-                                                   ratio=False)
+            valid_steps = self._get_formatted_step(
+                valid_last_steps, valid_last_steps, prefix="val ", suffix="s", ratio=False
+            )
             steps_text += valid_steps
         update += steps_text + self._get_formatted_total_time(total_time)
         update += self._get_formatted_metrics(metrics_str)
@@ -209,10 +228,23 @@ class ColorProgress:
         """
         Format on test end: the total time for the test, the steps done and the metrics name and values.
         """
+        self.on_phase_end(total_time=total_time, steps=steps, metrics_str=metrics_str, prefix="Test ")
+
+    def on_predict_end(self, total_time: float, steps: int, metrics_str: str) -> None:
+        """
+        Format on predict end: the total time for the predictions and the steps done.
+        """
+        self.on_phase_end(total_time=total_time, steps=steps, metrics_str=metrics_str, prefix="Prediction ")
+
+    def on_phase_end(self, total_time: float, steps: int, metrics_str: str, prefix: str = "") -> None:
+        """
+        Format on a end phase: the total time for the test, the steps done and the metrics name and values.
+        """
         update = self.formatted_text
-        test_steps = self._get_formatted_step(steps, steps, prefix="test ", suffix="s", ratio=False)
+        test_steps = self._get_formatted_step(steps, steps, prefix=prefix, suffix="s", ratio=False)
         update += test_steps + self._get_formatted_total_time(total_time)
-        update += self._get_formatted_metrics(metrics_str)
+        if metrics_str != "":
+            update += self._get_formatted_metrics(metrics_str)
 
         if self.style_reset:
             update += Style.RESET_ALL
@@ -231,22 +263,38 @@ class ColorProgress:
         digits = int(math.log10(epochs)) + 1
         self.epoch_formatted_text = f"\r{self.text_color}Epoch: {self.ratio_color}{epoch_number:{digits}d}/{epochs:d} "
 
-    def _get_formatted_total_time(self, total_time: float) -> str:
-        return f"{self.time_color}{total_time:.2f}s "
+    def _format_duration(self, duration):
+        days, rem = divmod(duration, 60 * 60 * 24)
+        hours, rem = divmod(rem, 60 * 60)
+        minutes, seconds = divmod(rem, 60)
+        days = int(days)
+        hours = int(hours)
+        minutes = int(minutes)
+        ret = ""
+        if days > 0:
+            ret += f"{days}d"
+        if days > 0 or hours > 0:
+            ret += f"{hours}h"
+        if days > 0 or hours > 0 or minutes > 0:
+            ret += f"{minutes}m"
+        ret += f"{seconds:.2f}s"
+        return ret
 
-    def _get_formatted_time(self, time: float, steps: Union[int, None]) -> str:
+    def _get_formatted_total_time(self, total_time: float) -> str:
+        total_time_str = self._format_duration(total_time)
+        return f"{self.time_color}{total_time_str} "
+
+    def _get_formatted_time(self, duration: float, steps: Union[int, None]) -> str:
+        duration_str = self._format_duration(duration)
         if steps is None:
-            formatted_time = f"{self.time_color}{time:.2f}s/step "
+            formatted_time = f"{self.time_color}{duration_str}/step "
         else:
-            formatted_time = f"{self.text_color}ETA: {self.time_color}{time:.2f}s "
+            formatted_time = f"{self.text_color}ETA: {self.time_color}{duration_str} "
         return formatted_time
 
-    def _get_formatted_step(self,
-                            batch_number: int,
-                            steps: Union[int, None],
-                            prefix: str = "",
-                            suffix: str = "",
-                            ratio: bool = True) -> str:
+    def _get_formatted_step(
+        self, batch_number: int, steps: Union[int, None], prefix: str = "", suffix: str = "", ratio: bool = True
+    ) -> str:
         # pylint: disable=too-many-arguments
         step_text = f"{prefix}step{suffix}".capitalize()
         ratio_text = ""
@@ -269,11 +317,9 @@ class ColorProgress:
 
         return formatted_metrics
 
-    def _batch_update(self,
-                      remaining_time: float,
-                      batch_number: int,
-                      metrics_str: str,
-                      steps: Union[int, None] = None) -> str:
+    def _batch_update(
+        self, remaining_time: float, batch_number: int, metrics_str: str, steps: Union[int, None] = None
+    ) -> str:
         update = ""
         if self.progress_bar:
             update += self._get_formatted_step(batch_number, steps)
@@ -284,7 +330,8 @@ class ColorProgress:
         else:
             update += self._get_formatted_step(batch_number, steps) + self._get_formatted_time(remaining_time, steps)
 
-        update += self._get_formatted_metrics(metrics_str)
+        if metrics_str != "":
+            update += self._get_formatted_metrics(metrics_str)
 
         if self.style_reset and not jupyter:
             # We skip it for Jupyter since the color token appear and otherwise the
@@ -292,6 +339,17 @@ class ColorProgress:
             update += Style.RESET_ALL
 
         return update
+
+    def _do_update(self):
+        if not jupyter or not self.coloring_enabled:
+            return True
+
+        new_time = time.time()
+        if self.prev_print_time is None or new_time - self.prev_print_time >= ColorProgress.JUPYTER_COLORING_PRINT_RATE:
+            self.prev_print_time = new_time
+            return True
+
+        return False
 
     def _pad_length(self, message):
         new_message_length = len(message)
@@ -305,9 +363,10 @@ class ColorProgress:
         """
         Print a update message.
         """
-        message = self._pad_length(message)
-        sys.stdout.write(message)
-        sys.stdout.flush()
+        if self._do_update():
+            message = self._pad_length(message)
+            sys.stdout.write(message)
+            sys.stdout.flush()
 
     def _end_print(self, message: str) -> None:
         """
@@ -316,4 +375,5 @@ class ColorProgress:
         message = self._pad_length(message)
         print(message)
         sys.stdout.flush()
+        self.prev_print_time = None
         self.prev_message_length = 0

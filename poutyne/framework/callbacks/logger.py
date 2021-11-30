@@ -7,7 +7,6 @@ from .callbacks import Callback
 
 
 class Logger(Callback):
-
     def __init__(self, *, batch_granularity: bool = False):
         super().__init__()
         self.batch_granularity = batch_granularity
@@ -20,10 +19,11 @@ class Logger(Callback):
             self.fieldnames = ['epoch', 'batch', 'size', 'time']
         else:
             self.fieldnames = ['epoch', 'time']
-        if len(self.model.optimizer.param_groups) > 1:
-            self.fieldnames += [f'lr_group_{i}' for i in range(len(self.model.optimizer.param_groups))]
-        else:
-            self.fieldnames += ['lr']
+        if getattr(self.model, 'optimizer', None) is not None:
+            if len(self.model.optimizer.param_groups) > 1:
+                self.fieldnames += [f'lr_group_{i}' for i in range(len(self.model.optimizer.param_groups))]
+            else:
+                self.fieldnames += ['lr']
         self.fieldnames += metrics
         self.fieldnames += ['val_' + metric for metric in metrics]
         self._on_train_begin_write(logs)
@@ -63,13 +63,15 @@ class Logger(Callback):
         return {k: logs[k] for k in self.fieldnames if logs.get(k) is not None}
 
     def _get_current_learning_rates(self):
-        if len(self.model.optimizer.param_groups) > 1:
-            learning_rates = {
-                f'lr_group_{i}': param_group['lr']
-                for i, param_group in enumerate(self.model.optimizer.param_groups)
-            }
-        else:
-            learning_rates = {'lr': self.model.optimizer.param_groups[0]['lr']}
+        learning_rates = {}
+        if getattr(self.model, 'optimizer', None) is not None:
+            if len(self.model.optimizer.param_groups) > 1:
+                learning_rates = {
+                    f'lr_group_{i}': param_group['lr']
+                    for i, param_group in enumerate(self.model.optimizer.param_groups)
+                }
+            else:
+                learning_rates = {'lr': self.model.optimizer.param_groups[0]['lr']}
         return learning_rates
 
 
@@ -95,7 +97,7 @@ class CSVLogger(Logger):
 
     def _on_train_begin_write(self, logs: Dict):
         open_flag = 'a' if self.append else 'w'
-        self.csvfile = open(self.filename, open_flag, newline='')
+        self.csvfile = open(self.filename, open_flag, newline='', encoding='utf-8')
         self.writer = csv.DictWriter(self.csvfile, fieldnames=self.fieldnames, delimiter=self.separator)
         if not self.append:
             self.writer.writeheader()
@@ -128,13 +130,15 @@ class AtomicCSVLogger(Logger):
         append (bool): Whether to append to an existing file.
     """
 
-    def __init__(self,
-                 filename,
-                 *,
-                 batch_granularity: bool = False,
-                 separator: str = ',',
-                 append: bool = False,
-                 temporary_filename: Optional[str] = None):
+    def __init__(
+        self,
+        filename,
+        *,
+        batch_granularity: bool = False,
+        separator: str = ',',
+        append: bool = False,
+        temporary_filename: Optional[str] = None,
+    ):
         super().__init__(batch_granularity=batch_granularity)
         self.filename = filename
         self.temporary_filename = temporary_filename
@@ -144,7 +148,7 @@ class AtomicCSVLogger(Logger):
     def _save_log(self, fd: TextIO, logs: Dict):
         olddata = None
         if os.path.exists(self.filename):
-            with open(self.filename, 'r') as oldfile:
+            with open(self.filename, 'r', encoding='utf-8') as oldfile:
                 olddata = list(csv.DictReader(oldfile, delimiter=self.separator))
         csvwriter = csv.DictWriter(fd, fieldnames=self.fieldnames, delimiter=self.separator)
         csvwriter.writeheader()
@@ -162,11 +166,11 @@ class AtomicCSVLogger(Logger):
             atomic_lambda_save(self.filename, self._write_header, (), temporary_filename=self.temporary_filename)
 
     def _on_train_batch_end_write(self, batch_number: int, logs: Dict):
-        atomic_lambda_save(self.filename, self._save_log, (logs, ), temporary_filename=self.temporary_filename)
+        atomic_lambda_save(self.filename, self._save_log, (logs,), temporary_filename=self.temporary_filename)
 
     def _on_epoch_end_write(self, epoch_number: int, logs: Dict):
         logs = {**logs, **self._get_current_learning_rates()}
-        atomic_lambda_save(self.filename, self._save_log, (logs, ), temporary_filename=self.temporary_filename)
+        atomic_lambda_save(self.filename, self._save_log, (logs,), temporary_filename=self.temporary_filename)
 
 
 class TensorBoardLogger(Logger):
@@ -200,16 +204,16 @@ class TensorBoardLogger(Logger):
         pass
 
     def _on_epoch_end_write(self, epoch_number: int, logs: dict):
-        grouped_items = dict()
+        grouped_items = {}
         for k, v in logs.items():
             if 'val_' in k:
                 primary_key = k[4:]
                 if primary_key not in grouped_items:
-                    grouped_items[primary_key] = dict()
+                    grouped_items[primary_key] = {}
                 grouped_items[k[4:]][k] = v
             else:
                 if k not in grouped_items:
-                    grouped_items[k] = dict()
+                    grouped_items[k] = {}
                 grouped_items[k][k] = v
         for k, v in grouped_items.items():
             self.writer.add_scalars(k, v, epoch_number)

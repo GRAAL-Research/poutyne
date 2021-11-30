@@ -4,7 +4,7 @@ import numbers
 import timeit
 import warnings
 from collections import defaultdict
-from typing import Iterable, Mapping, List, Union
+from typing import Iterable, Mapping, List, Union, Any, Tuple
 
 import numpy as np
 import torch
@@ -42,40 +42,22 @@ class Model:
             (Default value = None)
         batch_metrics (list): List of functions with the same signature as the loss function. Each metric
             can be any PyTorch loss function. It can also be a string with the same name as a PyTorch
-            loss function (either the functional or object name). 'accuracy' (or just 'acc') is also a
-            valid metric. Each metric function is called on each batch of the optimization and on the
-            validation batches at the end of the epoch.
+            loss function (either the functional or object name). Furthermore, see :ref:`batch metrics`
+            for supplementary available batch metrics. 'accuracy' (or just 'acc') is an often used metric.
+            Each metric function is called on each batch of the optimization and on the validation batches
+            at the end of the epoch.
             (Default value = None)
-        epoch_metrics (list): List of functions with the same signature as
-            :class:`~poutyne.EpochMetric`
-            (Default value = None)
+        epoch_metrics (list): List of functions with the same signature as :class:`~poutyne.EpochMetric`.
+            See :ref:`epoch metrics` for available epoch metrics. (Default value = None)
         device (Union[torch.torch.device, List[torch.torch.device]]): The device to which the network is
             sent or the list of device to which the network is sent. See :func:`~Model.to()` for details.
 
     Note:
         The name of each batch and epoch metric can be change by passing a tuple ``(name, metric)`` instead
         of simply the metric function or object, where ``name`` is the alternative name of the metric.
-
         Batch and epoch metrics can return multiple metrics (e.g. an epoch metric could return an F1-score
-        with the associated precision and recall). The metrics can returned via an iterable (tuple, list,
-        Numpy arrays, tensors, etc.) or via a mapping (e.g. a dict). However, in this case, the names of
-        the different metric has to be passed in some way. There are two ways to do so. The easiest one
-        is to pass the metric as a tuple ``(names, metric)`` where ``names`` is a tuple containing a name for
-        each metric returned. Another way is to override the attribute ``__name__`` of the function or object
-        so that it returns a tuple containing a name for all metrics returned. Note that, when the metric
-        returns a mapping, the names of the different metrics must be keys in the mapping.
+        with the associated precision and recall). See :ref:`multiple metrics at once` for more details.
 
-        Example:
-
-        .. code-block:: python
-
-            # Example with custom batch metrics
-            my_custom_metric = lambda input, target: 42.
-            my_custom_metric2 = lambda input, target: torch.tensor([42., 43.])
-            my_custom_metric3 = lambda input, target: {'a': 42., 'b': 43.}
-            batch_metrics = [('custom_name', my_custom_metric),
-                             (('metric_1', 'metric_2'), my_custom_metric2),
-                             (('a', 'b'), my_custom_metric3)]
 
     Attributes:
         network (torch.nn.Module): The associated PyTorch network.
@@ -84,7 +66,7 @@ class Model:
         batch_metrics (list): The associated metric functions for every batch.
         epoch_metrics (list): The associated metric functions for every epoch.
 
-    Example:
+    Examples:
         Using Numpy arrays (or tensors) dataset::
 
             from poutyne import Model
@@ -173,6 +155,7 @@ class Model:
         self.optimizer = get_optimizer(optimizer, self.network)
         self.loss_function = get_loss_or_metric(loss_function)
 
+        self._check_network_optimizer_parameters_match()
         self._set_metrics_attributes(batch_metrics, epoch_metrics)
 
         self.device = None
@@ -181,6 +164,18 @@ class Model:
         if device is not None:
             self.to(device)
 
+    def _check_network_optimizer_parameters_match(self):
+        if self.optimizer is not None:
+            param_set = set(self.network.parameters())
+            for param_group in self.optimizer.param_groups:
+                for param in param_group['params']:
+                    if param not in param_set:
+                        raise ValueError(
+                            "All parameters in the optimizer should be part of the network. "
+                            "This is so to insure that weights checkpointing and the likes "
+                            "actually consider all parameters."
+                        )
+
     def _set_metrics_attributes(self, batch_metrics, epoch_metrics):
         batch_metrics = list(map(get_loss_or_metric, batch_metrics))
         self.batch_metrics, batch_metrics_names = get_callables_and_names(batch_metrics)
@@ -188,6 +183,7 @@ class Model:
         epoch_metrics = list(map(get_epoch_metric, epoch_metrics))
         self.epoch_metrics, epoch_metrics_names = get_callables_and_names(epoch_metrics)
 
+        self.original_batch_metrics_names, self.original_epoch_metrics_names = batch_metrics_names, epoch_metrics_names
         batch_metrics_names, epoch_metrics_names = rename_doubles(batch_metrics_names, epoch_metrics_names)
 
         self.unflatten_batch_metrics_names = batch_metrics_names
@@ -205,37 +201,27 @@ class Model:
             yield
         self.network.train(old_training)
 
-    def fit(self,
-            x,
-            y,
-            validation_data=None,
-            *,
-            batch_size=32,
-            epochs=1000,
-            steps_per_epoch=None,
-            validation_steps=None,
-            batches_per_step=1,
-            initial_epoch=1,
-            verbose=True,
-            progress_options=None,
-            callbacks=None,
-            dataloader_kwargs=None):
+    def fit(
+        self,
+        x,
+        y,
+        validation_data=None,
+        *,
+        batch_size=32,
+        epochs=1000,
+        steps_per_epoch=None,
+        validation_steps=None,
+        batches_per_step=1,
+        initial_epoch=1,
+        verbose=True,
+        progress_options: Union[dict, None] = None,
+        callbacks=None,
+        dataloader_kwargs=None,
+    ):
         # pylint: disable=line-too-long,too-many-locals
         """
         Trains the network on a dataset. This method creates generators and calls
         the :func:`~Model.fit_generator()` method.
-
-        .. note:: With **Jupyter Notebooks**, a great number of displays per second (around > 200) seems to slow down
-            Jupyter Notebook. In which cases, we suggest to pass
-            ``progress_options={'show_every_n_train_steps': 100, 'show_on_valid': False}`` so that the number of
-            displays per second is at an acceptable level.
-
-        .. warning:: With **Jupyter Notebooks in Firefox**, if ``colorama`` is installed and colors are enabled (as it
-            is by default), a great number of epochs and steps per epoch can cause a spike in memory usage in Firefox.
-            The problem does not occur in Google Chrome/Chromium. To avoid this problem, you can decrease the number of
-            steps shown by passing ``progress_options={'show_every_n_train_steps': 100, 'show_on_valid': False}`` or you
-            can disable the colors by passing ``progress_options={'coloring': False}``. See
-            `this Github issue for details <https://github.com/jupyter/notebook/issues/5897>`__.
 
         Args:
             x (Union[~torch.Tensor, ~numpy.ndarray] or Union[tuple, list] of Union[~torch.Tensor, ~numpy.ndarray]):
@@ -277,7 +263,7 @@ class Model:
                 (Default value = None)
             dataloader_kwargs (dict, optional): Keyword arguments to pass to the PyTorch dataloaders created
                 internally. By default, ``shuffle=True`` is passed for the training dataloader but this can be
-                overriden by using this argument.
+                overridden by using this argument.
 
         Returns:
             List of dict containing the history of each epoch.
@@ -301,64 +287,52 @@ class Model:
                 ...
 
         """
-        if dataloader_kwargs is None:
-            dataloader_kwargs = {}
-        dataloader_kwargs = {'batch_size': batch_size, **dataloader_kwargs}
-
-        train_generator = self._dataloader_from_data((x, y), {'shuffle': True, **dataloader_kwargs})
-        valid_generator = None
+        train_dataset = self._dataset_from_data((x, y))
+        valid_dataset = None
         if validation_data is not None:
-            valid_generator = self._dataloader_from_data(validation_data, dataloader_kwargs)
+            valid_dataset = self._dataset_from_data(validation_data)
 
-        return self.fit_generator(train_generator,
-                                  valid_generator=valid_generator,
-                                  epochs=epochs,
-                                  steps_per_epoch=steps_per_epoch,
-                                  validation_steps=validation_steps,
-                                  batches_per_step=batches_per_step,
-                                  initial_epoch=initial_epoch,
-                                  verbose=verbose,
-                                  progress_options=progress_options,
-                                  callbacks=callbacks)
+        return self.fit_dataset(
+            train_dataset,
+            valid_dataset=valid_dataset,
+            epochs=epochs,
+            batch_size=batch_size,
+            steps_per_epoch=steps_per_epoch,
+            validation_steps=validation_steps,
+            batches_per_step=batches_per_step,
+            initial_epoch=initial_epoch,
+            verbose=verbose,
+            progress_options=progress_options,
+            callbacks=callbacks,
+            dataloader_kwargs=dataloader_kwargs,
+        )
 
-    def _dataloader_from_data(self, args, dataloader_kwargs):
+    def _dataset_from_data(self, args):
         args = numpy_to_torch(args)
-        dataset = TensorDataset(*args) if len(args) > 1 else args[0]
-        generator = DataLoader(dataset, **dataloader_kwargs)
-        return generator
+        return TensorDataset(*args) if len(args) > 1 else args[0]
 
-    def fit_dataset(self,
-                    train_dataset,
-                    valid_dataset=None,
-                    *,
-                    batch_size=32,
-                    epochs=1000,
-                    steps_per_epoch=None,
-                    validation_steps=None,
-                    batches_per_step=1,
-                    initial_epoch=1,
-                    verbose=True,
-                    progress_options=None,
-                    callbacks=None,
-                    num_workers=0,
-                    collate_fn=None,
-                    dataloader_kwargs=None):
+    def fit_dataset(
+        self,
+        train_dataset,
+        valid_dataset=None,
+        *,
+        batch_size=32,
+        epochs=1000,
+        steps_per_epoch=None,
+        validation_steps=None,
+        batches_per_step=1,
+        initial_epoch=1,
+        verbose=True,
+        progress_options=None,
+        callbacks=None,
+        num_workers=0,
+        collate_fn=None,
+        dataloader_kwargs=None,
+    ):
         # pylint: disable=line-too-long,too-many-locals
         """
         Trains the network on a dataset. This method creates dataloaders and calls the
         :func:`~Model.fit_generator()` method.
-
-        .. note:: With **Jupyter Notebooks**, a great number of displays per second (around > 200) seems to slow down
-            Jupyter Notebook. In which cases, we suggest to pass
-            ``progress_options={'show_every_n_train_steps': 100, 'show_on_valid': False}`` so that the number of
-            displays per second is at an acceptable level.
-
-        .. warning:: With **Jupyter Notebooks in Firefox**, if ``colorama`` is installed and colors are enabled (as it
-            is by default), a great number of epochs and steps per epoch can cause a spike in memory usage in Firefox.
-            The problem does not occur in Google Chrome/Chromium. To avoid this problem, you can decrease the number of
-            steps shown by passing ``progress_options={'show_every_n_train_steps': 100, 'show_on_valid': False}`` or you
-            can disable the colors by passing ``progress_options={'coloring': False}``. See
-            `this Github issue for details <https://github.com/jupyter/notebook/issues/5897>`__.
 
         Args:
             train_dataset (~torch.utils.data.Dataset): Training dataset.
@@ -389,20 +363,19 @@ class Model:
             callbacks (List[~poutyne.Callback]): List of callbacks that will be called
                 during training.
                 (Default value = None)
+            dataloader_kwargs (dict, optional): Keyword arguments to pass to the PyTorch dataloaders created
+                internally. By default, ``shuffle=True`` is passed for the training dataloader but this can be
+                overridden by using this argument.
             num_workers (int, optional): how many subprocesses to use for data loading.
                 ``0`` means that the data will be loaded in the main process.
                 (Default value = 0)
-            collate_fn (callable, optional): merges a list of samples to form a mini-batch of Tensor(s).
+            collate_fn (Callable, optional): merges a list of samples to form a mini-batch of Tensor(s).
                 Used when using batched loading from a map-style dataset.
-            dataloader_kwargs (dict, optional): Keyword arguments to pass to the PyTorch dataloaders created
-                internally. By default, ``shuffle=True`` is passed for the training dataloader but this can be
-                overriden by using this argument.
 
         Returns:
             List of dict containing the history of each epoch.
 
-        See:
-            :class:`~torch.utils.data.DataLoader` for details on ``batch_size``, ``num_workers`` and ``collate_fn``.
+        See :class:`~torch.utils.data.DataLoader` for details on ``batch_size``, ``num_workers`` and ``collate_fn``.
 
         Example:
             .. code-block:: python
@@ -429,7 +402,7 @@ class Model:
             'batch_size': batch_size,
             'num_workers': num_workers,
             'collate_fn': collate_fn,
-            **dataloader_kwargs
+            **dataloader_kwargs,
         }
 
         train_generator = DataLoader(train_dataset, **{'shuffle': True, **dataloader_kwargs})
@@ -437,44 +410,36 @@ class Model:
         if valid_dataset is not None:
             valid_generator = DataLoader(valid_dataset, **dataloader_kwargs)
 
-        return self.fit_generator(train_generator,
-                                  valid_generator=valid_generator,
-                                  epochs=epochs,
-                                  steps_per_epoch=steps_per_epoch,
-                                  validation_steps=validation_steps,
-                                  batches_per_step=batches_per_step,
-                                  initial_epoch=initial_epoch,
-                                  verbose=verbose,
-                                  progress_options=progress_options,
-                                  callbacks=callbacks)
+        return self.fit_generator(
+            train_generator,
+            valid_generator=valid_generator,
+            epochs=epochs,
+            steps_per_epoch=steps_per_epoch,
+            validation_steps=validation_steps,
+            batches_per_step=batches_per_step,
+            initial_epoch=initial_epoch,
+            verbose=verbose,
+            progress_options=progress_options,
+            callbacks=callbacks,
+        )
 
-    def fit_generator(self,
-                      train_generator,
-                      valid_generator=None,
-                      *,
-                      epochs=1000,
-                      steps_per_epoch=None,
-                      validation_steps=None,
-                      batches_per_step=1,
-                      initial_epoch=1,
-                      verbose=True,
-                      progress_options=None,
-                      callbacks=None):
+    def fit_generator(
+        self,
+        train_generator,
+        valid_generator=None,
+        *,
+        epochs=1000,
+        steps_per_epoch=None,
+        validation_steps=None,
+        batches_per_step=1,
+        initial_epoch=1,
+        verbose=True,
+        progress_options: Union[dict, None] = None,
+        callbacks=None,
+    ):
         # pylint: disable=line-too-long
         """
         Trains the network on a dataset using a generator.
-
-        .. note:: With **Jupyter Notebooks**, a great number of displays per second (around > 200) seems to slow down
-            Jupyter Notebook. In which cases, we suggest to pass
-            ``progress_options={'show_every_n_train_steps': 100, 'show_on_valid': False}`` so that the number of
-            displays per second is at an acceptable level.
-
-        .. warning:: With **Jupyter Notebooks in Firefox**, if ``colorama`` is installed and colors are enabled (as it
-            is by default), a great number of epochs and steps per epoch can cause a spike in memory usage in Firefox.
-            The problem does not occur in Google Chrome/Chromium. To avoid this problem, you can decrease the number of
-            steps shown by passing ``progress_options={'show_every_n_train_steps': 100, 'show_on_valid': False}`` or you
-            can disable the colors by passing ``progress_options={'coloring': False}``. See
-            `this Github issue for details <https://github.com/jupyter/notebook/issues/5897>`__.
 
         Args:
             train_generator: Generator-like object for the training dataset. The generator must
@@ -558,16 +523,18 @@ class Model:
 
         self.stop_training = False
 
-        epoch_iterator = EpochIterator(self,
-                                       train_generator,
-                                       valid_generator,
-                                       epochs=epochs,
-                                       steps_per_epoch=steps_per_epoch,
-                                       validation_steps=validation_steps,
-                                       initial_epoch=initial_epoch,
-                                       callback=callback_list,
-                                       batch_metrics_names=self.batch_metrics_names,
-                                       epoch_metrics_names=self.epoch_metrics_names)
+        epoch_iterator = EpochIterator(
+            self,
+            train_generator,
+            valid_generator,
+            epochs=epochs,
+            steps_per_epoch=steps_per_epoch,
+            validation_steps=validation_steps,
+            initial_epoch=initial_epoch,
+            callback=callback_list,
+            batch_metrics_names=self.batch_metrics_names,
+            epoch_metrics_names=self.epoch_metrics_names,
+        )
 
         if batches_per_step > 1:
             self._fit_generator_n_batches_per_step(epoch_iterator, callback_list, batches_per_step)
@@ -587,7 +554,8 @@ class Model:
                     examples_in_step += step.size
 
                     step.loss, step.metrics, did_backprop, _ = self._fit_batch_n_batches_per_step(
-                        x, y, batches_per_step, examples_in_step, callback=callback_list, step=step)
+                        x, y, batches_per_step, examples_in_step, callback=callback_list, step=step
+                    )
 
                     if did_backprop:
                         examples_in_step = 0
@@ -613,26 +581,19 @@ class Model:
 
                 callback_list.on_valid_end(valid_metrics_log)
 
-    def _fit_batch_n_batches_per_step(self,
-                                      x,
-                                      y,
-                                      batches_per_step,
-                                      examples_in_step,
-                                      *,
-                                      callback=Callback(),
-                                      step=None,
-                                      return_pred=False):
+    def _fit_batch_n_batches_per_step(
+        self, x, y, batches_per_step, examples_in_step, *, callback=Callback(), step=None, return_pred=False
+    ):
         # pylint: disable=too-many-locals
-        zero_all_gradients = ((step.number - 1) % batches_per_step == 0)
-        do_backprop = (step.number % batches_per_step == 0)
+        zero_all_gradients = (step.number - 1) % batches_per_step == 0
+        do_backprop = step.number % batches_per_step == 0
 
         if zero_all_gradients:
             self.optimizer.zero_grad()
 
-        loss_tensor, metrics, pred_y = self._compute_loss_and_metrics(x,
-                                                                      y,
-                                                                      return_loss_tensor=True,
-                                                                      return_pred=return_pred)
+        loss_tensor, metrics, pred_y = self._compute_loss_and_metrics(
+            x, y, return_loss_tensor=True, return_pred=return_pred
+        )
 
         adjusted_loss_tensor = loss_tensor * step.size
         adjusted_loss_tensor.backward()
@@ -671,10 +632,9 @@ class Model:
     def _fit_batch(self, x, y, *, callback=Callback(), step=None, return_pred=False):
         self.optimizer.zero_grad()
 
-        loss_tensor, metrics, pred_y = self._compute_loss_and_metrics(x,
-                                                                      y,
-                                                                      return_loss_tensor=True,
-                                                                      return_pred=return_pred)
+        loss_tensor, metrics, pred_y = self._compute_loss_and_metrics(
+            x, y, return_loss_tensor=True, return_pred=return_pred
+        )
 
         loss_tensor.backward()
         callback.on_backward_end(step)
@@ -700,11 +660,11 @@ class Model:
         else:
             x = self._process_input(x)
 
-        x = x if isinstance(x, (tuple, list)) else (x, )
+        x = x if isinstance(x, (tuple, list)) else (x,)
 
         return (x, y) if y is not None else x
 
-    def train_on_batch(self, x, y, return_pred=False):
+    def train_on_batch(self, x, y, return_pred=False, return_dict_format=False):
         """
         Trains the network for the batch ``(x, y)`` and computes the loss and the metrics, and
         optionally returns the predictions.
@@ -713,6 +673,8 @@ class Model:
             x: Input data as a batch.
             y: Target data as a batch.
             return_pred (bool, optional): Whether to return the predictions.
+                (Default value = False)
+            return_dict_format (bool, optional): Whether to return the loss and metrics in a dict format or not.
                 (Default value = False)
 
         Returns:
@@ -726,6 +688,9 @@ class Model:
             Tuple ``(loss, metrics, pred_y)`` if ``return_pred`` is true where
             ``pred_y`` is the predictions with tensors converted into Numpy
             arrays.
+
+            If ``return_dict_format`` is True, then ``loss, metrics`` are replaced by a
+            dictionary.
         """
         if self.optimizer is None:
             raise ValueError("Impossible to fit when optimizer is None.")
@@ -733,23 +698,43 @@ class Model:
         with self._set_training_mode(True):
             self._transfer_optimizer_state_to_right_device()
             loss, metrics, pred_y = self._fit_batch(x, y, return_pred=return_pred)
-        return self._format_return(loss, metrics, pred_y, return_pred)
 
-    def _format_return(self, loss, metrics, pred_y, return_pred, true_y=None, return_ground_truth=False):
+        if return_dict_format:
+            logs = dict(loss=loss)
+            logs.update(zip(self.batch_metrics_names, metrics))
+
+            return self._format_truth_pred_return((logs,), pred_y, return_pred)
+
+        return self._format_loss_metrics_return(loss, metrics, pred_y, return_pred)
+
+    def _format_loss_metrics_return(self, loss, metrics, pred_y, return_pred, true_y=None, return_ground_truth=False):
         # pylint: disable=too-many-arguments
-        ret = (loss, )
+        ret = (loss,)
 
-        ret += tuple(metrics.tolist()) if len(metrics) <= 1 else (metrics, )
+        ret += tuple(metrics.tolist()) if len(metrics) <= 1 else (metrics,)
 
+        return self._format_truth_pred_return(ret, pred_y, return_pred, true_y, return_ground_truth)
+
+    def _format_truth_pred_return(self, init, pred_y, return_pred, true_y=None, return_ground_truth=False):
+        # pylint: disable=too-many-arguments
         if return_pred:
-            ret += (pred_y, )
+            init += (pred_y,)
 
         if return_ground_truth:
-            ret += (true_y, )
+            init += (true_y,)
 
-        return ret[0] if len(ret) == 1 else ret
+        return init[0] if len(init) == 1 else init
 
-    def predict(self, x, *, batch_size=32, dataloader_kwargs=None):
+    def predict(
+        self,
+        x,
+        *,
+        batch_size=32,
+        verbose=True,
+        progress_options: Union[dict, None] = None,
+        callbacks=None,
+        dataloader_kwargs=None,
+    ) -> Any:
         """
         Returns the predictions of the network given a dataset ``x``, where the tensors are
         converted into Numpy arrays.
@@ -760,52 +745,86 @@ class Model:
                 Union[tuple, list] of Union[Tensor, ndarray] if the model has multiple inputs.
             batch_size (int): Number of samples given to the network at one time.
                 (Default value = 32)
+            verbose (bool): Whether to display the progress of the evaluation.
+                (Default value = True)
+            progress_options (dict, optional): Keyword arguments to pass to the default progression callback used
+                in Poutyne (See :class:`~poutyne.ProgressionCallback` for the available arguments).
+                (Default value = None, meaning default color setting and progress bar)
+            callbacks (List[~poutyne.Callback]): List of callbacks that will be called during
+                testing. (Default value = None)
             dataloader_kwargs (dict, optional): Keyword arguments to pass to the PyTorch dataloaders created
                 internally.
 
         Returns:
-            Numpy arrays of the predictions.
+            Return the predictions in the format outputted by the model.
         """
-        if dataloader_kwargs is None:
-            dataloader_kwargs = {}
-        dataloader_kwargs = {'batch_size': batch_size, **dataloader_kwargs}
+        x = x if isinstance(x, (tuple, list)) else (x,)
+        dataset = self._dataset_from_data(x)
+        return self.predict_dataset(
+            dataset,
+            batch_size=batch_size,
+            concatenate_returns=True,
+            dataloader_kwargs=dataloader_kwargs,
+            verbose=verbose,
+            progress_options=progress_options,
+            callbacks=callbacks,
+        )
 
-        x = x if isinstance(x, (tuple, list)) else (x, )
-        generator = self._dataloader_from_data(x, dataloader_kwargs)
-        return self.predict_generator(generator, concatenate_returns=True)
-
-    def predict_dataset(self,
-                        dataset,
-                        *,
-                        batch_size=32,
-                        steps=None,
-                        concatenate_returns=True,
-                        num_workers=0,
-                        collate_fn=None,
-                        dataloader_kwargs=None):
+    def predict_dataset(
+        self,
+        dataset,
+        *,
+        batch_size=32,
+        steps=None,
+        has_ground_truth=False,
+        return_ground_truth=False,
+        concatenate_returns=True,
+        num_workers=0,
+        collate_fn=None,
+        verbose=True,
+        progress_options: Union[dict, None] = None,
+        callbacks=None,
+        dataloader_kwargs=None,
+    ) -> Any:
         """
         Returns the predictions of the network given a dataset ``x``, where the tensors are
         converted into Numpy arrays.
 
         Args:
-            dataset (~torch.utils.data.Dataset): Dataset. Must not return ``y``, just ``x``.
+            dataset (~torch.utils.data.Dataset): Dataset. Must not return ``y``, just ``x``, unless
+                `has_ground_truth` is true.
             batch_size (int): Number of samples given to the network at one time.
                 (Default value = 32)
             steps (int, optional): Number of iterations done on ``generator``.
                 (Defaults the number of steps needed to see the entire dataset)
+            has_ground_truth (bool, optional): Whether the generator yields the target ``y``.  Automatically
+                set to true if `return_ground_truth` is true. (Default value = False)
+            return_ground_truth (bool, optional): Whether to return the ground truths. If true, automatically
+                set `has_ground_truth` to true. (Default value = False)
             concatenate_returns (bool, optional): Whether to concatenate the predictions
                 or the ground truths when returning them. See :func:`predict_generator()`
                 for details. (Default value = True)
             num_workers (int, optional): how many subprocesses to use for data loading.
                 ``0`` means that the data will be loaded in the main process.
                 (Default value = 0)
-            collate_fn (callable, optional): merges a list of samples to form a mini-batch of Tensor(s).
+            collate_fn (Callable, optional): merges a list of samples to form a mini-batch of Tensor(s).
                 Used when using batched loading from a map-style dataset.
+            verbose (bool): Whether to display the progress of the evaluation.
+                (Default value = True)
+            progress_options (dict, optional): Keyword arguments to pass to the default progression callback used
+                in Poutyne (See :class:`~poutyne.ProgressionCallback` for the available arguments).
+                (Default value = None, meaning default color setting and progress bar)
+            callbacks (List[~poutyne.Callback]): List of callbacks that will be called during
+                testing. (Default value = None)
             dataloader_kwargs (dict, optional): Keyword arguments to pass to the PyTorch dataloaders created
                 internally.
 
         Returns:
-            Numpy arrays of the predictions.
+            Depends on the value of ``concatenate_returns``. By default, (``concatenate_returns`` is true),
+            the data structures (tensor, tuple, list, dict) returned as predictions for the batches are
+            merged together. In the merge, the tensors are converted into Numpy arrays and are then
+            concatenated together. If ``concatenate_returns`` is false, then a list of the predictions
+            for the batches is returned with tensors converted into Numpy arrays.
 
         See:
             :class:`~torch.utils.data.DataLoader` for details on ``batch_size``, ``num_workers`` and ``collate_fn``.
@@ -816,13 +835,33 @@ class Model:
             'batch_size': batch_size,
             'num_workers': num_workers,
             'collate_fn': collate_fn,
-            **dataloader_kwargs
+            **dataloader_kwargs,
         }
 
         generator = DataLoader(dataset, **dataloader_kwargs)
-        return self.predict_generator(generator, steps=steps, concatenate_returns=concatenate_returns)
+        return self.predict_generator(
+            generator,
+            steps=steps,
+            has_ground_truth=has_ground_truth,
+            return_ground_truth=return_ground_truth,
+            concatenate_returns=concatenate_returns,
+            verbose=verbose,
+            progress_options=progress_options,
+            callbacks=callbacks,
+        )
 
-    def predict_generator(self, generator, *, steps=None, concatenate_returns=True):
+    def predict_generator(
+        self,
+        generator,
+        *,
+        steps=None,
+        has_ground_truth=False,
+        return_ground_truth=False,
+        concatenate_returns=True,
+        verbose=True,
+        progress_options: Union[dict, None] = None,
+        callbacks=None,
+    ) -> Any:
         """
         Returns the predictions of the network given batches of samples ``x``, where the tensors are
         converted into Numpy arrays.
@@ -830,11 +869,23 @@ class Model:
         Args:
             generator: Generator-like object for the dataset. The generator must yield a batch of
                 samples. See the :func:`fit_generator()` method for details on the types of generators
-                supported. This should only yield input data ``x`` and NOT the target ``y``.
+                supported. This should only yield input data ``x`` and NOT the target ``y``, unless
+                `has_ground_truth` is true.
             steps (int, optional): Number of iterations done on ``generator``.
                 (Defaults the number of steps needed to see the entire dataset)
+            has_ground_truth (bool, optional): Whether the generator yields the target ``y``.  Automatically
+                set to true if `return_ground_truth` is true. (Default value = False)
+            return_ground_truth (bool, optional): Whether to return the ground truths. If true, automatically
+                set `has_ground_truth` to true. (Default value = False)
             concatenate_returns (bool, optional): Whether to concatenate the predictions
                 or the ground truths when returning them. (Default value = True)
+            verbose (bool): Whether to display the progress of the evaluation.
+                (Default value = True)
+            progress_options (dict, optional): Keyword arguments to pass to the default progression callback used
+                in Poutyne (See :class:`~poutyne.ProgressionCallback` for the available arguments).
+                (Default value = None, meaning default color setting and progress bar)
+            callbacks (List[~poutyne.Callback]): List of callbacks that will be called during
+                testing. (Default value = None)
 
         Returns:
             Depends on the value of ``concatenate_returns``. By default, (``concatenate_returns`` is true),
@@ -843,42 +894,84 @@ class Model:
             concatenated together. If ``concatenate_returns`` is false, then a list of the predictions
             for the batches is returned with tensors converted into Numpy arrays.
         """
+        # pylint: disable=too-many-locals
+        has_ground_truth = has_ground_truth or return_ground_truth
+
         if steps is None and hasattr(generator, '__len__'):
             steps = len(generator)
         pred_y = []
+        if return_ground_truth:
+            true_y = []
+
+        callbacks = [] if callbacks is None else callbacks
+
+        if verbose:
+            progress_options = {} if progress_options is None else progress_options
+            callbacks = [ProgressionCallback(**progress_options)] + callbacks
+        callback_list = CallbackList(callbacks)
+        callback_list.set_model(self)
+        callback_list.set_params({'steps': steps})
+
+        predict_begin_time = timeit.default_timer()
         with self._set_training_mode(False):
-            for _, x in _get_step_iterator(steps, generator):
-                x = self.preprocess_input(x)
+            callback_list.on_predict_begin({})
+            time_since_last_batch = timeit.default_timer()
+            for step, batch in _get_step_iterator(steps, generator):
+                callback_list.on_predict_batch_begin(step, {})
+
+                if has_ground_truth:
+                    x, y = self.preprocess_input(*batch)
+                else:
+                    x = self.preprocess_input(batch)
                 pred_y.append(torch_to_numpy(self.network(*x)))
+                if return_ground_truth:
+                    true_y.append(torch_to_numpy(y))
+
+                batch_end_time = timeit.default_timer()
+                batch_total_time = batch_end_time - time_since_last_batch
+                time_since_last_batch = batch_end_time
+
+                callback_list.on_predict_batch_end(step, {'batch': step, 'time': batch_total_time})
+
         if concatenate_returns:
-            return _concat(pred_y)
+            pred_y = _concat(pred_y)
+            if return_ground_truth:
+                true_y = _concat(true_y)
+
+        callback_list.on_predict_end({'time': timeit.default_timer() - predict_begin_time})
+
+        if return_ground_truth:
+            return pred_y, true_y
         return pred_y
 
-    def predict_on_batch(self, x):
+    def predict_on_batch(self, x) -> Any:
         """
         Returns the predictions of the network given a batch ``x``, where the tensors are converted
         into Numpy arrays.
 
         Args:
             x: Input data as a batch.
+
         Returns:
-            The predictions with tensors converted into Numpy arrays.
+            Return the predictions in the format outputted by the model.
         """
         with self._set_training_mode(False):
             x = self.preprocess_input(x)
             return torch_to_numpy(self.network(*x))
 
-    def evaluate(self,
-                 x,
-                 y,
-                 *,
-                 batch_size=32,
-                 return_pred=False,
-                 return_dict_format=False,
-                 callbacks=None,
-                 verbose=True,
-                 progress_options: Union[dict, None] = None,
-                 dataloader_kwargs=None):
+    def evaluate(
+        self,
+        x,
+        y,
+        *,
+        batch_size=32,
+        return_pred=False,
+        return_dict_format=False,
+        callbacks=None,
+        verbose=True,
+        progress_options: Union[dict, None] = None,
+        dataloader_kwargs=None,
+    ) -> Tuple:
         """
         Computes the loss and the metrics of the network on batches of samples and optionally
         returns the predictions.
@@ -899,13 +992,13 @@ class Model:
                 (Default value = False)
             callbacks (List[~poutyne.Callback]): List of callbacks that will be called during
                 testing. (Default value = None)
-            dataloader_kwargs (dict, optional): Keyword arguments to pass to the PyTorch dataloaders created
-                internally.
             verbose (bool): Whether to display the progress of the evaluation.
                 (Default value = True)
             progress_options (dict, optional): Keyword arguments to pass to the default progression callback used
                 in Poutyne (See :class:`~poutyne.ProgressionCallback` for the available arguments).
                 (Default value = None, meaning default color setting and progress bar)
+            dataloader_kwargs (dict, optional): Keyword arguments to pass to the PyTorch dataloaders created
+                internally.
 
         Returns:
             Tuple ``(loss, metrics, pred_y)`` where specific elements are omitted if not
@@ -922,38 +1015,39 @@ class Model:
             of each batch with tensors converted into Numpy arrays. It is otherwise omitted.
 
             If ``return_dict_format`` is True, then ``loss, metrics`` are replaced by a
-            dictionnary as passed to :func:`~poutyne.Callback.on_test_end()`.
+            dictionary as passed to :func:`~poutyne.Callback.on_test_end()`.
 
         """
-        if dataloader_kwargs is None:
-            dataloader_kwargs = {}
-        dataloader_kwargs = {'batch_size': batch_size, **dataloader_kwargs}
+        dataset = self._dataset_from_data((x, y))
+        return self.evaluate_dataset(
+            dataset,
+            batch_size=batch_size,
+            return_pred=return_pred,
+            return_dict_format=return_dict_format,
+            concatenate_returns=True,
+            callbacks=callbacks,
+            verbose=verbose,
+            progress_options=progress_options,
+            dataloader_kwargs=dataloader_kwargs,
+        )
 
-        generator = self._dataloader_from_data((x, y), dataloader_kwargs)
-        return self.evaluate_generator(generator,
-                                       steps=len(generator),
-                                       return_pred=return_pred,
-                                       return_dict_format=return_dict_format,
-                                       concatenate_returns=True,
-                                       callbacks=callbacks,
-                                       verbose=verbose,
-                                       progress_options=progress_options)
-
-    def evaluate_dataset(self,
-                         dataset,
-                         *,
-                         batch_size=32,
-                         steps=None,
-                         return_pred=False,
-                         return_ground_truth=False,
-                         return_dict_format=False,
-                         concatenate_returns=True,
-                         callbacks=None,
-                         num_workers=0,
-                         collate_fn=None,
-                         dataloader_kwargs=None,
-                         verbose=True,
-                         progress_options: Union[dict, None] = None):
+    def evaluate_dataset(
+        self,
+        dataset,
+        *,
+        batch_size=32,
+        steps=None,
+        return_pred=False,
+        return_ground_truth=False,
+        return_dict_format=False,
+        concatenate_returns=True,
+        callbacks=None,
+        num_workers=0,
+        collate_fn=None,
+        dataloader_kwargs=None,
+        verbose=True,
+        progress_options: Union[dict, None] = None,
+    ) -> Tuple:
         """
         Computes the loss and the metrics of the network on batches of samples and optionally
         returns the predictions.
@@ -977,7 +1071,7 @@ class Model:
             num_workers (int, optional): how many subprocesses to use for data loading.
                 ``0`` means that the data will be loaded in the main process.
                 (Default value = 0)
-            collate_fn (callable, optional): merges a list of samples to form a mini-batch of Tensor(s).
+            collate_fn (Callable, optional): merges a list of samples to form a mini-batch of Tensor(s).
                 Used when using batched loading from a map-style dataset.
             dataloader_kwargs (dict, optional): Keyword arguments to pass to the PyTorch dataloaders created
                 internally.
@@ -1002,7 +1096,7 @@ class Model:
             of each batch with tensors converted into Numpy arrays. It is otherwise omitted.
 
             If ``return_dict_format`` is True, then ``loss, metrics`` are replaced by a
-            dictionnary as passed to :func:`~poutyne.Callback.on_test_end()`.
+            dictionary as passed to :func:`~poutyne.Callback.on_test_end()`.
 
         See:
             :class:`~torch.utils.data.DataLoader` for details on ``batch_size``, ``num_workers`` and ``collate_fn``.
@@ -1013,34 +1107,38 @@ class Model:
             'batch_size': batch_size,
             'num_workers': num_workers,
             'collate_fn': collate_fn,
-            **dataloader_kwargs
+            **dataloader_kwargs,
         }
 
         generator = DataLoader(dataset, **dataloader_kwargs)
-        return self.evaluate_generator(generator,
-                                       steps=steps,
-                                       return_pred=return_pred,
-                                       return_ground_truth=return_ground_truth,
-                                       return_dict_format=return_dict_format,
-                                       concatenate_returns=concatenate_returns,
-                                       callbacks=callbacks,
-                                       verbose=verbose,
-                                       progress_options=progress_options)
+        return self.evaluate_generator(
+            generator,
+            steps=steps,
+            return_pred=return_pred,
+            return_ground_truth=return_ground_truth,
+            return_dict_format=return_dict_format,
+            concatenate_returns=concatenate_returns,
+            callbacks=callbacks,
+            verbose=verbose,
+            progress_options=progress_options,
+        )
 
-    def evaluate_generator(self,
-                           generator,
-                           *,
-                           steps=None,
-                           return_pred=False,
-                           return_ground_truth=False,
-                           return_dict_format=False,
-                           concatenate_returns=True,
-                           verbose=True,
-                           progress_options: Union[dict, None] = None,
-                           callbacks=None):
+    def evaluate_generator(
+        self,
+        generator,
+        *,
+        steps=None,
+        return_pred=False,
+        return_ground_truth=False,
+        return_dict_format=False,
+        concatenate_returns=True,
+        verbose=True,
+        progress_options: Union[dict, None] = None,
+        callbacks=None,
+    ) -> Tuple:
         # pylint: disable=too-many-locals
         """
-        Computes the loss and the metrics of the network on batches of samples and optionaly returns
+        Computes the loss and the metrics of the network on batches of samples and optionally returns
         the predictions.
 
         Args:
@@ -1079,10 +1177,10 @@ class Model:
             the :func:`predict_generator()` method. It is otherwise ommited.
 
             If ``return_ground_truth`` is True, ``true_y`` is the ground truths returned
-            as in the :func:`predict_generator()` method. It is otherwise ommited.
+            as in the :func:`predict_generator()` method. It is otherwise omitted.
 
             If ``return_dict_format`` is True, then ``loss, metrics`` are replaced by a
-            dictionnary as passed to :func:`~poutyne.Callback.on_test_end()`.
+            dictionary as passed to :func:`~poutyne.Callback.on_test_end()`.
 
         Example:
             With no metrics:
@@ -1160,17 +1258,14 @@ class Model:
         callback_list.set_params({'steps': steps})
         callback_list.on_test_begin({})
 
-        step_iterator = StepIterator(generator,
-                                     steps,
-                                     self.batch_metrics_names,
-                                     self.epoch_metrics_names,
-                                     callback_list,
-                                     mode="test")
+        step_iterator = StepIterator(
+            generator, steps, self.batch_metrics_names, self.epoch_metrics_names, callback_list, mode="test"
+        )
 
         test_begin_time = timeit.default_timer()
-        loss, batch_metrics, pred_y, true_y = self._validate(step_iterator,
-                                                             return_pred=return_pred,
-                                                             return_ground_truth=return_ground_truth)
+        loss, batch_metrics, pred_y, true_y = self._validate(
+            step_iterator, return_pred=return_pred, return_ground_truth=return_ground_truth
+        )
 
         step_iterator.epoch_metrics = self._get_epoch_metrics()
         test_total_time = timeit.default_timer() - test_begin_time
@@ -1186,12 +1281,12 @@ class Model:
         callback_list.on_test_end(test_metrics_log)
 
         if return_dict_format:
-            return test_metrics_log
+            return self._format_truth_pred_return((test_metrics_log,), pred_y, return_pred, true_y, return_ground_truth)
 
         metrics = np.concatenate((batch_metrics, step_iterator.epoch_metrics))
-        return self._format_return(loss, metrics, pred_y, return_pred, true_y, return_ground_truth)
+        return self._format_loss_metrics_return(loss, metrics, pred_y, return_pred, true_y, return_ground_truth)
 
-    def evaluate_on_batch(self, x, y, *, return_pred=False):
+    def evaluate_on_batch(self, x, y, *, return_pred=False, return_dict_format=False) -> Tuple:
         """
         Computes the loss and the metrics of the network on a single batch of samples and optionally
         returns the predictions.
@@ -1200,6 +1295,8 @@ class Model:
             x: Input data as a batch.
             y: Target data as a batch.
             return_pred (bool, optional): Whether to return the predictions for ``batch``.
+                (Default value = False)
+            return_dict_format (bool, optional): Whether to return the loss and metrics in a dict format or not.
                 (Default value = False)
 
         Returns:
@@ -1211,11 +1308,21 @@ class Model:
             float. If ``n == 0``, the ``metrics`` is omitted.
 
             If ``return_pred`` is True, ``pred_y`` is the list of the predictions
-            of each batch with tensors converted into Numpy arrays. It is otherwise ommited.
+            of each batch with tensors converted into Numpy arrays. It is otherwise omitted.
+
+            If ``return_dict_format`` is True, then ``loss, metrics`` are replaced by a
+            dictionary.
         """
         with self._set_training_mode(False):
             loss, metrics, pred_y = self._compute_loss_and_metrics(x, y, return_pred=return_pred)
-        return self._format_return(loss, metrics, pred_y, return_pred)
+
+        if return_dict_format:
+            logs = dict(loss=loss)
+            logs.update(zip(self.batch_metrics_names, metrics))
+
+            return self._format_truth_pred_return((logs,), pred_y, return_pred)
+
+        return self._format_loss_metrics_return(loss, metrics, pred_y, return_pred)
 
     def _validate(self, step_iterator, return_pred=False, return_ground_truth=False):
         pred_list = None
@@ -1256,16 +1363,15 @@ class Model:
 
     def _compute_batch_metrics(self, pred_y, y):
         metrics = [metric(pred_y, y) for metric in self.batch_metrics]
-        return self._compute_metric_array(metrics, self.unflatten_batch_metrics_names)
+        return self._compute_metric_array(metrics, self.original_batch_metrics_names)
 
     def _get_epoch_metrics(self):
         metrics = [epoch_metric.get_metric() for epoch_metric in self.epoch_metrics]
         for epoch_metric in self.epoch_metrics:
             epoch_metric.reset()
-        return self._compute_metric_array(metrics, self.unflatten_epoch_metrics_names)
+        return self._compute_metric_array(metrics, self.original_epoch_metrics_names)
 
     def _compute_metric_array(self, metrics_list, names_list):
-
         def _get_metric(names, metrics):
             names = [names] if isinstance(names, str) else names
             values = None
@@ -1280,7 +1386,8 @@ class Model:
             return values
 
         return np.array(
-            [metric for names, metrics in zip(names_list, metrics_list) for metric in _get_metric(names, metrics)])
+            [metric for names, metrics in zip(names_list, metrics_list) for metric in _get_metric(names, metrics)]
+        )
 
     def get_batch_size(self, x, y):
         """
@@ -1331,40 +1438,43 @@ class Model:
                     return len(first_value)
 
         if warning_settings['batch_size'] == 'warn':
-            warnings.warn("Inferring the batch size is not possible. Hence, "
-                          "the batch size is set to 1 and, thus, the computed "
-                          "loss and metrics at the end of each epoch is the "
-                          "mean of the batches' losses and metrics. To disable "
-                          "this warning, set\n"
-                          "from poutyne import warning_settings\n"
-                          "warning_settings['batch_size'] = 'ignore'\n\n"
-                          "Here is the inferring algorithm used to compute the "
-                          "batch size. 'x' and 'y' are tested in this order at "
-                          "each step of the inferring algorithm. If one step "
-                          "succeed for one of 'x' or 'y', the algorithm stops.\n\n"
-                          "Step 1: if 'x' or 'y' is a tensor or a Numpy array, "
-                          "then the 'len()' is returned.\n"
-                          "Step 2: if 'x' or 'y' is a list or a tuple, then the "
-                          "'len()' of the first element is returned if it is a "
-                          "tensor or a Numpy array.\n"
-                          "Step 3: if 'x' or 'y' is a dict, then the value for "
-                          "the key 'batch_size' is returned if it is of integral "
-                          "type.\n"
-                          "Step 4: if 'x' or 'y' is a dict, then the 'len()' of "
-                          "the first element of '.values()' is returned if it is a "
-                          "tensor or a Numpy array.\n")
+            warnings.warn(
+                "Inferring the batch size is not possible. Hence, "
+                "the batch size is set to 1 and, thus, the computed "
+                "loss and metrics at the end of each epoch is the "
+                "mean of the batches' losses and metrics. To disable "
+                "this warning, set\n"
+                "from poutyne import warning_settings\n"
+                "warning_settings['batch_size'] = 'ignore'\n\n"
+                "Here is the inferring algorithm used to compute the "
+                "batch size. 'x' and 'y' are tested in this order at "
+                "each step of the inferring algorithm. If one step "
+                "succeed for one of 'x' or 'y', the algorithm stops.\n\n"
+                "Step 1: if 'x' or 'y' is a tensor or a Numpy array, "
+                "then the 'len()' is returned.\n"
+                "Step 2: if 'x' or 'y' is a list or a tuple, then the "
+                "'len()' of the first element is returned if it is a "
+                "tensor or a Numpy array.\n"
+                "Step 3: if 'x' or 'y' is a dict, then the value for "
+                "the key 'batch_size' is returned if it is of integral "
+                "type.\n"
+                "Step 4: if 'x' or 'y' is a dict, then the 'len()' of "
+                "the first element of '.values()' is returned if it is a "
+                "tensor or a Numpy array.\n"
+            )
         return 1
 
     def load_weights(self, f, strict=True):
         """
         Loads the weights saved using the :func:`torch.save()` method or the :func:`save_weights()` method
-        of this class. Contrary to :func:`torch.load()`, the weights are not transfered to the device
+        of this class. Contrary to :func:`torch.load()`, the weights are not transferred to the device
         from which they were saved from. In other words, the PyTorch module will stay on the same
         device it already is on.
 
         Args:
             f: File-like object (has to implement fileno that returns a file descriptor) or string
                 containing a file name.
+
 
         Returns:
             ``NamedTuple`` with ``missing_keys`` and ``unexpected_keys`` fields:
@@ -1486,12 +1596,12 @@ class Model:
 
     def cuda(self, *args, **kwargs):
         """
-        Tranfers the network on the GPU. The arguments are passed to the :meth:`torch.nn.Module.cuda()` method.
+        Transfers the network on the GPU. The arguments are passed to the :meth:`torch.nn.Module.cuda()` method.
         Notice that the device is saved so that the batches can send to the right device before passing it to
         the network.
 
         Note:
-            PyTorch optimizers assume that the parameters have been transfered to the right device
+            PyTorch optimizers assume that the parameters have been transferred to the right device
             before their creations. Furthermore, future versions of PyTorch will no longer modify
             the parameters of a PyTorch module in-place when transferring them to another device.
             See this `issue <https://github.com/pytorch/pytorch/issues/7844>`_ and this
@@ -1518,12 +1628,12 @@ class Model:
 
     def cpu(self, *args, **kwargs):
         """
-        Tranfers the network on the CPU. The arguments are passed to the :meth:`torch.nn.Module.cpu()`
+        Transfers the network on the CPU. The arguments are passed to the :meth:`torch.nn.Module.cpu()`
         method. Notice that the device is saved so that the batches can send to the right device
         before passing it to the network.
 
         Note:
-            PyTorch optimizers assume that the parameters have been transfered to the right device
+            PyTorch optimizers assume that the parameters have been transferred to the right device
             before their creations. Furthermore, future versions of PyTorch will no longer modify
             the parameters of a PyTorch module in-place when transferring them to another device.
             See this `issue <https://github.com/pytorch/pytorch/issues/7844>`_ and this
