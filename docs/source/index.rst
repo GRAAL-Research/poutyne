@@ -180,6 +180,7 @@ Look at notebook files with full working `examples <https://github.com/GRAAL-Res
 - `policy_cifar_example.ipynb <https://github.com/GRAAL-Research/poutyne/blob/master/examples/policy_cifar_example.ipynb>`__ - policies API, FastAI-like learning rate policies
 - `policy_interface.ipynb <https://github.com/GRAAL-Research/poutyne/blob/master/examples/policy_interface.ipynb>`__ - example of policies
 - `image_reconstruction.ipynb <https://github.com/GRAAL-Research/poutyne/blob/master/examples/image_reconstruction.ipynb>`__ - example of image reconstruction
+- `classification_and_regression.ipynb <https://github.com/GRAAL-Research/poutyne/blob/master/examples/classification_and_regression.ipynb>`__ - example of multitask learning with classification and regression
 - `semantic_segmentation.ipynb <https://github.com/GRAAL-Research/poutyne/blob/master/examples/semantic_segmentation.ipynb>`__ - example of semantic segmentation
 
 or in ``Google Colab``:
@@ -190,6 +191,7 @@ or in ``Google Colab``:
 - `policy_cifar_example.ipynb <https://colab.research.google.com/github/GRAAL-Research/poutyne/blob/master/examples/policy_cifar_example.ipynb>`__ - policies API, FastAI-like learning rate policies
 - `policy_interface.ipynb <https://colab.research.google.com/github/GRAAL-Research/poutyne/blob/master/examples/policy_interface.ipynb>`__ - example of policies
 - `image_reconstruction.ipynb <https://colab.research.google.com/github/GRAAL-Research/poutyne/blob/master/examples/image_reconstruction.ipynb>`__ - example of image reconstruction
+- `classification_and_regression.ipynb <https://colab.research.google.com/github/GRAAL-Research/poutyne/blob/master/examples/classification_and_regression.ipynb>`__ - example of multitask learning with classification and regression
 - `semantic_segmentation.ipynb <https://colab.research.google.com/github/GRAAL-Research/poutyne/blob/master/examples/semantic_segmentation.ipynb>`__ - example of semantic segmentation
 
 Videos
@@ -245,6 +247,7 @@ API Reference
   examples/policy_interface
   examples/transfer_learning
   examples/image_reconstruction
+  examples/classification_and_regression
   examples/semantic_segmentation
 
 
