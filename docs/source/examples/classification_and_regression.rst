@@ -133,7 +133,7 @@ Here, we can see an example from the training dataset. It shows an image of a pe
 
 .. code-block:: python
 
-    sample_number = 189
+    sample_number = 3
     image = train_dataset[sample_number][0]
     image = image.permute(1, 2, 0).detach().numpy()
     image_rgb = cv2.cvtColor(np.float32(image), cv2.COLOR_BGR2RGB)
@@ -141,9 +141,8 @@ Here, we can see an example from the training dataset. It shows an image of a pe
     gender = "male" if int(train_dataset[sample_number][1][0][gender_index]) == 1 else "female"
     print("Gender is:", gender)
     w, h = 218, 178
-    (x_L, y_L) = train_dataset[sample_number][1][1][
-        0:2
-    ]  # The coordinates vector of the datasets starts with X_L, y_L, X_R, y_R
+    # The coordinates vector of the datasets starts with X_L, y_L, X_R, y_R
+    (x_L, y_L) = train_dataset[sample_number][1][1][0:2]  
     (x_R, y_R) = train_dataset[sample_number][1][1][2:4]
     w_scale = image_size / w
     h_scale = image_size / h
@@ -206,8 +205,7 @@ As we discussed before, we have two different tasks in this example. These tasks
             self.W = W
 
         def forward(self, y_pred, y_true):
-            # print(y_true[0][:,20])
-            loss_cls = self.ce_loss(y_pred[0], y_true[0][:, 20])  # Cross Entropy Error (for classification)
+            loss_cls = self.ce_loss(y_pred[0], y_true[0][:, gender_index])  # Cross Entropy Error (for classification)
             loss_reg1 = self.mse_loss(y_pred[1][:, 0], y_true[1][:, 0] / h)  # Mean Squared Error for X_L
             loss_reg2 = self.mse_loss(y_pred[1][:, 1], y_true[1][:, 1] / w)  # Mean Squared Error for Y_L
             loss_reg3 = self.mse_loss(y_pred[1][:, 2], y_true[1][:, 2] / h)  # Mean Squared Error for X_R
