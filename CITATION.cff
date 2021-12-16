@@ -1,0 +1,26 @@
+cff-version: 1.2.0
+preferred-citation:
+  type: misc
+  message: "If you use Poutyne, please cite it as below."
+  authors:
+  - family-names: "Paradis"
+    given-names: "Frédérik"
+  - family-names: "Beauchemin"
+    given-names: "David"
+  - family-names: "Godbout"
+    given-names: "Mathieu"
+  - family-names: "Alain"
+    given-names: "Mathieu"
+  - family-names: "Garneau"
+    given-names: "Nicolas"
+  - family-names: "Otte"
+    given-names: "Stefan"
+  - family-names: "Tremblay"
+    given-names: "Alexis"
+  - family-names: "Bélanger"
+    given-names: "Marc-Antoine"
+  - family-names: "Laviolette"
+    given-names: "François"
+  title: "Poutyne: A Simplified Framework for Deep Learning"
+  url: "https://poutyne.org"
+  year: 2020
