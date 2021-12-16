@@ -27,13 +27,12 @@ Cite
 ----
 .. code-block:: bib
 
-  @misc{poutyne,
-      author = {Paradis, Fr{\'e}d{\'e}rik and Beauchemin, David and Godbout, Mathieu and Alain, Mathieu and Garneau, Nicolas and Otte, Stefan and Tremblay, Alexis and B{\'e}langer, Marc-Antoine and Laviolette, Fran{\c{c}}ois},
+  @misc{Paradis_Poutyne_A_Simplified_2020,
+      author = {Paradis, Frédérik and Beauchemin, David and Godbout, Mathieu and Alain, Mathieu and Garneau, Nicolas and Otte, Stefan and Tremblay, Alexis and Bélanger, Marc-Antoine and Laviolette, François},
       title  = {{Poutyne: A Simplified Framework for Deep Learning}},
       year   = {2020},
-      note   = {\url{https://poutyne.org}}
+      url    = {https://poutyne.org}
   }
-
 
 Getting started: few seconds to Poutyne
 =======================================
