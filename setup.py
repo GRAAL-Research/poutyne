@@ -52,7 +52,8 @@ def main():
         download_url='https://github.com/GRAAL-Research/poutyne/archive/v' + version + '.zip',
         license='LGPLv3',
         classifiers=[
-            'Development Status :: 3 - Alpha',
+            'Development Status :: 5 - Production/Stable',
+            'Framework :: PyTorch',
             'Intended Audience :: Developers',
             'Intended Audience :: Education',
             'Intended Audience :: Science/Research',
@@ -64,6 +65,8 @@ def main():
             'Programming Language :: Python :: 3.9',
             'Topic :: Software Development :: Libraries',
             'Topic :: Software Development :: Libraries :: Python Modules',
+            'Topic :: Scientific/Engineering',
+            'Topic :: Scientific/Engineering :: Artificial Intelligence',
         ],
         packages=packages,
         install_requires=['numpy', 'torch'],
