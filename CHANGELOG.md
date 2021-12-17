@@ -1,4 +1,7 @@
 # v1.x.x
+*
+
+# v1.8
 
 Breaking changes:
 
