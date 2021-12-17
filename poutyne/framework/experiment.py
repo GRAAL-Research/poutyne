@@ -367,43 +367,32 @@ class Experiment:
         # pylint: disable=broad-except
         initial_epoch = 1
         if os.path.isfile(self.epoch_filename):
-            try:
-                with open(self.epoch_filename, 'r', encoding='utf-8') as f:
-                    initial_epoch = int(f.read()) + 1
-            except Exception as e:
-                print(e)
+            with open(self.epoch_filename, 'r', encoding='utf-8') as f:
+                initial_epoch = int(f.read()) + 1
+
             if os.path.isfile(self.model_checkpoint_filename):
-                try:
-                    print(
-                        f"Loading weights from {self.model_checkpoint_filename} and "
-                        f"starting at epoch {initial_epoch:d}."
-                    )
-                    self.model.load_weights(self.model_checkpoint_filename)
-                except Exception as e:
-                    print(e)
+                print(f"Loading weights from {self.model_checkpoint_filename} and starting at epoch {initial_epoch:d}.")
+                self.model.load_weights(self.model_checkpoint_filename)
             else:
                 self._warn_missing_file(self.model_checkpoint_filename)
+
             if os.path.isfile(self.optimizer_checkpoint_filename):
-                try:
-                    print(
-                        f"Loading optimizer state from {self.optimizer_checkpoint_filename} and "
-                        f"starting at epoch {initial_epoch:d}."
-                    )
-                    self.model.load_optimizer_state(self.optimizer_checkpoint_filename)
-                except Exception as e:
-                    print(e)
+                print(
+                    f"Loading optimizer state from {self.optimizer_checkpoint_filename} and "
+                    f"starting at epoch {initial_epoch:d}."
+                )
+                self.model.load_optimizer_state(self.optimizer_checkpoint_filename)
             else:
                 self._warn_missing_file(self.optimizer_checkpoint_filename)
+
             for i, lr_scheduler in enumerate(lr_schedulers):
                 filename = self.lr_scheduler_filename % i
                 if os.path.isfile(filename):
-                    try:
-                        print(f"Loading LR scheduler state from {filename} and starting at epoch {initial_epoch:d}.")
-                        lr_scheduler.load_state(filename)
-                    except Exception as e:
-                        print(e)
+                    print(f"Loading LR scheduler state from {filename} and starting at epoch {initial_epoch:d}.")
+                    lr_scheduler.load_state(filename)
                 else:
                     self._warn_missing_file(filename)
+
         return initial_epoch
 
     def _init_model_restoring_callbacks(

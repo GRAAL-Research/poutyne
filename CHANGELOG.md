@@ -5,6 +5,7 @@ Breaking changes:
 * When using epoch metrics `'f1'`, `'precision'`, `'recall'` and associated classes, the default average has been changed
   to `'macro'` instead of `'micro'`. This changes the names of the metrics that is displayed and that is in the log
   dictionnary in callbacks. This change also applies to `Experiment` when using `task='classif'`.
+* Exceptions when loading checkpoints in `Experiment` are now propagated instead of being silenced.
 
 # v1.7
 
