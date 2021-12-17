@@ -8,7 +8,7 @@
 <meta content="https://poutyne.org/_static/logos/poutyne-notext.png" property="og:image" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Here is Poutyne &mdash; Poutyne 1.7 documentation</title>
+  <title>Here is Poutyne &mdash; Poutyne 1.8 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -34,7 +34,7 @@
             <img src="_static/poutyne-light.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                1.7
+                1.8
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -61,6 +61,7 @@
 <li class="toctree-l1"><a class="reference internal" href="examples/policy_interface.html">Interface of <code class="docutils literal notranslate"><span class="pre">policy</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="examples/transfer_learning.html">Transfer learning example</a></li>
 <li class="toctree-l1"><a class="reference internal" href="examples/image_reconstruction.html">Image Reconstruction Using Poutyne</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples/classification_and_regression.html">Gender Classification and Eyes Location Detection: A Two Task Problem</a></li>
 <li class="toctree-l1"><a class="reference internal" href="examples/semantic_segmentation.html">Semantic segmentation using Poutyne</a></li>
 </ul>
 
@@ -100,11 +101,11 @@
 <p>Poutyne is compatible with the <strong>latest version of PyTorch</strong> and  <strong>Python &gt;= 3.6</strong>.</p>
 <section id="cite">
 <h2>Cite<a class="headerlink" href="#cite" title="Permalink to this headline"></a></h2>
-<div class="highlight-bib notranslate"><div class="highlight"><pre><span></span><span class="nc">@misc</span><span class="p">{</span><span class="nl">poutyne</span><span class="p">,</span>
-    <span class="na">author</span> <span class="p">=</span> <span class="s">{Paradis, Fr{\&#39;e}d{\&#39;e}rik and Beauchemin, David and Godbout, Mathieu and Alain, Mathieu and Garneau, Nicolas and Otte, Stefan and Tremblay, Alexis and B{\&#39;e}langer, Marc-Antoine and Laviolette, Fran{\c{c}}ois}</span><span class="p">,</span>
+<div class="highlight-bib notranslate"><div class="highlight"><pre><span></span><span class="nc">@misc</span><span class="p">{</span><span class="nl">Paradis_Poutyne_A_Simplified_2020</span><span class="p">,</span>
+    <span class="na">author</span> <span class="p">=</span> <span class="s">{Paradis, Frédérik and Beauchemin, David and Godbout, Mathieu and Alain, Mathieu and Garneau, Nicolas and Otte, Stefan and Tremblay, Alexis and Bélanger, Marc-Antoine and Laviolette, François}</span><span class="p">,</span>
     <span class="na">title</span>  <span class="p">=</span> <span class="s">{{Poutyne: A Simplified Framework for Deep Learning}}</span><span class="p">,</span>
     <span class="na">year</span>   <span class="p">=</span> <span class="s">{2020}</span><span class="p">,</span>
-    <span class="na">note</span>   <span class="p">=</span> <span class="s">{\url{https://poutyne.org}}</span>
+    <span class="na">url</span>    <span class="p">=</span> <span class="s">{https://poutyne.org}</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -226,6 +227,7 @@
 <li><p><a class="reference external" href="https://github.com/GRAAL-Research/poutyne/blob/master/examples/policy_cifar_example.ipynb">policy_cifar_example.ipynb</a> - policies API, FastAI-like learning rate policies</p></li>
 <li><p><a class="reference external" href="https://github.com/GRAAL-Research/poutyne/blob/master/examples/policy_interface.ipynb">policy_interface.ipynb</a> - example of policies</p></li>
 <li><p><a class="reference external" href="https://github.com/GRAAL-Research/poutyne/blob/master/examples/image_reconstruction.ipynb">image_reconstruction.ipynb</a> - example of image reconstruction</p></li>
+<li><p><a class="reference external" href="https://github.com/GRAAL-Research/poutyne/blob/master/examples/classification_and_regression.ipynb">classification_and_regression.ipynb</a> - example of multitask learning with classification and regression</p></li>
 <li><p><a class="reference external" href="https://github.com/GRAAL-Research/poutyne/blob/master/examples/semantic_segmentation.ipynb">semantic_segmentation.ipynb</a> - example of semantic segmentation</p></li>
 </ul>
 <p>or in <code class="docutils literal notranslate"><span class="pre">Google</span> <span class="pre">Colab</span></code>:</p>
@@ -236,6 +238,7 @@
 <li><p><a class="reference external" href="https://colab.research.google.com/github/GRAAL-Research/poutyne/blob/master/examples/policy_cifar_example.ipynb">policy_cifar_example.ipynb</a> - policies API, FastAI-like learning rate policies</p></li>
 <li><p><a class="reference external" href="https://colab.research.google.com/github/GRAAL-Research/poutyne/blob/master/examples/policy_interface.ipynb">policy_interface.ipynb</a> - example of policies</p></li>
 <li><p><a class="reference external" href="https://colab.research.google.com/github/GRAAL-Research/poutyne/blob/master/examples/image_reconstruction.ipynb">image_reconstruction.ipynb</a> - example of image reconstruction</p></li>
+<li><p><a class="reference external" href="https://colab.research.google.com/github/GRAAL-Research/poutyne/blob/master/examples/classification_and_regression.ipynb">classification_and_regression.ipynb</a> - example of multitask learning with classification and regression</p></li>
 <li><p><a class="reference external" href="https://colab.research.google.com/github/GRAAL-Research/poutyne/blob/master/examples/semantic_segmentation.ipynb">semantic_segmentation.ipynb</a> - example of semantic segmentation</p></li>
 </ul>
 </section>
@@ -286,6 +289,7 @@
 <li class="toctree-l1"><a class="reference internal" href="examples/policy_interface.html">Interface of <code class="docutils literal notranslate"><span class="pre">policy</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="examples/transfer_learning.html">Transfer learning example</a></li>
 <li class="toctree-l1"><a class="reference internal" href="examples/image_reconstruction.html">Image Reconstruction Using Poutyne</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples/classification_and_regression.html">Gender Classification and Eyes Location Detection: A Two Task Problem</a></li>
 <li class="toctree-l1"><a class="reference internal" href="examples/semantic_segmentation.html">Semantic segmentation using Poutyne</a></li>
 </ul>
 </div>

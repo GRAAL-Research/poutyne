@@ -55,14 +55,12 @@ The MNIST dataset is directly downloaded from the ``torchvision.datasets`` packa
 
     full_train_dataset = datasets.MNIST('./datasets/', train=True, download=True, transform=tfms.ToTensor())
     test_dataset = datasets.MNIST('./datasets/', train=False, download=True, transform=tfms.ToTensor())
-
     # Selecting and seperating a proportion of the full_train_dataset to create the validation dataset.
     full_dataset_length = len(full_train_dataset)
     indices = list(np.arange(full_dataset_length))
     np.random.shuffle(indices)
     train_indices = indices[math.floor(full_dataset_length * valid_split_percent):]
     valid_indices = indices[:math.floor(full_dataset_length * valid_split_percent)]
-
     train_dataset = Subset(full_train_dataset, train_indices)
     valid_dataset = Subset(full_train_dataset, valid_indices)
 
@@ -91,7 +89,6 @@ Finally, in the section below, we wrap the MNIST datasets into our wrapper and c
     train_dataset_new = ImageReconstructionDataset(train_dataset)
     valid_dataset_new = ImageReconstructionDataset(valid_dataset)
     test_dataset_new = ImageReconstructionDataset(test_dataset)
-
     train_dataloader = DataLoader(train_dataset_new, batch_size=batch_size, shuffle=True)
     valid_dataloader = DataLoader(valid_dataset_new, batch_size=batch_size, shuffle=False)
     test_dataloader = DataLoader(test_dataset_new, batch_size=1, shuffle=False)
@@ -163,7 +160,6 @@ Training
 
     # Poutyne Model on GPU
     model = Model(network, optimizer, criterion, device=device)
-
     # Train
     model.fit_generator(train_dataloader, valid_dataloader, epochs=num_epochs, callbacks=callbacks)
 

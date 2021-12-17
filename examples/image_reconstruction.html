@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Image Reconstruction Using Poutyne &mdash; Poutyne 1.7 documentation</title>
+  <title>Image Reconstruction Using Poutyne &mdash; Poutyne 1.8 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -18,7 +18,7 @@
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Semantic segmentation using Poutyne" href="semantic_segmentation.html" />
+    <link rel="next" title="Gender Classification and Eyes Location Detection: A Two Task Problem" href="classification_and_regression.html" />
     <link rel="prev" title="Transfer learning example" href="transfer_learning.html" /> 
 </head>
 
@@ -31,7 +31,7 @@
             <img src="../_static/poutyne-light.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                1.7
+                1.8
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
@@ -69,6 +69,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#reconstructed-images-after-the-second-training-process">Reconstructed images after the second training process</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="classification_and_regression.html">Gender Classification and Eyes Location Detection: A Two Task Problem</a></li>
 <li class="toctree-l1"><a class="reference internal" href="semantic_segmentation.html">Semantic segmentation using Poutyne</a></li>
 </ul>
 
@@ -141,14 +142,12 @@
 <p>The MNIST dataset is directly downloaded from the <code class="docutils literal notranslate"><span class="pre">torchvision.datasets</span></code> package. The training dataset contains 60,000 images of digits of size 28x28. However, we separate 20% of the full train dataset as a validation dataset. Also, by setting the <code class="docutils literal notranslate"><span class="pre">train</span></code> argument to <code class="docutils literal notranslate"><span class="pre">False</span></code>, the test dataset containing 10,000 images is downloaded and saved in the “datasets” directory.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">full_train_dataset</span> <span class="o">=</span> <span class="n">datasets</span><span class="o">.</span><span class="n">MNIST</span><span class="p">(</span><span class="s1">&#39;./datasets/&#39;</span><span class="p">,</span> <span class="n">train</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">download</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">tfms</span><span class="o">.</span><span class="n">ToTensor</span><span class="p">())</span>
 <span class="n">test_dataset</span> <span class="o">=</span> <span class="n">datasets</span><span class="o">.</span><span class="n">MNIST</span><span class="p">(</span><span class="s1">&#39;./datasets/&#39;</span><span class="p">,</span> <span class="n">train</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">download</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">tfms</span><span class="o">.</span><span class="n">ToTensor</span><span class="p">())</span>
-
 <span class="c1"># Selecting and seperating a proportion of the full_train_dataset to create the validation dataset.</span>
 <span class="n">full_dataset_length</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">full_train_dataset</span><span class="p">)</span>
 <span class="n">indices</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">full_dataset_length</span><span class="p">))</span>
 <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">shuffle</span><span class="p">(</span><span class="n">indices</span><span class="p">)</span>
 <span class="n">train_indices</span> <span class="o">=</span> <span class="n">indices</span><span class="p">[</span><span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">full_dataset_length</span> <span class="o">*</span> <span class="n">valid_split_percent</span><span class="p">):]</span>
 <span class="n">valid_indices</span> <span class="o">=</span> <span class="n">indices</span><span class="p">[:</span><span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">full_dataset_length</span> <span class="o">*</span> <span class="n">valid_split_percent</span><span class="p">)]</span>
-
 <span class="n">train_dataset</span> <span class="o">=</span> <span class="n">Subset</span><span class="p">(</span><span class="n">full_train_dataset</span><span class="p">,</span> <span class="n">train_indices</span><span class="p">)</span>
 <span class="n">valid_dataset</span> <span class="o">=</span> <span class="n">Subset</span><span class="p">(</span><span class="n">full_train_dataset</span><span class="p">,</span> <span class="n">valid_indices</span><span class="p">)</span>
 </pre></div>
@@ -173,7 +172,6 @@
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">train_dataset_new</span> <span class="o">=</span> <span class="n">ImageReconstructionDataset</span><span class="p">(</span><span class="n">train_dataset</span><span class="p">)</span>
 <span class="n">valid_dataset_new</span> <span class="o">=</span> <span class="n">ImageReconstructionDataset</span><span class="p">(</span><span class="n">valid_dataset</span><span class="p">)</span>
 <span class="n">test_dataset_new</span> <span class="o">=</span> <span class="n">ImageReconstructionDataset</span><span class="p">(</span><span class="n">test_dataset</span><span class="p">)</span>
-
 <span class="n">train_dataloader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">train_dataset_new</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">valid_dataloader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">valid_dataset_new</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <span class="n">test_dataloader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">test_dataset_new</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
@@ -238,7 +236,6 @@
 <h2>Training<a class="headerlink" href="#training" title="Permalink to this headline"></a></h2>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Poutyne Model on GPU</span>
 <span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span><span class="n">network</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">criterion</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
-
 <span class="c1"># Train</span>
 <span class="n">model</span><span class="o">.</span><span class="n">fit_generator</span><span class="p">(</span><span class="n">train_dataloader</span><span class="p">,</span> <span class="n">valid_dataloader</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="n">num_epochs</span><span class="p">,</span> <span class="n">callbacks</span><span class="o">=</span><span class="n">callbacks</span><span class="p">)</span>
 </pre></div>
@@ -359,7 +356,7 @@
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="transfer_learning.html" class="btn btn-neutral float-left" title="Transfer learning example" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="semantic_segmentation.html" class="btn btn-neutral float-right" title="Semantic segmentation using Poutyne" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="classification_and_regression.html" class="btn btn-neutral float-right" title="Gender Classification and Eyes Location Detection: A Two Task Problem" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

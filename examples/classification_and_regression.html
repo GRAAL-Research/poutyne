@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gender Classification and Eyes Location Detection: A Two Task Problem &mdash; Poutyne 1.8 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Semantic segmentation using Poutyne" href="semantic_segmentation.html" />
+    <link rel="prev" title="Image Reconstruction Using Poutyne" href="image_reconstruction.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html">
+            <img src="../_static/poutyne-light.png" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                1.8
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../model.html">Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../experiment.html">Experiment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../metrics.html">Metrics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../callbacks.html">Callbacks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../layers.html">Layers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../utils.html">Utils</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Examples</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction to PyTorch and Poutyne</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tips_and_tricks.html">Tips and Tricks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sequence_tagging.html">Sequence Tagging With an RNN</a></li>
+<li class="toctree-l1"><a class="reference internal" href="policy_interface.html">Interface of <code class="docutils literal notranslate"><span class="pre">policy</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="transfer_learning.html">Transfer learning example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="image_reconstruction.html">Image Reconstruction Using Poutyne</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Gender Classification and Eyes Location Detection: A Two Task Problem</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#training-constants">Training Constants</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#celeba-dataset">CelebA Dataset</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#fetching-data">Fetching data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#network">Network</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#loss-function">Loss function</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#training">Training</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#evaluation">Evaluation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="semantic_segmentation.html">Semantic segmentation using Poutyne</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Poutyne</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Gender Classification and Eyes Location Detection: A Two Task Problem</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/examples/classification_and_regression.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="gender-classification-and-eyes-location-detection-a-two-task-problem">
+<h1>Gender Classification and Eyes Location Detection: A Two Task Problem<a class="headerlink" href="#gender-classification-and-eyes-location-detection-a-two-task-problem" title="Permalink to this headline"></a></h1>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<ul class="simple">
+<li><p>See the notebook <a class="reference external" href="https://github.com/GRAAL-Research/poutyne/blob/master/examples/classification_and_regression.ipynb">here</a></p></li>
+<li><p>Run in <a class="reference external" href="https://colab.research.google.com/github/GRAAL-Research/poutyne/blob/master/examples/classification_and_regression.ipynb">Google Colab</a></p></li>
+</ul>
+</div>
+<p>In this example, we are going to implement a multi-task problem. We try to identify the gender of the people, as well as locating their eyes in the image. Hence, we have two different tasks: classification (to identify the gender) and regression (to find the location of the eyes). We are going to use a single network (a CNN) to perform both tasks, however, we will need to apply different loss functions, each proper to a specific task. For this example we will need to install a few libraries (such as OpenCV, wget). If you don’t have them, they can be installed as below:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="o">%</span><span class="n">pip</span> <span class="n">install</span> <span class="n">poutyne</span>          <span class="c1"># to install the Poutyne library</span>
+<span class="o">%</span><span class="n">pip</span> <span class="n">install</span> <span class="n">wget</span>             <span class="c1"># to install the wget library in order to download data</span>
+<span class="o">%</span><span class="n">pip</span> <span class="n">install</span> <span class="n">opencv</span><span class="o">-</span><span class="n">python</span>    <span class="c1"># to install the cv2 (opencv) library</span>
+</pre></div>
+</div>
+<p>Let’s import all the needed packages.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">wget</span>
+<span class="kn">import</span> <span class="nn">zipfile</span>
+<span class="kn">import</span> <span class="nn">cv2</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
+<span class="kn">import</span> <span class="nn">torch.nn.functional</span> <span class="k">as</span> <span class="nn">F</span>
+<span class="kn">import</span> <span class="nn">torch.optim</span> <span class="k">as</span> <span class="nn">optim</span>
+<span class="kn">import</span> <span class="nn">torchvision.datasets</span> <span class="k">as</span> <span class="nn">datasets</span>
+<span class="kn">import</span> <span class="nn">torchvision.models</span> <span class="k">as</span> <span class="nn">models</span>
+<span class="kn">import</span> <span class="nn">torchvision.transforms</span> <span class="k">as</span> <span class="nn">tfms</span>
+<span class="kn">from</span> <span class="nn">poutyne</span> <span class="kn">import</span> <span class="n">set_seeds</span><span class="p">,</span> <span class="n">Model</span><span class="p">,</span> <span class="n">ModelCheckpoint</span><span class="p">,</span> <span class="n">CSVLogger</span><span class="p">,</span> <span class="n">Experiment</span><span class="p">,</span> <span class="n">StepLR</span>
+<span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="kn">import</span> <span class="n">DataLoader</span><span class="p">,</span> <span class="n">Subset</span><span class="p">,</span> <span class="n">Dataset</span>
+<span class="kn">from</span> <span class="nn">torchvision.utils</span> <span class="kn">import</span> <span class="n">make_grid</span>
+</pre></div>
+</div>
+<section id="training-constants">
+<h2>Training Constants<a class="headerlink" href="#training-constants" title="Permalink to this headline"></a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">num_epochs</span> <span class="o">=</span> <span class="mi">5</span>
+<span class="n">learning_rate</span> <span class="o">=</span> <span class="mf">0.01</span>
+<span class="n">batch_size</span> <span class="o">=</span> <span class="mi">16</span>
+<span class="n">image_size</span> <span class="o">=</span> <span class="mi">224</span>
+<span class="n">w</span><span class="p">,</span> <span class="n">h</span> <span class="o">=</span> <span class="mi">218</span><span class="p">,</span> <span class="mi">178</span>  <span class="c1"># the width and the hight of original images before resizing</span>
+<span class="n">set_seeds</span><span class="p">(</span><span class="mi">48</span><span class="p">)</span>
+<span class="n">gender_index</span> <span class="o">=</span> <span class="mi">20</span>  <span class="c1"># in the CelebA dataset gender information is the 21th item in the attributes vector.</span>
+<span class="n">W</span> <span class="o">=</span> <span class="mf">0.4</span>  <span class="c1"># the weight of regression loss</span>
+<span class="n">imagenet_mean</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.485</span><span class="p">,</span> <span class="mf">0.456</span><span class="p">,</span> <span class="mf">0.406</span><span class="p">]</span>  <span class="c1"># mean of the ImageNet dataset for normalizing</span>
+<span class="n">imagenet_std</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.229</span><span class="p">,</span> <span class="mf">0.224</span><span class="p">,</span> <span class="mf">0.225</span><span class="p">]</span>  <span class="c1"># std of the ImageNet dataset for normalizing</span>
+<span class="n">device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">&quot;cuda&quot;</span> <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span> <span class="k">else</span> <span class="s2">&quot;cpu&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;The running processor is...&quot;</span><span class="p">,</span> <span class="n">device</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="celeba-dataset">
+<h2>CelebA Dataset<a class="headerlink" href="#celeba-dataset" title="Permalink to this headline"></a></h2>
+<p>We are going to use the CelebA dataset for this experiment. The CelebA dataset is a large-scale face attributes dataset which can be employed as the training and test sets for the following computer vision tasks: face attribute recognition, face detection, landmark (or facial part) localization, and face editing &amp; synthesis.</p>
+</section>
+<section id="fetching-data">
+<h2>Fetching data<a class="headerlink" href="#fetching-data" title="Permalink to this headline"></a></h2>
+<p>The section below consists of a few lines of codes that help us download the CelebA dataset from a public web source and unzip it. Downloading the CelebA dataset can be also done directly using <cite>torch.datasets.CelebA(data_root, download=True)</cite>. However, due to the high traffic on the dataset’s Google Drive (the main source of the dataset), it usually fails to function. Hence we decided to download it from another public source but use it with <cite>torch.datasets.CelebA()</cite>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">data_root</span> <span class="o">=</span> <span class="s2">&quot;datasets&quot;</span>
+
+<span class="n">base_url</span> <span class="o">=</span> <span class="s2">&quot;https://graal.ift.ulaval.ca/public/celeba/&quot;</span>
+
+<span class="n">file_list</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;img_align_celeba.zip&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;list_attr_celeba.txt&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;identity_CelebA.txt&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;list_bbox_celeba.txt&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;list_landmarks_align_celeba.txt&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;list_eval_partition.txt&quot;</span><span class="p">,</span>
+<span class="p">]</span>
+
+<span class="c1"># Path to folder with the dataset</span>
+<span class="n">dataset_folder</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">data_root</span><span class="si">}</span><span class="s2">/celeba&quot;</span>
+<span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">dataset_folder</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">file_list</span><span class="p">:</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">base_url</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">file</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">dataset_folder</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">file</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">):</span>
+        <span class="n">wget</span><span class="o">.</span><span class="n">download</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">dataset_folder</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">file</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="k">with</span> <span class="n">zipfile</span><span class="o">.</span><span class="n">ZipFile</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">dataset_folder</span><span class="si">}</span><span class="s2">/img_align_celeba.zip&quot;</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">ziphandler</span><span class="p">:</span>
+    <span class="n">ziphandler</span><span class="o">.</span><span class="n">extractall</span><span class="p">(</span><span class="n">dataset_folder</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Now, as the dataset is downloaded, we can define our datasets and dataloaders in its original way.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">transforms</span> <span class="o">=</span> <span class="n">tfms</span><span class="o">.</span><span class="n">Compose</span><span class="p">(</span>
+    <span class="p">[</span>
+        <span class="n">tfms</span><span class="o">.</span><span class="n">Resize</span><span class="p">((</span><span class="n">image_size</span><span class="p">,</span> <span class="n">image_size</span><span class="p">)),</span>
+        <span class="n">tfms</span><span class="o">.</span><span class="n">ToTensor</span><span class="p">(),</span>
+        <span class="n">tfms</span><span class="o">.</span><span class="n">Normalize</span><span class="p">(</span><span class="n">imagenet_mean</span><span class="p">,</span> <span class="n">imagenet_std</span><span class="p">),</span>
+    <span class="p">]</span>
+<span class="p">)</span>
+<span class="n">train_dataset</span> <span class="o">=</span> <span class="n">datasets</span><span class="o">.</span><span class="n">CelebA</span><span class="p">(</span><span class="n">data_root</span><span class="p">,</span> <span class="n">split</span><span class="o">=</span><span class="s2">&quot;train&quot;</span><span class="p">,</span> <span class="n">target_type</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;attr&quot;</span><span class="p">,</span> <span class="s2">&quot;landmarks&quot;</span><span class="p">],</span> <span class="n">transform</span><span class="o">=</span><span class="n">transforms</span><span class="p">)</span>
+<span class="n">valid_dataset</span> <span class="o">=</span> <span class="n">datasets</span><span class="o">.</span><span class="n">CelebA</span><span class="p">(</span><span class="n">data_root</span><span class="p">,</span> <span class="n">split</span><span class="o">=</span><span class="s2">&quot;valid&quot;</span><span class="p">,</span> <span class="n">target_type</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;attr&quot;</span><span class="p">,</span> <span class="s2">&quot;landmarks&quot;</span><span class="p">],</span> <span class="n">transform</span><span class="o">=</span><span class="n">transforms</span><span class="p">)</span>
+<span class="n">test_dataset</span> <span class="o">=</span> <span class="n">datasets</span><span class="o">.</span><span class="n">CelebA</span><span class="p">(</span><span class="n">data_root</span><span class="p">,</span> <span class="n">split</span><span class="o">=</span><span class="s2">&quot;test&quot;</span><span class="p">,</span> <span class="n">target_type</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;attr&quot;</span><span class="p">,</span> <span class="s2">&quot;landmarks&quot;</span><span class="p">],</span> <span class="n">transform</span><span class="o">=</span><span class="n">transforms</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Here we can see how each dataset sample looks like:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">train_dataset</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</pre></div>
+</div>
+<img alt="../_images/out.png" src="../_images/out.png" />
+<p>Regarding the complexity of the problem and the number of training/valid samples, we have a huge number of training/validation images. Since there are not a considerable variation between images (e.g., the eye coordinates in images do not vary considerably), using all images in the dataset is not necessary and will only increase the training time. Hence, we can seperate and use a portion of data as below:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">train_subset</span> <span class="o">=</span> <span class="n">Subset</span><span class="p">(</span><span class="n">train_dataset</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">50000</span><span class="p">))</span>
+<span class="n">valid_subset</span> <span class="o">=</span> <span class="n">Subset</span><span class="p">(</span><span class="n">valid_dataset</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2000</span><span class="p">))</span>
+<span class="n">test_subset</span> <span class="o">=</span> <span class="n">Subset</span><span class="p">(</span><span class="n">test_dataset</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1000</span><span class="p">))</span>
+<span class="n">train_dataloader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">train_subset</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">valid_dataloader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">valid_subset</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">test_dataloader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">test_subset</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Here, we can see an example from the training dataset. It shows an image of a person, printing the gender and also showing the location of the eyes. It is worth mentioning that as we resize the image, the coordinates of the eyes should also be changed with same ratio.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">sample_number</span> <span class="o">=</span> <span class="mi">3</span>
+<span class="n">image</span> <span class="o">=</span> <span class="n">train_dataset</span><span class="p">[</span><span class="n">sample_number</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">image</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">permute</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+<span class="n">image_rgb</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">cvtColor</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="n">image</span><span class="p">),</span> <span class="n">cv2</span><span class="o">.</span><span class="n">COLOR_BGR2RGB</span><span class="p">)</span>
+<span class="n">image_rgb</span> <span class="o">=</span> <span class="n">image_rgb</span> <span class="o">*</span> <span class="n">imagenet_std</span> <span class="o">+</span> <span class="n">imagenet_mean</span>
+<span class="n">gender</span> <span class="o">=</span> <span class="s2">&quot;male&quot;</span> <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="n">train_dataset</span><span class="p">[</span><span class="n">sample_number</span><span class="p">][</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="n">gender_index</span><span class="p">])</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="s2">&quot;female&quot;</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Gender is:&quot;</span><span class="p">,</span> <span class="n">gender</span><span class="p">)</span>
+<span class="n">w</span><span class="p">,</span> <span class="n">h</span> <span class="o">=</span> <span class="mi">218</span><span class="p">,</span> <span class="mi">178</span>
+<span class="c1"># The coordinates vector of the datasets starts with X_L, y_L, X_R, y_R</span>
+<span class="p">(</span><span class="n">x_L</span><span class="p">,</span> <span class="n">y_L</span><span class="p">)</span> <span class="o">=</span> <span class="n">train_dataset</span><span class="p">[</span><span class="n">sample_number</span><span class="p">][</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">]</span>
+<span class="p">(</span><span class="n">x_R</span><span class="p">,</span> <span class="n">y_R</span><span class="p">)</span> <span class="o">=</span> <span class="n">train_dataset</span><span class="p">[</span><span class="n">sample_number</span><span class="p">][</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">][</span><span class="mi">2</span><span class="p">:</span><span class="mi">4</span><span class="p">]</span>
+<span class="n">w_scale</span> <span class="o">=</span> <span class="n">image_size</span> <span class="o">/</span> <span class="n">w</span>
+<span class="n">h_scale</span> <span class="o">=</span> <span class="n">image_size</span> <span class="o">/</span> <span class="n">h</span>
+<span class="n">x_L</span><span class="p">,</span> <span class="n">x_R</span> <span class="o">=</span> <span class="p">(</span><span class="n">x_L</span> <span class="o">*</span> <span class="n">h_scale</span><span class="p">),</span> <span class="p">(</span><span class="n">x_R</span> <span class="o">*</span> <span class="n">h_scale</span><span class="p">)</span>  <span class="c1"># rescaling for the size of (224,224) and finaly to the range of [0,1]</span>
+<span class="n">y_L</span><span class="p">,</span> <span class="n">y_R</span> <span class="o">=</span> <span class="p">(</span><span class="n">y_L</span> <span class="o">*</span> <span class="n">w_scale</span><span class="p">),</span> <span class="p">(</span><span class="n">y_R</span> <span class="o">*</span> <span class="n">w_scale</span><span class="p">)</span>
+<span class="n">x_L</span><span class="p">,</span> <span class="n">x_R</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">x_L</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">x_R</span><span class="p">)</span>
+<span class="n">y_L</span><span class="p">,</span> <span class="n">y_R</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">y_L</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">y_R</span><span class="p">)</span>
+<span class="n">image_rgb</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">drawMarker</span><span class="p">(</span><span class="n">image_rgb</span><span class="p">,</span> <span class="p">(</span><span class="n">x_L</span><span class="p">,</span> <span class="n">y_L</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">255</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+<span class="n">image_rgb</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">drawMarker</span><span class="p">(</span><span class="n">image_rgb</span><span class="p">,</span> <span class="p">(</span><span class="n">x_R</span><span class="p">,</span> <span class="n">y_R</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">255</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+<span class="n">image_rgb</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">cvtColor</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="n">image_rgb</span><span class="p">),</span> <span class="n">cv2</span><span class="o">.</span><span class="n">COLOR_BGR2RGB</span><span class="p">)</span>
+<span class="n">image_rgb</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">image_rgb</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">image_rgb</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s2">&quot;off&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<img alt="../_images/dataset_sample.png" src="../_images/dataset_sample.png" />
+</section>
+<section id="network">
+<h2>Network<a class="headerlink" href="#network" title="Permalink to this headline"></a></h2>
+<p>Below, we define a new class, named <cite>ClassifierLocalizer</cite>, which accepts a pre-trained CNN and changes its last fully connected layer to be proper for the two task problem. The new fully connected layer contains 6 neurons, 2 for the classification task (male or female) and 4 for the localization task (x and y for the left and right eyes). Moreover, to put the location results on the same scale as the class scores, we apply the sigmoid function to the neurons assigned for the localization task.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">ClassifierLocalizer</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_name</span><span class="p">,</span> <span class="n">num_classes</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ClassifierLocalizer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_classes</span> <span class="o">=</span> <span class="n">num_classes</span>
+
+        <span class="c1"># create cnn model</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">models</span><span class="p">,</span> <span class="n">model_name</span><span class="p">)(</span><span class="n">pretrained</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># remove fc layers and add a new fc layer</span>
+        <span class="n">num_features</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">fc</span><span class="o">.</span><span class="n">in_features</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">fc</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">num_features</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>  <span class="c1"># classifier + localizer</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>  <span class="c1"># extract features from CNN</span>
+        <span class="n">scores</span> <span class="o">=</span> <span class="n">x</span><span class="p">[:,</span> <span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_classes</span><span class="p">]</span>  <span class="c1"># class scores</span>
+        <span class="n">coords</span> <span class="o">=</span> <span class="n">x</span><span class="p">[:,</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_classes</span> <span class="p">:]</span>  <span class="c1"># coordinates</span>
+        <span class="k">return</span> <span class="n">scores</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>  <span class="c1"># sigmoid output is in the range of [0, 1]</span>
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">network</span> <span class="o">=</span> <span class="n">ClassifierLocalizer</span><span class="p">(</span><span class="n">model_name</span><span class="o">=</span><span class="s1">&#39;resnet18&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="loss-function">
+<h2>Loss function<a class="headerlink" href="#loss-function" title="Permalink to this headline"></a></h2>
+<p>As we discussed before, we have two different tasks in this example. These tasks need different loss functions; Cross-Entropy loss for the classification and Mean Square Error loss for the regression. Below, we define a new loss function class that sums both losses to considers them simultaneously. However, as the regression is relatively a simpler task here (due to similarity of coordinates in the images), we apply a lower weight to MSEloss.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">ClassificationRegressionLoss</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">W</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ClassificationRegressionLoss</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ce_loss</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">CrossEntropyLoss</span><span class="p">()</span>  <span class="c1"># size_average=False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mse_loss</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">MSELoss</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">W</span> <span class="o">=</span> <span class="n">W</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">y_true</span><span class="p">):</span>
+        <span class="n">loss_cls</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ce_loss</span><span class="p">(</span><span class="n">y_pred</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">y_true</span><span class="p">[</span><span class="mi">0</span><span class="p">][:,</span> <span class="n">gender_index</span><span class="p">])</span>  <span class="c1"># Cross Entropy Error (for classification)</span>
+        <span class="n">loss_reg1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mse_loss</span><span class="p">(</span><span class="n">y_pred</span><span class="p">[</span><span class="mi">1</span><span class="p">][:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">y_true</span><span class="p">[</span><span class="mi">1</span><span class="p">][:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">h</span><span class="p">)</span>  <span class="c1"># Mean Squared Error for X_L</span>
+        <span class="n">loss_reg2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mse_loss</span><span class="p">(</span><span class="n">y_pred</span><span class="p">[</span><span class="mi">1</span><span class="p">][:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">y_true</span><span class="p">[</span><span class="mi">1</span><span class="p">][:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">w</span><span class="p">)</span>  <span class="c1"># Mean Squared Error for Y_L</span>
+        <span class="n">loss_reg3</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mse_loss</span><span class="p">(</span><span class="n">y_pred</span><span class="p">[</span><span class="mi">1</span><span class="p">][:,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">y_true</span><span class="p">[</span><span class="mi">1</span><span class="p">][:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">/</span> <span class="n">h</span><span class="p">)</span>  <span class="c1"># Mean Squared Error for X_R</span>
+        <span class="n">loss_reg4</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mse_loss</span><span class="p">(</span><span class="n">y_pred</span><span class="p">[</span><span class="mi">1</span><span class="p">][:,</span> <span class="mi">3</span><span class="p">],</span> <span class="n">y_true</span><span class="p">[</span><span class="mi">1</span><span class="p">][:,</span> <span class="mi">3</span><span class="p">]</span> <span class="o">/</span> <span class="n">w</span><span class="p">)</span>  <span class="c1"># Mean Squared Error for Y_R</span>
+        <span class="n">total_loss</span> <span class="o">=</span> <span class="n">loss_cls</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">W</span> <span class="o">*</span> <span class="p">(</span><span class="n">loss_reg1</span> <span class="o">+</span> <span class="n">loss_reg2</span> <span class="o">+</span> <span class="n">loss_reg3</span> <span class="o">+</span> <span class="n">loss_reg4</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">total_loss</span>
+</pre></div>
+</div>
+</section>
+<section id="training">
+<h2>Training<a class="headerlink" href="#training" title="Permalink to this headline"></a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">optimizer</span> <span class="o">=</span> <span class="n">optim</span><span class="o">.</span><span class="n">SGD</span><span class="p">(</span><span class="n">network</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="n">learning_rate</span><span class="p">,</span> <span class="n">weight_decay</span><span class="o">=</span><span class="mf">0.001</span><span class="p">)</span>
+<span class="n">loss_function</span> <span class="o">=</span> <span class="n">ClassificationRegressionLoss</span><span class="p">(</span><span class="n">W</span><span class="p">)</span>
+<span class="n">exp</span> <span class="o">=</span> <span class="n">Experiment</span><span class="p">(</span>
+    <span class="s2">&quot;./saves/two_task_example&quot;</span><span class="p">,</span>
+    <span class="n">network</span><span class="p">,</span>
+    <span class="n">optimizer</span><span class="o">=</span><span class="n">optimizer</span><span class="p">,</span>
+    <span class="n">loss_function</span><span class="o">=</span><span class="n">loss_function</span><span class="p">,</span>
+    <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">exp</span><span class="o">.</span><span class="n">train</span><span class="p">(</span><span class="n">train_dataloader</span><span class="p">,</span> <span class="n">valid_dataloader</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="n">num_epochs</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="evaluation">
+<h2>Evaluation<a class="headerlink" href="#evaluation" title="Permalink to this headline"></a></h2>
+<p>As you have also noticed from the training logs, in this try we achieved the best performance (considering the validation loss) at the 15th epoch. The weights of the network for the corresponding epoch have been automatically saved by the <cite>Experiment</cite> function and we use these parameters to evaluate our algorithm visually. For this purpose, we utilize the <cite>load_checkpoint</cite> method and set its argument to <cite>best</cite> to load the best weights of the model automatically. Finally,  we take advantage of the <cite>evaluate</cite> function of Poutyne, and apply it to the validation dataset. It provides us the predictions as well as the ground-truth for comparison, in case of need.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">exp</span><span class="o">.</span><span class="n">load_checkpoint</span><span class="p">(</span><span class="s2">&quot;best&quot;</span><span class="p">)</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">exp</span><span class="o">.</span><span class="n">model</span>
+<span class="n">loss</span><span class="p">,</span> <span class="n">predictions</span><span class="p">,</span> <span class="n">ground_truth</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">evaluate_generator</span><span class="p">(</span><span class="n">test_dataloader</span><span class="p">,</span> <span class="n">return_pred</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">return_ground_truth</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">callbacks</span></code> feature of Poutyne, also used by the Experiment class, records the training logs. We can use this information to monitor and analyze the training process.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">logs</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&quot;./saves/two_task_example/log.tsv&quot;</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">logs</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="../_images/logs.png" src="../_images/logs.png" />
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">train_loss</span> <span class="o">=</span> <span class="n">logs</span><span class="o">.</span><span class="n">loss</span>
+<span class="n">valid_loss</span> <span class="o">=</span> <span class="n">logs</span><span class="o">.</span><span class="n">val_loss</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">train_loss</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">valid_loss</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">([</span><span class="s2">&quot;train_loss&quot;</span><span class="p">,</span> <span class="s2">&quot;valid_loss&quot;</span><span class="p">])</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;training and validation losses&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<img alt="../_images/loss_diagram.png" src="../_images/loss_diagram.png" />
+<p>We can also evaluate the performance of the trained network (a network with the best weights) on any dataset, as below:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">exp</span><span class="o">.</span><span class="n">test</span><span class="p">(</span><span class="n">test_dataloader</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Now let’s evaluate the performance of the network visually.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">sample_number</span> <span class="o">=</span> <span class="mi">123</span>
+<span class="n">image</span> <span class="o">=</span> <span class="n">test_subset</span><span class="p">[</span><span class="n">sample_number</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">image</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">permute</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+<span class="n">image_rgb</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">cvtColor</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="n">image</span><span class="p">),</span> <span class="n">cv2</span><span class="o">.</span><span class="n">COLOR_BGR2RGB</span><span class="p">)</span>
+<span class="n">image_rgb</span> <span class="o">=</span> <span class="n">image_rgb</span> <span class="o">*</span> <span class="n">imagenet_std</span> <span class="o">+</span> <span class="n">imagenet_mean</span>
+<span class="n">gender</span> <span class="o">=</span> <span class="s2">&quot;male&quot;</span> <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">predictions</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">sample_number</span><span class="p">])</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="s2">&quot;female&quot;</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Gender is:&quot;</span><span class="p">,</span> <span class="n">gender</span><span class="p">)</span>
+<span class="p">(</span><span class="n">x_L</span><span class="p">,</span> <span class="n">y_L</span><span class="p">)</span> <span class="o">=</span> <span class="n">predictions</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="n">sample_number</span><span class="p">][</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="n">image_size</span>
+<span class="p">(</span><span class="n">x_R</span><span class="p">,</span> <span class="n">y_R</span><span class="p">)</span> <span class="o">=</span> <span class="n">predictions</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="n">sample_number</span><span class="p">][</span><span class="mi">2</span><span class="p">:</span><span class="mi">4</span><span class="p">]</span> <span class="o">*</span> <span class="n">image_size</span>
+<span class="n">x_L</span><span class="p">,</span> <span class="n">x_R</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">x_L</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">x_R</span><span class="p">)</span>
+<span class="n">y_L</span><span class="p">,</span> <span class="n">y_R</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">y_L</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">y_R</span><span class="p">)</span>
+<span class="n">image_rgb</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">drawMarker</span><span class="p">(</span><span class="n">image_rgb</span><span class="p">,</span> <span class="p">(</span><span class="n">x_L</span><span class="p">,</span> <span class="n">y_L</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">255</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+<span class="n">image_rgb</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">drawMarker</span><span class="p">(</span><span class="n">image_rgb</span><span class="p">,</span> <span class="p">(</span><span class="n">x_R</span><span class="p">,</span> <span class="n">y_R</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">255</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+<span class="n">image_rgb</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">cvtColor</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="n">image_rgb</span><span class="p">),</span> <span class="n">cv2</span><span class="o">.</span><span class="n">COLOR_BGR2RGB</span><span class="p">)</span>
+<span class="n">image_rgb</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">image_rgb</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">image_rgb</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s2">&quot;off&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<img alt="../_images/output_sample.png" src="../_images/output_sample.png" />
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="image_reconstruction.html" class="btn btn-neutral float-left" title="Image Reconstruction Using Poutyne" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="semantic_segmentation.html" class="btn btn-neutral float-right" title="Semantic segmentation using Poutyne" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2018-2021, Frédérik Paradis.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+ 
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-177874682-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-177874682-1');
+</script>
+
+
+</body>
+</html>

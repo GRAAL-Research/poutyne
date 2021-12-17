@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>poutyne.framework.experiment &mdash; Poutyne 1.7 documentation</title>
+  <title>poutyne.framework.experiment &mdash; Poutyne 1.8 documentation</title>
       <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -28,7 +28,7 @@
             <img src="../../../_static/poutyne-light.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                1.7
+                1.8
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
@@ -55,6 +55,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../examples/policy_interface.html">Interface of <code class="docutils literal notranslate"><span class="pre">policy</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../examples/transfer_learning.html">Transfer learning example</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../examples/image_reconstruction.html">Image Reconstruction Using Poutyne</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/classification_and_regression.html">Gender Classification and Eyes Location Detection: A Two Task Problem</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../examples/semantic_segmentation.html">Semantic segmentation using Poutyne</a></li>
 </ul>
 
@@ -452,43 +453,32 @@
         <span class="c1"># pylint: disable=broad-except</span>
         <span class="n">initial_epoch</span> <span class="o">=</span> <span class="mi">1</span>
         <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">epoch_filename</span><span class="p">):</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">epoch_filename</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-                    <span class="n">initial_epoch</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">())</span> <span class="o">+</span> <span class="mi">1</span>
-            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">epoch_filename</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">initial_epoch</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">())</span> <span class="o">+</span> <span class="mi">1</span>
+
             <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_checkpoint_filename</span><span class="p">):</span>
-                <span class="k">try</span><span class="p">:</span>
-                    <span class="nb">print</span><span class="p">(</span>
-                        <span class="sa">f</span><span class="s2">&quot;Loading weights from </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">model_checkpoint_filename</span><span class="si">}</span><span class="s2"> and &quot;</span>
-                        <span class="sa">f</span><span class="s2">&quot;starting at epoch </span><span class="si">{</span><span class="n">initial_epoch</span><span class="si">:</span><span class="s2">d</span><span class="si">}</span><span class="s2">.&quot;</span>
-                    <span class="p">)</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">load_weights</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_checkpoint_filename</span><span class="p">)</span>
-                <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                    <span class="nb">print</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Loading weights from </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">model_checkpoint_filename</span><span class="si">}</span><span class="s2"> and starting at epoch </span><span class="si">{</span><span class="n">initial_epoch</span><span class="si">:</span><span class="s2">d</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">load_weights</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_checkpoint_filename</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_warn_missing_file</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_checkpoint_filename</span><span class="p">)</span>
+
             <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">optimizer_checkpoint_filename</span><span class="p">):</span>
-                <span class="k">try</span><span class="p">:</span>
-                    <span class="nb">print</span><span class="p">(</span>
-                        <span class="sa">f</span><span class="s2">&quot;Loading optimizer state from </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">optimizer_checkpoint_filename</span><span class="si">}</span><span class="s2"> and &quot;</span>
-                        <span class="sa">f</span><span class="s2">&quot;starting at epoch </span><span class="si">{</span><span class="n">initial_epoch</span><span class="si">:</span><span class="s2">d</span><span class="si">}</span><span class="s2">.&quot;</span>
-                    <span class="p">)</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">load_optimizer_state</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">optimizer_checkpoint_filename</span><span class="p">)</span>
-                <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                    <span class="nb">print</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Loading optimizer state from </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">optimizer_checkpoint_filename</span><span class="si">}</span><span class="s2"> and &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;starting at epoch </span><span class="si">{</span><span class="n">initial_epoch</span><span class="si">:</span><span class="s2">d</span><span class="si">}</span><span class="s2">.&quot;</span>
+                <span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">load_optimizer_state</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">optimizer_checkpoint_filename</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_warn_missing_file</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">optimizer_checkpoint_filename</span><span class="p">)</span>
+
             <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">lr_scheduler</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">lr_schedulers</span><span class="p">):</span>
                 <span class="n">filename</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lr_scheduler_filename</span> <span class="o">%</span> <span class="n">i</span>
                 <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
-                    <span class="k">try</span><span class="p">:</span>
-                        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Loading LR scheduler state from </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2"> and starting at epoch </span><span class="si">{</span><span class="n">initial_epoch</span><span class="si">:</span><span class="s2">d</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
-                        <span class="n">lr_scheduler</span><span class="o">.</span><span class="n">load_state</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
-                    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                        <span class="nb">print</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Loading LR scheduler state from </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2"> and starting at epoch </span><span class="si">{</span><span class="n">initial_epoch</span><span class="si">:</span><span class="s2">d</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+                    <span class="n">lr_scheduler</span><span class="o">.</span><span class="n">load_state</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_warn_missing_file</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+
         <span class="k">return</span> <span class="n">initial_epoch</span>
 
     <span class="k">def</span> <span class="nf">_init_model_restoring_callbacks</span><span class="p">(</span>

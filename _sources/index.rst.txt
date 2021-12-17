@@ -27,13 +27,12 @@ Cite
 ----
 .. code-block:: bib
 
-  @misc{poutyne,
-      author = {Paradis, Fr{\'e}d{\'e}rik and Beauchemin, David and Godbout, Mathieu and Alain, Mathieu and Garneau, Nicolas and Otte, Stefan and Tremblay, Alexis and B{\'e}langer, Marc-Antoine and Laviolette, Fran{\c{c}}ois},
+  @misc{Paradis_Poutyne_A_Simplified_2020,
+      author = {Paradis, Frédérik and Beauchemin, David and Godbout, Mathieu and Alain, Mathieu and Garneau, Nicolas and Otte, Stefan and Tremblay, Alexis and Bélanger, Marc-Antoine and Laviolette, François},
       title  = {{Poutyne: A Simplified Framework for Deep Learning}},
       year   = {2020},
-      note   = {\url{https://poutyne.org}}
+      url    = {https://poutyne.org}
   }
-
 
 Getting started: few seconds to Poutyne
 =======================================
@@ -180,6 +179,7 @@ Look at notebook files with full working `examples <https://github.com/GRAAL-Res
 - `policy_cifar_example.ipynb <https://github.com/GRAAL-Research/poutyne/blob/master/examples/policy_cifar_example.ipynb>`__ - policies API, FastAI-like learning rate policies
 - `policy_interface.ipynb <https://github.com/GRAAL-Research/poutyne/blob/master/examples/policy_interface.ipynb>`__ - example of policies
 - `image_reconstruction.ipynb <https://github.com/GRAAL-Research/poutyne/blob/master/examples/image_reconstruction.ipynb>`__ - example of image reconstruction
+- `classification_and_regression.ipynb <https://github.com/GRAAL-Research/poutyne/blob/master/examples/classification_and_regression.ipynb>`__ - example of multitask learning with classification and regression
 - `semantic_segmentation.ipynb <https://github.com/GRAAL-Research/poutyne/blob/master/examples/semantic_segmentation.ipynb>`__ - example of semantic segmentation
 
 or in ``Google Colab``:
@@ -190,6 +190,7 @@ or in ``Google Colab``:
 - `policy_cifar_example.ipynb <https://colab.research.google.com/github/GRAAL-Research/poutyne/blob/master/examples/policy_cifar_example.ipynb>`__ - policies API, FastAI-like learning rate policies
 - `policy_interface.ipynb <https://colab.research.google.com/github/GRAAL-Research/poutyne/blob/master/examples/policy_interface.ipynb>`__ - example of policies
 - `image_reconstruction.ipynb <https://colab.research.google.com/github/GRAAL-Research/poutyne/blob/master/examples/image_reconstruction.ipynb>`__ - example of image reconstruction
+- `classification_and_regression.ipynb <https://colab.research.google.com/github/GRAAL-Research/poutyne/blob/master/examples/classification_and_regression.ipynb>`__ - example of multitask learning with classification and regression
 - `semantic_segmentation.ipynb <https://colab.research.google.com/github/GRAAL-Research/poutyne/blob/master/examples/semantic_segmentation.ipynb>`__ - example of semantic segmentation
 
 Videos
@@ -245,6 +246,7 @@ API Reference
   examples/policy_interface
   examples/transfer_learning
   examples/image_reconstruction
+  examples/classification_and_regression
   examples/semantic_segmentation
 
 

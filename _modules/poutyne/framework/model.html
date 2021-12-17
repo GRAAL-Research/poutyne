@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>poutyne.framework.model &mdash; Poutyne 1.7 documentation</title>
+  <title>poutyne.framework.model &mdash; Poutyne 1.8 documentation</title>
       <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -28,7 +28,7 @@
             <img src="../../../_static/poutyne-light.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                1.7
+                1.8
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
@@ -55,6 +55,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../examples/policy_interface.html">Interface of <code class="docutils literal notranslate"><span class="pre">policy</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../examples/transfer_learning.html">Transfer learning example</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../examples/image_reconstruction.html">Image Reconstruction Using Poutyne</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/classification_and_regression.html">Gender Classification and Eyes Location Detection: A Two Task Problem</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../examples/semantic_segmentation.html">Semantic segmentation using Poutyne</a></li>
 </ul>
 
@@ -268,6 +269,7 @@
         <span class="n">epoch_metrics</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">get_epoch_metric</span><span class="p">,</span> <span class="n">epoch_metrics</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">epoch_metrics</span><span class="p">,</span> <span class="n">epoch_metrics_names</span> <span class="o">=</span> <span class="n">get_callables_and_names</span><span class="p">(</span><span class="n">epoch_metrics</span><span class="p">)</span>
 
+        <span class="bp">self</span><span class="o">.</span><span class="n">original_batch_metrics_names</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">original_epoch_metrics_names</span> <span class="o">=</span> <span class="n">batch_metrics_names</span><span class="p">,</span> <span class="n">epoch_metrics_names</span>
         <span class="n">batch_metrics_names</span><span class="p">,</span> <span class="n">epoch_metrics_names</span> <span class="o">=</span> <span class="n">rename_doubles</span><span class="p">(</span><span class="n">batch_metrics_names</span><span class="p">,</span> <span class="n">epoch_metrics_names</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">unflatten_batch_metrics_names</span> <span class="o">=</span> <span class="n">batch_metrics_names</span>
@@ -1447,13 +1449,13 @@
 
     <span class="k">def</span> <span class="nf">_compute_batch_metrics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pred_y</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
         <span class="n">metrics</span> <span class="o">=</span> <span class="p">[</span><span class="n">metric</span><span class="p">(</span><span class="n">pred_y</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span> <span class="k">for</span> <span class="n">metric</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">batch_metrics</span><span class="p">]</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_metric_array</span><span class="p">(</span><span class="n">metrics</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">unflatten_batch_metrics_names</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_metric_array</span><span class="p">(</span><span class="n">metrics</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">original_batch_metrics_names</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_get_epoch_metrics</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">metrics</span> <span class="o">=</span> <span class="p">[</span><span class="n">epoch_metric</span><span class="o">.</span><span class="n">get_metric</span><span class="p">()</span> <span class="k">for</span> <span class="n">epoch_metric</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">epoch_metrics</span><span class="p">]</span>
         <span class="k">for</span> <span class="n">epoch_metric</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">epoch_metrics</span><span class="p">:</span>
             <span class="n">epoch_metric</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_metric_array</span><span class="p">(</span><span class="n">metrics</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">unflatten_epoch_metrics_names</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_metric_array</span><span class="p">(</span><span class="n">metrics</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">original_epoch_metrics_names</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_compute_metric_array</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">metrics_list</span><span class="p">,</span> <span class="n">names_list</span><span class="p">):</span>
         <span class="k">def</span> <span class="nf">_get_metric</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="n">metrics</span><span class="p">):</span>
