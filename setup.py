@@ -53,7 +53,6 @@ def main():
         license='LGPLv3',
         classifiers=[
             'Development Status :: 5 - Production/Stable',
-            'Framework :: PyTorch',
             'Intended Audience :: Developers',
             'Intended Audience :: Education',
             'Intended Audience :: Science/Research',
