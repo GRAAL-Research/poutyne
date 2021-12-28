@@ -76,12 +76,11 @@ python setup.py develop
 
 ## Use a Consistent Coding Style
 
-All of the code is formatted using [yapf](https://github.com/google/yapf) with the associated [config file](https://github.com/GRAAL-Research/poutyne/blob/master/.style.yapf). In order to format the code of your submission, simply run
-> See the [styling requirements](https://github.com/GRAAL-Research/poutyne/blob/master/styling_requirements.txt) for the proper yapf version to use.
+All of the code is formatted using [black](https://black.readthedocs.io) with the associated [config file](https://github.com/GRAAL-Research/poutyne/blob/master/pyproject.toml). In order to format the code of your submission, simply run
+> See the [styling requirements](https://github.com/GRAAL-Research/poutyne/blob/master/styling_requirements.txt) for the proper black version to use.
 
 ```
-yapf poutyne --recursive --in-place
-yapf tests --recursive --in-place
+black .
 ```
 
 We also have our own `pylint` [config file](https://github.com/GRAAL-Research/poutyne/blob/master/.pylintrc). Try not to introduce code incoherences detected by the linting. You can run the linting procedure with
