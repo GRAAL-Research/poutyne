@@ -24,7 +24,7 @@ class MLFlowLogger(Logger):
     logger will log all run into the same experiment.
 
     Args:
-        experiment_name (str): The name of the experiment. Name must be unique and are case sensitive.
+        experiment_name (str): The name of the experiment. The name must be unique and are case-sensitive.
         tracking_uri (Union[str, None]): Either the URI tracking path (for server tracking) of the absolute path to
             the directory to save the files (for file store). For example: ``http://<ip address>:<port>``
             (remote server) or ``/home/<user>/mlflow-server`` (local server).
@@ -69,7 +69,7 @@ class MLFlowLogger(Logger):
 
         self.tracking = tracking_uri
 
-        self._working_directory = os.getcwd()  # for Git
+        self._working_directory = os.getcwd()  # For Git hash monitoring.
 
         self.ml_flow_client = MlflowClient(tracking_uri=self.tracking)
 
@@ -78,7 +78,7 @@ class MLFlowLogger(Logger):
 
         self._log_git_version()
 
-        self._status = "FAILED"  # base case is a failure
+        self._status = "FAILED"  # Base case is a failure.
 
     def log_config_params(self, config_params: Union[Mapping, Sequence]) -> None:
         """
@@ -89,7 +89,7 @@ class MLFlowLogger(Logger):
         if isinstance(config_params, Mapping):
             for param_name, element in config_params.items():
                 self._log_config_write(param_name, element)
-        else:  # equivalent to "if isinstance(config_params, Sequence):"
+        else:  # Equivalent to "if isinstance(config_params, Sequence):".
             for idx, element in enumerate(config_params):
                 self._log_config_write(str(idx), element)
 
@@ -111,7 +111,7 @@ class MLFlowLogger(Logger):
         Args:
             metric_name (str): The name of the metric.
             value (float): The value of the metric.
-            step (Union[int, None]): The step when the metric was compute (Default = None).
+            step (Union[int, None]): The step when the metric was computed (Default = None).
         """
         self.ml_flow_client.log_metric(run_id=self.run_id, key=metric_name, value=value, step=step)
 
@@ -121,10 +121,10 @@ class MLFlowLogger(Logger):
         """
         if isinstance(element, Mapping):
             for key, value in element.items():
-                # We recursively open the element (Dict format type)
+                # We recursively open the element (Dict format type).
                 self._log_config_write(f"{parent_name}.{key}", value)
         elif isinstance(element, Sequence) and not isinstance(element, str):
-            # Since str are sequence we negate it to be log in the else
+            # Since str are sequence we negate it to be logged in the else.
             for idx, value in enumerate(element):
                 self._log_config_write(f"{parent_name}.{idx}", value)
         else:
@@ -163,14 +163,14 @@ class MLFlowLogger(Logger):
         self.log_metric("last-epoch", last_epoch)
 
     def on_test_begin(self, logs: Dict):
-        self._status = "FAILED"  # to change status from FINISHED to FAILED (base case) if trained before
+        self._status = "FAILED"  # To change status from FINISHED to FAILED (base case) if trained before.
         self._status_handling()
 
     def on_test_end(self, logs: Dict):
         """
         Log the test results.
         """
-        if len(logs) > 0:  # to manage failure of the test loop
+        if len(logs) > 0:  # To manage failure of the test loop.
             self._on_test_end_write(logs)
             self._status = "FINISHED"
 
@@ -182,12 +182,12 @@ class MLFlowLogger(Logger):
             self.log_metric(key, value)
 
     def _status_handling(self):
-        # we set_terminated the run to get the finishing status (FINISHED or FAILED)
+        # We set_terminated the run to get the finishing status (FINISHED or FAILED)
         self.ml_flow_client.set_terminated(self.run_id, status=self._status)
 
     def _handle_experiment_id(self, experiment_name):
         """
-        Handle if the experiment name already exist to grad the id and append new experiment to it.
+        Handle the existing experiment name to grab the id and append a new experiment to it.
         """
         try:
             self.experiment_id = self.ml_flow_client.create_experiment(experiment_name, self.tracking)
@@ -204,7 +204,7 @@ class MLFlowLogger(Logger):
 
 
 """
-The source code of the function _get_git_commit was inspired from the MLflow project
+The source code of the function _get_git_commit was inspired by the MLflow project
 (https://github.com/mlflow/mlflow/blob/7fde53e497c50b4eb4da1e9988710695b8c2e093/mlflow/tracking/context/git_context.py#L11),
 and has been modified. All modifications made from the original source code are under the LGPLv3 license.
 
