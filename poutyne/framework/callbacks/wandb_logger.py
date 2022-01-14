@@ -37,7 +37,7 @@ class WandbLogger(Logger):
                 Specify this argument if you which to log the model checkpoints at the end of the
                 training phase.
         """
-        # pylint: disable=no-member
+        # pylint: disable=no-member, too-many-arguments
         super().__init__(batch_granularity=batch_granularity)
         if wandb is None:
             raise ImportError("wandb must be installed to use this callback.")
