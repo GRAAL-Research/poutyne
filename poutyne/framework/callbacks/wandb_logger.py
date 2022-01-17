@@ -1,8 +1,9 @@
 # pylint: disable=line-too-long, pointless-string-statement
 import os
 import warnings
+from typing import Dict, Optional, List
+
 import torch
-from typing import Dict, Union, Mapping, Sequence, Optional, List
 
 from . import Logger
 
@@ -14,7 +15,6 @@ except ImportError:
 
 
 class WandBLogger(Logger):
-
     """
 
     WandB logger to manage logging of experiments parameters, metrics update, models log, gradient values and other information. The
@@ -22,8 +22,8 @@ class WandBLogger(Logger):
 
     Args:
         name(str): Display name for the run.
-        groupe (Optional[str]): the name of the group to which this run belongs.
-        config (Optional[Dict]): a dictionnary sumerizing the configuration
+        group (Optional[str]): the name of the group to which this run belongs.
+        config (Optional[Dict]): a dictionary summarizing the configuration
                 related to the current run.
         save_dir(str): Path where data is saved (wandb dir by default).
         offline(bool): Run offline (data can be streamed later to wandb servers).
@@ -60,27 +60,27 @@ class WandBLogger(Logger):
 
             # You can access the wandb run via the attribute .run if you want to use other wandb features
             image = wandb.Image(an_image, caption="a caption")
-            wandb_logger.run.log({"a exemple": image})
+            wandb_logger.run.log({"an example": image})
 
     """
 
     def __init__(
-        self,
-        name: Optional[str] = None,
-        group: Optional[str] = None,
-        config: Optional[Dict] = None,
-        save_dir: Optional[str] = None,
-        offline: Optional[bool] = False,
-        id: Optional[str] = None,
-        anonymous: Optional[bool] = None,
-        version: Optional[str] = None,
-        project: Optional[str] = None,
-        experiment=None,
-        batch_granularity: Optional[bool] = False,
-        checkpoints_path: Optional[str] = None,
-        initial_artifacts_paths: Optional[List[str]] = None,
-        log_gradient_frequency: Optional[int] = None,
-        training_batch_shape: Optional[tuple] = None,
+            self,
+            name: Optional[str] = None,
+            group: Optional[str] = None,
+            config: Optional[Dict] = None,
+            save_dir: Optional[str] = None,
+            offline: Optional[bool] = False,
+            id: Optional[str] = None,
+            anonymous: Optional[bool] = None,
+            version: Optional[str] = None,
+            project: Optional[str] = None,
+            experiment=None,
+            batch_granularity: Optional[bool] = False,
+            checkpoints_path: Optional[str] = None,
+            initial_artifacts_paths: Optional[List[str]] = None,
+            log_gradient_frequency: Optional[int] = None,
+            training_batch_shape: Optional[tuple] = None,
     ) -> None:
 
         super().__init__(batch_granularity=batch_granularity)
@@ -109,7 +109,8 @@ class WandBLogger(Logger):
                 self.run = wandb.init(**self._wandb_init)
             else:
                 warnings.warn(
-                    "There is already a wandb run experience running. This callback will reuse this run. If you want to start a new one stop this process and call `wandb.finish()` before starting again."
+                    "There is already a wandb run experience running. This callback will reuse this run. If you want "
+                    "to start a new one stop this process and call `wandb.finish()` before starting again."
                 )
                 self.run = wandb.run
         else:
@@ -122,13 +123,13 @@ class WandBLogger(Logger):
 
     def _watch_gradient(self) -> None:
         """
-        activate gradient watch
+        Activate wandb gradient watching.
         """
         self.run.watch(self.model.network, log="all", log_freq=self.log_gradient_frequency)
 
     def _save_architecture(self) -> None:
         """
-        Save architecture
+        Save architecture.
         """
         dummies_batch = torch.randn(self.training_batch_shape)
         save_path = self.run.dir + "/" + self.run.name + "_model.onnx"
@@ -147,14 +148,14 @@ class WandBLogger(Logger):
         """
         Args:
             config_params Dict:
-                Dictionnary of config parameters of the training to log, such as number of epoch, loss function, optimizer etc.
+                Dictionary of config parameters of the training to log, such as number of epoch, loss function, 
+                optimizer etc.
         """
         self.run.config.update(config_params)
 
     def _on_train_batch_end_write(self, batch_number: int, logs: Dict) -> None:
         """
         Log the batch metric.
-
         """
         if self.batch_granularity:
             train_metrics = {key: value for (key, value) in logs.items() if "val_" not in key}
@@ -189,7 +190,7 @@ class WandBLogger(Logger):
         Log metrics for a specific step.
 
         Args:
-            metrics (Dict): the metrics to log in the form of a dictionnary.
+            metrics (Dict): the metrics to log in the form of a dictionary.
             step (int): the corresponding step.
         """
         self.run.log(metrics)  # , step=step)
@@ -198,11 +199,11 @@ class WandBLogger(Logger):
         """
         Log parameters for a specific step.
         This functions logs parameters as metrics since wandb doesn't support
-        parameter logging. Howerver, the logged parameters are prepended by the keyword
+        parameter logging. However, the logged parameters are prepended by the keyword
         `parameter` so as to easily identify them.
 
         Args:
-            params (Dict): the parameters to log in the form of a dictionnary.
+            params (Dict): the parameters to log in the form of a dictionary.
             step (int): the corresponding step.
         """
         self.run.log({"params": params})  # , step=step)
@@ -235,7 +236,7 @@ class WandBLogger(Logger):
 
     def _on_test_end_write(self, logs: Dict):
         # The test metrics are logged a step further than the training's
-        #   last atep
+        # last step
         logs = {"testing": {key.replace("test_", ""): value for (key, value) in logs.items()}}
         self._log_metrics(logs, step=self.run.step + 1)
 
