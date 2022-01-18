@@ -3,11 +3,12 @@ import unittest
 from tempfile import TemporaryDirectory
 from typing import Dict, IO
 from unittest import TestCase
+from unittest.mock import MagicMock, call
 
 import torch
 import torch.nn as nn
 
-from poutyne import Model, PeriodicSaveCallback
+from poutyne import Model, PeriodicSaveCallback, PeriodicSaveLambda
 from tests.framework.tools import some_data_generator
 
 
@@ -175,6 +176,12 @@ class PeriodicSaveTest(TestCase):
         with self.assertRaises(ValueError):
             PeriodicEpochSave(self.save_filename, monitor='val_loss', verbose=True, restore_best=True)
 
+    def test_on_train_end_with_restore_best_without_training_raise_warning(self):
+        checkpointer = PeriodicEpochSave(self.save_filename, monitor='val_loss', save_best_only=True, restore_best=True)
+        a_log = {}
+        with self.assertWarns(UserWarning):
+            checkpointer.on_train_end(a_log)
+
     def _test_saver_with_val_losses(self, saver, val_losses, has_checkpoints, keep_only_last_best=False):
         generator = some_data_generator(PeriodicSaveTest.batch_size)
 
@@ -217,6 +224,37 @@ class PeriodicSaveTest(TestCase):
         self.optimizer.step()
 
         return float(loss)
+
+
+class PeriodicSaveLambdaTest(TestCase):
+    def setUp(self) -> None:
+        self.a_filename = "a_file_name"
+
+    def test_given_a_fun_save_file_use_function(self):
+        a_function_mock = MagicMock()
+
+        periodic_save_lambda = PeriodicSaveLambda(filename=self.a_filename, func=a_function_mock)
+        a_file_descriptor_mock = MagicMock()
+        a_epoch_number = 1
+        a_log = {}
+
+        periodic_save_lambda.save_file(a_file_descriptor_mock, a_epoch_number, a_log)
+        a_function_mock.assert_has_calls([call(a_file_descriptor_mock, a_epoch_number, a_log)])
+
+    def test_restore_use_lambda_function(self):
+        a_function_mock = MagicMock()
+
+        a_restore_mock_function = MagicMock()
+        a_restore_function = lambda x: a_restore_mock_function(2)
+
+        periodic_save_lambda = PeriodicSaveLambda(
+            filename=self.a_filename, func=a_function_mock, restore=a_restore_function
+        )
+        a_file_descriptor_mock = MagicMock()
+        periodic_save_lambda.restore(a_file_descriptor_mock)
+
+        a_restore_mock_function.assert_called()
+        a_restore_mock_function.assert_has_calls([call(2)])
 
 
 if __name__ == '__main__':
