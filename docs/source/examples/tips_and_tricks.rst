@@ -17,19 +17,20 @@ Let's import all the needed packages.
 .. code-block:: python
 
     import os
-    import pickle
+    import math
+    import shutil
 
-    import fasttext
-    import fasttext.util
-    import requests
+    import matplotlib.pyplot as plt
+    import numpy as np
+    from sklearn.metrics import roc_auc_score
     import torch
     import torch.nn as nn
     import torch.optim as optim
-    from sklearn.metrics import roc_auc_score
-    from torch.nn.utils.rnn import pad_packed_sequence, pack_padded_sequence, pad_sequence
-    from torch.utils.data import DataLoader
+    from torch.utils.data import random_split, DataLoader
+    from torchvision import transforms, utils
+    from torchvision.datasets.mnist import MNIST
 
-    from poutyne import set_seeds, Model, ModelCheckpoint, CSVLogger, Callback, SKLearnMetrics
+    from poutyne import set_seeds, Model, ModelCheckpoint, CSVLogger, Callback, Experiment, SKLearnMetrics, plot_history
 
 
 Hyperparameters, Dataset and Network
