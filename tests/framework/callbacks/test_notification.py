@@ -82,9 +82,9 @@ class NotificationCallbackTest(TestCase):
             validation_steps=NotificationCallbackTest.steps_per_epoch,
             callbacks=[notification_callback],
         )
-        self._build_notificator_call(logs)
+        call_list = self._build_notificator_call(logs)
 
-        self._assert_mock_calls(self.call_list)
+        self._assert_mock_calls(call_list)
 
     def test_givenANotificationCallbackWithExperimentName_whenTrainingLoop_thenSendNotificationWithExperimentName(self):
         a_experiment_name = "A experiment name"
@@ -100,9 +100,9 @@ class NotificationCallbackTest(TestCase):
             callbacks=[notification_callback],
         )
 
-        self._build_notificator_call(logs, experiment_name=a_experiment_name)
+        call_list = self._build_notificator_call(logs, experiment_name=a_experiment_name)
 
-        self._assert_mock_calls(self.call_list)
+        self._assert_mock_calls(call_list)
 
     def test_givenANotificationCallback_whenTestLoop_thenSendNotification(self):
         notification_callback = NotificationCallback(notificator=self.notificator_mock)
@@ -110,9 +110,9 @@ class NotificationCallbackTest(TestCase):
             x=self.some_x_data, y=self.some_y_data, callbacks=[notification_callback], return_dict_format=True
         )
 
-        self._build_notificator_call(res, mode="testing")
+        call_list = self._build_notificator_call(res, mode="testing")
 
-        self._assert_mock_calls(self.call_list)
+        self._assert_mock_calls(call_list)
 
     def test_givenANotificationCallbackWithExperimentName_whenTestLoop_thenSendNotificationWithExperimentName(self):
         a_experiment_name = "A experiment name"
@@ -123,16 +123,17 @@ class NotificationCallbackTest(TestCase):
             x=self.some_x_data, y=self.some_y_data, callbacks=[notification_callback], return_dict_format=True
         )
 
-        self._build_notificator_call(res, mode="testing", experiment_name=a_experiment_name)
+        call_list = self._build_notificator_call(res, mode="testing", experiment_name=a_experiment_name)
 
-        self._assert_mock_calls(self.call_list)
+        self._assert_mock_calls(call_list)
 
     def _assert_mock_calls(self, call_list: List):
         method_calls = self.notificator_mock.method_calls
         self.assertEqual(len(method_calls), len(call_list))
         self.assertEqual(method_calls, call_list)
 
-    def _build_notificator_call(self, logs, experiment_name=None, mode: str = "training"):
+    @staticmethod
+    def _build_notificator_call(logs, experiment_name=None, mode: str = "training") -> List:
         experiment_name_text = f" for {experiment_name}" if experiment_name is not None else ""
         call_list = []
         call_list.append(call.send_notification('', subject=f'Start of the {mode}{experiment_name_text}.'))
@@ -152,4 +153,4 @@ class NotificationCallbackTest(TestCase):
             message = f"Here the test metrics: \n{formatted_log_data}"
 
         call_list.append(call.send_notification(message, subject=f'End of the {mode}{experiment_name_text}.'))
-        self.call_list = call_list
+        return call_list
