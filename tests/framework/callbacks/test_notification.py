@@ -16,7 +16,7 @@ from tests.framework.tools import (
     some_metric_2_value,
     some_metric_1_value,
     SomeConstantEpochMetric,
-    some_constant_epoch_metric_value
+    some_constant_epoch_metric_value,
 )
 
 
@@ -106,8 +106,9 @@ class NotificationCallbackTest(TestCase):
 
     def test_givenANotificationCallback_whenTestLoop_thenSendNotification(self):
         notification_callback = NotificationCallback(notificator=self.notificator_mock)
-        res = self.model.evaluate(x=self.some_x_data, y=self.some_y_data, callbacks=[notification_callback],
-                                  return_dict_format=True)
+        res = self.model.evaluate(
+            x=self.some_x_data, y=self.some_y_data, callbacks=[notification_callback], return_dict_format=True
+        )
 
         self._build_notificator_call(res, mode="testing")
 
@@ -118,8 +119,9 @@ class NotificationCallbackTest(TestCase):
         notification_callback = NotificationCallback(
             notificator=self.notificator_mock, experiment_name=a_experiment_name
         )
-        res = self.model.evaluate(x=self.some_x_data, y=self.some_y_data, callbacks=[notification_callback],
-                                  return_dict_format=True)
+        res = self.model.evaluate(
+            x=self.some_x_data, y=self.some_y_data, callbacks=[notification_callback], return_dict_format=True
+        )
 
         self._build_notificator_call(res, mode="testing", experiment_name=a_experiment_name)
 
