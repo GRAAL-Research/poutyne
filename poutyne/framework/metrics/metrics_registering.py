@@ -29,10 +29,15 @@ def clean_batch_metric_name(name):
     return name
 
 
-def register_batch_metric_function(func, names=None):
+def register_batch_metric_function(func, names=None, unique_name=None):
     names = [func.__name__] if names is None else names
     names = [names] if isinstance(names, str) else names
-    batch_metrics_dict.update({clean_batch_metric_name(name): func for name in names})
+    names = [clean_batch_metric_name(name) for name in names]
+    if unique_name is None:
+        batch_metrics_dict.update({name: func for name in names})
+    else:
+        batch_metrics_dict.update({name: (unique_name, func) for name in names})
+    return names
 
 
 register_batch_metric = _get_registering_decorator(register_batch_metric_function)
@@ -45,7 +50,10 @@ def get_loss_or_metric(loss_metric):
     if isinstance(loss_metric, tuple) and isinstance(loss_metric[1], str):
         name, loss_metric = loss_metric
         loss_metric = clean_batch_metric_name(loss_metric)
-        return name, batch_metrics_dict[loss_metric]
+        loss_metric = batch_metrics_dict[loss_metric]
+        if isinstance(loss_metric, tuple):
+            loss_metric = loss_metric[1]
+        return name, loss_metric
     return loss_metric
 
 
@@ -59,10 +67,20 @@ def clean_epoch_metric_name(name):
     return name
 
 
-def register_epoch_metric_class(clz, names=None):
+def register_epoch_metric_class(clz, names=None, unique_name=None):
     names = [camel_to_snake(clz.__name__)] if names is None else names
     names = [names] if isinstance(names, str) else names
-    epochs_metrics_dict.update({clean_epoch_metric_name(name): clz for name in names})
+    names = [clean_epoch_metric_name(name) for name in names]
+    if unique_name is None:
+        epochs_metrics_dict.update({name: clz for name in names})
+    else:
+        epochs_metrics_dict.update({name: (unique_name, clz) for name in names})
+    return names
+
+
+def unregister_epoch_metric(names):
+    for name in names:
+        del epochs_metrics_dict[name]
 
 
 register_epoch_metric = _get_registering_decorator(register_epoch_metric_class)
@@ -71,9 +89,16 @@ register_epoch_metric = _get_registering_decorator(register_epoch_metric_class)
 def get_epoch_metric(epoch_metric):
     if isinstance(epoch_metric, str):
         epoch_metric = clean_epoch_metric_name(epoch_metric)
-        return epochs_metrics_dict[epoch_metric]()
+        epoch_metric = epochs_metrics_dict[epoch_metric]
+        if isinstance(epoch_metric, tuple):
+            name, epoch_metric = epoch_metric
+            return name, epoch_metric()
+        return epoch_metric()
     if isinstance(epoch_metric, tuple) and isinstance(epoch_metric[1], str):
         name, epoch_metric = epoch_metric
         epoch_metric = clean_epoch_metric_name(epoch_metric)
-        return name, epochs_metrics_dict[epoch_metric]()
+        epoch_metric = epochs_metrics_dict[epoch_metric]
+        if isinstance(epoch_metric, tuple):
+            epoch_metric = epoch_metric[1]
+        return name, epoch_metric()
     return epoch_metric

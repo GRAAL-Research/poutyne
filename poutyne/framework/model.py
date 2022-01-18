@@ -153,7 +153,10 @@ class Model:
 
         self.network = network
         self.optimizer = get_optimizer(optimizer, self.network)
+
         self.loss_function = get_loss_or_metric(loss_function)
+        if isinstance(self.loss_function, tuple):
+            self.loss_function = self.loss_function[1]
 
         self._check_network_optimizer_parameters_match()
         self._set_metrics_attributes(batch_metrics, epoch_metrics)

@@ -39,12 +39,12 @@ from .callbacks import (
 
 class ModelBundle:
     """
-    Inspired from :class:`~poutyne.Experiment`, the ModelBundle class provides a straightforward experimentation tool
-    for efficient and entirely customizable finetuning of the whole neural network training procedure with PyTorch. The
-    ``ModelBundle`` object takes care of the training and testing processes while also managing to keep traces of all
-     pertinent information via the automatic logging option.
+    The :class:`~poutyne.ModelBundle` class provides a straightforward experimentation tool for efficient and entirely
+    customizable finetuning of the whole neural network training procedure with PyTorch. The
+    :class:`~poutyne.ModelBundle` object takes care of the training and testing processes while also managing to keep
+    traces of all pertinent information via the automatic logging option.
 
-    Use ``ModelBundle.from_*`` methods to instanciate a ModelBundle.
+    Use ``ModelBundle.from_*`` methods to instanciate a :class:`~poutyne.ModelBundle`.
     """
 
     BEST_CHECKPOINT_FILENAME = 'checkpoint_epoch_{epoch}.ckpt'
@@ -103,7 +103,7 @@ class ModelBundle:
     ):
         # pylint: disable=line-too-long
         """
-        Instanciate a ModelBundle from a PyTorch :class:`~torch.nn.Module` instance.
+        Instanciate a :class:`~poutyne.ModelBundle` from a PyTorch :class:`~torch.nn.Module` instance.
 
         Args:
             directory (str): Path to the model bundle's working directory. Will be used for automatic logging.
@@ -295,7 +295,7 @@ class ModelBundle:
     ):
         # pylint: disable=line-too-long
         """
-        Instanciate a ModelBundle from a :class:`~poutyne.Model` instance.
+        Instanciate a :class:`~poutyne.ModelBundle` from a :class:`~poutyne.Model` instance.
 
         Args:
             directory (str): Path to the model bundle's working directory. Will be used for automatic logging.
@@ -491,6 +491,9 @@ class ModelBundle:
         return True, monitor_metric, monitor_mode
 
     def get_stats(self):
+        if not os.path.isfile(self.log_filename):
+            raise ValueError("There are no logs available. Did you forget to train with logging enabled?")
+
         return pd.read_csv(self.log_filename, sep='\t')
 
     def get_best_epoch_stats(self) -> Dict:
@@ -932,9 +935,6 @@ class ModelBundle:
             self._print_epoch_stats(best_epoch_stats)
             print(f"Loading checkpoint {ckpt_filename}")
 
-        if not os.path.isfile(ckpt_filename):
-            raise ValueError(f"No checkpoint found for epoch {best_epoch}")
-
         return best_epoch_stats, self.model.load_weights(ckpt_filename, strict=strict)
 
     def _load_last_checkpoint(self, *, verbose: bool = False, strict: bool = True) -> None:
@@ -1173,14 +1173,14 @@ class ModelBundle:
         return self._predict(self.model.predict, x, **kwargs)
 
     def _predict(
-        self, evaluate_func: Callable, *args, verbose=True, checkpoint: Union[str, int] = 'best', **kwargs
+        self, predict_func: Callable, *args, verbose=True, checkpoint: Union[str, int] = 'best', **kwargs
     ) -> Any:
         if self.logging:
             if not self.monitoring and checkpoint == 'best':
                 checkpoint = 'last'
             self.load_checkpoint(checkpoint, verbose=verbose)
 
-        ret = evaluate_func(*args, verbose=verbose, **kwargs)
+        ret = predict_func(*args, verbose=verbose, **kwargs)
         return ret
 
     def is_better_than(self, another_model_bundle) -> bool:

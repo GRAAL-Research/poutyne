@@ -3,3 +3,9 @@ line-length = 120
 skip-string-normalization = true
 required-version = '21.11b1'
 extend-exclude = '/(slides)/'
+
+[tool.pytest.ini_options]
+addopts = '--cov --cov-report html'
+testpaths = [
+    "tests",
+]
