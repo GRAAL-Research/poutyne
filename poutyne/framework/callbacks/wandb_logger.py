@@ -65,22 +65,22 @@ class WandBLogger(Logger):
     """
 
     def __init__(
-            self,
-            name: Optional[str] = None,
-            group: Optional[str] = None,
-            config: Optional[Dict] = None,
-            save_dir: Optional[str] = None,
-            offline: Optional[bool] = False,
-            id: Optional[str] = None,
-            anonymous: Optional[bool] = None,
-            version: Optional[str] = None,
-            project: Optional[str] = None,
-            experiment=None,
-            batch_granularity: Optional[bool] = False,
-            checkpoints_path: Optional[str] = None,
-            initial_artifacts_paths: Optional[List[str]] = None,
-            log_gradient_frequency: Optional[int] = None,
-            training_batch_shape: Optional[tuple] = None,
+        self,
+        name: Optional[str] = None,
+        group: Optional[str] = None,
+        config: Optional[Dict] = None,
+        save_dir: Optional[str] = None,
+        offline: Optional[bool] = False,
+        id: Optional[str] = None,
+        anonymous: Optional[bool] = None,
+        version: Optional[str] = None,
+        project: Optional[str] = None,
+        experiment=None,
+        batch_granularity: Optional[bool] = False,
+        checkpoints_path: Optional[str] = None,
+        initial_artifacts_paths: Optional[List[str]] = None,
+        log_gradient_frequency: Optional[int] = None,
+        training_batch_shape: Optional[tuple] = None,
     ) -> None:
 
         super().__init__(batch_granularity=batch_granularity)
@@ -148,7 +148,7 @@ class WandBLogger(Logger):
         """
         Args:
             config_params Dict:
-                Dictionary of config parameters of the training to log, such as number of epoch, loss function, 
+                Dictionary of config parameters of the training to log, such as number of epoch, loss function,
                 optimizer etc.
         """
         self.run.config.update(config_params)
