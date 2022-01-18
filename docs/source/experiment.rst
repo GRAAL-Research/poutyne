@@ -6,5 +6,13 @@ Experiment
 
 .. currentmodule:: poutyne
 
-.. autoclass:: Experiment
+Experiment function
+-------------------
+
+.. autofunction:: Experiment
+
+ModelBundle class
+-----------------
+
+.. autoclass:: ModelBundle
     :members:

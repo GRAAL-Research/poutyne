@@ -10,11 +10,11 @@ import numpy as np
 import torch
 import torch.nn as nn
 
-from poutyne import Model, EpochMetric, rename_doubles
+from poutyne import Model, EpochMetric, rename_doubles, register_epoch_metric_class, unregister_epoch_metric
 
 
 class ConstEpochMetric(EpochMetric):
-    def __init__(self, value):
+    def __init__(self, value=0):
         super().__init__()
         self.value = value
 
@@ -212,6 +212,14 @@ class MetricsModelIntegrationTest(unittest.TestCase):
         model = Model(self.pytorch_network, self.optimizer, self.loss_function, batch_metrics=['mse', ('mse2', 'mse')])
         self._test_history(model, ['mse', 'mse2'], [ANY, ANY])
 
+    def test_epoch_metrics_registered_with_unique_name(self):
+        names = register_epoch_metric_class(SomeMetricName, names=['some1', 'some2'], unique_name='unique_some')
+        model = Model(
+            self.pytorch_network, self.optimizer, self.loss_function, epoch_metrics=['some2', ('something', 'some1')]
+        )
+        self._test_history(model, ['unique_some', 'something'], [0.0, 0.0])
+        unregister_epoch_metric(names)
+
     def _test_history(self, model, names, values):
         history = model.fit(
             self.train_x,
@@ -226,6 +234,30 @@ class MetricsModelIntegrationTest(unittest.TestCase):
                 self.assertEqual(value, logs[name])
                 self.assertIn('val_' + name, logs)
                 self.assertEqual(value, logs['val_' + name])
+
+    def test_epoch_metrics_with_str_str_tuple(self):
+        dataset_size = MetricsModelIntegrationTest.batch_size * MetricsModelIntegrationTest.steps_per_epoch
+        torch.manual_seed(42)
+        train_x = torch.rand(dataset_size, 1)
+        train_y = torch.randint(10, (dataset_size,))
+        valid_x = torch.rand(dataset_size, 1)
+        valid_y = torch.randint(10, (dataset_size,))
+
+        model = Model(nn.Linear(1, 10), 'sgd', 'cross_entropy', epoch_metrics=['f1', ('f1_2', 'f1')])
+        names = ['fscore_macro', 'f1_2']
+        history = model.fit(
+            train_x,
+            train_y,
+            validation_data=(valid_x, valid_y),
+            batch_size=MetricsModelIntegrationTest.batch_size,
+            epochs=MetricsModelIntegrationTest.epochs,
+        )
+        for logs in history:
+            for name in names:
+                self.assertIn(name, logs)
+                self.assertEqual(ANY, logs[name])
+                self.assertIn('val_' + name, logs)
+                self.assertEqual(ANY, logs['val_' + name])
 
 
 class MetricsRenamingTest(unittest.TestCase):

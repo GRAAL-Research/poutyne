@@ -1,4 +1,7 @@
 # v1.x.x
+* [`Experiment`](https://poutyne.org/experiment.html#poutyne.Experiment) is now an alias for
+  [`ModelBundle`](https://poutyne.org/experiment.html#poutyne.ModelBundle), a class quite similar to `Experiment` except
+  that it allows to instantiate an "Experiment" from a Poutyne Model or a network.
 *
 
 # v1.8

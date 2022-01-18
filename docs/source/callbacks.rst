@@ -102,6 +102,8 @@ the same arguments except for the optimizer that has to be omitted.
 .. autoclass:: MultiplicativeLR
 .. autoclass:: StepLR
 .. autoclass:: MultiStepLR
+.. autoclass:: ConstantLR
+.. autoclass:: LinearLR
 .. autoclass:: ExponentialLR
 .. autoclass:: CosineAnnealingLR
 .. autoclass:: CyclicLR

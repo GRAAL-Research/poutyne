@@ -40,7 +40,7 @@ jobs:
         pylint tests/
     - name: Test with pytest
       run: |
-        pytest tests/
+        pytest --no-cov
     - name: Building doc
       run: |
         cd docs
@@ -82,7 +82,7 @@ jobs:
     - name: Test with pytest
       run: |
         .  ./InvokeFunc.ps1
-        Invoke-NativeCommand pytest tests/
+        Invoke-NativeCommand pytest --no-cov
     - name: Building doc
       run: |
         cd docs
