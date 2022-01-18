@@ -38,6 +38,17 @@ class BestModelRestoreTest(TestCase):
         best_epoch = 3
         self._test_restore_with_val_losses(model_restore, val_losses, best_epoch)
 
+    def test_mode_not_min_max_raise_error(self):
+        with self.assertRaises(ValueError):
+            BestModelRestore(monitor='val_loss', mode='invalid_mode')
+
+    def test_if_no_best_weights_on_train_end_raise_warnings(self):
+        model_restore = BestModelRestore(monitor='val_loss')
+        a_log = {}
+
+        with self.assertWarns(UserWarning):
+            model_restore.on_train_end(a_log)
+
     def _test_restore_with_val_losses(self, checkpointer, val_losses, best_epoch):
         generator = some_data_generator(BestModelRestoreTest.batch_size)
 

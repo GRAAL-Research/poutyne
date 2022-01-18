@@ -51,4 +51,4 @@ class BestModelRestore(Callback):
                 print('Restoring best model')
             self.model.set_weights(self.best_weights)
         else:
-            warnings.warn('No  weights to restore!')
+            warnings.warn('No weights to restore!')
