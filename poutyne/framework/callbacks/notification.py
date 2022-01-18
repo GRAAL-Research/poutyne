@@ -104,7 +104,7 @@ class NotificationCallback(Callback):
         'End of the testing for the experiment experiment_name' if an experiment name is given.
         """
 
-        message = f"Here the epoch metrics: \n{self._format_logs(logs)}"
+        message = f"Here the test metrics: \n{self._format_logs(logs)}"
         self.notificator.send_notification(message, subject=f"End of the testing{self.experiment_name_msg}.")
 
     @staticmethod
