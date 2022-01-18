@@ -1018,10 +1018,6 @@ class ModelDatasetMethodsTest(ModelFittingTestCase):
             epoch_metrics=self.epoch_metrics,
         )
 
-    def assertStdoutContains(self, values):
-        for value in values:
-            self.assertIn(value, self.test_out.getvalue().strip())
-
     def test_fitting_mnist(self):
         logs = self.model.fit_dataset(
             self.train_dataset,
