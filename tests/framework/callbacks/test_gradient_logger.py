@@ -1,3 +1,4 @@
+# pylint: disable=not-callable,no-member
 import csv
 import os
 from tempfile import TemporaryDirectory
@@ -19,7 +20,6 @@ from tests.framework.tools import some_data_generator
 
 
 class BaseGradientLoggerTest:
-    # pylint: disable=not-callable,no-member
     GradientLogger = None
     batch_size = 20
     num_epochs = 10
