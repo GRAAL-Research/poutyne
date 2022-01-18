@@ -41,7 +41,7 @@ class GradientLoggerBaseTest(BaseGradientLoggerTest, TestCase):
     GradientLogger = GradientLoggerBase
 
     def test_log_stats_raise_a_NotImplementedError(self):
-        GradientLogger = GradientLoggerBase()
+        logger = self.GradientLogger()
         a_epoch_number = 1
         a_batch_number = 1
         a_logs = {}
