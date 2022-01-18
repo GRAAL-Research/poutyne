@@ -52,12 +52,12 @@ class GradientLoggerBaseTest(BaseGradientLoggerTest, TestCase):
             )
 
     def test_on_train_begin_no_bias_does_not_keep_it(self):
-        GradientLogger = GradientLoggerBase(keep_bias=False)
-        GradientLogger.set_model(self.model)
+        logger = self.GradientLogger(keep_bias=False)
+        logger.set_model(self.model)
 
         a_logs = {}
-        GradientLogger.on_train_begin(a_logs)
-        actual = GradientLogger.layers
+        logger.on_train_begin(a_logs)
+        actual = logger.layers
         expected = ['0.weight', '1.weight']
         self.assertEqual(actual, expected)
         self.assertEqual(len(actual), 2)
