@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
+import unittest
 from unittest import TestCase
 from unittest.mock import MagicMock, call
-import unittest
-import torch
+
 import numpy as np
-from poutyne.utils import _concat
+import torch
+
 from poutyne import TensorDataset, torch_apply
+from poutyne.utils import _concat
 
 
 class TorchApplyTest(TestCase):
@@ -71,7 +73,6 @@ class TorchApplyTest(TestCase):
         self.assertEqual(ret, [123])
 
     def _test_method_calls(self, mock_list):
-        print(mock_list)
         for mock in mock_list:
             self.assertEqual(mock.method_calls, [call.cpu()])
 
