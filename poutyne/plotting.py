@@ -2,17 +2,17 @@ import os
 import itertools
 from typing import Any, Dict, List, Optional, Tuple, Union
 
-try:
+try:  # pragma: no cover
     import matplotlib.pyplot as plt
     from matplotlib.ticker import MaxNLocator
 
     matplotlib = True
-except ImportError:
+except ImportError:  # pragma: no cover
     matplotlib = False
 
-try:
+try:  # pragma: no cover
     import pandas as pd
-except ImportError:
+except ImportError:  # pragma: no cover
     pd = None
 
 from poutyne import is_in_jupyter_notebook

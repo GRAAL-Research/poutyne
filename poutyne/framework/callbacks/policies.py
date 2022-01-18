@@ -4,9 +4,9 @@ from itertools import islice, chain
 from math import cos, pi
 from typing import Dict, List, Tuple, Optional
 
-try:
+try:  # pragma: no cover
     import matplotlib.pyplot as plt
-except ImportError:
+except ImportError:  # pragma: no cover
     plt = None
 
 from .callbacks import Callback

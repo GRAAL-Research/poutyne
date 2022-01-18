@@ -3,24 +3,24 @@ import os
 import warnings
 from typing import Union, Callable, List, Dict, Tuple, Any
 
-try:
+try:  # pragma: no cover
     import pandas as pd
 except ImportError:
     pd = None
 
-try:
+try:  # pragma: no cover
     # pylint: disable=unused-import
     import matplotlib.pyplot
 
     matplotlib = True
-except ImportError:
+except ImportError:  # pragma: no cover
     matplotlib = False
 
 import torch
 
-try:
+try:  # pragma: no cover
     from torch.utils.tensorboard import SummaryWriter
-except ImportError:
+except ImportError:  # pragma: no cover
     SummaryWriter = None
 
 from . import Model

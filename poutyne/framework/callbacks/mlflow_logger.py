@@ -5,16 +5,16 @@ from typing import Dict, Union, Mapping, Sequence
 
 from . import Logger
 
-try:
+try:  # pragma: no cover
     import mlflow
     from mlflow.exceptions import MlflowException
     from mlflow.tracking import MlflowClient
-except ImportError:
+except ImportError:  # pragma: no cover
     mlflow = None
 
-try:
+try:  # pragma: no cover
     import git
-except ImportError:
+except ImportError:  # pragma: no cover
     git = None
 
 

@@ -17,7 +17,7 @@ class EmptyStringAttrClass:
         return ''
 
 
-try:
+try:  # pragma: no cover
     from colorama import Fore, Style, init
 
     colorama = True
@@ -27,7 +27,7 @@ try:
     # We don't init when Jupyter Notebook see issue https://github.com/jupyter/notebook/issues/2284
     if not jupyter:
         init()
-except ImportError:
+except ImportError:  # pragma: no cover
     colorama = None
     jupyter = False
 
