@@ -84,7 +84,7 @@ class NotificationCallbackTest(TestCase):
         )
         self._build_notificator_call(logs)
 
-        self.assert_mock_calls(self.call_list)
+        self._assert_mock_calls(self.call_list)
 
     def test_givenANotificationCallbackWithExperimentName_whenTrainingLoop_thenSendNotificationWithExperimentName(self):
         a_experiment_name = "A experiment name"
@@ -102,7 +102,7 @@ class NotificationCallbackTest(TestCase):
 
         self._build_notificator_call(logs, experiment_name=a_experiment_name)
 
-        self.assert_mock_calls(self.call_list)
+        self._assert_mock_calls(self.call_list)
 
     def test_givenANotificationCallback_whenTestLoop_thenSendNotification(self):
         notification_callback = NotificationCallback(notificator=self.notificator_mock)
@@ -112,7 +112,7 @@ class NotificationCallbackTest(TestCase):
 
         self._build_notificator_call(res, mode="testing")
 
-        self.assert_mock_calls(self.call_list)
+        self._assert_mock_calls(self.call_list)
 
     def test_givenANotificationCallbackWithExperimentName_whenTestLoop_thenSendNotificationWithExperimentName(self):
         a_experiment_name = "A experiment name"
@@ -125,9 +125,9 @@ class NotificationCallbackTest(TestCase):
 
         self._build_notificator_call(res, mode="testing", experiment_name=a_experiment_name)
 
-        self.assert_mock_calls(self.call_list)
+        self._assert_mock_calls(self.call_list)
 
-    def assert_mock_calls(self, call_list: List):
+    def _assert_mock_calls(self, call_list: List):
         method_calls = self.notificator_mock.method_calls
         self.assertEqual(len(method_calls), len(call_list))
         self.assertEqual(method_calls, call_list)
