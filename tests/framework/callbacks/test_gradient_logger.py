@@ -47,7 +47,7 @@ class GradientLoggerBaseTest(BaseGradientLoggerTest, TestCase):
         a_logs = {}
         a_layer_dict = {}
         with self.assertRaises(NotImplementedError):
-            GradientLogger.log_stats(
+            logger.log_stats(
                 epoch_number=a_epoch_number, batch_number=a_batch_number, logs=a_logs, layer_stats=a_layer_dict
             )
 
