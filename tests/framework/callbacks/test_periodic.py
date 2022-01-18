@@ -1,10 +1,8 @@
 import os
-from typing import Dict, IO
-
 import unittest
-from unittest import TestCase
-
 from tempfile import TemporaryDirectory
+from typing import Dict, IO
+from unittest import TestCase
 
 import torch
 import torch.nn as nn
@@ -46,6 +44,13 @@ class PeriodicSaveTest(TestCase):
         valid_gen = some_data_generator(PeriodicSaveTest.batch_size)
         saver = PeriodicEpochSave(self.save_filename, monitor='val_loss', verbose=True, save_best_only=True)
         self.model.fit_generator(train_gen, valid_gen, epochs=10, steps_per_epoch=5, callbacks=[saver])
+
+    def test_mode_not_min_max_raise_error(self):
+        with self.assertRaises(ValueError):
+            invalid_mode = "a_mode"
+            PeriodicEpochSave(
+                self.save_filename, monitor='val_loss', verbose=True, save_best_only=True, mode=invalid_mode
+            )
 
     def test_integration_with_keep_only_last_best(self):
         train_gen = some_data_generator(PeriodicSaveTest.batch_size)

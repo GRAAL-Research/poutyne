@@ -47,8 +47,8 @@ class EarlyStoppingTest(CaptureOutputBase):
 
     def test_mode_not_min_max_raise_error(self):
         with self.assertRaises(ValueError):
-            not_min_max_mode = "a_mode"
-            EarlyStopping(monitor='val_loss', mode=not_min_max_mode, min_delta=0, patience=2, verbose=False)
+            invalid_mode = "a_mode"
+            EarlyStopping(monitor='val_loss', mode=invalid_mode, min_delta=0, patience=2, verbose=False)
 
     def test_early_stopping_with_verbose(self):
         earlystopper = EarlyStopping(monitor='val_loss', mode='max', min_delta=0, patience=2, verbose=True)
