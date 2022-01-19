@@ -5,7 +5,7 @@ required-version = '21.11b1'
 extend-exclude = '/(slides)/'
 
 [tool.pytest.ini_options]
-addopts = '--cov --cov-report html'
+addopts = '--cov --cov-report html --cov-report xml'
 testpaths = [
     "tests",
 ]
