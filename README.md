@@ -2,6 +2,7 @@
 
 [![License: LGPL v3](https://img.shields.io/badge/License-LGPL%20v3-blue.svg)](http://www.gnu.org/licenses/lgpl-3.0)
 [![Continuous Integration](https://github.com/GRAAL-Research/poutyne/workflows/Continuous%20Integration/badge.svg)](https://github.com/GRAAL-Research/poutyne/actions?query=workflow%3A%22Continuous+Integration%22+branch%3Amaster)
+[![codecov](https://codecov.io/gh/GRAAL-Research/poutyne/branch/master/graph/badge.svg?token=H8D1nZ1wTR)](https://codecov.io/gh/GRAAL-Research/poutyne)
 
 ## Here is Poutyne.
 
