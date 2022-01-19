@@ -40,7 +40,11 @@ jobs:
         pylint tests/
     - name: Test with pytest
       run: |
-        pytest --no-cov
+        pytest
+    - name: Upload Codecov
+      uses: codecov/codecov-action@v1
+      with:
+        files: ./coverage.xml
     - name: Building doc
       run: |
         cd docs
