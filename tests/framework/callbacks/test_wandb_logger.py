@@ -19,7 +19,8 @@ class WandBLoggerTest(TestCase):
         torch.manual_seed(42)
         self.pytorch_network = nn.Linear(1, 1)
         self.loss_function = nn.MSELoss()
-        self.optimizer = torch.optim.SGD(self.pytorch_network.parameters(), lr=1e-3)
+        self.a_lr = 1e-3
+        self.optimizer = torch.optim.SGD(self.pytorch_network.parameters(), lr=self.a_lr)
         self.model = Model(self.pytorch_network, self.optimizer, self.loss_function)
         self.num_epochs = 2
         self.a_name = "test_run"
@@ -38,6 +39,8 @@ class WandBLoggerTest(TestCase):
             create_experiment_call = [
                 call.init(
                     name=self.a_name,
+                    group=None,
+                    config=None,
                     project=None,
                     id=None,
                     dir=None,
@@ -56,6 +59,8 @@ class WandBLoggerTest(TestCase):
             create_experiment_call = [
                 call.init(
                     name=self.a_name,
+                    group=None,
+                    config=None,
                     project=None,
                     id=None,
                     dir=None,
@@ -88,11 +93,11 @@ class WandBLoggerTest(TestCase):
         with patch("poutyne.framework.wandb_logger.wandb") as wandb_patch:
             wandb_patch.init = self.initialize_experience
             wandb_patch.run = None
-            wandb_logger = WandBLogger(self.a_name)
-            wandb_logger.log_config_params(self.a_config_params)
+            logger = WandBLogger(self.a_name)
+            logger.log_config_params(self.a_config_params)
 
             create_experiment_call = [call(self.a_config_params)]
-            self.run_mock.config.update.assert_has_calls(create_experiment_call)
+            logger.run.config.update.assert_has_calls(create_experiment_call)
 
     def test_watch_gradient_false(self):
 
@@ -102,25 +107,15 @@ class WandBLoggerTest(TestCase):
             wandb_patch.init = self.initialize_experience
             wandb_patch.run = None
             logger = WandBLogger(self.a_name)
+
             history = self.model.fit_generator(
                 train_gen, valid_gen, epochs=self.num_epochs, steps_per_epoch=5, callbacks=[logger]
             )
 
-            self.run_mock.watch.assert_not_called()
+            logger.run.watch.assert_not_called()
+            
 
-    def test_watch_gradient_true(self):
 
-        with patch("poutyne.framework.wandb_logger.wandb") as wandb_patch:
-            train_gen = some_data_generator(20)
-            valid_gen = some_data_generator(20)
-            wandb_patch.init = self.initialize_experience
-            wandb_patch.run = None
-            logger = WandBLogger(self.a_name, log_gradient_frequency=1)
-            history = self.model.fit_generator(
-                train_gen, valid_gen, epochs=self.num_epochs, steps_per_epoch=5, callbacks=[logger]
-            )
-
-            self.run_mock.watch.assert_called_once_with(self.pytorch_network, log="all", log_freq=1)
             
     def test_watch_gradient_true(self):
 
@@ -134,7 +129,7 @@ class WandBLoggerTest(TestCase):
                 train_gen, valid_gen, epochs=self.num_epochs, steps_per_epoch=5, callbacks=[logger]
             )
 
-            self.run_mock.watch.assert_called_once_with(self.pytorch_network, log="all", log_freq=1)
+            logger.run.watch.assert_called_once_with(self.pytorch_network, log="all", log_freq=1)
 
     def test_log_epoch(self):
 
@@ -143,13 +138,62 @@ class WandBLoggerTest(TestCase):
             valid_gen = some_data_generator(20)
             wandb_patch.init = self.initialize_experience
             wandb_patch.run = None
-            logger = WandBLogger(self.a_name, log_gradient_frequency=1)
+            logger = WandBLogger(self.a_name, log_gradient_frequency=1,batch_granularity=False)
             history = self.model.fit_generator(
                 train_gen, valid_gen, epochs=self.num_epochs, steps_per_epoch=5, callbacks=[logger]
             )
-            experience_call = [call.log(log) for log in history]
+            experience_call = []
+            for log in history:
+                train_metrics = {key: value for (key, value) in log.items() if "val_" not in key}
+                train_metrics = {"training": train_metrics}
+                experience_call.append(call.log(train_metrics))
 
-            self.run_mock.log.assert_has_calls(experience_call,any_order=False)
+                val_metrics = {key.replace("val_", ""): value for (key, value) in log.items() if "val_" in key}
+                val_metrics = {"validation": val_metrics}
+                experience_call.append(call(val_metrics))
+
+                experience_call.append(call({"params":{"lr":self.a_lr}}))
+
+
+            logger.run.log.assert_has_calls(experience_call,any_order=False)
+
+    def test_log_epoch_and_batch(self):
+
+        with patch("poutyne.framework.wandb_logger.wandb") as wandb_patch:
+            train_gen = some_data_generator(20)
+            valid_gen = some_data_generator(20)
+            wandb_patch.init = self.initialize_experience
+            wandb_patch.run = None
+            num_batchs = 5
+            logger = WandBLogger(self.a_name, log_gradient_frequency=1,batch_granularity=True)
+            history = self.model.fit_generator(
+                train_gen, valid_gen, epochs=self.num_epochs, steps_per_epoch=num_batchs, callbacks=[logger]
+            )
+
+            call_count = self.num_epochs*num_batchs + 3*self.num_epochs
+            self.assertEqual(logger.run.log.call_count, call_count)
+
+    def test_save_architecture(self):
+
+        with patch("poutyne.framework.wandb_logger.wandb") as wandb_patch:
+            with patch("poutyne.framework.torch.onnx") as torch_onx_patch:
+                with patch("poutyne.framework.torch.randn") as torch_randn_patch:
+                    train_gen = some_data_generator(20)
+                    valid_gen = some_data_generator(20)
+                    wandb_patch.init = self.initialize_experience
+                    wandb_patch.run = None
+                    num_batchs = 5
+                    logger = WandBLogger(self.a_name, log_gradient_frequency=1,batch_granularity=True, training_batch_shape=(1,2,3))
+                    logger.run.dir = "a_path"
+                    logger.run.name = self.a_name
+                    history = self.model.fit_generator(
+                        train_gen, valid_gen, epochs=self.num_epochs, steps_per_epoch=num_batchs, callbacks=[logger]
+                    )
+
+                    torch_onx_patch.export.assert_called_once_with(self.pytorch_network, torch_randn_patch(), f"a_path/{self.a_name}_model.onnx")
+                    logger.run.save.assert_called_once_with(f"a_path/{self.a_name}_model.onnx")
+                
+                
 
 
 
