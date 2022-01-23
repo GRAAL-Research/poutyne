@@ -581,18 +581,18 @@ class ModelBundle:
         self, initial_epoch: int, keep_only_last_best: bool, save_every_epoch: bool
     ) -> List:
         callbacks = []
-        best_checkpoint = ModelCheckpoint(
-            self.best_checkpoint_filename,
-            monitor=self.monitor_metric,
-            mode=self.monitor_mode,
-            keep_only_last_best=keep_only_last_best,
-            save_best_only=not save_every_epoch,
-            restore_best=not save_every_epoch,
-            verbose=not save_every_epoch,
-        )
-        callbacks.append(best_checkpoint)
-
-        if save_every_epoch:
+        if not save_every_epoch:
+            best_checkpoint = ModelCheckpoint(
+                self.best_checkpoint_filename,
+                monitor=self.monitor_metric,
+                mode=self.monitor_mode,
+                keep_only_last_best=keep_only_last_best,
+                save_best_only=True,
+                restore_best=True,
+                verbose=True,
+            )
+            callbacks.append(best_checkpoint)
+        else:
             best_restore = BestModelRestore(monitor=self.monitor_metric, mode=self.monitor_mode, verbose=True)
             callbacks.append(best_restore)
 
@@ -824,6 +824,17 @@ class ModelBundle:
                 expt_callbacks += self._init_model_restoring_callbacks(
                     initial_epoch, keep_only_last_best, save_every_epoch
                 )
+
+            if save_every_epoch:
+                expt_callbacks += [
+                    ModelCheckpoint(
+                        self.best_checkpoint_filename,
+                        save_best_only=False,
+                        restore_best=False,
+                        verbose=False,
+                    )
+                ]
+
             expt_callbacks += [ModelCheckpoint(self.model_checkpoint_filename, verbose=False)]
             expt_callbacks += [OptimizerCheckpoint(self.optimizer_checkpoint_filename, verbose=False)]
 
