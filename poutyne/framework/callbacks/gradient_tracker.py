@@ -13,9 +13,12 @@ class WeightsGradientsStatsTracker:
      max and absolute max per layer. The tracker is using the `Welford's online algorithm
      <https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Welford's_online_algorithm>`_
     to estimate the running mean and running variance of the absolute weights' gradients.
+
+    Args:
+        number_layers (int): The number of layers to track stats on.
     """
 
-    def __init__(self, number_layers) -> None:
+    def __init__(self, number_layers: int) -> None:
         self.number_layers = number_layers
 
         self.reset()
@@ -118,7 +121,7 @@ class WeightsGradientsStatsTracker:
         self.count = 1
 
 
-class Tracker(Callback):
+class GradientTracker(Callback):
     def __init__(self, keep_bias: bool = False) -> None:
         super().__init__()
 
@@ -128,20 +131,20 @@ class Tracker(Callback):
 
         self.tracker = None
 
-    def on_train_batch_end(self, batch_number: int, logs: Dict):
+    def on_train_batch_end(self, batch_number: int, logs: Dict) -> None:
         # pylint: disable=unused-argument
         named_parameters = ((n, p) for n, p in self.model.network.named_parameters() if self._keep_layer(p, n))
         self.tracker.batch_statistic_upgrade(named_parameters)
 
-    def on_train_begin(self, logs: Dict):
+    def on_train_begin(self, logs: Dict) -> None:
         for layer_name, layer_params in self.model.network.named_parameters():
             self._update_layers_to_track(layer_name, layer_params)
         self.tracker = WeightsGradientsStatsTracker(self.number_layers)
 
-    def on_epoch_end(self, epoch_number: int, logs: Dict):
+    def on_epoch_end(self, epoch_number: int, logs: Dict) -> None:
         self._on_epoch_end_log(epoch_number, logs)
 
-    def _on_epoch_end_log(self, epoch_number: int, logs: Dict):
+    def _on_epoch_end_log(self, epoch_number: int, logs: Dict) -> None:
         """
         The method to define the behavior of the logging tracker.
 
@@ -157,14 +160,14 @@ class Tracker(Callback):
 
         self.number_layers = len(self.layer_names)
 
-    def _keep_layer(self, layer_params: torch.nn.parameter.Parameter, layer_name: str):
+    def _keep_layer(self, layer_params: torch.nn.parameter.Parameter, layer_name: str) -> bool:
         layer_require_grad = layer_params.requires_grad
         if self.keep_bias:
             return layer_require_grad
         return layer_require_grad and ("bias" not in layer_name)
 
 
-class TensorBoardGradientTracker(Tracker):
+class TensorBoardGradientTracker(GradientTracker):
     """
     Wrapper to track the statistics of the weights' gradient per layer and log them in TensorBoard per epoch.
 

@@ -13,33 +13,7 @@ try:
 except ImportError:
     SummaryWriter = None
 
-from poutyne import Model, TensorBoardGradientTracker, WeightsGradientsStatsTracker, Tracker
-
-
-class TrackerTest(TestCase):
-    def test_keep_good_layer(self):
-        # pylint: disable=protected-access
-        tracker = Tracker(keep_bias=False)
-        layer_to_keep_params = MagicMock()
-        layer_to_keep_params.requires_grad = True
-        self.assertTrue(tracker._keep_layer(layer_to_keep_params, "fake_layer_name_to_keep"))
-        self.assertFalse(tracker._keep_layer(layer_to_keep_params, "bias_name_not_to_keep"))
-
-        layer_not_to_keep_params = MagicMock()
-        layer_not_to_keep_params.requires_grad = False
-        self.assertFalse(tracker._keep_layer(layer_not_to_keep_params, "fake_layer_name_not_to_keep"))
-        self.assertFalse(tracker._keep_layer(layer_not_to_keep_params, "bias_name_not_to_keep"))
-
-        tracker = Tracker(keep_bias=True)
-        layer_to_keep_params = MagicMock()
-        layer_to_keep_params.requires_grad = True
-        self.assertTrue(tracker._keep_layer(layer_to_keep_params, "fake_layer_name_to_keep"))
-        self.assertTrue(tracker._keep_layer(layer_to_keep_params, "bias_name_to_keep"))
-
-        layer_not_to_keep_params = MagicMock()
-        layer_not_to_keep_params.requires_grad = False
-        self.assertFalse(tracker._keep_layer(layer_not_to_keep_params, "fake_layer_name_not_to_keep"))
-        self.assertFalse(tracker._keep_layer(layer_not_to_keep_params, "bias_name_not_to_keep"))
+from poutyne import Model, TensorBoardGradientTracker, WeightsGradientsStatsTracker, GradientTracker
 
 
 class GradientStatsTrackerTest(TestCase):
@@ -174,6 +148,59 @@ class GradientStatsTrackerTest(TestCase):
         self.assertEqual(expected.keys(), actual.keys())
         for expected_value, actual_value in zip(expected.values(), actual.values()):
             self.assertAlmostEqual(float(expected_value), float(actual_value), places=3)
+
+
+class GradientTrackerTest(TestCase):
+    def test_keep_good_layer(self):
+        # pylint: disable=protected-access
+        gradient_tracker = GradientTracker(keep_bias=False)
+        layer_to_keep_params = MagicMock()
+        layer_to_keep_params.requires_grad = True
+        self.assertTrue(gradient_tracker._keep_layer(layer_to_keep_params, "fake_layer_name_to_keep"))
+        self.assertFalse(gradient_tracker._keep_layer(layer_to_keep_params, "bias_name_not_to_keep"))
+
+        layer_not_to_keep_params = MagicMock()
+        layer_not_to_keep_params.requires_grad = False
+        self.assertFalse(gradient_tracker._keep_layer(layer_not_to_keep_params, "fake_layer_name_not_to_keep"))
+        self.assertFalse(gradient_tracker._keep_layer(layer_not_to_keep_params, "bias_name_not_to_keep"))
+
+        gradient_tracker = GradientTracker(keep_bias=True)
+        layer_to_keep_params = MagicMock()
+        layer_to_keep_params.requires_grad = True
+        self.assertTrue(gradient_tracker._keep_layer(layer_to_keep_params, "fake_layer_name_to_keep"))
+        self.assertTrue(gradient_tracker._keep_layer(layer_to_keep_params, "bias_name_to_keep"))
+
+        layer_not_to_keep_params = MagicMock()
+        layer_not_to_keep_params.requires_grad = False
+        self.assertFalse(gradient_tracker._keep_layer(layer_not_to_keep_params, "fake_layer_name_not_to_keep"))
+        self.assertFalse(gradient_tracker._keep_layer(layer_not_to_keep_params, "bias_name_not_to_keep"))
+
+    def test_integration(self):
+        train_gen = some_data_generator(20)
+        valid_gen = some_data_generator(20)
+        torch.manual_seed(42)
+        self.pytorch_network = nn.Linear(1, 1)
+        self.loss_function = nn.MSELoss()
+        self.optimizer = torch.optim.SGD(self.pytorch_network.parameters(), lr=1e-3)
+        device = torch.device("cpu")
+        self.model = Model(self.pytorch_network, self.optimizer, self.loss_function, device=device)
+        gradient_tracker = GradientTracker()
+
+        self.model.fit_generator(train_gen, valid_gen, epochs=10, steps_per_epoch=5, callbacks=[gradient_tracker])
+
+    @skipIf(not torch.cuda.is_available(), "no gpu available")
+    def test_integration_on_gpu(self):
+        train_gen = some_data_generator(20)
+        valid_gen = some_data_generator(20)
+        torch.manual_seed(42)
+        self.pytorch_network = nn.Linear(1, 1)
+        self.loss_function = nn.MSELoss()
+        self.optimizer = torch.optim.SGD(self.pytorch_network.parameters(), lr=1e-3)
+        device = torch.device("cuda:0")
+        self.model = Model(self.pytorch_network, self.optimizer, self.loss_function, device=device)
+        gradient_tracker = GradientTracker()
+
+        self.model.fit_generator(train_gen, valid_gen, epochs=10, steps_per_epoch=5, callbacks=[gradient_tracker])
 
 
 @skipIf(SummaryWriter is None, "Unable to import SummaryWriter from torch")
