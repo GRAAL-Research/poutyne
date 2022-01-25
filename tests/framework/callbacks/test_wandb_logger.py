@@ -6,8 +6,9 @@ import torch.nn as nn
 import os
 import warnings
 import wandb
+from tempfile import TemporaryDirectory, TemporaryFile
 
-from poutyne import Model, WandBLogger
+from poutyne import Model, WandBLogger,ModelCheckpoint
 from tests.framework.tools import some_data_generator
 
 from unittest.mock import patch, MagicMock, call
@@ -27,9 +28,13 @@ class WandBLoggerTest(TestCase):
         self.a_dir = os.getcwd()
         self.anonymous_lut = {True: "allow", False: None}
         self.run_mock = MagicMock(spec=wandb.sdk.wandb_run.Run)
+        self.artifact_mock = MagicMock(spec=wandb.sdk.wandb_artifacts.Artifact)
         self.initialize_experience = MagicMock(return_value=self.run_mock)
         self.a_config_params = {"param_1": 1, "param_2": 2, "param_3": "value"}
         self.uncleaned_log = {"size": 32, "accuracy": 85}
+        self.temp_dir_obj = TemporaryDirectory()
+        self.temp_file_obj = TemporaryFile()
+        
 
     @patch.dict(os.environ, clear=True)
     def test_wandb_online_init(self):
@@ -99,6 +104,24 @@ class WandBLoggerTest(TestCase):
             create_experiment_call = [call(self.a_config_params)]
             logger.run.config.update.assert_has_calls(create_experiment_call)
 
+    def test_wandb_with_artifact_file_init(self):
+        with patch("poutyne.framework.wandb_logger.wandb") as wandb_patch:
+            wandb_patch.Artifact.return_value = self.artifact_mock
+            wandb_patch.init = self.initialize_experience
+            wandb_patch.run = None
+            logger = WandBLogger(self.a_name,initial_artifacts_paths=[self.temp_file_obj.name])            
+            self.artifact_mock.add_file.assert_called_once_with(self.temp_file_obj.name)
+            logger.run.log_artifact.assert_called_once_with(self.artifact_mock)
+
+    def test_wandb_with_artifact_dir_init(self):
+        with patch("poutyne.framework.wandb_logger.wandb") as wandb_patch:
+            wandb_patch.Artifact.return_value = self.artifact_mock
+            wandb_patch.init = self.initialize_experience
+            wandb_patch.run = None
+            logger = WandBLogger(self.a_name,initial_artifacts_paths=[self.temp_dir_obj.name])            
+            self.artifact_mock.add_dir.assert_called_once_with(self.temp_dir_obj.name)
+            logger.run.log_artifact.assert_called_once_with(self.artifact_mock)            
+
     def test_watch_gradient_false(self):
 
         with patch("poutyne.framework.wandb_logger.wandb") as wandb_patch:
@@ -144,15 +167,16 @@ class WandBLoggerTest(TestCase):
             )
             experience_call = []
             for log in history:
+                epoch = log["epoch"]
                 train_metrics = {key: value for (key, value) in log.items() if "val_" not in key}
                 train_metrics = {"training": train_metrics}
-                experience_call.append(call.log(train_metrics))
+                experience_call.append(call.log(train_metrics,step=epoch))
 
                 val_metrics = {key.replace("val_", ""): value for (key, value) in log.items() if "val_" in key}
                 val_metrics = {"validation": val_metrics}
-                experience_call.append(call(val_metrics))
+                experience_call.append(call(val_metrics,step=epoch))
 
-                experience_call.append(call({"params":{"lr":self.a_lr}}))
+                experience_call.append(call({"params":{"lr":self.a_lr}},step=epoch))
 
 
             logger.run.log.assert_has_calls(experience_call,any_order=False)
@@ -172,6 +196,50 @@ class WandBLoggerTest(TestCase):
 
             call_count = self.num_epochs*num_batchs + 3*self.num_epochs
             self.assertEqual(logger.run.log.call_count, call_count)
+
+
+    def test_log_testgenerator(self):
+
+        with patch("poutyne.framework.wandb_logger.wandb") as wandb_patch:
+            x = torch.rand(10, 1)
+            y = torch.rand(10, 1)
+            wandb_patch.init = self.initialize_experience
+            wandb_patch.run = None
+            num_batchs = 5
+            logger = WandBLogger(self.a_name, log_gradient_frequency=1,batch_granularity=True)
+            test_history = self.model.evaluate(x, y, callbacks=[logger])
+            logger.run.log.called_once()
+
+
+    def test_end_run_after_test(self):
+
+        with patch("poutyne.framework.wandb_logger.wandb") as wandb_patch:
+            x = torch.rand(10, 1)
+            y = torch.rand(10, 1)
+            wandb_patch.init = self.initialize_experience
+            wandb_patch.run = None
+            num_batchs = 5
+            logger = WandBLogger(self.a_name, log_gradient_frequency=1,batch_granularity=True)
+            test_history = self.model.evaluate(x, y, callbacks=[logger])
+            wandb_patch.finish.called_once()
+
+
+    def test_log_checkpoints(self):
+
+        with patch("poutyne.framework.wandb_logger.wandb") as wandb_patch:
+            train_gen = some_data_generator(20)
+            valid_gen = some_data_generator(20)
+            wandb_patch.init = self.initialize_experience
+            wandb_patch.run = None
+            wandb_patch.Artifact.return_value = self.artifact_mock
+            checkpoint = ModelCheckpoint(os.path.join(self.temp_dir_obj.name,str(self.temp_file_obj.name)))
+            logger = WandBLogger(self.a_name, log_gradient_frequency=1,batch_granularity=True,checkpoints_path=self.temp_dir_obj.name)
+            history = self.model.fit_generator(
+                train_gen, valid_gen, epochs=self.num_epochs, steps_per_epoch=5, callbacks=[logger,checkpoint]
+            )
+            self.artifact_mock.add_dir.assert_called_once_with(self.temp_dir_obj.name)
+            logger.run.log_artifact.assert_called_once_with(self.artifact_mock)
+
 
     def test_save_architecture(self):
 

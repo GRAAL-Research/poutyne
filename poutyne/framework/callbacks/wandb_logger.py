@@ -124,6 +124,8 @@ class WandBLogger(Logger):
         self.log_gradient_frequency = log_gradient_frequency
         self.training_batch_shape = training_batch_shape
         self.checkpoints_path = checkpoints_path
+        if initial_artifacts_paths is not None:
+            self._log_artifacts(initial_artifacts_paths, name="Initial-artifacts", artifact_type="Miscellaneous")
 
     def _watch_gradient(self) -> None:
         """
@@ -164,7 +166,7 @@ class WandBLogger(Logger):
         if self.batch_granularity:
             train_metrics = {key: value for (key, value) in logs.items() if "val_" not in key}
             train_metrics = {"training": {"batch": train_metrics}}
-            self._log_metrics(train_metrics, step=batch_number)
+            self._log_metrics(train_metrics)
 
     def _on_epoch_end_write(self, epoch_number: int, logs: Dict) -> None:
         """
@@ -180,7 +182,7 @@ class WandBLogger(Logger):
             train_metrics = {"training": train_metrics}
 
         val_metrics = {"validation": val_metrics}
-
+        
         self._log_metrics(train_metrics, step=epoch_number)
         self._log_metrics(val_metrics, step=epoch_number)
         self._log_params(learning_rate, step=epoch_number)
@@ -189,7 +191,7 @@ class WandBLogger(Logger):
         if self.checkpoints_path is not None:
             self._log_artifacts([self.checkpoints_path], "Checkpoints", artifact_type="Model-weights")
 
-    def _log_metrics(self, metrics: Dict, step: int):
+    def _log_metrics(self, metrics: Dict, step: int=None):
         """
         Log metrics for a specific step.
 
@@ -197,7 +199,10 @@ class WandBLogger(Logger):
             metrics (Dict): the metrics to log in the form of a dictionary.
             step (int): the corresponding step.
         """
-        self.run.log(metrics)  # , step=step)
+        if self.batch_granularity :
+            self.run.log(metrics)
+        else:
+            self.run.log(metrics, step=step)
 
     def _log_params(self, params: Dict, step: int):
         """
@@ -210,7 +215,11 @@ class WandBLogger(Logger):
             params (Dict): the parameters to log in the form of a dictionary.
             step (int): the corresponding step.
         """
-        self.run.log({"params": params})  # , step=step)
+        if self.batch_granularity :
+            self.run.log({"params": params})
+        else:
+            self.run.log({"params": params}, step=step)
+        
 
     def _log_artifacts(self, paths: List[str], name: str, artifact_type: str):
         """
