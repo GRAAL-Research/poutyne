@@ -182,7 +182,7 @@ class WandBLogger(Logger):
             train_metrics = {"training": train_metrics}
 
         val_metrics = {"validation": val_metrics}
-        
+
         self._log_metrics(train_metrics, step=epoch_number)
         self._log_metrics(val_metrics, step=epoch_number)
         self._log_params(learning_rate, step=epoch_number)
@@ -191,7 +191,7 @@ class WandBLogger(Logger):
         if self.checkpoints_path is not None:
             self._log_artifacts([self.checkpoints_path], "Checkpoints", artifact_type="Model-weights")
 
-    def _log_metrics(self, metrics: Dict, step: int=None):
+    def _log_metrics(self, metrics: Dict, step: int = None):
         """
         Log metrics for a specific step.
 
@@ -199,7 +199,7 @@ class WandBLogger(Logger):
             metrics (Dict): the metrics to log in the form of a dictionary.
             step (int): the corresponding step.
         """
-        if self.batch_granularity :
+        if self.batch_granularity:
             self.run.log(metrics)
         else:
             self.run.log(metrics, step=step)
@@ -215,11 +215,10 @@ class WandBLogger(Logger):
             params (Dict): the parameters to log in the form of a dictionary.
             step (int): the corresponding step.
         """
-        if self.batch_granularity :
+        if self.batch_granularity:
             self.run.log({"params": params})
         else:
             self.run.log({"params": params}, step=step)
-        
 
     def _log_artifacts(self, paths: List[str], name: str, artifact_type: str):
         """
