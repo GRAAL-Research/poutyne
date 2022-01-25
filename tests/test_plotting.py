@@ -2,12 +2,15 @@ import os
 from io import BytesIO
 from tempfile import TemporaryDirectory
 from unittest import TestCase
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 from matplotlib.axes import Axes
 from PIL import Image
 
 from poutyne import plot_history, plot_metric
+
+mpl.use('Agg')
 
 
 class PlotHistoryTest(TestCase):
