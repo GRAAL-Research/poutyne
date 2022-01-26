@@ -666,9 +666,9 @@ class Model:
 
         x = x if isinstance(x, (tuple, list)) else (x,)
 
-        # We return PackedSequence in a list since it is a namedtuple, thus an iterator object and
+        # We return PackedSequence in a tuple since it is a namedtuple, thus an iterator object and
         # would break later when we call self.network(*x) since it will iterate over the PackedSequence named attribute.
-        x = [x] if isinstance(x, PackedSequence) else x
+        x = (x,) if isinstance(x, PackedSequence) else x
 
         return (x, y) if y is not None else x
 
