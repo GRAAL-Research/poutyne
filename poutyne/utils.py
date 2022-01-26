@@ -71,7 +71,8 @@ def _apply(obj, func):
     if isinstance(obj, (list, tuple)):
         if isinstance(obj, PackedSequence):
             return type(obj)(
-                *(_apply(getattr(obj, el), func) if el != "batch_sizes" else getattr(obj, el) for el in obj._fields))
+                *(_apply(getattr(obj, el), func) if el != "batch_sizes" else getattr(obj, el) for el in obj._fields)
+            )
         return type(obj)(_apply(el, func) for el in obj)
     if isinstance(obj, dict):
         return {k: _apply(el, func) for k, el in obj.items()}
