@@ -5,10 +5,11 @@ from unittest.mock import MagicMock, call
 
 import numpy as np
 import torch
-from torch.nn.utils.rnn import PackedSequence, pad_sequence, pack_padded_sequence
+from torch.nn.utils.rnn import PackedSequence
 
 from poutyne import TensorDataset, torch_apply
 from poutyne.utils import _concat
+from tests.utils import populate_packed_sequence
 
 
 class TorchApplyTest(TestCase):
@@ -85,13 +86,7 @@ class TorchApplyTest(TestCase):
 
     def test_apply_with_packed_sequence_integration(self):
         device = torch.device("cpu")
-        lengths = torch.tensor([30, 28, 26])  # so batch_size = 3
-        sequences_vectors = []
-        for length in lengths:
-            sequences_vectors.append(torch.rand(length, 1))
-
-        padded_sequences_vectors = pad_sequence(sequences_vectors)
-        pack_padded_sequences_vectors = pack_padded_sequence(padded_sequences_vectors, lengths.cpu())
+        pack_padded_sequences_vectors = populate_packed_sequence()
         process_packed_sequence = torch_apply(pack_padded_sequences_vectors, lambda t: t.to(device))
         self.assertTrue(isinstance(process_packed_sequence, PackedSequence))
         self.assertEqual(process_packed_sequence.data.device, device)
@@ -99,13 +94,7 @@ class TorchApplyTest(TestCase):
     @skipIf(not torch.cuda.is_available(), "no gpu available")
     def test_apply_with_packed_sequence_integration_gpu(self):
         device = torch.device("cuda:0")
-        lengths = torch.tensor([30, 28, 26])  # so batch_size = 3
-        sequences_vectors = []
-        for length in lengths:
-            sequences_vectors.append(torch.rand(length, 1))
-
-        padded_sequences_vectors = pad_sequence(sequences_vectors)
-        pack_padded_sequences_vectors = pack_padded_sequence(padded_sequences_vectors, lengths.cpu())
+        pack_padded_sequences_vectors = populate_packed_sequence()
         process_packed_sequence = torch_apply(pack_padded_sequences_vectors, lambda t: t.to(device))
         self.assertTrue(isinstance(process_packed_sequence, PackedSequence))
         self.assertEqual(process_packed_sequence.data.device, device)
@@ -125,13 +114,7 @@ class TorchApplyTest(TestCase):
     @skipIf(not torch.cuda.is_available(), "no gpu available")
     def test_apply_with_tuple_with_an_packed_sequence_integration_gpu(self):
         device = torch.device("cuda:0")
-        lengths = torch.tensor([30, 28, 26])  # so batch_size = 3
-        sequences_vectors = []
-        for length in lengths:
-            sequences_vectors.append(torch.rand(length, 1))
-
-        padded_sequences_vectors = pad_sequence(sequences_vectors)
-        pack_padded_sequences_vectors = pack_padded_sequence(padded_sequences_vectors, lengths.cpu())
+        pack_padded_sequences_vectors = populate_packed_sequence()
         tupled_obj = (pack_padded_sequences_vectors, MagicMock())
         process_packed_sequence, _ = torch_apply(tupled_obj, lambda t: t.to(device))
         self.assertTrue(isinstance(process_packed_sequence, PackedSequence))
