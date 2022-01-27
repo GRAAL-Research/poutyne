@@ -5,7 +5,7 @@ from unittest.mock import MagicMock, call, ANY
 import torch
 import torch.nn as nn
 
-from poutyne import Model, DelayCallback, Callback
+from poutyne import Model, DelayCallback, Callback, CallbackList
 from tests.framework.tools import some_data_generator
 
 
@@ -74,6 +74,13 @@ class DelayCallbackTest(TestCase):
 
     def test_batch_delay_when_no_delay(self):
         self._test_batch_delay(epoch_delay=0, batch_in_epoch_delay=0)
+
+    def test_proper_init_with_callback_element(self):
+        delay_callback = DelayCallback([self.mock_callback])
+        self.assertTrue(isinstance(delay_callback.callbacks, CallbackList))
+
+        delay_callback = DelayCallback(self.mock_callback)
+        self.assertTrue(isinstance(delay_callback.callbacks, CallbackList))
 
     def _test_batch_delay(self, epoch_delay, batch_in_epoch_delay):
         batch_delay = epoch_delay * DelayCallbackTest.steps_per_epoch + batch_in_epoch_delay
