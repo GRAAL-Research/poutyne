@@ -54,6 +54,9 @@ Training Results
 .. autoclass:: MLFlowLogger
     :members: log_config_params, log_param, log_metric
 
+.. autoclass:: WandBLogger
+    :members: log_config_params
+
 Training Progress
 ~~~~~~~~~~~~~~~~~
 .. autoclass:: ProgressionCallback

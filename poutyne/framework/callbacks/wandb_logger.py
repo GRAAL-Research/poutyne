@@ -5,7 +5,6 @@ from typing import Dict, Optional, List
 import torch
 
 
-
 from . import Logger
 
 try:
@@ -19,8 +18,8 @@ class WandBLogger(Logger):
     """
 
     WandB logger to manage logging of experiments
-    parameters, metrics update, models log, gradient 
-    values and other information. The logger will log 
+    parameters, metrics update, models log, gradient
+    values and other information. The logger will log
     all run into the same experiment.
 
     Args:
