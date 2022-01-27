@@ -29,6 +29,4 @@ class CallbackListTest(TestCase):
     def test_iterator(self):
         a_callback = MagicMock(spec=Callback)
         self.callback_list.append(a_callback)
-        self.assertEqual(len([callback for callback in self.callback_list]), 2)
-
-
+        self.assertEqual(len(list(self.callback_list)), 2)
