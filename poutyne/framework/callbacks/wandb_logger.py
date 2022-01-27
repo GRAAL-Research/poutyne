@@ -96,6 +96,7 @@ class WandBLogger(Logger):
         log_gradient_frequency: Optional[int] = None,
         training_batch_shape: Optional[tuple] = None,
     ) -> None:
+        # pylint: disable-msg=too-many-locals
 
         super().__init__(batch_granularity=batch_granularity)
 
