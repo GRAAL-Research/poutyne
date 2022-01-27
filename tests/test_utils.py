@@ -142,7 +142,7 @@ class TorchApplyTest(TestCase):
     def _test_not_in_method_calls(self, mock_list, device_call):
         self.assertGreater(len(mock_list), 0)
         for mock in mock_list:
-            self.assertNotIn([device_call], mock.method_calls)
+            self.assertNotIn(device_call, mock.method_calls)
 
 
 def _setup_packed_sequence_obj_mock():
