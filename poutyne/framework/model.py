@@ -10,6 +10,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
+from torch.nn.utils.rnn import PackedSequence
 from torch.utils.data import DataLoader
 
 from poutyne import torch_to_numpy, numpy_to_torch, torch_to
@@ -664,6 +665,10 @@ class Model:
             x = self._process_input(x)
 
         x = x if isinstance(x, (tuple, list)) else (x,)
+
+        # We return PackedSequence in a tuple since it is a namedtuple, thus an iterator object and
+        # would break later when we call self.network(*x) since it will iterate over the PackedSequence named attribute.
+        x = (x,) if isinstance(x, PackedSequence) else x
 
         return (x, y) if y is not None else x
 
