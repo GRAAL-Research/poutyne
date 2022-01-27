@@ -43,7 +43,7 @@ class WandBLogger(Logger):
                 to be logged before the start of the training.
 
         log_gradient_frequency(int): log gradients and parameters every N batches (Default value = None).
-        training_batch_shape(tuples): Shape of a training batch. It will be used for logging architecture of the model on wandb
+        training_batch_shape(tuples): Shape of a training batch. Used for logging architecture on wandb
 
 
     Example:
@@ -79,12 +79,13 @@ class WandBLogger(Logger):
 
     def __init__(
         self,
+        *,
         name: Optional[str] = None,
         group: Optional[str] = None,
         config: Optional[Dict] = None,
         save_dir: Optional[str] = None,
         offline: Optional[bool] = False,
-        id: Optional[str] = None,
+        run_id: Optional[str] = None,
         anonymous: Optional[bool] = None,
         version: Optional[str] = None,
         project: Optional[str] = None,
@@ -107,7 +108,7 @@ class WandBLogger(Logger):
             group=group,
             config=config,
             project=project,
-            id=version or id,
+            id=version or run_id,
             dir=save_dir,
             resume="allow",
             anonymous=anonymous_lut.get(anonymous, anonymous),
