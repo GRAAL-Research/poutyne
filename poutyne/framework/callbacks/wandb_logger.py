@@ -1,13 +1,10 @@
-import unittest
-from unittest import TestCase, main
-
-import torch
-import torch.nn as nn
 import os
 import warnings
 from typing import Dict, Optional, List
 
 import torch
+
+
 
 from . import Logger
 
@@ -21,8 +18,10 @@ except ImportError:
 class WandBLogger(Logger):
     """
 
-    WandB logger to manage logging of experiments parameters, metrics update, models log, gradient values and other information. The
-    logger will log all run into the same experiment.
+    WandB logger to manage logging of experiments
+    parameters, metrics update, models log, gradient 
+    values and other information. The logger will log 
+    all run into the same experiment.
 
     Args:
         name(str): Display name for the run.
@@ -51,12 +50,23 @@ class WandBLogger(Logger):
     Example:
         .. code-block:: python
 
-            wandb_logger = WandBLogger(name="First_run",project="Test_project" save_dir="/absolute/path/to/directory", experiment="First experiment")
+            wandb_logger = WandBLogger(
+                                        name="First_run",
+                                        project="Test_project",
+                                        save_dir="/absolute/path/to/directory",
+                                        experiment="First experiment"
+                                       )
             wandb_logger.log_config_params(config_params=cfg_dict) # logging the config dictionary
 
             # our Poutyne experiment
-            experiment = Experiment(directory=saving_directory, network=network, device=device, optimizer=optimizer,
-                            loss_function=cross_entropy_loss, batch_metrics=[accuracy])
+            experiment = Experiment(
+                                     directory=saving_directory,
+                                     network=network,
+                                     device=device,
+                                     optimizer=optimizer,
+                                     loss_function=cross_entropy_loss,
+                                     batch_metrics=[accuracy]
+                                    )
 
             # Using the WandB logger callback during training
             experiment.train(train_generator=train_loader, valid_generator=valid_loader, epochs=1,
