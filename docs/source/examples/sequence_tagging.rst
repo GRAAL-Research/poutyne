@@ -298,7 +298,7 @@ Since our sequences are of variable lengths and we want to be the most efficient
             lstm_out, self.hidden_state = self.lstm_network(pack_padded_sequences_vectors)
             lstm_out, _ = pad_packed_sequence(lstm_out, batch_first=True)
 
-            tag_space = self.fully_connected_network(lstm_out.data)
+            tag_space = self.fully_connected_network(lstm_out)
             return tag_space.transpose(-1, 1)  # We need to transpose since it's a sequence
 
     full_network = FullNetWork(lstm_network, fully_connected_network)
