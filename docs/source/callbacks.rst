@@ -82,6 +82,7 @@ arguments in their constructors. They may have other arguments specific to their
 purpose.
 
 .. autoclass:: PeriodicSaveCallback
+    :members: save_file, restore
 
 .. autoclass:: ModelCheckpoint
 
