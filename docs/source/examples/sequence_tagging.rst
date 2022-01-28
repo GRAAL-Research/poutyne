@@ -291,7 +291,7 @@ Since our sequences are of variable lengths and we want to be the most efficient
             self.lstm_network = lstm_network
             self.fully_connected_network = fully_connected_network
 
-        def forward(self, padded_sequences_vectors, lengths):
+    def forward(self, pack_padded_sequences_vectors: PackedSequence):
             """
                 Defines the computation performed at every call.
             """
