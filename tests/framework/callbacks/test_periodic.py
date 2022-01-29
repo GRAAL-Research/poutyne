@@ -53,6 +53,27 @@ class PeriodicSaveTest(TestCase):
                 self.save_filename, monitor='val_loss', verbose=True, save_best_only=True, mode=invalid_mode
             )
 
+    def test_incorrect_monitored_metric_name_raise_key_error(self):
+        invalid_monitor_metric_name = "invalid_monitor_metric_name"
+        periodic_epoch_save = PeriodicEpochSave(
+            self.save_filename, monitor=invalid_monitor_metric_name, verbose=True, save_best_only=True
+        )
+
+        an_epoch_number = 1
+        a_log_dict = {"epoch": 1, 'acc': 1.0, 'another_metric_name': 1.0}
+        with self.assertRaises(KeyError):
+            periodic_epoch_save.on_epoch_end(an_epoch_number, a_log_dict)
+
+    def test_integration_correct_monitored_metric_name(self):
+        correct_monitor_metric_name = "val_loss"
+        periodic_epoch_save = PeriodicEpochSave(
+            self.save_filename, monitor=correct_monitor_metric_name, verbose=True, save_best_only=True
+        )
+
+        an_epoch_number = 1
+        a_log_dict = {"epoch": 1, 'acc': 1.0, 'val_loss': 1.0}
+        periodic_epoch_save.on_epoch_end(an_epoch_number, a_log_dict)
+
     def test_integration_with_keep_only_last_best(self):
         train_gen = some_data_generator(PeriodicSaveTest.batch_size)
         valid_gen = some_data_generator(PeriodicSaveTest.batch_size)
