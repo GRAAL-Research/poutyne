@@ -157,7 +157,7 @@ class PeriodicSaveCallback(Callback):
         filename = self.filename.format_map(logs)
 
         if self.save_best_only:
-            try:
+            if self.monitor in logs:
                 if self.monitor_op(logs[self.monitor], self.current_best):
                     old_best = self.current_best
                     self.current_best = logs[self.monitor]
@@ -176,8 +176,8 @@ class PeriodicSaveCallback(Callback):
                         and old_best_filename is not None
                     ):
                         os.remove(old_best_filename)
-            except KeyError as error:
-                raise KeyError(f"The monitored metric name {str(error)} is not found in computed metrics.") from error
+            else:
+                raise KeyError(f"The monitored metric name {self.monitor} is not found in computed metrics.")
         elif epoch_number % self.period == 0:
             if self.verbose:
                 print(f'Epoch {epoch_number:d}: saving file to {filename}')
