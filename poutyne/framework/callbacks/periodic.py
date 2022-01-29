@@ -45,22 +45,23 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 import os
 import warnings
 from typing import IO, Dict, Optional, Callable
+from abc import ABC, abstractmethod
 
 from ._utils import atomic_lambda_save
 from .callbacks import Callback
 
 
-class PeriodicSaveCallback(Callback):
+class PeriodicSaveCallback(ABC, Callback):
     """
-    Write a file (or checkpoint) after every epoch. `filename` can contain named formatting options,
-    which will be filled the value of `epoch` and keys in `logs` (passed in `on_epoch_end`). For
-    example: if `filename` is `weights.{epoch:02d}-{val_loss:.2f}.txt`, then `save_file()` will be
+    Write a file (or checkpoint) after every epoch. ``filename`` can contain named formatting options,
+    which will be filled the value of ``epoch`` and keys in ``logs`` (passed in ``on_epoch_end``). For
+    example: if ``filename`` is ``weights.{epoch:02d}-{val_loss:.2f}.txt``, then ``save_file()`` will be
     called with a file descriptor for a file with the epoch number and the validation loss in the
     filename.
 
     By default, the file is written atomically to the specified filename so that the training can
     be killed and restarted later using the same filename for periodic file saving. To do so, a
-    temporary file is created with the name of `filename + '.tmp'` and is then moved to the final
+    temporary file is created with the name of ``filename + '.tmp'`` and is then moved to the final
     destination after the checkpoint is done. The ``temporary_filename`` argument allows to change the
     path of this temporary file.
 
@@ -140,8 +141,17 @@ class PeriodicSaveCallback(Callback):
 
         self.period = period
 
+    @abstractmethod
     def save_file(self, fd: IO, epoch_number: int, logs: Dict) -> None:
-        raise NotImplementedError
+        """
+        Abstract method that is called every time a save needs to be done.
+
+        Args:
+            fd (IO): The descriptor of the file in which to write.
+            epoch_number (int): The epoch number.
+            logs (Dict): Dictionary passed on epoch end.
+        """
+        pass
 
     def _save_file(self, filename: str, epoch_number: int, logs: Dict) -> None:
         atomic_lambda_save(
@@ -183,8 +193,16 @@ class PeriodicSaveCallback(Callback):
                 print(f'Epoch {epoch_number:d}: saving file to {filename}')
             self._save_file(filename, epoch_number, logs)
 
+    @abstractmethod
     def restore(self, fd: IO) -> None:
-        raise NotImplementedError
+        """
+        Abstract method that is called when a save needs to be restored. This happens at the end of the training when
+        ``restore_best`` is true.
+
+        Args:
+            fd (IO): The descriptor of the file to read.
+        """
+        pass
 
     def on_train_end(self, logs: Dict) -> None:
         if self.restore_best:

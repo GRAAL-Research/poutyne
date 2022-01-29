@@ -241,12 +241,11 @@ To do this padding, we use the ``collate_fn`` argument of the PyTorch :class:`~t
             label.
 
         Returns:
-            A tuple (x, y). The element x is a tuple containing (1) a tensor of padded
-            word vectors and (2) their respective lengths of the sequences. The element
-            y is a tensor of padded tag indices. The word vectors are padded with vectors
-            of 0s and the tag indices are padded with -100s. Padding with -100 is done
-            because the cross-entropy loss, the accuracy metric and the F1 metric ignores
-            the targets with values -100.
+            A tuple (x, y). The element x is a tensor of packed sequence .
+            The element y is a tensor of padded tag indices. The word vectors are
+            padded with vectors of 0s and the tag indices are padded with -100s.
+            Padding with -100 is done because of the cross-entropy loss and the
+            accuracy metric ignores the targets with values -100.
         """
 
         # This gets us two lists of tensors and a list of integer.
@@ -291,7 +290,7 @@ Since our sequences are of variable lengths and we want to be the most efficient
             self.lstm_network = lstm_network
             self.fully_connected_network = fully_connected_network
 
-        def forward(self, padded_sequences_vectors, lengths):
+    def forward(self, pack_padded_sequences_vectors: PackedSequence):
             """
                 Defines the computation performed at every call.
             """
