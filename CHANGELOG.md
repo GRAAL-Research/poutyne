@@ -3,6 +3,9 @@
   [`ModelBundle`](https://poutyne.org/experiment.html#poutyne.ModelBundle), a class quite similar to `Experiment` except
   that it allows to instantiate an "Experiment" from a Poutyne Model or a network.
 * Add support for PackedSequence.
+* Add flag to [`TensorBoardLogger`](https://poutyne.org/callbacks.html#poutyne.TensorBoardLogger) to allow to put
+  training and validation metrics in different graphs. This allow to have a behavior closer to Keras.
+*
 
 # v1.8
 
