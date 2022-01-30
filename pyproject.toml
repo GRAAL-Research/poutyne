@@ -1,7 +1,7 @@
 [tool.black]
 line-length = 120
 skip-string-normalization = true
-required-version = '21.11b1'
+required-version = '22.1.0'
 extend-exclude = '/(slides)/'
 
 [tool.pytest.ini_options]
