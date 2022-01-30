@@ -179,6 +179,8 @@ class TensorBoardLogger(Logger):
 
     Args:
         writer (~torch.utils.tensorboard.writer.SummaryWriter): The tensorboard writer.
+        split_train_val (bool): Whether to put each training and validation metric in the same graphs.
+            (Default = False)
 
     Example:
         Using TensorBoardLogger::
@@ -193,9 +195,10 @@ class TensorBoardLogger(Logger):
             model.fit_generator(..., callbacks=[tb_logger])
     """
 
-    def __init__(self, writer):
+    def __init__(self, writer, split_train_val: bool = False):
         super().__init__(batch_granularity=False)
         self.writer = writer
+        self.split_train_val = split_train_val
 
     def _on_train_batch_end_write(self, batch_number: int, logs):
         """
@@ -204,21 +207,28 @@ class TensorBoardLogger(Logger):
         pass
 
     def _on_epoch_end_write(self, epoch_number: int, logs: dict):
-        grouped_items = {}
-        for k, v in logs.items():
-            if 'val_' in k:
-                primary_key = k[4:]
-                if primary_key not in grouped_items:
-                    grouped_items[primary_key] = {}
-                grouped_items[k[4:]][k] = v
-            else:
-                if k not in grouped_items:
-                    grouped_items[k] = {}
-                grouped_items[k][k] = v
-        for k, v in grouped_items.items():
-            self.writer.add_scalars(k, v, epoch_number)
         lr = self._get_current_learning_rates()
-        self.writer.add_scalars('lr', lr, epoch_number)
+
+        if not self.split_train_val:
+            grouped_items = {}
+            for k, v in logs.items():
+                if 'val_' in k:
+                    primary_key = k[4:]
+                    if primary_key not in grouped_items:
+                        grouped_items[primary_key] = {}
+                    grouped_items[k[4:]][k] = v
+                else:
+                    if k not in grouped_items:
+                        grouped_items[k] = {}
+                    grouped_items[k][k] = v
+
+            for k, v in grouped_items.items():
+                self.writer.add_scalars(k, v, epoch_number)
+            self.writer.add_scalars('lr', lr, epoch_number)
+        else:
+            metrics = {**logs, **lr}
+            for metric_name, metric_value in metrics.items():
+                self.writer.add_scalar(metric_name, metric_value, epoch_number)
 
     def _on_train_end_write(self, logs: Dict):
         self.writer.close()
