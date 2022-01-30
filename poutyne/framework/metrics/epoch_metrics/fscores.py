@@ -258,7 +258,7 @@ class FBeta(EpochMetric):
             pred_sum = pred_sum.sum()
             true_sum = true_sum.sum()
 
-        beta2 = self._beta ** 2
+        beta2 = self._beta**2
         # Finally, we have all our sufficient statistics.
         precision = _prf_divide(tp_sum, pred_sum)
         recall = _prf_divide(tp_sum, true_sum)
