@@ -38,26 +38,28 @@ class MLFlowLogger(Logger):
             mlflow_logger = MLFlowLogger(experiment_name="experiment", tracking_uri="/absolute/path/to/directory")
             mlflow_logger.log_config_params(config_params=cfg_dict) # logging the config dictionary
 
-            # our Poutyne experiment
-            experiment = Experiment(directory=saving_directory, network=network, device=device, optimizer=optimizer,
-                            loss_function=cross_entropy_loss, batch_metrics=[accuracy])
+            # our Poutyne model bundle
+            model_bundle = ModelBundle.from_network(directory=saving_directory, network=network, optimizer=optimizer,
+                                                    loss_function=cross_entropy_loss, batch_metrics=[accuracy],
+                                                    device=device)
 
             # Using the MLflow logger callback during training
-            experiment.train(train_generator=train_loader, valid_generator=valid_loader, epochs=1,
-                             seed=42, callbacks=[mlflow_logger])
+            model_bundle.train(train_generator=train_loader, valid_generator=valid_loader, epochs=1,
+                               seed=42, callbacks=[mlflow_logger])
 
         Using server tracking::
 
             mlflow_logger = MLFlowLogger(experiment_name="experiment", tracking_uri="http://IP_ADDRESS:PORT")
             mlflow_logger.log_config_params(config_params=cfg_dict) # logging the config dictionary
 
-            # our Poutyne experiment
-            experiment = Experiment(directory=saving_directory, network=network, device=device, optimizer=optimizer,
-                            loss_function=cross_entropy_loss, batch_metrics=[accuracy])
+            # our Poutyne model bundle
+            model_bundle = ModelBundle.from_network(directory=saving_directory, network=network, optimizer=optimizer,
+                                                    loss_function=cross_entropy_loss, batch_metrics=[accuracy],
+                                                    device=device)
 
             # Using the MLflow logger callback during training
-            experiment.train(train_generator=train_loader, valid_generator=valid_loader, epochs=1,
-                             seed=42, callbacks=[mlflow_logger])
+            model_bundle.train(train_generator=train_loader, valid_generator=valid_loader, epochs=1,
+                               seed=42, callbacks=[mlflow_logger])
     """
 
     def __init__(

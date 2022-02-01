@@ -18,6 +18,7 @@ Let's import all the needed packages.
 
 .. code-block:: python
 
+    import os
     import math
 
     import matplotlib.pyplot as plt
@@ -25,11 +26,11 @@ Let's import all the needed packages.
     import torch
     import torch.nn as nn
     import torch.optim as optim
-    from torch.utils.data import Subset, DataLoader
+    from torch.utils.data import random_split, DataLoader
     from torchvision import transforms, utils
     from torchvision.datasets.mnist import MNIST
 
-    from poutyne import set_seeds, Model
+    from poutyne import set_seeds, Model, ModelCheckpoint, CSVLogger, ModelBundle
 
 
 Also, we need to set Pythons's, NumPy's and PyTorch's seeds by using Poutyne function so that our training is (almost) reproducible.
@@ -269,12 +270,12 @@ That is, doing your own training loop.
         y_pred = y_pred.argmax(1)
         return (y_pred == y_true).float().mean() * 100
 
-    def pytorch_train_one_epoch(pytorch_network, optimizer, loss_function):
+    def pytorch_train_one_epoch(network, optimizer, loss_function):
         """
         Trains the neural network for one epoch on the train DataLoader.
 
         Args:
-            pytorch_network (torch.nn.Module): The neural network to train.
+            network (torch.nn.Module): The neural network to train.
             optimizer (torch.optim.Optimizer): The optimizer of the neural network
             loss_function: The loss function.
 
@@ -282,7 +283,7 @@ That is, doing your own training loop.
             A tuple (loss, accuracy) corresponding to an average of the losses and
             an average of the accuracy, respectively, on the train DataLoader.
         """
-        pytorch_network.train(True)
+        network.train(True)
         with torch.enable_grad():
             loss_sum = 0.
             acc_sum = 0.
@@ -294,7 +295,7 @@ That is, doing your own training loop.
 
                 optimizer.zero_grad()
 
-                y_pred = pytorch_network(x)
+                y_pred = network(x)
 
                 loss = loss_function(y_pred, y)
 
@@ -313,12 +314,12 @@ That is, doing your own training loop.
         avg_acc = acc_sum / example_count
         return avg_loss, avg_acc
 
-    def pytorch_test(pytorch_network, loader, loss_function):
+    def pytorch_test(network, loader, loss_function):
         """
         Tests the neural network on a DataLoader.
 
         Args:
-            pytorch_network (torch.nn.Module): The neural network to test.
+            network (torch.nn.Module): The neural network to test.
             loader (torch.utils.data.DataLoader): The DataLoader to test on.
             loss_function: The loss function.
 
@@ -326,7 +327,7 @@ That is, doing your own training loop.
             A tuple (loss, accuracy) corresponding to an average of the losses and
             an average of the accuracy, respectively, on the DataLoader.
         """
-        pytorch_network.eval()
+        network.eval()
         with torch.no_grad():
             loss_sum = 0.
             acc_sum = 0.
@@ -336,7 +337,7 @@ That is, doing your own training loop.
                 x = x.to(device)
                 y = y.to(device)
 
-                y_pred = pytorch_network(x)
+                y_pred = network(x)
                 loss = loss_function(y_pred, y)
 
                 # Since the loss and accuracy are averages for the batch, we multiply
@@ -351,7 +352,7 @@ That is, doing your own training loop.
         return avg_loss, avg_acc
 
 
-    def pytorch_train(pytorch_network):
+    def pytorch_train(network):
         """
         This function transfers the neural network to the right device,
         trains it for a certain number of epochs, tests at each epoch on
@@ -359,7 +360,7 @@ That is, doing your own training loop.
         end of training.
 
         Args:
-            pytorch_network (torch.nn.Module): The neural network to train.
+            network (torch.nn.Module): The neural network to train.
 
         Example:
             This function displays something like this:
@@ -375,27 +376,27 @@ That is, doing your own training loop.
                     Loss: 0.09501855444908142
                     Accuracy: 97.12999725341797
         """
-        print(pytorch_network)
+        print(network)
 
         # Transfer weights on GPU if needed.
-        pytorch_network.to(device)
+        network.to(device)
 
-        optimizer = optim.SGD(pytorch_network.parameters(), lr=learning_rate)
+        optimizer = optim.SGD(network.parameters(), lr=learning_rate)
         loss_function = nn.CrossEntropyLoss()
 
         for epoch in range(1, num_epochs + 1):
             # Training the neural network via backpropagation
-            train_loss, train_acc = pytorch_train_one_epoch(pytorch_network, optimizer, loss_function)
+            train_loss, train_acc = pytorch_train_one_epoch(network, optimizer, loss_function)
 
             # Validation at the end of the epoch
-            valid_loss, valid_acc = pytorch_test(pytorch_network, valid_loader, loss_function)
+            valid_loss, valid_acc = pytorch_test(network, valid_loader, loss_function)
 
             print("Epoch {}/{}: loss: {}, acc: {}, val_loss: {}, val_acc: {}".format(
                 epoch, num_epochs, train_loss, train_acc, valid_loss, valid_acc
             ))
 
         # Test at the end of the training
-        test_loss, test_acc = pytorch_test(pytorch_network, test_loader, loss_function)
+        test_loss, test_acc = pytorch_test(network, test_loader, loss_function)
         print('Test:\n\tLoss: {}\n\tAccuracy: {}'.format(test_loss, test_acc))
 
 Let's train the convolutional network.
@@ -421,22 +422,22 @@ That is, only 8 lines of code with a better output.
 
 .. code-block:: python
 
-    def poutyne_train(pytorch_network):
+    def poutyne_train(network):
         """
         This function creates a Poutyne Model (see https://poutyne.org/model.html), sends the
         Model on the specified device, and uses the `fit_generator` method to train the
         neural network. At the end, the `evaluate_generator` is used on  the test set.
 
         Args:
-            pytorch_network (torch.nn.Module): The neural network to train.
+            network (torch.nn.Module): The neural network to train.
         """
-        print(pytorch_network)
+        print(network)
 
-        optimizer = optim.SGD(pytorch_network.parameters(), lr=learning_rate)
+        optimizer = optim.SGD(network.parameters(), lr=learning_rate)
         loss_function = nn.CrossEntropyLoss()
 
         # Poutyne Model on GPU
-        model = Model(pytorch_network, optimizer, loss_function, batch_metrics=['accuracy'], device=device)
+        model = Model(network, optimizer, loss_function, batch_metrics=['accuracy'], device=device)
 
         # Train
         model.fit_generator(train_loader, valid_loader, epochs=num_epochs)
@@ -468,15 +469,15 @@ One nice feature of Poutyne is :class:`callbacks <poutyne.Callback>`. Callbacks 
 
 .. code-block:: python
 
-    def train_with_callbacks(name, pytorch_network):
+    def train_with_callbacks(name, network):
         """
         In addition to the the `poutyne_train`, this function saves checkpoints and logs as described above.
 
         Args:
             name (str): a name used to save logs and checkpoints.
-            pytorch_network (torch.nn.Module): The neural network to train.
+            network (torch.nn.Module): The neural network to train.
         """
-        print(pytorch_network)
+        print(network)
 
         # We are saving everything into ./saves/{name}.
         save_path = os.path.join('saves', name)
@@ -496,10 +497,10 @@ One nice feature of Poutyne is :class:`callbacks <poutyne.Callback>`. Callbacks 
             CSVLogger(os.path.join(save_path, 'log.tsv'), separator='\t'),
         ]
 
-        optimizer = optim.SGD(pytorch_network.parameters(), lr=learning_rate)
+        optimizer = optim.SGD(network.parameters(), lr=learning_rate)
         loss_function = nn.CrossEntropyLoss()
 
-        model = Model(pytorch_network, optimizer, loss_function, batch_metrics=['accuracy'], device=device)
+        model = Model(network, optimizer, loss_function, batch_metrics=['accuracy'], device=device)
         model.fit_generator(train_loader, valid_loader, epochs=num_epochs, callbacks=callbacks)
 
         test_loss, test_acc = model.evaluate_generator(test_loader)
@@ -527,55 +528,61 @@ Making Your Own Callback
 While Poutyne provides a great number of :ref:`predefined callbacks <callbacks>`, it is sometimes useful to make your own callback. In addition to the documentation of the :class:`~poutyne.Callback` class, see the :ref:`Making Your Own Callback section <making_your_own_callback>` in the :ref:`Tips and Tricks page <tips_and_tricks>` for an example.
 
 
-Poutyne Experiment
-==================
+Poutyne ModelBundle
+===================
 
 Most of the time when using Poutyne (or even Pytorch in general), we will find ourselves in an iterative model hyperparameters finetuning loop. For efficient model search, we will usually wish to save our best performing models, their training and testing statistics and even sometimes wish to retrain an already trained model for further tuning. All of the above can be easily implemented with the flexibility of Poutyne Callbacks, but having to define and initialize each and every Callback object we wish for our model quickly feels cumbersome.
 
-This is why Poutyne provides an :class:`~poutyne.Experiment` class, which aims specifically at enabling quick model iteration search, while not sacrifying on the quality of a single experiment - statistics logging, best models saving, etc. Experiment is actually a simple wrapper between a PyTorch network and Poutyne's core Callback objects for logging and saving. Given a working directory where to output the various logging files and a PyTorch network, the Experiment class reduces the whole training loop to a single line.
+This is why Poutyne provides a :class:`~poutyne.ModelBundle` class, which aims specifically at enabling quick model iteration search, while not sacrifying on the quality of a single experiment - statistics logging, best models saving, etc. ModelBundle is actually a simple wrapper between a PyTorch network and Poutyne's core Callback objects for logging and saving. Given a working directory where to output the various logging files and a PyTorch network, the ModelBundle class reduces the whole training loop to a single line.
 
-The following code uses Poutyne's :class:`~poutyne.Experiment` class to train a network for 5 epochs. The code is quite simpler than the code in the Poutyne Callbacks section while doing more (only 3 lines). Once trained for 5 epochs, it is then possible to resume the optimization at the 5th epoch for 5 more epochs until the 10th epoch using the same function.
+The following code uses Poutyne's :class:`~poutyne.ModelBundle` class to train a network for 5 epochs. The code is quite simpler than the code in the Poutyne Callbacks section while doing more (only 3 lines). Once trained for 5 epochs, it is then possible to resume the optimization at the 5th epoch for 5 more epochs until the 10th epoch using the same function.
 
 .. code-block:: python
 
-    def experiment_train(pytorch_network, name, epochs=5):
+    def train_model_bundle(network, name, epochs=5):
         """
-        This function creates a Poutyne Experiment, trains the input module
+        This function creates a Poutyne ModelBundle, trains the input module
         on the train loader and then tests its performance on the test loader.
         All training and testing statistics are saved, as well as best model
         checkpoints.
 
         Args:
-            pytorch_network (torch.nn.Module): The neural network to train.
+            network (torch.nn.Module): The neural network to train.
             working_directory (str): The directory where to output files to save.
             epochs (int): The number of epochs. (Default: 5)
         """
-        print(pytorch_network)
+        print(network)
 
-        optimizer = optim.SGD(pytorch_network.parameters(), lr=learning_rate)
+        optimizer = optim.SGD(network.parameters(), lr=learning_rate)
 
         # Everything is going to be saved in ./saves/{name}.
         save_path = os.path.join('saves', name)
 
-        # Poutyne Experiment
-        expt = Experiment(save_path, pytorch_network, device=device, optimizer=optimizer, task='classif')
+        # Poutyne ModelBundle
+        model_bundle = ModelBundle.from_network(
+            save_path,
+            network,
+            device=device,
+            optimizer=optimizer,
+            task='classif',
+        )
 
         # Train
-        expt.train(train_loader, valid_loader, epochs=epochs)
+        model_bundle.train(train_loader, valid_loader, epochs=epochs)
 
         # Test
-        expt.test(test_loader)
+        model_bundle.test(test_loader)
 
-Let's train the convolutional network with Experiment for 5 epochs. Everything is saved in ``./conv_net_experiment``.
+Let's train the convolutional network with ModelBundle for 5 epochs. Everything is saved in ``./conv_net_model_bundle``.
 
 .. code-block:: python
 
     conv_net = create_convolutional_network()
-    experiment_train(conv_net, 'conv_net_experiment')
+    train_model_bundle(conv_net, 'conv_net_model_bundle')
 
 Let's resume training for 5 more epochs (10 epochs total).
 
 .. code-block:: python
 
     conv_net = create_convolutional_network()
-    experiment_train(conv_net, 'conv_net_experiment', epochs=10)
+    train_model_bundle(conv_net, 'conv_net_model_bundle', epochs=10)

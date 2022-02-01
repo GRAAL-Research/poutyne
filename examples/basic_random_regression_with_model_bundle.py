@@ -6,10 +6,9 @@ Look in ./saves/my_regression_network for the checkpoints and logging.
 """
 
 # Import the Poutyne Model
-from poutyne import Experiment, TensorDataset, SKLearnMetrics
+from poutyne import ModelBundle, SKLearnMetrics
 import torch
 import torch.nn as nn
-from torch.utils.data import DataLoader
 import numpy as np
 from sklearn.metrics import r2_score
 
@@ -39,13 +38,8 @@ network = nn.Sequential(
     nn.Linear(hidden_state_size, 1),
 )
 
-# We need to use dataloaders (i.e. an iterable of batches) with Experiment
-train_loader = DataLoader(TensorDataset(train_x, train_y), batch_size=32)
-valid_loader = DataLoader(TensorDataset(valid_x, valid_y), batch_size=32)
-test_loader = DataLoader(TensorDataset(test_x, test_y), batch_size=32)
-
 # Everything is saved in ./saves/my_regression_network
-expt = Experiment(
+model_bundle = ModelBundle.from_network(
     './saves/my_regression_network',
     network,
     device=device,
@@ -55,6 +49,6 @@ expt = Experiment(
     epoch_metrics=[SKLearnMetrics(r2_score)],
 )
 
-expt.train(train_loader, valid_loader, epochs=5)
+model_bundle.train_data(train_x, train_y, validation_data=(valid_x, valid_y), epochs=5)
 
-expt.test(test_loader)
+model_bundle.test_data(test_x, test_y)
