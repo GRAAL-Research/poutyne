@@ -30,7 +30,7 @@ Let's import all the needed packages.
     from torchvision import transforms, utils
     from torchvision.datasets.mnist import MNIST
 
-    from poutyne import set_seeds, Model, ModelCheckpoint, CSVLogger, Callback, Experiment, SKLearnMetrics, plot_history
+    from poutyne import set_seeds, Model, ModelCheckpoint, CSVLogger, Callback, ModelBundle, SKLearnMetrics, plot_history
 
 
 Hyperparameters, Dataset and Network
@@ -328,20 +328,20 @@ Now let's test our training loop for one epoch using the accuracy as the batch m
     test_loss, test_acc = model.evaluate_generator(test_loader)
 
 
-Using Experiment
-================
+Using ModelBundle
+=================
 
 Most of the time, when using Poutyne (or even PyTorch in general), we will find ourselves in an iterative model hyperparameters finetuning loop. For efficient model search, we will usually wish to save our best performing models, their training and testing statistics and even sometimes wish to retrain an already trained model for further tuning. All of the above can be easily implemented with the flexibility of Poutyne Callbacks, but having to define and initialize each and every Callback object we wish for our model quickly feels cumbersome.
 
-This is why Poutyne provides an :class:`~poutyne.Experiment` class, which aims specifically at enabling quick model iteration search, while not sacrificing the quality of a single experiment - statistics logging, best models saving, etc. Experiment is actually a simple wrapper between a PyTorch network and Poutyne's core Callback objects for logging and saving. Given a working directory where to output the various logging files and a PyTorch network, the Experiment class reduces the whole training loop to a single line.
+This is why Poutyne provides a :class:`~poutyne.ModelBundle` class, which aims specifically at enabling quick model iteration search, while not sacrificing the quality of a single experiment - statistics logging, best models saving, etc. As the name says, ModelBundle is actually a simple wrapper between a PyTorch network and Poutyne's core Callback objects for logging and saving. Given a working directory where to output the various logging files and a PyTorch network, the ModelBundle class reduces the whole training loop to a single line.
 
-The following code uses Poutyne's :class:`~poutyne.Experiment` class to train a network for 5 epochs. The code is quite simpler than the code in the Poutyne Callbacks section while doing more (only a few lines). Once trained for 5 epochs, it is then possible to resume the optimization at the 5th epoch for 5 more epochs until the 10th epoch using the same function.
+The following code uses Poutyne's :class:`~poutyne.ModelBundle` class to train a network for 5 epochs. The code is quite simpler than the code in the Poutyne Callbacks section while doing more (only a few lines). Once trained for 5 epochs, it is then possible to resume the optimization at the 5th epoch for 5 more epochs until the 10th epoch using the same function.
 
 .. code-block:: python
 
-    def experiment_train(network, name, epochs=5):
+    def train_model_bundle(network, name, epochs=5):
         """
-        This function creates a Poutyne Experiment, trains the input module
+        This function creates a Poutyne ModelBundle, trains the input module
         on the train loader and then tests its performance on the test loader.
         All training and testing statistics are saved, as well as best model
         checkpoints.
@@ -354,28 +354,34 @@ The following code uses Poutyne's :class:`~poutyne.Experiment` class to train a 
         # Everything is going to be saved in ./saves/{name}.
         save_path = os.path.join('saves', name)
 
-        # Poutyne Experiment
-        expt = Experiment(save_path, network, optimizer=optimizer, task='classif', device=device)
+        # Poutyne ModelBundle
+        model_bundle = ModelBundle.from_network(
+            save_path,
+            network,
+            optimizer=optimizer,
+            task='classif',
+            device=device,
+        )
 
         # Train
-        expt.train(train_loader, valid_loader, epochs=epochs)
+        model_bundle.train(train_loader, valid_loader, epochs=epochs)
 
         # Test
-        expt.test(test_loader)
+        model_bundle.test(test_loader)
 
 .. code-block:: python
 
     network = create_network()
-    experiment_train(network, 'convnet_mnist_experiment', epochs=5)
+    train_model_bundle(network, 'convnet_mnist_model_bundle', epochs=5)
 
-Notice how setting ``task='classif'`` when instantiating :class:`~poutyne.Experiment` adds for use our loss function, the batch metric accuracy, the epoch metric F1 and set up callbacks that use them. If you wish, you still can use your own loss function and metrics instead of passing this argument.
+Notice how setting ``task='classif'`` when instantiating :class:`~poutyne.ModelBundle` adds for use our loss function, the batch metric accuracy, the epoch metric F1 and set up callbacks that use them. If you wish, you still can use your own loss function and metrics instead of passing this argument.
 
-We have trained for 5 epochs, let's now resume training for another 5 epochs for a total of 10 epochs. Notice that we reinstantiate the network. Experiment will load back the weights for us and resume training.
+We have trained for 5 epochs, let's now resume training for another 5 epochs for a total of 10 epochs. Notice that we reinstantiate the network. ModelBundle will load back the weights for us and resume training.
 
 .. code-block:: python
 
     network = create_network()
-    experiment_train(network, 'convnet_mnist_experiment', epochs=10)
+    train_model_bundle(network, 'convnet_mnist_model_bundle', epochs=10)
 
 Coloring
 ========
