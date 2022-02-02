@@ -4,15 +4,13 @@ from tempfile import TemporaryDirectory, TemporaryFile
 
 from unittest.mock import patch, MagicMock, call
 from unittest import TestCase, main
-
+from tests.framework.tools import some_data_generator
 
 import torch
 import torch.nn as nn
 import wandb
 
-
 from poutyne import Model, WandBLogger, ModelCheckpoint
-from tests.framework.tools import some_data_generator
 
 
 class WandBLoggerTest(TestCase):
@@ -39,7 +37,7 @@ class WandBLoggerTest(TestCase):
     def test_wandb_online_init(self):
         with patch("poutyne.framework.wandb_logger.wandb") as wandb_patch:
             wandb_patch.run = None
-            WandBLogger(self.a_name)
+            WandBLogger(name=self.a_name)
             create_experiment_call = [
                 call.init(
                     name=self.a_name,
@@ -59,7 +57,7 @@ class WandBLoggerTest(TestCase):
     def test_wandb_offline_init(self):
         with patch("poutyne.framework.wandb_logger.wandb") as wandb_patch:
             wandb_patch.run = None
-            WandBLogger(self.a_name, offline=True)
+            WandBLogger(name=self.a_name, offline=True)
             create_experiment_call = [
                 call.init(
                     name=self.a_name,
@@ -79,14 +77,14 @@ class WandBLoggerTest(TestCase):
         with patch("poutyne.framework.wandb_logger.wandb") as wandb_patch:
             wandb_patch.run = self.run_mock
             with warnings.catch_warnings(record=True) as w:
-                WandBLogger(self.a_name)
+                WandBLogger(name=self.a_name)
             self.assertEqual(len(w), 1)
             wandb_patch.assert_not_called()
 
     def test_with_run_init(self):
         with patch("poutyne.framework.wandb_logger.wandb") as wandb_patch:
             wandb_patch.run = self.run_mock
-            wandb_logger = WandBLogger(self.a_name, experiment=self.run_mock)
+            wandb_logger = WandBLogger(name=self.a_name, experiment=self.run_mock)
             wandb_patch.assert_not_called()
             self.assertIsInstance(wandb_logger.run, wandb.sdk.wandb_run.Run)
 
@@ -95,7 +93,7 @@ class WandBLoggerTest(TestCase):
         with patch("poutyne.framework.wandb_logger.wandb") as wandb_patch:
             wandb_patch.init = self.initialize_experience
             wandb_patch.run = None
-            logger = WandBLogger(self.a_name)
+            logger = WandBLogger(name=self.a_name)
             logger.log_config_params(self.a_config_params)
 
             create_experiment_call = [call(self.a_config_params)]
@@ -106,7 +104,7 @@ class WandBLoggerTest(TestCase):
             wandb_patch.Artifact.return_value = self.artifact_mock
             wandb_patch.init = self.initialize_experience
             wandb_patch.run = None
-            logger = WandBLogger(self.a_name, initial_artifacts_paths=[self.temp_file_obj.name])
+            logger = WandBLogger(name=self.a_name, initial_artifacts_paths=[self.temp_file_obj.name])
             self.artifact_mock.add_file.assert_called_once_with(self.temp_file_obj.name)
             logger.run.log_artifact.assert_called_once_with(self.artifact_mock)
 
@@ -115,7 +113,7 @@ class WandBLoggerTest(TestCase):
             wandb_patch.Artifact.return_value = self.artifact_mock
             wandb_patch.init = self.initialize_experience
             wandb_patch.run = None
-            logger = WandBLogger(self.a_name, initial_artifacts_paths=[self.temp_dir_obj.name])
+            logger = WandBLogger(name=self.a_name, initial_artifacts_paths=[self.temp_dir_obj.name])
             self.artifact_mock.add_dir.assert_called_once_with(self.temp_dir_obj.name)
             logger.run.log_artifact.assert_called_once_with(self.artifact_mock)
 
@@ -126,7 +124,7 @@ class WandBLoggerTest(TestCase):
             valid_gen = some_data_generator(20)
             wandb_patch.init = self.initialize_experience
             wandb_patch.run = None
-            logger = WandBLogger(self.a_name)
+            logger = WandBLogger(name=self.a_name)
 
             self.model.fit_generator(
                 train_gen, valid_gen, epochs=self.num_epochs, steps_per_epoch=5, callbacks=[logger]
@@ -141,7 +139,7 @@ class WandBLoggerTest(TestCase):
             valid_gen = some_data_generator(20)
             wandb_patch.init = self.initialize_experience
             wandb_patch.run = None
-            logger = WandBLogger(self.a_name, log_gradient_frequency=1)
+            logger = WandBLogger(name=self.a_name, log_gradient_frequency=1)
             self.model.fit_generator(
                 train_gen, valid_gen, epochs=self.num_epochs, steps_per_epoch=5, callbacks=[logger]
             )
@@ -155,7 +153,7 @@ class WandBLoggerTest(TestCase):
             valid_gen = some_data_generator(20)
             wandb_patch.init = self.initialize_experience
             wandb_patch.run = None
-            logger = WandBLogger(self.a_name, log_gradient_frequency=1, batch_granularity=False)
+            logger = WandBLogger(name=self.a_name, log_gradient_frequency=1, batch_granularity=False)
             history = self.model.fit_generator(
                 train_gen, valid_gen, epochs=self.num_epochs, steps_per_epoch=5, callbacks=[logger]
             )
@@ -182,7 +180,7 @@ class WandBLoggerTest(TestCase):
             wandb_patch.init = self.initialize_experience
             wandb_patch.run = None
             num_batchs = 5
-            logger = WandBLogger(self.a_name, log_gradient_frequency=1, batch_granularity=True)
+            logger = WandBLogger(name=self.a_name, log_gradient_frequency=1, batch_granularity=True)
             self.model.fit_generator(
                 train_gen, valid_gen, epochs=self.num_epochs, steps_per_epoch=num_batchs, callbacks=[logger]
             )
@@ -197,7 +195,7 @@ class WandBLoggerTest(TestCase):
             y = torch.rand(10, 1)
             wandb_patch.init = self.initialize_experience
             wandb_patch.run = None
-            logger = WandBLogger(self.a_name, log_gradient_frequency=1, batch_granularity=True)
+            logger = WandBLogger(name=self.a_name, log_gradient_frequency=1, batch_granularity=True)
             self.model.evaluate(x, y, callbacks=[logger])
             logger.run.log.called_once()
 
@@ -208,7 +206,7 @@ class WandBLoggerTest(TestCase):
             y = torch.rand(10, 1)
             wandb_patch.init = self.initialize_experience
             wandb_patch.run = None
-            logger = WandBLogger(self.a_name, log_gradient_frequency=1, batch_granularity=True)
+            logger = WandBLogger(name=self.a_name, log_gradient_frequency=1, batch_granularity=True)
             self.model.evaluate(x, y, callbacks=[logger])
             wandb_patch.finish.called_once()
 
@@ -222,7 +220,10 @@ class WandBLoggerTest(TestCase):
             wandb_patch.Artifact.return_value = self.artifact_mock
             checkpoint = ModelCheckpoint(os.path.join(self.temp_dir_obj.name, str(self.temp_file_obj.name)))
             logger = WandBLogger(
-                self.a_name, log_gradient_frequency=1, batch_granularity=True, checkpoints_path=self.temp_dir_obj.name
+                name=self.a_name,
+                log_gradient_frequency=1,
+                batch_granularity=True,
+                checkpoints_path=self.temp_dir_obj.name,
             )
             self.model.fit_generator(
                 train_gen, valid_gen, epochs=self.num_epochs, steps_per_epoch=5, callbacks=[logger, checkpoint]
@@ -241,7 +242,10 @@ class WandBLoggerTest(TestCase):
                     wandb_patch.run = None
                     num_batchs = 5
                     logger = WandBLogger(
-                        self.a_name, log_gradient_frequency=1, batch_granularity=True, training_batch_shape=(1, 2, 3)
+                        name=self.a_name,
+                        log_gradient_frequency=1,
+                        batch_granularity=True,
+                        training_batch_shape=(1, 2, 3),
                     )
                     logger.run.dir = "a_path"
                     logger.run.name = self.a_name
