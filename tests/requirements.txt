@@ -9,3 +9,4 @@ mlflow
 omegaconf
 matplotlib
 pillow
+wandb
