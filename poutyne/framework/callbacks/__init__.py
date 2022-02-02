@@ -17,3 +17,4 @@ from .terminate_on_nan import *
 from .tracker import *
 from .notification import *
 from .mlflow_logger import *
+from .wandb_logger import *
