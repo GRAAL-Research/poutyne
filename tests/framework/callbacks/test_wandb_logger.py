@@ -219,7 +219,11 @@ class WandBLoggerTest(TestCase):
             wandb_patch.init = self.initialize_experience
             wandb_patch.run = None
             wandb_patch.Artifact.return_value = self.artifact_mock
-            checkpoint = ModelCheckpoint(os.path.join(self.temp_dir_obj.name, str(self.temp_file_obj.name)))
+            tmp_filename = os.path.join(self.temp_dir_obj.name, 'my_checkpoint.tmp.ckpt')
+            checkpoint_filename = os.path.join(self.temp_dir_obj.name, 'my_checkpoint.ckpt')
+            checkpointer = ModelCheckpoint(
+                checkpoint_filename, monitor='val_loss', verbose=True, period=1, temporary_filename=tmp_filename
+            )
             logger = WandBLogger(
                 name=self.a_name,
                 log_gradient_frequency=1,
@@ -227,7 +231,7 @@ class WandBLoggerTest(TestCase):
                 checkpoints_path=self.temp_dir_obj.name,
             )
             self.model.fit_generator(
-                train_gen, valid_gen, epochs=self.num_epochs, steps_per_epoch=5, callbacks=[logger, checkpoint]
+                train_gen, valid_gen, epochs=self.num_epochs, steps_per_epoch=5, callbacks=[logger, checkpointer]
             )
             self.artifact_mock.add_dir.assert_called_once_with(self.temp_dir_obj.name)
             logger.run.log_artifact.assert_called_once_with(self.artifact_mock)
