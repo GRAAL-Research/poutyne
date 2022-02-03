@@ -4,12 +4,13 @@ from tempfile import TemporaryDirectory, TemporaryFile
 
 from unittest.mock import patch, MagicMock, call
 from unittest import TestCase, main
-from tests.framework.tools import some_data_generator
+
 
 import torch
 import torch.nn as nn
 import wandb
 
+from tests.framework.tools import some_data_generator
 from poutyne import Model, WandBLogger, ModelCheckpoint
 
 
