@@ -24,7 +24,7 @@ class WandBLogger(Logger):
         name(str): Display name for the run.
         group (Optional[str]): the name of the group to which this run belongs.
         config (Optional[Dict]): a dictionary summarizing the configuration
-                related to the current run.
+        related to the current run.
         save_dir(str): Path where data is saved (wandb dir by default).
         offline(bool): Run offline (data can be streamed later to wandb servers).
         id(str): Sets the version, mainly used to resume a previous run.
@@ -33,16 +33,17 @@ class WandBLogger(Logger):
         project(str): The name of the project to which this run will belong.
         experiment: Experiment to use instead of creating a new one.
         batch_granularity(bool): Whether to also output the result of each batch in addition to the epochs.
-            (Default value = False).
+        (Default value = False).
         checkpoints_path (Optional[str]): a string leading to the checkpoint saving directory.
-                Specify this argument if you which to log the model checkpoints at the end of the
-                training phase.
+        Specify this argument if you which to log the model checkpoints at the end of the
+        training phase.
         initial_artifacts_paths (Optional[List[str]]): a list of paths leading to artifacts
-                to be logged before the start of the training.
+        to be logged before the start of the training.
         log_gradient_frequency(int): log gradients and parameters every N batches (Default value = None).
         training_batch_shape(tuples): Shape of a training batch. Used for logging architecture on wandb
     Example:
         .. code-block:: python
+
             wandb_logger = WandBLogger(
                                         name="First_run",
                                         project="Test_project",
