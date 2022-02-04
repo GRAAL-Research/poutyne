@@ -1,0 +1,45 @@
+name: Formatting
+
+on: [push, pull_request]
+
+jobs:
+  formatting:
+
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.6', '3.7', '3.8', '3.9']
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install dependencies
+      run: |
+        pip install -r styling_requirements.txt
+    - name: Formatting
+      run: |
+        black --diff --check .
+
+  windowsformatting:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        python-version: ['3.9']
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install dependencies
+      run: |
+        .  ./InvokeFunc.ps1
+        Invoke-NativeCommand pip install -r styling_requirements.txt
+    - name: Formatting
+      run: |
+        .  ./InvokeFunc.ps1
+        Invoke-NativeCommand black --diff --check .
