@@ -1,0 +1,35 @@
+name: Deployment
+
+on:
+  push:
+    branches:
+      - stable
+
+jobs:
+  deploy:
+
+    runs-on: ubuntu-latest
+    env:
+      POUTYNE_RELEASE_BUILD: '1'
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.9'
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt
+        pip install -r docs/requirements.txt
+        python setup.py develop
+    - name: Building doc
+      run: |
+        cd docs
+        ./rebuild_html_doc.sh
+        cd ..
+    - name: Deploy
+      uses: peaceiris/actions-gh-pages@068dc23d9710f1ba62e86896f84735d869951305
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./docs/_build/html/
