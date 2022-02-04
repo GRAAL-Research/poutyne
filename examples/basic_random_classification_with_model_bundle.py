@@ -6,10 +6,9 @@ Look in ./saves/my_classification_network for the checkpoints and logging.
 """
 
 # Import the Poutyne Model
-from poutyne import Experiment, TensorDataset
+from poutyne import ModelBundle
 import torch
 import torch.nn as nn
-from torch.utils.data import DataLoader
 import numpy as np
 
 # Define a random toy dataset
@@ -39,14 +38,11 @@ network = nn.Sequential(
     nn.Linear(hidden_state_size, num_classes),
 )
 
-# We need to use dataloaders (i.e. an iterable of batches) with Experiment
-train_loader = DataLoader(TensorDataset(train_x, train_y), batch_size=32)
-valid_loader = DataLoader(TensorDataset(valid_x, valid_y), batch_size=32)
-test_loader = DataLoader(TensorDataset(test_x, test_y), batch_size=32)
-
 # Everything is saved in ./saves/my_classification_network
-expt = Experiment('./saves/my_classification_network', network, device=device, optimizer='sgd', task='classif')
+model_bundle = ModelBundle.from_network(
+    './saves/my_classification_network', network, device=device, optimizer='sgd', task='classif'
+)
 
-expt.train(train_loader, valid_loader, epochs=5)
+model_bundle.train_data(train_x, train_y, validation_data=(valid_x, valid_y), epochs=5)
 
-expt.test(test_loader)
+model_bundle.test_data(test_x, test_y)

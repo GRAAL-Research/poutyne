@@ -45,22 +45,23 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 import os
 import warnings
 from typing import IO, Dict, Optional, Callable
+from abc import ABC, abstractmethod
 
 from ._utils import atomic_lambda_save
 from .callbacks import Callback
 
 
-class PeriodicSaveCallback(Callback):
+class PeriodicSaveCallback(ABC, Callback):
     """
-    Write a file (or checkpoint) after every epoch. `filename` can contain named formatting options,
-    which will be filled the value of `epoch` and keys in `logs` (passed in `on_epoch_end`). For
-    example: if `filename` is `weights.{epoch:02d}-{val_loss:.2f}.txt`, then `save_file()` will be
+    Write a file (or checkpoint) after every epoch. ``filename`` can contain named formatting options,
+    which will be filled the value of ``epoch`` and keys in ``logs`` (passed in ``on_epoch_end``). For
+    example: if ``filename`` is ``weights.{epoch:02d}-{val_loss:.2f}.txt``, then ``save_file()`` will be
     called with a file descriptor for a file with the epoch number and the validation loss in the
     filename.
 
     By default, the file is written atomically to the specified filename so that the training can
     be killed and restarted later using the same filename for periodic file saving. To do so, a
-    temporary file is created with the name of `filename + '.tmp'` and is then moved to the final
+    temporary file is created with the name of ``filename + '.tmp'`` and is then moved to the final
     destination after the checkpoint is done. The ``temporary_filename`` argument allows to change the
     path of this temporary file.
 
@@ -109,7 +110,7 @@ class PeriodicSaveCallback(Callback):
         atomic_write: bool = True,
         open_mode: str = 'wb',
         read_mode: str = 'rb',
-    ):
+    ) -> None:
         super().__init__()
         self.filename = filename
         self.monitor = monitor
@@ -140,10 +141,19 @@ class PeriodicSaveCallback(Callback):
 
         self.period = period
 
-    def save_file(self, fd: IO, epoch_number: int, logs: Dict):
-        raise NotImplementedError
+    @abstractmethod
+    def save_file(self, fd: IO, epoch_number: int, logs: Dict) -> None:
+        """
+        Abstract method that is called every time a save needs to be done.
 
-    def _save_file(self, filename: str, epoch_number: int, logs: Dict):
+        Args:
+            fd (IO): The descriptor of the file in which to write.
+            epoch_number (int): The epoch number.
+            logs (Dict): Dictionary passed on epoch end.
+        """
+        pass
+
+    def _save_file(self, filename: str, epoch_number: int, logs: Dict) -> None:
         atomic_lambda_save(
             filename,
             self.save_file,
@@ -153,37 +163,48 @@ class PeriodicSaveCallback(Callback):
             atomic=self.atomic_write,
         )
 
-    def on_epoch_end(self, epoch_number: int, logs: Dict):
+    def on_epoch_end(self, epoch_number: int, logs: Dict) -> None:
         filename = self.filename.format_map(logs)
 
         if self.save_best_only:
-            if self.monitor_op(logs[self.monitor], self.current_best):
-                old_best = self.current_best
-                self.current_best = logs[self.monitor]
-                old_best_filename = self.best_filename
-                self.best_filename = filename
+            if self.monitor in logs:
+                if self.monitor_op(logs[self.monitor], self.current_best):
+                    old_best = self.current_best
+                    self.current_best = logs[self.monitor]
+                    old_best_filename = self.best_filename
+                    self.best_filename = filename
 
-                if self.verbose:
-                    print(
-                        f'Epoch {epoch_number:d}: {self.monitor} improved from {old_best:0.5f} '
-                        f'to {self.current_best:0.5f}, saving file to {self.best_filename}'
-                    )
-                self._save_file(self.best_filename, epoch_number, logs)
-                if (
-                    self.keep_only_last_best
-                    and self.best_filename != old_best_filename
-                    and old_best_filename is not None
-                ):
-                    os.remove(old_best_filename)
+                    if self.verbose:
+                        print(
+                            f'Epoch {epoch_number:d}: {self.monitor} improved from {old_best:0.5f} '
+                            f'to {self.current_best:0.5f}, saving file to {self.best_filename}'
+                        )
+                    self._save_file(self.best_filename, epoch_number, logs)
+                    if (
+                        self.keep_only_last_best
+                        and self.best_filename != old_best_filename
+                        and old_best_filename is not None
+                    ):
+                        os.remove(old_best_filename)
+            else:
+                raise KeyError(f"The monitored metric name {self.monitor} is not found in computed metrics.")
         elif epoch_number % self.period == 0:
             if self.verbose:
                 print(f'Epoch {epoch_number:d}: saving file to {filename}')
             self._save_file(filename, epoch_number, logs)
 
-    def restore(self, fd: IO):
-        raise NotImplementedError
+    @abstractmethod
+    def restore(self, fd: IO) -> None:
+        """
+        Abstract method that is called when a save needs to be restored. This happens at the end of the training when
+        ``restore_best`` is true.
 
-    def on_train_end(self, logs: Dict):
+        Args:
+            fd (IO): The descriptor of the file to read.
+        """
+        pass
+
+    def on_train_end(self, logs: Dict) -> None:
         if self.restore_best:
             if self.best_filename is not None:
                 if self.verbose:
@@ -211,14 +232,14 @@ class PeriodicSaveLambda(PeriodicSaveCallback):
         :class:`~poutyne.PeriodicSaveCallback`
     """
 
-    def __init__(self, func: Callable, *args, restore: Optional[Callable] = None, **kwargs):
+    def __init__(self, func: Callable, *args, restore: Optional[Callable] = None, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.func = func
         self._restore = restore
 
-    def save_file(self, fd: IO, epoch_number: int, logs: Dict):
+    def save_file(self, fd: IO, epoch_number: int, logs: Dict) -> None:
         self.func(fd, epoch_number, logs)
 
-    def restore(self, fd: IO):
+    def restore(self, fd: IO) -> None:
         if self._restore is not None:
             self._restore(fd)

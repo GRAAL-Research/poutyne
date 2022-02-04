@@ -38,26 +38,28 @@ class MLFlowLogger(Logger):
             mlflow_logger = MLFlowLogger(experiment_name="experiment", tracking_uri="/absolute/path/to/directory")
             mlflow_logger.log_config_params(config_params=cfg_dict) # logging the config dictionary
 
-            # our Poutyne experiment
-            experiment = Experiment(directory=saving_directory, network=network, device=device, optimizer=optimizer,
-                            loss_function=cross_entropy_loss, batch_metrics=[accuracy])
+            # our Poutyne model bundle
+            model_bundle = ModelBundle.from_network(directory=saving_directory, network=network, optimizer=optimizer,
+                                                    loss_function=cross_entropy_loss, batch_metrics=[accuracy],
+                                                    device=device)
 
             # Using the MLflow logger callback during training
-            experiment.train(train_generator=train_loader, valid_generator=valid_loader, epochs=1,
-                             seed=42, callbacks=[mlflow_logger])
+            model_bundle.train(train_generator=train_loader, valid_generator=valid_loader, epochs=1,
+                               seed=42, callbacks=[mlflow_logger])
 
         Using server tracking::
 
             mlflow_logger = MLFlowLogger(experiment_name="experiment", tracking_uri="http://IP_ADDRESS:PORT")
             mlflow_logger.log_config_params(config_params=cfg_dict) # logging the config dictionary
 
-            # our Poutyne experiment
-            experiment = Experiment(directory=saving_directory, network=network, device=device, optimizer=optimizer,
-                            loss_function=cross_entropy_loss, batch_metrics=[accuracy])
+            # our Poutyne model bundle
+            model_bundle = ModelBundle.from_network(directory=saving_directory, network=network, optimizer=optimizer,
+                                                    loss_function=cross_entropy_loss, batch_metrics=[accuracy],
+                                                    device=device)
 
             # Using the MLflow logger callback during training
-            experiment.train(train_generator=train_loader, valid_generator=valid_loader, epochs=1,
-                             seed=42, callbacks=[mlflow_logger])
+            model_bundle.train(train_generator=train_loader, valid_generator=valid_loader, epochs=1,
+                               seed=42, callbacks=[mlflow_logger])
     """
 
     def __init__(
@@ -80,18 +82,14 @@ class MLFlowLogger(Logger):
 
         self._status = "FAILED"  # Base case is a failure.
 
-    def log_config_params(self, config_params: Union[Mapping, Sequence]) -> None:
+    def log_config_params(self, config_params: Mapping) -> None:
         """
         Args:
-            config_params (Union[Mapping, Sequence]):
+            config_params (Mapping):
                 The config parameters of the training to log, such as number of epoch, loss function, optimizer etc.
         """
-        if isinstance(config_params, Mapping):
-            for param_name, element in config_params.items():
-                self._log_config_write(param_name, element)
-        else:  # Equivalent to "if isinstance(config_params, Sequence):".
-            for idx, element in enumerate(config_params):
-                self._log_config_write(str(idx), element)
+        for param_name, element in config_params.items():
+            self._log_config_write(param_name, element)
 
     def log_param(self, param_name: str, value: Union[str, float]) -> None:
         """
@@ -99,7 +97,7 @@ class MLFlowLogger(Logger):
 
         Args:
             param_name (str): The name of the parameter.
-            value (Union[str, float]: The value of the parameter.
+            value (Union[str, float]): The value of the parameter.
 
         """
         self.ml_flow_client.log_param(run_id=self.run_id, key=param_name, value=value)

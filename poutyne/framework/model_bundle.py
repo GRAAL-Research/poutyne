@@ -39,12 +39,12 @@ from .callbacks import (
 
 class ModelBundle:
     """
-    Inspired from :class:`~poutyne.Experiment`, the ModelBundle class provides a straightforward experimentation tool
-    for efficient and entirely customizable finetuning of the whole neural network training procedure with PyTorch. The
-    ``ModelBundle`` object takes care of the training and testing processes while also managing to keep traces of all
-     pertinent information via the automatic logging option.
+    The :class:`~poutyne.ModelBundle` class provides a straightforward experimentation tool for efficient and entirely
+    customizable finetuning of the whole neural network training procedure with PyTorch. The
+    :class:`~poutyne.ModelBundle` object takes care of the training and testing processes while also managing to keep
+    traces of all pertinent information via the automatic logging option.
 
-    Use ``ModelBundle.from_*`` methods to instanciate a ModelBundle.
+    Use ``ModelBundle.from_*`` methods to instanciate a :class:`~poutyne.ModelBundle`.
     """
 
     BEST_CHECKPOINT_FILENAME = 'checkpoint_epoch_{epoch}.ckpt'
@@ -103,7 +103,7 @@ class ModelBundle:
     ):
         # pylint: disable=line-too-long
         """
-        Instanciate a ModelBundle from a PyTorch :class:`~torch.nn.Module` instance.
+        Instanciate a :class:`~poutyne.ModelBundle` from a PyTorch :class:`~torch.nn.Module` instance.
 
         Args:
             directory (str): Path to the model bundle's working directory. Will be used for automatic logging.
@@ -295,7 +295,7 @@ class ModelBundle:
     ):
         # pylint: disable=line-too-long
         """
-        Instanciate a ModelBundle from a :class:`~poutyne.Model` instance.
+        Instanciate a :class:`~poutyne.ModelBundle` from a :class:`~poutyne.Model` instance.
 
         Args:
             directory (str): Path to the model bundle's working directory. Will be used for automatic logging.
@@ -491,6 +491,9 @@ class ModelBundle:
         return True, monitor_metric, monitor_mode
 
     def get_stats(self):
+        if not os.path.isfile(self.log_filename):
+            raise ValueError("There are no logs available. Did you forget to train with logging enabled?")
+
         return pd.read_csv(self.log_filename, sep='\t')
 
     def get_best_epoch_stats(self) -> Dict:
@@ -578,18 +581,18 @@ class ModelBundle:
         self, initial_epoch: int, keep_only_last_best: bool, save_every_epoch: bool
     ) -> List:
         callbacks = []
-        best_checkpoint = ModelCheckpoint(
-            self.best_checkpoint_filename,
-            monitor=self.monitor_metric,
-            mode=self.monitor_mode,
-            keep_only_last_best=keep_only_last_best,
-            save_best_only=not save_every_epoch,
-            restore_best=not save_every_epoch,
-            verbose=not save_every_epoch,
-        )
-        callbacks.append(best_checkpoint)
-
-        if save_every_epoch:
+        if not save_every_epoch:
+            best_checkpoint = ModelCheckpoint(
+                self.best_checkpoint_filename,
+                monitor=self.monitor_metric,
+                mode=self.monitor_mode,
+                keep_only_last_best=keep_only_last_best,
+                save_best_only=True,
+                restore_best=True,
+                verbose=True,
+            )
+            callbacks.append(best_checkpoint)
+        else:
             best_restore = BestModelRestore(monitor=self.monitor_metric, mode=self.monitor_mode, verbose=True)
             callbacks.append(best_restore)
 
@@ -661,12 +664,6 @@ class ModelBundle:
         :class:`~poutyne.AtomicCSVLogger` will save all available epoch statistics in an output .tsv file. Lastly, a
         :class:`~poutyne.TensorBoardLogger` handles automatic TensorBoard logging of various neural network
         statistics.
-
-        .. warning:: With **Jupyter Notebooks in Firefox**, if ``colorama`` is installed and colors are enabled (as it
-            is by default), a great number of epochs and steps per epoch can cause a spike in memory usage in Firefox.
-            The problem does not occur in Google Chrome/Chromium. To avoid this problem, you can disable the colors by
-            passing ``progress_options={'coloring': False}``. See
-            `this Github issue for details <https://github.com/jupyter/notebook/issues/5897>`__.
 
         Args:
             train_generator: Generator-like object for the training set. See :func:`~Model.fit_generator()`
@@ -821,6 +818,17 @@ class ModelBundle:
                 expt_callbacks += self._init_model_restoring_callbacks(
                     initial_epoch, keep_only_last_best, save_every_epoch
                 )
+
+            if save_every_epoch:
+                expt_callbacks += [
+                    ModelCheckpoint(
+                        self.best_checkpoint_filename,
+                        save_best_only=False,
+                        restore_best=False,
+                        verbose=False,
+                    )
+                ]
+
             expt_callbacks += [ModelCheckpoint(self.model_checkpoint_filename, verbose=False)]
             expt_callbacks += [OptimizerCheckpoint(self.optimizer_checkpoint_filename, verbose=False)]
 
@@ -931,9 +939,6 @@ class ModelBundle:
             print(f"Found best checkpoint at epoch: {best_epoch}")
             self._print_epoch_stats(best_epoch_stats)
             print(f"Loading checkpoint {ckpt_filename}")
-
-        if not os.path.isfile(ckpt_filename):
-            raise ValueError(f"No checkpoint found for epoch {best_epoch}")
 
         return best_epoch_stats, self.model.load_weights(ckpt_filename, strict=strict)
 
@@ -1173,14 +1178,14 @@ class ModelBundle:
         return self._predict(self.model.predict, x, **kwargs)
 
     def _predict(
-        self, evaluate_func: Callable, *args, verbose=True, checkpoint: Union[str, int] = 'best', **kwargs
+        self, predict_func: Callable, *args, verbose=True, checkpoint: Union[str, int] = 'best', **kwargs
     ) -> Any:
         if self.logging:
             if not self.monitoring and checkpoint == 'best':
                 checkpoint = 'last'
             self.load_checkpoint(checkpoint, verbose=verbose)
 
-        ret = evaluate_func(*args, verbose=verbose, **kwargs)
+        ret = predict_func(*args, verbose=verbose, **kwargs)
         return ret
 
     def is_better_than(self, another_model_bundle) -> bool:

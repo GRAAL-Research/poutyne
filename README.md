@@ -2,6 +2,7 @@
 
 [![License: LGPL v3](https://img.shields.io/badge/License-LGPL%20v3-blue.svg)](http://www.gnu.org/licenses/lgpl-3.0)
 [![Continuous Integration](https://github.com/GRAAL-Research/poutyne/workflows/Continuous%20Integration/badge.svg)](https://github.com/GRAAL-Research/poutyne/actions?query=workflow%3A%22Continuous+Integration%22+branch%3Amaster)
+[![codecov](https://codecov.io/gh/GRAAL-Research/poutyne/branch/master/graph/badge.svg?token=H8D1nZ1wTR)](https://codecov.io/gh/GRAAL-Research/poutyne)
 
 ## Here is Poutyne.
 
@@ -108,26 +109,21 @@ predictions = model.predict(test_x)
 
 [See the complete code here.](https://github.com/GRAAL-Research/poutyne/blob/master/examples/basic_random_classification.py) Also, [see this](https://github.com/GRAAL-Research/poutyne/blob/master/examples/basic_random_regression.py) for an example for regression that again also uses [epoch metrics](http://poutyne.org/metrics.html#epoch-metrics).
 
-One of the strengths Poutyne are [callbacks](https://poutyne.org/callbacks.html). They allow you to save checkpoints, log training statistics and more. See this [notebook](https://github.com/GRAAL-Research/poutyne/blob/master/examples/introduction_pytorch_poutyne.ipynb) for an introduction to callbacks. In that vein, Poutyne also offers an [Experiment class](https://poutyne.org/experiment.html) that offers automatic checkpointing, logging and more using callbacks under the hood. Here is an example of usage.
+One of the strengths Poutyne are [callbacks](https://poutyne.org/callbacks.html). They allow you to save checkpoints, log training statistics and more. See this [notebook](https://github.com/GRAAL-Research/poutyne/blob/master/examples/introduction_pytorch_poutyne.ipynb) for an introduction to callbacks. In that vein, Poutyne also offers an [ModelBundle class](https://poutyne.org/experiment.html#poutyne.ModelBundle) that offers automatic checkpointing, logging and more using callbacks under the hood. Here is an example of usage.
 
 ```python
-from poutyne import Experiment, TensorDataset
-from torch.utils.data import DataLoader
-
-# We need to use dataloaders (i.e. an iterable of batches) with Experiment
-train_loader = DataLoader(TensorDataset(train_x, train_y), batch_size=32)
-valid_loader = DataLoader(TensorDataset(valid_x, valid_y), batch_size=32)
-test_loader = DataLoader(TensorDataset(test_x, test_y), batch_size=32)
+from poutyne import ModelBundle
 
 # Everything is saved in ./expt/my_classification_network
-expt = Experiment('./expt/my_classification_network', network, device=device, optimizer='sgd', task='classif')
+model_bundle = ModelBundle.from_network('./expt/my_classification_network', network,
+                                        optimizer='sgd', task='classif', device=device)
 
-expt.train(train_loader, valid_loader, epochs=5)
+model_bundle.train_data(train_x, train_y, validation_data=(valid_x, valid_y), epochs=5)
 
-expt.test(test_loader)
+model_bundle.test_data(test_x, test_y)
 ```
 
-[See the complete code here.](https://github.com/GRAAL-Research/poutyne/blob/master/examples/basic_random_classification_with_experiment.py) Also, [see this](https://github.com/GRAAL-Research/poutyne/blob/master/examples/basic_random_regression_with_experiment.py) for an example for regression that again also uses [epoch metrics](http://poutyne.org/metrics.html#epoch-metrics).
+[See the complete code here.](https://github.com/GRAAL-Research/poutyne/blob/master/examples/basic_random_classification_with_model_bundle.py) Also, [see this](https://github.com/GRAAL-Research/poutyne/blob/master/examples/basic_random_regression_with_model_bundle.py) for an example for regression that again also uses [epoch metrics](http://poutyne.org/metrics.html#epoch-metrics).
 
 
 ------------------

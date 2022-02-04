@@ -1,13 +1,18 @@
 import os
+from typing import List, Dict
 from typing import Mapping, Sequence
 from unittest import TestCase
 from unittest.mock import patch, MagicMock, call
 
 import git
+import torch
+import torch.nn as nn
 from mlflow.exceptions import MlflowException
 from omegaconf import DictConfig
 
+from poutyne import Model
 from poutyne.framework.callbacks.mlflow_logger import _get_git_commit, MLFlowLogger
+from tests.framework.tools import SomeDataGeneratorWithLen
 
 a_git_commit = "9bff900c30e80c3a35388d3e617db5b7a64c9afd"
 mlflow_default_git_commit_tag = "mlflow.source.git.commit"
@@ -30,14 +35,16 @@ class MLFlowLoggerTest(TestCase):
         self.run_mock = MagicMock()
         self.run_mock.return_value.info.run_id = self.a_run_id
 
-        self.epochs = 1
+        self.num_epochs = 2
+        self.steps_per_epoch = 5
+        self.batch_size = 32
         self.a_log = {"metric_1": 1, "metric_2": 2}
 
         self.settings_in_dict = {"param_1": 1, "param_2": 2, "param_3": "value"}
-        self.settings_in_dictconfig_no_sequence = DictConfig(
+        self.settings_in_dict_config_no_sequence = DictConfig(
             {'param_dict': {'param_1': 1}, 'param_dict_2': {'param_2"': 2, 'param_3"': 3}, 'param': 'value'}
         )
-        self.settings_in_dictconfig_with_sequence = DictConfig(
+        self.settings_in_dict_config_with_sequence = DictConfig(
             {
                 'param_dict': {'param_1': 1},
                 'param_dict_2': {'param_2"': 2, 'param_3"': 3},
@@ -45,6 +52,11 @@ class MLFlowLoggerTest(TestCase):
                 'a_list_param': [0, 1],
             }
         )
+
+    @patch("poutyne.framework.mlflow_logger.mlflow", None)
+    def test_whenMLFowNotInstalled_thenRaiseImportError(self):
+        with self.assertRaises(ImportError):
+            MLFlowLogger(self.a_experiment_name)
 
     @patch("poutyne.framework.mlflow_logger._get_git_commit", MagicMock())
     def test_whenNewExperiment_givenAMLFlowInstantiation_thenCreateNewExperiment(self):
@@ -75,7 +87,7 @@ class MLFlowLoggerTest(TestCase):
             ml_flow_client_patch.assert_has_calls(create_experiment_calls)
 
     @patch("poutyne.framework.mlflow_logger._get_git_commit", MagicMock())
-    def test_whenCorrectSettings_givenAMLFlowInstantiation_thenMLflowClientIsProperlySet(self):
+    def test_whenCorrectSettings_givenAMLFlowInstantiation_thenMLFlowClientIsProperlySet(self):
         with patch("poutyne.framework.mlflow_logger.MlflowClient") as ml_flow_client_patch:
             ml_flow_client_patch.return_value.create_experiment = self.experiment_mock
             ml_flow_client_patch.return_value.create_run = self.run_mock
@@ -157,9 +169,9 @@ class MLFlowLoggerTest(TestCase):
             ml_flow_client_patch.return_value.create_run = self.run_mock
 
             mlflow_logger = MLFlowLogger(self.a_experiment_name)
-            mlflow_logger.log_config_params(self.settings_in_dictconfig_no_sequence)
+            mlflow_logger.log_config_params(self.settings_in_dict_config_no_sequence)
 
-            ml_flow_client_calls = self._populate_calls_from_dict(self.settings_in_dictconfig_no_sequence)
+            ml_flow_client_calls = self._populate_calls_from_dict(self.settings_in_dict_config_no_sequence)
             ml_flow_client_patch.assert_has_calls(ml_flow_client_calls)
 
     @patch("poutyne.framework.mlflow_logger._get_git_commit", MagicMock())
@@ -169,9 +181,9 @@ class MLFlowLoggerTest(TestCase):
             ml_flow_client_patch.return_value.create_run = self.run_mock
 
             mlflow_logger = MLFlowLogger(self.a_experiment_name)
-            mlflow_logger.log_config_params(self.settings_in_dictconfig_with_sequence)
+            mlflow_logger.log_config_params(self.settings_in_dict_config_with_sequence)
 
-            ml_flow_client_calls = self._populate_calls_from_dict(self.settings_in_dictconfig_with_sequence)
+            ml_flow_client_calls = self._populate_calls_from_dict(self.settings_in_dict_config_with_sequence)
             ml_flow_client_patch.assert_has_calls(ml_flow_client_calls)
 
     @patch("poutyne.framework.mlflow_logger._get_git_commit", MagicMock())
@@ -181,11 +193,11 @@ class MLFlowLoggerTest(TestCase):
             ml_flow_client_patch.return_value.create_run = self.run_mock
 
             mlflow_logger = MLFlowLogger(self.a_experiment_name)
-            mlflow_logger.set_params({"epochs": self.epochs})
+            mlflow_logger.set_params({"epochs": self.num_epochs})
             mlflow_logger.on_train_end(self.a_log)
 
             ml_flow_client_calls = [
-                call().log_metric(run_id=self.a_run_id, key='last-epoch', value=self.epochs, step=None)
+                call().log_metric(run_id=self.a_run_id, key='last-epoch', value=self.num_epochs, step=None)
             ]
             ml_flow_client_patch.assert_has_calls(ml_flow_client_calls)
 
@@ -196,7 +208,7 @@ class MLFlowLoggerTest(TestCase):
             ml_flow_client_patch.return_value.create_run = self.run_mock
 
             mlflow_logger = MLFlowLogger(self.a_experiment_name)
-            mlflow_logger.set_params({"epochs": self.epochs})
+            mlflow_logger.set_params({"epochs": self.num_epochs})
             mlflow_logger.on_train_end(self.a_log)
 
             ml_flow_client_calls = [call().set_terminated(self.a_run_id, status="FINISHED")]
@@ -222,7 +234,7 @@ class MLFlowLoggerTest(TestCase):
             ml_flow_client_patch.return_value.create_run = self.run_mock
 
             mlflow_logger = MLFlowLogger(self.a_experiment_name)
-            mlflow_logger.set_params({"epochs": self.epochs})
+            mlflow_logger.set_params({"epochs": self.num_epochs})
             mlflow_logger.on_train_end(self.a_log)
             mlflow_logger.on_test_begin({})  # since we change status at the start of testing
             mlflow_logger.on_test_end(self.a_log)
@@ -230,7 +242,61 @@ class MLFlowLoggerTest(TestCase):
             ml_flow_client_calls = [call().set_terminated(self.a_run_id, status="FINISHED")]
             ml_flow_client_patch.assert_has_calls(ml_flow_client_calls)
 
-    def _populate_calls_from_dict(self, config_dict):
+    @patch("poutyne.framework.mlflow_logger._get_git_commit", MagicMock())
+    def test_integration_train(self):
+        with patch("poutyne.framework.mlflow_logger.MlflowClient") as ml_flow_client_patch:
+            ml_flow_client_patch.return_value.create_experiment = self.experiment_mock
+            ml_flow_client_patch.return_value.create_run = self.run_mock
+
+            mlflow_logger = MLFlowLogger(self.a_experiment_name)
+
+            torch.manual_seed(42)
+            a_pytorch_network = nn.Linear(1, 1)
+            a_loss_function = nn.MSELoss()
+            an_optimizer = torch.optim.Adam(a_pytorch_network.parameters(), lr=1e-3)
+            model = Model(a_pytorch_network, an_optimizer, a_loss_function)
+
+            train_generator = SomeDataGeneratorWithLen(self.batch_size, 10, 0)
+            valid_generator = SomeDataGeneratorWithLen(self.batch_size, 10, 0)
+            logs = model.fit_generator(
+                train_generator,
+                valid_generator,
+                epochs=self.num_epochs,
+                steps_per_epoch=self.steps_per_epoch,
+                callbacks=[mlflow_logger],
+            )
+
+            ml_flow_client_calls = self._populate_calls_from_logs(logs)
+            ml_flow_client_patch.assert_has_calls(ml_flow_client_calls)
+
+    @patch("poutyne.framework.mlflow_logger._get_git_commit", MagicMock())
+    def test_integration_train_batch_granularity(self):
+        with patch("poutyne.framework.mlflow_logger.MlflowClient") as ml_flow_client_patch:
+            ml_flow_client_patch.return_value.create_experiment = self.experiment_mock
+            ml_flow_client_patch.return_value.create_run = self.run_mock
+
+            mlflow_logger = MLFlowLogger(self.a_experiment_name, batch_granularity=True)
+
+            torch.manual_seed(42)
+            a_pytorch_network = nn.Linear(1, 1)
+            a_loss_function = nn.MSELoss()
+            an_optimizer = torch.optim.Adam(a_pytorch_network.parameters(), lr=1e-3)
+            model = Model(a_pytorch_network, an_optimizer, a_loss_function)
+
+            train_generator = SomeDataGeneratorWithLen(self.batch_size, 10, 0)
+            valid_generator = SomeDataGeneratorWithLen(self.batch_size, 10, 0)
+            a_num_epoch = 2
+            model.fit_generator(
+                train_generator,
+                valid_generator,
+                epochs=a_num_epoch,
+                steps_per_epoch=self.steps_per_epoch,
+                callbacks=[mlflow_logger],
+            )
+
+            self._assert_has_granularity_calls(ml_flow_client_patch)
+
+    def _populate_calls_from_dict(self, config_dict: Dict) -> List:
         ml_flow_client_calls = []
         for key, value in config_dict.items():
             if isinstance(value, Mapping):
@@ -246,6 +312,32 @@ class MLFlowLoggerTest(TestCase):
             else:
                 ml_flow_client_calls.append(call().log_param(run_id=self.a_run_id, key=key, value=value))
         return ml_flow_client_calls
+
+    def _populate_calls_from_logs(self, logs: Dict) -> List:
+        ml_flow_client_calls = []
+        for epoch_num, epoch_log in enumerate(logs):
+            epoch_log.pop("epoch")
+            for key, value in epoch_log.items():
+                ml_flow_client_calls.append(
+                    call().log_metric(run_id=self.a_run_id, key=key, value=value, step=epoch_num + 1)
+                )  # +1 for enumerate
+        ml_flow_client_calls.append(
+            call().log_metric(run_id=self.a_run_id, key="last-epoch", value=self.num_epochs, step=None)
+        )
+        ml_flow_client_calls.append(call().set_terminated(self.a_run_id, status='FINISHED'))
+        return ml_flow_client_calls
+
+    def _assert_has_granularity_calls(self, ml_flow_client_patch):
+        for _ in range(1, self.num_epochs):
+            for step_number in range(1, self.steps_per_epoch):
+                ml_flow_client_step_calls = []
+                ml_flow_client_step_calls.append(
+                    call().log_metric(run_id=self.a_run_id, key='batch', value=step_number, step=step_number)
+                )
+                ml_flow_client_step_calls.append(
+                    call().log_metric(run_id=self.a_run_id, key='size', value=self.batch_size, step=step_number)
+                )
+                ml_flow_client_patch.assert_has_calls(ml_flow_client_step_calls)
 
 
 class GetGitCommitTest(TestCase):

@@ -1,7 +1,9 @@
+# pylint: disable=not-callable,no-member
 import csv
 import os
 from tempfile import TemporaryDirectory
 from unittest import TestCase
+from unittest.mock import MagicMock
 
 import torch
 import torch.nn as nn
@@ -11,13 +13,14 @@ from poutyne import (
     CSVGradientLogger as NonAtomicCSVGradientLogger,
     AtomicCSVGradientLogger,
     MemoryGradientLogger,
+    GradientLoggerBase,
+    TensorBoardGradientLogger,
 )
 from tests.framework.tools import some_data_generator
 
 
-class BaseCSVGradientLoggerTest:
-    # pylint: disable=not-callable,no-member
-    CSVGradientLogger = None
+class BaseGradientLoggerTest:
+    GradientLogger = None
     batch_size = 20
     num_epochs = 10
 
@@ -33,11 +36,50 @@ class BaseCSVGradientLoggerTest:
     def tearDown(self):
         self.temp_dir_obj.cleanup()
 
+
+class GradientLoggerBaseTest(BaseGradientLoggerTest, TestCase):
+    GradientLogger = GradientLoggerBase
+
+    def test_log_stats_raise_a_NotImplementedError(self):
+        logger = self.GradientLogger()
+        a_epoch_number = 1
+        a_batch_number = 1
+        a_logs = {}
+        a_layer_dict = {}
+        with self.assertRaises(NotImplementedError):
+            logger.log_stats(
+                epoch_number=a_epoch_number, batch_number=a_batch_number, logs=a_logs, layer_stats=a_layer_dict
+            )
+
+    def test_on_train_begin_no_bias_does_not_keep_it(self):
+        logger = self.GradientLogger(keep_bias=False)
+        logger.set_model(self.model)
+
+        a_logs = {}
+        logger.on_train_begin(a_logs)
+        actual = logger.layers
+        expected = ['0.weight', '1.weight']
+        self.assertEqual(actual, expected)
+        self.assertEqual(len(actual), 2)
+
+    def test_on_train_begin_with_bias_then_keep_it(self):
+        logger = self.GradientLogger(keep_bias=True)
+        logger.set_model(self.model)
+
+        a_logs = {}
+        logger.on_train_begin(a_logs)
+        actual = logger.layers
+        expected = ['0.weight', '0.bias', '1.weight', '1.bias']
+        self.assertEqual(actual, expected)
+        self.assertEqual(len(actual), 4)
+
+
+class BaseCSVGradientLoggerTest(BaseGradientLoggerTest):
     def test_logging(self):
         train_gen = some_data_generator(self.batch_size)
         valid_gen = some_data_generator(self.batch_size)
         memgrad = MemoryGradientLogger()
-        logger = self.CSVGradientLogger(self.csv_filename)
+        logger = self.GradientLogger(self.csv_filename)
         self.model.fit_generator(
             train_gen, valid_gen, epochs=self.num_epochs, steps_per_epoch=5, callbacks=[memgrad, logger]
         )
@@ -46,13 +88,13 @@ class BaseCSVGradientLoggerTest:
     def test_logging_append(self):
         train_gen = some_data_generator(self.batch_size)
         valid_gen = some_data_generator(self.batch_size)
-        logger = self.CSVGradientLogger(self.csv_filename)
+        logger = self.GradientLogger(self.csv_filename)
         memgrad = MemoryGradientLogger()
         self.model.fit_generator(
             train_gen, valid_gen, epochs=self.num_epochs, steps_per_epoch=5, callbacks=[memgrad, logger]
         )
         memgrad2 = MemoryGradientLogger()
-        logger = self.CSVGradientLogger(self.csv_filename, append=True)
+        logger = self.GradientLogger(self.csv_filename, append=True)
         self.model.fit_generator(
             train_gen,
             valid_gen,
@@ -67,10 +109,10 @@ class BaseCSVGradientLoggerTest:
     def test_logging_overwrite(self):
         train_gen = some_data_generator(self.batch_size)
         valid_gen = some_data_generator(self.batch_size)
-        logger = self.CSVGradientLogger(self.csv_filename)
+        logger = self.GradientLogger(self.csv_filename)
         self.model.fit_generator(train_gen, valid_gen, epochs=self.num_epochs, steps_per_epoch=5, callbacks=[logger])
         memgrad = MemoryGradientLogger()
-        logger = self.CSVGradientLogger(self.csv_filename, append=False)
+        logger = self.GradientLogger(self.csv_filename, append=False)
         self.model.fit_generator(
             train_gen,
             valid_gen,
@@ -95,8 +137,42 @@ class BaseCSVGradientLoggerTest:
 
 
 class NonAtomicCSVGradientLoggerTest(BaseCSVGradientLoggerTest, TestCase):
-    CSVGradientLogger = NonAtomicCSVGradientLogger
+    GradientLogger = NonAtomicCSVGradientLogger
 
 
 class AtomicCSVGradientLoggerTest(BaseCSVGradientLoggerTest, TestCase):
-    CSVGradientLogger = AtomicCSVGradientLogger
+    GradientLogger = AtomicCSVGradientLogger
+
+
+class TensorboardGradientLoggerTest(BaseGradientLoggerTest, TestCase):
+    GradientLogger = TensorBoardGradientLogger
+
+    def test_logging(self):
+        train_gen = some_data_generator(self.batch_size)
+        valid_gen = some_data_generator(self.batch_size)
+        memgrad = MemoryGradientLogger()
+        tensorboard_writer_mock = MagicMock()
+        logger = self.GradientLogger(tensorboard_writer_mock)
+        self.model.fit_generator(
+            train_gen, valid_gen, epochs=self.num_epochs, steps_per_epoch=5, callbacks=[memgrad, logger]
+        )
+        self._test_logging(memgrad.history, tensorboard_writer_mock)
+
+    def _test_logging(self, history, writer_mock):
+        # Each layer has 7 metric computed on them (mean, var, min, abs_min, max, abs_max and l2 norm)
+        # We do 50 steps (10 epoch times 5) = 700 methods call
+        self.assertEqual(len(writer_mock.method_calls), 700)
+
+        # We group the seven stats entries for a layer_i intro a list
+        grouped_metrics_calls = list(zip(*[iter(writer_mock.method_calls)] * 7))
+
+        # We will use an idx to group the stats in layer calls
+        for history_idx, stats in enumerate(history.values()):
+            for mock_calls, stats_entry in zip(grouped_metrics_calls[history_idx::2], stats):
+                # We remove non-tracked history by tensorboard
+                stats_entry.pop("epoch")
+                stats_entry.pop("batch")
+
+                self.assertEqual(len(mock_calls), len(stats_entry))
+                for stats_idx, k in enumerate(stats_entry.keys()):
+                    self.assertAlmostEqual(mock_calls[stats_idx][1][1][k], stats_entry[k])

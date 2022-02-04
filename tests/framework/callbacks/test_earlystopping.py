@@ -1,14 +1,14 @@
 import unittest
-from unittest import TestCase
 
 import torch
 import torch.nn as nn
 
 from poutyne import Model, EarlyStopping
+from tests.framework.base import CaptureOutputBase
 from tests.framework.tools import some_data_generator
 
 
-class EarlyStoppingTest(TestCase):
+class EarlyStoppingTest(CaptureOutputBase):
     batch_size = 20
 
     def setUp(self):
@@ -44,6 +44,23 @@ class EarlyStoppingTest(TestCase):
         val_losses = [2, 8, 4, 5, 2]
         early_stop_epoch = 4
         self._test_early_stopping(earlystopper, val_losses, early_stop_epoch)
+
+    def test_mode_not_min_max_raise_error(self):
+        with self.assertRaises(ValueError):
+            invalid_mode = "a_mode"
+            EarlyStopping(monitor='val_loss', mode=invalid_mode, min_delta=0, patience=2, verbose=False)
+
+    def test_early_stopping_with_verbose(self):
+        earlystopper = EarlyStopping(monitor='val_loss', mode='max', min_delta=0, patience=2, verbose=True)
+
+        val_losses = [2, 8, 4, 5, 2]
+        early_stop_epoch = 4
+
+        self._capture_output()
+
+        self._test_early_stopping(earlystopper, val_losses, early_stop_epoch)
+
+        self.assertStdoutContains(['Epoch 4: early stopping'])
 
     def _test_early_stopping(self, earlystopper, val_losses, early_stop_epoch):
         generator = some_data_generator(EarlyStoppingTest.batch_size)

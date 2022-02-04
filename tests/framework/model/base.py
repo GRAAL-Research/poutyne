@@ -1,9 +1,6 @@
 # abstract-method because nn.Module has the abstract method _forward_unimplemented
 # pylint: disable=too-many-locals,abstract-method
-import io
 import os
-import sys
-from unittest import TestCase
 from unittest.mock import MagicMock, call, ANY
 
 import numpy as np
@@ -11,9 +8,10 @@ import torch
 import torch.nn as nn
 
 from poutyne import Callback
+from tests.framework.base import CaptureOutputBase
 
 
-class ModelFittingTestCase(TestCase):
+class ModelFittingTestCase(CaptureOutputBase):
     epochs = 10
     steps_per_epoch = 5
     batch_size = 20
@@ -158,11 +156,6 @@ class ModelFittingTestCase(TestCase):
             for param in param_group['params']:
                 if torch.is_tensor(param):
                     self.assertEqual(param.device, device)
-
-    def _capture_output(self):
-        self.test_out = io.StringIO()
-        self.original_output = sys.stdout
-        sys.stdout = self.test_out
 
 
 class MultiIOModel(nn.Module):

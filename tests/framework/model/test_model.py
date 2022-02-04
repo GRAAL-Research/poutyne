@@ -10,6 +10,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from torch.nn.utils.rnn import PackedSequence
 from torch.utils.data import DataLoader, Dataset
 
 from poutyne import Model, warning_settings, TensorDataset
@@ -27,6 +28,7 @@ from tests.framework.tools import (
     some_constant_epoch_metric_value,
     SomeEpochMetric,
 )
+from tests.utils import populate_packed_sequence
 from .base import ModelFittingTestCase
 
 warning_settings['concatenate_returns'] = 'ignore'
@@ -1018,10 +1020,6 @@ class ModelDatasetMethodsTest(ModelFittingTestCase):
             epoch_metrics=self.epoch_metrics,
         )
 
-    def assertStdoutContains(self, values):
-        for value in values:
-            self.assertIn(value, self.test_out.getvalue().strip())
-
     def test_fitting_mnist(self):
         logs = self.model.fit_dataset(
             self.train_dataset,
@@ -1205,6 +1203,18 @@ class ModelDatasetMethodsTest(ModelFittingTestCase):
         for true in true_y:
             self.assertEqual(type(true), np.ndarray)
             self.assertEqual(true.shape, (ModelTest.batch_size,))
+
+    def test_preprocess_input_with_packed_sequence_return_packed_sequence_in_tuple(self):
+        x = MagicMock(spec=PackedSequence)
+
+        actual_x = self.model.preprocess_input(x)
+        self.assertTrue(isinstance(actual_x, tuple))
+
+    def test_preprocess_input_integration_with_packed_sequence(self):
+        pack_padded_sequences_vectors = populate_packed_sequence()
+
+        actual_x = self.model.preprocess_input(pack_padded_sequences_vectors)
+        self.assertTrue(isinstance(actual_x[0], PackedSequence))
 
 
 if __name__ == '__main__':

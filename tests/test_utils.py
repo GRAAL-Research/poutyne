@@ -1,44 +1,52 @@
 # -*- coding: utf-8 -*-
-from unittest import TestCase
-from unittest.mock import MagicMock, call
 import unittest
-import torch
+from unittest import TestCase, skipIf
+from unittest.mock import MagicMock, call
+
 import numpy as np
-from poutyne.utils import _concat
+import torch
+from torch.nn.utils.rnn import PackedSequence
+
 from poutyne import TensorDataset, torch_apply
+from poutyne.utils import _concat
+from tests.utils import populate_packed_sequence
 
 
 class TorchApplyTest(TestCase):
+    cpu_call = call.cpu()
+    device = "cuda:0"
+    gpu_call = call.to(device)
+
     def test_apply_on_list(self):
         my_list = [MagicMock(spec=torch.Tensor) for _ in range(10)]
         torch_apply(my_list, lambda t: t.cpu())
-        self._test_method_calls(my_list)
+        self._test_method_calls(my_list, device_call=self.cpu_call)
 
     def test_apply_on_recursive_list(self):
         my_list = [MagicMock(spec=torch.Tensor) for _ in range(2)]
         my_list.append([MagicMock(spec=torch.Tensor) for _ in range(3)])
         my_list += [MagicMock(spec=torch.Tensor) for _ in range(1)]
         torch_apply(my_list, lambda t: t.cpu())
-        self._test_method_calls(my_list[:2] + my_list[2] + my_list[3:])
+        self._test_method_calls(my_list[:2] + my_list[2] + my_list[3:], device_call=self.cpu_call)
 
     def test_apply_on_tuple(self):
         my_tuple = tuple(MagicMock(spec=torch.Tensor) for _ in range(10))
         torch_apply(my_tuple, lambda t: t.cpu())
-        self._test_method_calls(my_tuple)
+        self._test_method_calls(my_tuple, device_call=self.cpu_call)
 
     def test_apply_on_recursive_tuple(self):
         my_tuple = tuple(MagicMock(spec=torch.Tensor) for _ in range(2))
         my_tuple += (tuple(MagicMock(spec=torch.Tensor) for _ in range(3)),)
         my_tuple += tuple(MagicMock(spec=torch.Tensor) for _ in range(1))
         torch_apply(my_tuple, lambda t: t.cpu())
-        self._test_method_calls(my_tuple[:2] + my_tuple[2] + my_tuple[3:])
+        self._test_method_calls(my_tuple[:2] + my_tuple[2] + my_tuple[3:], device_call=self.cpu_call)
 
     def test_apply_on_dict(self):
         my_dict = {}
         for k in ['a', 'b', 'c']:
             my_dict[k] = MagicMock(spec=torch.Tensor)
         torch_apply(my_dict, lambda t: t.cpu())
-        self._test_method_calls(list(my_dict.values()))
+        self._test_method_calls(list(my_dict.values()), device_call=self.cpu_call)
 
     def test_apply_on_recursive_dict(self):
         my_dict = {}
@@ -47,7 +55,7 @@ class TorchApplyTest(TestCase):
         for k in ['c', 'd']:
             my_dict['b'][k] = MagicMock(spec=torch.Tensor)
         torch_apply(my_dict, lambda t: t.cpu())
-        self._test_method_calls([my_dict['a'], *my_dict['b'].values()])
+        self._test_method_calls([my_dict['a'], *my_dict['b'].values()], device_call=self.cpu_call)
 
     def test_apply_on_recursive_data_structure(self):
         my_obj = {
@@ -57,7 +65,9 @@ class TorchApplyTest(TestCase):
             'e': MagicMock(spec=torch.Tensor),
         }
         torch_apply(my_obj, lambda t: t.cpu())
-        self._test_method_calls(my_obj['a'] + list(my_obj['b']) + my_obj['c']['d'] + [my_obj['e']])
+        self._test_method_calls(
+            my_obj['a'] + list(my_obj['b']) + my_obj['c']['d'] + [my_obj['e']], device_call=self.cpu_call
+        )
 
     def test_apply_on_object_with_no_tensor(self):
         my_obj = {'a': 5, 'b': 3.141592, 'c': {'d': [1, 2, 3]}}
@@ -70,10 +80,78 @@ class TorchApplyTest(TestCase):
         ret = torch_apply(my_obj, lambda t: 123)
         self.assertEqual(ret, [123])
 
-    def _test_method_calls(self, mock_list):
-        print(mock_list)
+    def test_apply_with_packed_sequence(self):
+        my_obj, data_mock, batch_sizes_mock = _setup_packed_sequence_obj_mock()
+        torch_apply(my_obj, lambda t: t.cpu())
+
+        self._test_method_calls([data_mock], device_call=self.cpu_call)
+        self._test_not_in_method_calls([batch_sizes_mock], device_call=self.cpu_call)
+
+    @skipIf(not torch.cuda.is_available(), "no gpu available")
+    def test_apply_with_packed_sequence_gpu(self):
+        my_obj, data_mock, batch_sizes_mock = _setup_packed_sequence_obj_mock()
+        torch_apply(my_obj, lambda t: t.to(self.device))
+
+        self._test_method_calls([data_mock], device_call=self.gpu_call)
+        self._test_not_in_method_calls([batch_sizes_mock], device_call=self.gpu_call)
+
+    def test_apply_with_packed_sequence_integration(self):
+        device = torch.device("cpu")
+        pack_padded_sequences_vectors = populate_packed_sequence()
+        process_packed_sequence = torch_apply(pack_padded_sequences_vectors, lambda t: t.to(device))
+        self.assertTrue(isinstance(process_packed_sequence, PackedSequence))
+        self.assertEqual(process_packed_sequence.data.device, device)
+
+    @skipIf(not torch.cuda.is_available(), "no gpu available")
+    def test_apply_with_packed_sequence_integration_gpu(self):
+        device = torch.device("cuda:0")
+        pack_padded_sequences_vectors = populate_packed_sequence()
+        process_packed_sequence = torch_apply(pack_padded_sequences_vectors, lambda t: t.to(device))
+        self.assertTrue(isinstance(process_packed_sequence, PackedSequence))
+        self.assertEqual(process_packed_sequence.data.device, device)
+
+    def test_apply_with_tuple_with_an_packed_sequence(self):
+        my_obj, data_mock, batch_sizes_mock = _setup_packed_sequence_obj_mock()
+        torch_apply(my_obj, lambda t: t.cpu())
+
+        self._test_method_calls([data_mock], device_call=self.cpu_call)
+        self._test_not_in_method_calls([batch_sizes_mock], device_call=self.cpu_call)
+
+    @skipIf(not torch.cuda.is_available(), "no gpu available")
+    def test_apply_with_tuple_with_an_packed_sequence_gpu(self):
+        my_obj, data_mock, batch_sizes_mock = _setup_packed_sequence_obj_mock()
+        torch_apply(my_obj, lambda t: t.to(self.device))
+
+        self._test_method_calls([data_mock], device_call=self.gpu_call)
+        self._test_not_in_method_calls([batch_sizes_mock], device_call=self.gpu_call)
+
+    @skipIf(not torch.cuda.is_available(), "no gpu available")
+    def test_apply_with_tuple_with_an_packed_sequence_integration_gpu(self):
+        device = torch.device("cuda:0")
+        pack_padded_sequences_vectors = populate_packed_sequence()
+        tupled_obj = (pack_padded_sequences_vectors, MagicMock())
+        process_packed_sequence, _ = torch_apply(tupled_obj, lambda t: t.to(device))
+        self.assertTrue(isinstance(process_packed_sequence, PackedSequence))
+        self.assertEqual(process_packed_sequence.data.device, device)
+
+    def _test_method_calls(self, mock_list, device_call):
+        self.assertGreater(len(mock_list), 0)
         for mock in mock_list:
-            self.assertEqual(mock.method_calls, [call.cpu()])
+            self.assertEqual(mock.method_calls, [device_call])
+
+    def _test_not_in_method_calls(self, mock_list, device_call):
+        self.assertGreater(len(mock_list), 0)
+        for mock in mock_list:
+            self.assertNotIn(device_call, mock.method_calls)
+
+
+def _setup_packed_sequence_obj_mock():
+    data_mock = MagicMock(spec=torch.Tensor)
+    batch_sizes_mock = MagicMock(spec=torch.Tensor)
+    batch_sizes_mock.device.type = "cpu"
+
+    my_obj = PackedSequence(data=data_mock, batch_sizes=batch_sizes_mock)
+    return my_obj, data_mock, batch_sizes_mock
 
 
 class TensorDatasetTest(TestCase):

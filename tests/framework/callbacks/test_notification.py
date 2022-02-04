@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import List
 from unittest import TestCase
 from unittest.mock import MagicMock, call
 
@@ -33,6 +33,9 @@ class NotificationCallbackTest(TestCase):
 
         self.train_generator = some_data_tensor_generator(NotificationCallbackTest.batch_size)
         self.valid_generator = some_data_tensor_generator(NotificationCallbackTest.batch_size)
+
+        self.some_x_data = torch.rand(NotificationCallbackTest.batch_size, 1)
+        self.some_y_data = torch.rand(NotificationCallbackTest.batch_size, 1)
 
         torch.manual_seed(42)
         self.pytorch_network = nn.Linear(1, 1)
@@ -79,8 +82,9 @@ class NotificationCallbackTest(TestCase):
             validation_steps=NotificationCallbackTest.steps_per_epoch,
             callbacks=[notification_callback],
         )
+        call_list = self._build_notificator_call(logs)
 
-        self._test_notificator_call(logs)
+        self._assert_mock_calls(call_list)
 
     def test_givenANotificationCallbackWithExperimentName_whenTrainingLoop_thenSendNotificationWithExperimentName(self):
         a_experiment_name = "A experiment name"
@@ -96,22 +100,57 @@ class NotificationCallbackTest(TestCase):
             callbacks=[notification_callback],
         )
 
-        self._test_notificator_call(logs, experiment_name=a_experiment_name)
+        call_list = self._build_notificator_call(logs, experiment_name=a_experiment_name)
 
-    def _test_notificator_call(self, logs: Dict, experiment_name=None):
+        self._assert_mock_calls(call_list)
+
+    def test_givenANotificationCallback_whenTestLoop_thenSendNotification(self):
+        notification_callback = NotificationCallback(notificator=self.notificator_mock)
+        res = self.model.evaluate(
+            x=self.some_x_data, y=self.some_y_data, callbacks=[notification_callback], return_dict_format=True
+        )
+
+        call_list = self._build_notificator_call(res, mode="testing")
+
+        self._assert_mock_calls(call_list)
+
+    def test_givenANotificationCallbackWithExperimentName_whenTestLoop_thenSendNotificationWithExperimentName(self):
+        a_experiment_name = "A experiment name"
+        notification_callback = NotificationCallback(
+            notificator=self.notificator_mock, experiment_name=a_experiment_name
+        )
+        res = self.model.evaluate(
+            x=self.some_x_data, y=self.some_y_data, callbacks=[notification_callback], return_dict_format=True
+        )
+
+        call_list = self._build_notificator_call(res, mode="testing", experiment_name=a_experiment_name)
+
+        self._assert_mock_calls(call_list)
+
+    def _assert_mock_calls(self, call_list: List):
+        method_calls = self.notificator_mock.method_calls
+        self.assertEqual(len(method_calls), len(call_list))
+        self.assertEqual(method_calls, call_list)
+
+    @staticmethod
+    def _build_notificator_call(logs, experiment_name=None, mode: str = "training") -> List:
         experiment_name_text = f" for {experiment_name}" if experiment_name is not None else ""
         call_list = []
-        call_list.append(call.send_notification('', subject=f'Start of the training{experiment_name_text}.'))
-        for batch_log in logs:
-            formatted_log_data = " ".join([f"{key}: {value}\n" for key, value in batch_log.items()])
-            call_list.append(
-                call.send_notification(
-                    f"Here the epoch metrics: \n{formatted_log_data}",
-                    subject=f"Epoch {batch_log['epoch']} is done{experiment_name_text}.",
-                )
-            )
-        call_list.append(call.send_notification('', subject=f'End of the training{experiment_name_text}.'))
+        call_list.append(call.send_notification('', subject=f'Start of the {mode}{experiment_name_text}.'))
 
-        method_calls = self.notificator_mock.method_calls
-        self.assertEqual(len(method_calls), len(call_list))  # for set_model and set param
-        self.assertEqual(method_calls, call_list)
+        if mode == "training":
+            for batch_log in logs:
+                formatted_log_data = " ".join([f"{key}: {value}\n" for key, value in batch_log.items()])
+                call_list.append(
+                    call.send_notification(
+                        f"Here the epoch metrics: \n{formatted_log_data}",
+                        subject=f"Epoch {batch_log['epoch']} is done{experiment_name_text}.",
+                    )
+                )
+                message = ''
+        elif mode == "testing":
+            formatted_log_data = " ".join([f"{key}: {value}\n" for key, value in logs.items()])
+            message = f"Here the test metrics: \n{formatted_log_data}"
+
+        call_list.append(call.send_notification(message, subject=f'End of the {mode}{experiment_name_text}.'))
+        return call_list
