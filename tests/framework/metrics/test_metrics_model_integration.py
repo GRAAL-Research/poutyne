@@ -338,17 +338,26 @@ class MetricsRenamingTest(unittest.TestCase):
         expected = [], ['a1', 'b', 'a2', 'a3', 'c', 'd'], []
         self.assertEqual(expected, actual)
 
-    def test_batch_epoch_metrics(self):
-        actual = rename_doubles(['a', 'b', 'c'], ['d', 'a', 'e', 'a'], [])
-        expected = ['a1', 'b', 'c'], ['d', 'a2', 'e', 'a3'], []
+    def test_torch_metrics(self):
+        actual = rename_doubles([], [], ['a', 'a'])
+        expected = [], [], ['a1', 'a2']
         self.assertEqual(expected, actual)
 
-        actual = rename_doubles(['a', 'b', 'c', 'b'], ['d', 'a', 'e', 'a', 'e'], [])
-        expected = ['a1', 'b1', 'c', 'b2'], ['d', 'a2', 'e1', 'a3', 'e2'], []
+        actual = rename_doubles([], [], ['a', 'b', 'a', 'a', 'c', 'd'])
+        expected = [], [], ['a1', 'b', 'a2', 'a3', 'c', 'd']
         self.assertEqual(expected, actual)
 
-        actual = rename_doubles(['a', 'b', 'c'], ['d', 'a', 'e', 'a', 'e'], [])
-        expected = ['a1', 'b', 'c'], ['d', 'a2', 'e1', 'a3', 'e2'], []
+    def test_batch_epoch_torch_metrics(self):
+        actual = rename_doubles(['a', 'b', 'c'], ['d', 'a', 'e', 'a'], ['f', 'a', 'g'])
+        expected = ['a1', 'b', 'c'], ['d', 'a2', 'e', 'a3'], ['f', 'a4', 'g']
+        self.assertEqual(expected, actual)
+
+        actual = rename_doubles(['a', 'b', 'c', 'b'], ['d', 'a', 'e', 'a', 'e'], ['f', 'a'])
+        expected = ['a1', 'b1', 'c', 'b2'], ['d', 'a2', 'e1', 'a3', 'e2'], ['f', 'a4']
+        self.assertEqual(expected, actual)
+
+        actual = rename_doubles(['a', 'b', 'c'], ['d', 'a', 'e', 'a', 'e'], ['f', 'a'])
+        expected = ['a1', 'b', 'c'], ['d', 'a2', 'e1', 'a3', 'e2'], ['f', 'a4']
         self.assertEqual(expected, actual)
 
     def test_nested_batch_metrics(self):
