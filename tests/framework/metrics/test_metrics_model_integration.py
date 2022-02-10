@@ -9,8 +9,24 @@ from unittest.mock import ANY
 import numpy as np
 import torch
 import torch.nn as nn
+import torchmetrics
 
 from poutyne import Model, EpochMetric, rename_doubles, register_epoch_metric_class, unregister_epoch_metric
+
+
+from torchmetrics import Metric
+
+
+class MyConstTorchMetric(Metric):
+    def __init__(self, value=0):
+        super().__init__()
+        self.value = value
+
+    def update(self, preds: torch.Tensor, target: torch.Tensor):
+        pass
+
+    def compute(self):
+        return self.value
 
 
 class ConstEpochMetric(EpochMetric):
@@ -219,6 +235,49 @@ class MetricsModelIntegrationTest(unittest.TestCase):
         )
         self._test_history(model, ['unique_some', 'something'], [0.0, 0.0])
         unregister_epoch_metric(names)
+
+    def test_torchmetrics_handling(self):
+        expected_names = ['r2_score', 'spearman_corr_coef']
+        model = Model(
+            self.pytorch_network,
+            self.optimizer,
+            self.loss_function,
+            torch_metrics=[torchmetrics.R2Score(), torchmetrics.SpearmanCorrCoef()],
+        )
+        self._test_history(model, expected_names, [ANY, ANY])
+
+    def test_repeated_torch_metrics_handling(self):
+        expected_names = ['my_const_torch_metric1', 'my_const_torch_metric2']
+        model = Model(
+            self.pytorch_network,
+            self.optimizer,
+            self.loss_function,
+            torch_metrics=[MyConstTorchMetric(1), MyConstTorchMetric(2)],
+        )
+        self._test_history(model, expected_names, [1, 2])
+
+    def test_repeated_torch_metrics_handling_with_different_names(self):
+        expected_names = ['metric1', 'metric2']
+        model = Model(
+            self.pytorch_network,
+            self.optimizer,
+            self.loss_function,
+            torch_metrics=[('metric1', MyConstTorchMetric(1)), ('metric2', MyConstTorchMetric(2))],
+        )
+        self._test_history(model, expected_names, [1, 2])
+
+    @skipIf(not torch.cuda.is_available(), "no gpu available")
+    def test_torch_metrics_on_gpu(self):
+        with torch.cuda.device(MetricsModelIntegrationTest.cuda_device):
+            expected_names = ['r2_score', 'spearman_corr_coef']
+            model = Model(
+                self.pytorch_network,
+                self.optimizer,
+                self.loss_function,
+                torch_metrics=[torchmetrics.R2Score(), torchmetrics.SpearmanCorrCoef()],
+            )
+            model.cuda()
+            self._test_history(model, expected_names, [ANY, ANY])
 
     def _test_history(self, model, names, values):
         history = model.fit(

@@ -10,3 +10,4 @@ mlflow
 omegaconf
 matplotlib
 pillow
+torchmetrics
