@@ -142,7 +142,17 @@ class Model:
 
     """
 
-    def __init__(self, network, optimizer, loss_function, *, batch_metrics=None, epoch_metrics=None, device=None):
+    def __init__(
+        self,
+        network,
+        optimizer,
+        loss_function,
+        *,
+        batch_metrics=None,
+        epoch_metrics=None,
+        torch_metrics=None,
+        device=None,
+    ):
         if not isinstance(network, nn.Module):
             raise ValueError(f"network should be of type derived from nn.Module, received {type(network)}.")
 
@@ -151,6 +161,7 @@ class Model:
 
         batch_metrics = [] if batch_metrics is None else batch_metrics
         epoch_metrics = [] if epoch_metrics is None else epoch_metrics
+        torch_metrics = [] if torch_metrics is None else torch_metrics
 
         self.network = network
         self.optimizer = get_optimizer(optimizer, self.network)
@@ -160,7 +171,7 @@ class Model:
             self.loss_function = self.loss_function[1]
 
         self._check_network_optimizer_parameters_match()
-        self._set_metrics_attributes(batch_metrics, epoch_metrics)
+        self._set_metrics_attributes(batch_metrics, epoch_metrics, torch_metrics)
 
         self.device = None
         self.other_device = None
@@ -180,22 +191,32 @@ class Model:
                             "actually consider all parameters."
                         )
 
-    def _set_metrics_attributes(self, batch_metrics, epoch_metrics):
+    def _set_metrics_attributes(self, batch_metrics, epoch_metrics, torch_metrics):
         batch_metrics = list(map(get_loss_or_metric, batch_metrics))
         self.batch_metrics, batch_metrics_names = get_callables_and_names(batch_metrics)
 
         epoch_metrics = list(map(get_epoch_metric, epoch_metrics))
         self.epoch_metrics, epoch_metrics_names = get_callables_and_names(epoch_metrics)
 
-        self.original_batch_metrics_names, self.original_epoch_metrics_names = batch_metrics_names, epoch_metrics_names
-        batch_metrics_names, epoch_metrics_names = rename_doubles(batch_metrics_names, epoch_metrics_names)
+        self.torch_metrics, torch_metrics_names = get_callables_and_names(torch_metrics)
+
+        self.original_batch_metrics_names, self.original_epoch_metrics_names, self.original_torch_metrics_names = (
+            batch_metrics_names,
+            epoch_metrics_names,
+            torch_metrics_names,
+        )
+        batch_metrics_names, epoch_metrics_names, torch_metrics_names = rename_doubles(
+            batch_metrics_names, epoch_metrics_names, torch_metrics_names
+        )
 
         self.unflatten_batch_metrics_names = batch_metrics_names
         self.unflatten_epoch_metrics_names = epoch_metrics_names
+        self.unflatten_torch_metrics_names = torch_metrics_names
 
         self.batch_metrics_names = flatten_metric_names(batch_metrics_names)
         self.epoch_metrics_names = flatten_metric_names(epoch_metrics_names)
-        self.metrics_names = self.batch_metrics_names + self.epoch_metrics_names
+        self.torch_metrics_names = flatten_metric_names(torch_metrics_names)
+        self.metrics_names = self.batch_metrics_names + self.epoch_metrics_names + self.torch_metrics_names
 
     @contextlib.contextmanager
     def _set_training_mode(self, training):
@@ -538,6 +559,7 @@ class Model:
             callback=callback_list,
             batch_metrics_names=self.batch_metrics_names,
             epoch_metrics_names=self.epoch_metrics_names,
+            torch_metrics_names=self.torch_metrics_names,
         )
 
         if batches_per_step > 1:
@@ -557,7 +579,13 @@ class Model:
 
                     examples_in_step += step.size
 
-                    step.loss, step.metrics, did_backprop, _ = self._fit_batch_n_batches_per_step(
+                    (
+                        step.loss,
+                        step.batch_metrics,
+                        step.torch_metrics,
+                        did_backprop,
+                        _,
+                    ) = self._fit_batch_n_batches_per_step(
                         x, y, batches_per_step, examples_in_step, callback=callback_list, step=step
                     )
 
@@ -570,6 +598,7 @@ class Model:
                 self.optimizer.step()
 
             train_step_iterator.epoch_metrics = self._get_epoch_metrics()
+            train_step_iterator.torch_metrics = self._get_torch_metrics()
 
             if valid_step_iterator is not None:
                 valid_begin_time = timeit.default_timer()
@@ -578,6 +607,7 @@ class Model:
                 self._validate(valid_step_iterator)
 
                 valid_step_iterator.epoch_metrics = self._get_epoch_metrics()
+                valid_step_iterator.torch_metrics = self._get_torch_metrics()
                 valid_total_time = timeit.default_timer() - valid_begin_time
 
                 valid_metrics_log = {'time': valid_total_time}
@@ -595,7 +625,7 @@ class Model:
         if zero_all_gradients:
             self.optimizer.zero_grad()
 
-        loss_tensor, metrics, pred_y = self._compute_loss_and_metrics(
+        loss_tensor, batch_metrics, torch_metrics, pred_y = self._compute_loss_and_metrics(
             x, y, return_loss_tensor=True, return_pred=return_pred
         )
 
@@ -609,16 +639,19 @@ class Model:
             self.optimizer.step()
 
         loss = float(loss_tensor)
-        return loss, metrics, do_backprop, pred_y
+        return loss, batch_metrics, torch_metrics, do_backprop, pred_y
 
     def _fit_generator_one_batch_per_step(self, epoch_iterator, callback_list):
         for train_step_iterator, valid_step_iterator in epoch_iterator:
             with self._set_training_mode(True):
                 for step, (x, y) in train_step_iterator:
-                    step.loss, step.metrics, _ = self._fit_batch(x, y, callback=callback_list, step=step.number)
+                    step.loss, step.batch_metrics, step.torch_metrics, _ = self._fit_batch(
+                        x, y, callback=callback_list, step=step.number
+                    )
                     step.size = self.get_batch_size(x, y)
 
             train_step_iterator.epoch_metrics = self._get_epoch_metrics()
+            train_step_iterator.torch_metrics = self._get_torch_metrics()
 
             if valid_step_iterator is not None:
                 callback_list.on_valid_begin({})
@@ -626,6 +659,7 @@ class Model:
                 self._validate(valid_step_iterator)
 
                 valid_step_iterator.epoch_metrics = self._get_epoch_metrics()
+                valid_step_iterator.torch_metrics = self._get_torch_metrics()
                 valid_total_time = timeit.default_timer() - valid_begin_time
 
                 valid_metrics_log = {'time': valid_total_time}
@@ -636,7 +670,7 @@ class Model:
     def _fit_batch(self, x, y, *, callback=Callback(), step=None, return_pred=False):
         self.optimizer.zero_grad()
 
-        loss_tensor, metrics, pred_y = self._compute_loss_and_metrics(
+        loss_tensor, batch_metrics, torch_metrics, pred_y = self._compute_loss_and_metrics(
             x, y, return_loss_tensor=True, return_pred=return_pred
         )
 
@@ -645,7 +679,7 @@ class Model:
         self.optimizer.step()
 
         loss = float(loss_tensor)
-        return loss, metrics, pred_y
+        return loss, batch_metrics, torch_metrics, pred_y
 
     def _adjust_step_size(self, examples_in_step):
         for param in self.network.parameters():
@@ -705,14 +739,16 @@ class Model:
 
         with self._set_training_mode(True):
             self._transfer_optimizer_state_to_right_device()
-            loss, metrics, pred_y = self._fit_batch(x, y, return_pred=return_pred)
+            loss, batch_metrics, torch_metrics, pred_y = self._fit_batch(x, y, return_pred=return_pred)
 
         if return_dict_format:
             logs = dict(loss=loss)
-            logs.update(zip(self.batch_metrics_names, metrics))
+            logs.update(zip(self.batch_metrics_names, batch_metrics))
+            logs.update(zip(self.torch_metrics_names, torch_metrics))
 
             return self._format_truth_pred_return((logs,), pred_y, return_pred)
 
+        metrics = np.concatenate((batch_metrics, torch_metrics))
         return self._format_loss_metrics_return(loss, metrics, pred_y, return_pred)
 
     def _format_loss_metrics_return(self, loss, metrics, pred_y, return_pred, true_y=None, return_ground_truth=False):
@@ -1267,7 +1303,13 @@ class Model:
         callback_list.on_test_begin({})
 
         step_iterator = StepIterator(
-            generator, steps, self.batch_metrics_names, self.epoch_metrics_names, callback_list, mode="test"
+            generator,
+            steps,
+            self.batch_metrics_names,
+            self.epoch_metrics_names,
+            self.torch_metrics_names,
+            callback_list,
+            mode="test",
         )
 
         test_begin_time = timeit.default_timer()
@@ -1276,6 +1318,7 @@ class Model:
         )
 
         step_iterator.epoch_metrics = self._get_epoch_metrics()
+        step_iterator.torch_metrics = self._get_torch_metrics()
         test_total_time = timeit.default_timer() - test_begin_time
 
         if return_pred and concatenate_returns:
@@ -1291,7 +1334,7 @@ class Model:
         if return_dict_format:
             return self._format_truth_pred_return((test_metrics_log,), pred_y, return_pred, true_y, return_ground_truth)
 
-        metrics = np.concatenate((batch_metrics, step_iterator.epoch_metrics))
+        metrics = np.concatenate((batch_metrics, step_iterator.epoch_metrics, step_iterator.torch_metrics))
         return self._format_loss_metrics_return(loss, metrics, pred_y, return_pred, true_y, return_ground_truth)
 
     def evaluate_on_batch(self, x, y, *, return_pred=False, return_dict_format=False) -> Tuple:
@@ -1322,14 +1365,16 @@ class Model:
             dictionary.
         """
         with self._set_training_mode(False):
-            loss, metrics, pred_y = self._compute_loss_and_metrics(x, y, return_pred=return_pred)
+            loss, batch_metrics, torch_metrics, pred_y = self._compute_loss_and_metrics(x, y, return_pred=return_pred)
 
         if return_dict_format:
             logs = dict(loss=loss)
-            logs.update(zip(self.batch_metrics_names, metrics))
+            logs.update(zip(self.batch_metrics_names, batch_metrics))
+            logs.update(zip(self.torch_metrics_names, torch_metrics))
 
             return self._format_truth_pred_return((logs,), pred_y, return_pred)
 
+        metrics = np.concatenate((batch_metrics, torch_metrics))
         return self._format_loss_metrics_return(loss, metrics, pred_y, return_pred)
 
     def _validate(self, step_iterator, return_pred=False, return_ground_truth=False):
@@ -1342,7 +1387,9 @@ class Model:
 
         with self._set_training_mode(False):
             for step, (x, y) in step_iterator:
-                step.loss, step.metrics, pred_y = self._compute_loss_and_metrics(x, y, return_pred=return_pred)
+                step.loss, step.batch_metrics, step.torch_metrics, pred_y = self._compute_loss_and_metrics(
+                    x, y, return_pred=return_pred
+                )
                 if return_pred:
                     pred_list.append(pred_y)
                 if return_ground_truth:
@@ -1362,22 +1409,32 @@ class Model:
         if not return_loss_tensor:
             loss = float(loss)
         with torch.no_grad():
-            metrics = self._compute_batch_metrics(pred_y, y)
+            batch_metrics, torch_metrics = self._compute_batch_and_torch_metrics(pred_y, y)
             for epoch_metric in self.epoch_metrics:
                 epoch_metric(pred_y, y)
 
         pred_y = torch_to_numpy(pred_y) if return_pred else None
-        return loss, metrics, pred_y
+        return loss, batch_metrics, torch_metrics, pred_y
 
-    def _compute_batch_metrics(self, pred_y, y):
-        metrics = [metric(pred_y, y) for metric in self.batch_metrics]
-        return self._compute_metric_array(metrics, self.original_batch_metrics_names)
+    def _compute_batch_and_torch_metrics(self, pred_y, y):
+        batch_metrics = [metric(pred_y, y) for metric in self.batch_metrics]
+        torch_metrics = [metric(pred_y, y) for metric in self.torch_metrics]
+        return (
+            self._compute_metric_array(batch_metrics, self.original_batch_metrics_names),
+            self._compute_metric_array(torch_metrics, self.original_torch_metrics_names),
+        )
 
     def _get_epoch_metrics(self):
         metrics = [epoch_metric.get_metric() for epoch_metric in self.epoch_metrics]
         for epoch_metric in self.epoch_metrics:
             epoch_metric.reset()
         return self._compute_metric_array(metrics, self.original_epoch_metrics_names)
+
+    def _get_torch_metrics(self):
+        metrics = [torch_metric.compute() for torch_metric in self.torch_metrics]
+        for torch_metric in self.torch_metrics:
+            torch_metric.reset()
+        return self._compute_metric_array(metrics, self.original_torch_metrics_names)
 
     def _compute_metric_array(self, metrics_list, names_list):
         def _get_metric(names, metrics):
@@ -1712,7 +1769,7 @@ class Model:
         if isinstance(self.loss_function, torch.nn.Module):
             self.loss_function.to(self.device)
 
-        for metric in self.batch_metrics + self.epoch_metrics:
+        for metric in self.batch_metrics + self.epoch_metrics + self.torch_metrics:
             if isinstance(metric, torch.nn.Module):
                 metric.to(self.device)
 
