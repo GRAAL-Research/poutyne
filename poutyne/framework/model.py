@@ -48,6 +48,8 @@ class Model:
             Each metric function is called on each batch of the optimization and on the validation batches
             at the end of the epoch.
             (Default value = None)
+        torch_metrics (list): List of `TorchMetrics <https://torchmetrics.readthedocs.io/>`__  objects.
+            (Default value = None)
         epoch_metrics (list): List of functions with the same signature as :class:`~poutyne.EpochMetric`.
             See :ref:`epoch metrics` for available epoch metrics. (Default value = None)
         device (Union[torch.torch.device, List[torch.torch.device]]): The device to which the network is

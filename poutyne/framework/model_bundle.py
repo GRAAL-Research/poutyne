@@ -96,6 +96,7 @@ class ModelBundle:
         loss_function: Union[Callable, str] = None,
         batch_metrics: Union[List, None] = None,
         epoch_metrics: Union[List, None] = None,
+        torch_metrics: Union[List, None] = None,
         monitoring: bool = True,
         monitor_metric: Union[str, None] = None,
         monitor_mode: Union[str, None] = None,
@@ -136,6 +137,8 @@ class ModelBundle:
                 (Default value = None)
             epoch_metrics (list): List of functions with the same signature as :class:`~poutyne.EpochMetric`.
                 See :ref:`epoch metrics` for available epoch metrics. (Default value = None)
+            torch_metrics (list): List of `TorchMetrics <https://torchmetrics.readthedocs.io/>`__  objects.
+                (Default value = None)
             monitoring (bool): Whether or not to monitor the training. If True will track the best epoch.
                 If False, ``monitor_metric`` and ``monitor_mode`` are not used, and when testing, the last epoch is used
                 to test the model instead of the best epoch.
@@ -269,7 +272,13 @@ class ModelBundle:
         )
 
         model = Model(
-            network, optimizer, loss_function, batch_metrics=batch_metrics, epoch_metrics=epoch_metrics, device=device
+            network,
+            optimizer,
+            loss_function,
+            batch_metrics=batch_metrics,
+            epoch_metrics=epoch_metrics,
+            torch_metrics=torch_metrics,
+            device=device,
         )
 
         return ModelBundle(
