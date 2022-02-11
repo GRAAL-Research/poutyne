@@ -1,5 +1,6 @@
 import re
 from collections import Counter
+from typing import List, Tuple
 
 # From https://stackoverflow.com/a/1176023
 pattern1 = re.compile(r'(.)([A-Z][a-z]+)')
