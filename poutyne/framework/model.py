@@ -602,20 +602,7 @@ class Model:
             train_step_iterator.epoch_metrics = self._get_epoch_metrics()
             train_step_iterator.torch_metrics = self._get_torch_metrics()
 
-            if valid_step_iterator is not None:
-                valid_begin_time = timeit.default_timer()
-
-                callback_list.on_valid_begin({})
-                self._validate(valid_step_iterator)
-
-                valid_step_iterator.epoch_metrics = self._get_epoch_metrics()
-                valid_step_iterator.torch_metrics = self._get_torch_metrics()
-                valid_total_time = timeit.default_timer() - valid_begin_time
-
-                valid_metrics_log = {'time': valid_total_time}
-                valid_metrics_log.update(valid_step_iterator.metrics_logs)
-
-                callback_list.on_valid_end(valid_metrics_log)
+            self._run_validation(valid_step_iterator, callback_list)
 
     def _fit_batch_n_batches_per_step(
         self, x, y, batches_per_step, examples_in_step, *, callback=Callback(), step=None, return_pred=False
@@ -655,19 +642,7 @@ class Model:
             train_step_iterator.epoch_metrics = self._get_epoch_metrics()
             train_step_iterator.torch_metrics = self._get_torch_metrics()
 
-            if valid_step_iterator is not None:
-                callback_list.on_valid_begin({})
-                valid_begin_time = timeit.default_timer()
-                self._validate(valid_step_iterator)
-
-                valid_step_iterator.epoch_metrics = self._get_epoch_metrics()
-                valid_step_iterator.torch_metrics = self._get_torch_metrics()
-                valid_total_time = timeit.default_timer() - valid_begin_time
-
-                valid_metrics_log = {'time': valid_total_time}
-                valid_metrics_log.update(valid_step_iterator.metrics_logs)
-
-                callback_list.on_valid_end(valid_metrics_log)
+            self._run_validation(valid_step_iterator, callback_list)
 
     def _fit_batch(self, x, y, *, callback=Callback(), step=None, return_pred=False):
         self.optimizer.zero_grad()
@@ -682,6 +657,23 @@ class Model:
 
         loss = float(loss_tensor)
         return loss, batch_metrics, torch_metrics, pred_y
+
+    def _run_validation(self, valid_step_iterator, callback_list):
+        if valid_step_iterator is not None:
+            valid_begin_time = timeit.default_timer()
+
+            callback_list.on_valid_begin({})
+            self._validate(valid_step_iterator)
+
+            valid_step_iterator.epoch_metrics = self._get_epoch_metrics()
+            valid_step_iterator.torch_metrics = self._get_torch_metrics()
+
+            valid_total_time = timeit.default_timer() - valid_begin_time
+
+            valid_metrics_log = {'time': valid_total_time}
+            valid_metrics_log.update(valid_step_iterator.metrics_logs)
+
+            callback_list.on_valid_end(valid_metrics_log)
 
     def _adjust_step_size(self, examples_in_step):
         for param in self.network.parameters():
