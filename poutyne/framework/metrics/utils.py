@@ -33,7 +33,7 @@ def flatten_metric_names(metric_names):
     return [name for names in metric_names for name in to_list(names)]
 
 
-def rename_doubles(batch_metrics_names, epoch_metrics_names, torch_metrics_names):
+def rename_doubles(batch_metrics_names: List, epoch_metrics_names: List, torch_metrics_names: List) -> Tuple:
     metrics_names = rename_doubles_from_list(batch_metrics_names + epoch_metrics_names + torch_metrics_names)
     batch_metrics_names = metrics_names[: len(batch_metrics_names)]
     epoch_metrics_names = metrics_names[len(batch_metrics_names) : len(batch_metrics_names) + len(epoch_metrics_names)]
