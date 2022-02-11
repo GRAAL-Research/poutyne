@@ -14,10 +14,9 @@ import torchmetrics
 from poutyne import Model, EpochMetric, rename_doubles, register_epoch_metric_class, unregister_epoch_metric
 
 
-from torchmetrics import Metric
 
 
-class MyConstTorchMetric(Metric):
+class MyConstTorchMetric(torchmetrics.Metric):
     def __init__(self, value=0):
         super().__init__()
         self.value = value
@@ -67,6 +66,7 @@ def get_const_batch_metric(value):
 
 
 class MetricsModelIntegrationTest(unittest.TestCase):
+    # pylint: disable=too-many-public-methods
     epochs = 2
     steps_per_epoch = 3
     batch_size = 10
