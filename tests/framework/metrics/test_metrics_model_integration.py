@@ -14,8 +14,6 @@ import torchmetrics
 from poutyne import Model, EpochMetric, rename_doubles, register_epoch_metric_class, unregister_epoch_metric
 
 
-
-
 class MyConstTorchMetric(torchmetrics.Metric):
     def __init__(self, value=0):
         super().__init__()
