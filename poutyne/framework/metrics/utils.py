@@ -41,7 +41,7 @@ def rename_doubles(batch_metrics_names: List, epoch_metrics_names: List, torch_m
     return batch_metrics_names, epoch_metrics_names, torch_metrics_names
 
 
-def rename_doubles_from_list(metric_names):
+def rename_doubles_from_list(metric_names: List) -> List:
     """
     This function takes a list in the format `['a', ['b', 'a'], 'c', 'a', 'c']`
     and returns a list where each double is added a number so that there are no
