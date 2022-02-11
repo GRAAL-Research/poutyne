@@ -75,8 +75,7 @@ class FBeta(EpochMetric):
             ``'macro'``:
                 Calculate metrics for each label, and find their unweighted mean.
                 This does not take label imbalance into account.
-
-            (Default value = 'micro')
+            (Default value = 'macro')
         beta (float):
             The strength of recall versus precision in the F-score. (Default value = 1.0)
         pos_label (int):
@@ -84,6 +83,7 @@ class FBeta(EpochMetric):
             argument has no effect. (Default value = 1)
         ignore_index (int): Specifies a target value that is ignored. This also works in combination with
             a mask if provided. (Default value = -100)
+        threshold (float):
         names (Optional[Union[str, List[str]]]): The names associated to the metrics. It is a string when
             a single metric is requested. It is a list of 3 strings if all metrics are requested.
             (Default value = None)
@@ -97,6 +97,7 @@ class FBeta(EpochMetric):
         beta: float = 1.0,
         pos_label: int = 1,
         ignore_index: int = -100,
+        threshold: float = 0.0,
         names: Optional[Union[str, List[str]]] = None,
     ) -> None:
         super().__init__()
@@ -120,6 +121,7 @@ class FBeta(EpochMetric):
             self._label = pos_label
         self._beta = beta
         self.ignore_index = ignore_index
+        self.threshold = threshold
         self.__name__ = self._get_names(names)
 
         # statistics
@@ -178,6 +180,11 @@ class FBeta(EpochMetric):
                 ground truths and the second being a mask.
         """
 
+        if y_pred.shape[0] == 1:
+            y_pred, y_true = y_pred.squeeze().unsqueeze(0), y_true.squeeze().unsqueeze(0)
+        else:
+            y_pred, y_true = y_pred.squeeze(), y_true.squeeze()
+
         mask = 1
         if isinstance(y_true, tuple):
             y_true, mask = y_true
@@ -191,8 +198,10 @@ class FBeta(EpochMetric):
         else:
             mask = mask.bool()
 
-        # Calculate true_positive_sum, true_negative_sum, pred_sum, true_sum
-        num_classes = y_pred.size(1)
+        num_classes = 2
+        if y_pred.shape != y_true.shape:
+            num_classes = y_pred.size(1)
+
         if (y_true >= num_classes).any():
             raise ValueError(
                 f"A gold label passed to FBetaMeasure contains an id >= {num_classes}, the number of classes."
@@ -211,7 +220,10 @@ class FBeta(EpochMetric):
 
         y_true = y_true.float()
 
-        argmax_y_pred = y_pred.argmax(1).float()
+        if y_pred.shape != y_true.shape:
+            argmax_y_pred = y_pred.argmax(1).float()
+        else:
+            argmax_y_pred = (y_pred > self.threshold).float()
         true_positives = (y_true == argmax_y_pred) * mask
         true_positives_bins = y_true[true_positives]
 
@@ -298,7 +310,7 @@ class F1(FBeta):
     """
     Alias class for :class:`~poutyne.FBeta` where ``metric == 'fscore'`` and ``beta == 1``.
 
-    Possible string name in :class:`batch_metrics argument <poutyne.Model>`:
+    Possible string name in :class:`epoch_metrics argument <poutyne.Model>`:
         - ``'f1'``
 
     Keys in :class:`logs<poutyne.Callback>` dictionary of callbacks:
@@ -315,9 +327,9 @@ class F1(FBeta):
 @register_epoch_metric
 class Precision(FBeta):
     """
-    Alias class for :class:`~poutyne.FBeta` where ``metric == 'precision'`` and ``beta == 1``.
+    Alias class for :class:`~poutyne.FBeta` where ``metric == 'precision'``.
 
-    Possible string name in :class:`batch_metrics argument <poutyne.Model>`:
+    Possible string name in :class:`epoch_metrics argument <poutyne.Model>`:
         - ``'precision'``
 
     Keys in :class:`logs<poutyne.Callback>` dictionary of callbacks:
@@ -328,15 +340,15 @@ class Precision(FBeta):
     """
 
     def __init__(self, average='macro'):
-        super().__init__(metric='precision', average=average, beta=1)
+        super().__init__(metric='precision', average=average)
 
 
 @register_epoch_metric
 class Recall(FBeta):
     """
-    Alias class for :class:`~poutyne.FBeta` where ``metric == 'recall'`` and ``beta == 1``.
+    Alias class for :class:`~poutyne.FBeta` where ``metric == 'recall'``.
 
-    Possible string name in :class:`batch_metrics argument <poutyne.Model>`:
+    Possible string name in :class:`epoch_metrics argument <poutyne.Model>`:
         - ``'recall'``
 
     Keys in :class:`logs<poutyne.Callback>` dictionary of callbacks:
@@ -347,7 +359,58 @@ class Recall(FBeta):
     """
 
     def __init__(self, average='macro'):
-        super().__init__(metric='recall', average=average, beta=1)
+        super().__init__(metric='recall', average=average)
+
+
+@register_epoch_metric
+class BinaryF1(FBeta):
+    """
+    Alias class for :class:`~poutyne.FBeta` where ``metric == 'fscore'``, ``average='binary'`` and ``beta == 1``.
+
+    Possible string name in :class:`epoch_metrics argument <poutyne.Model>`:
+        - ``'binary_f1'``
+
+    Keys in :class:`logs<poutyne.Callback>` dictionary of callbacks:
+        - Train: ``'fscore'``
+        - Validation: ``'val_fscore'``
+    """
+
+    def __init__(self, threshold=0.0):
+        super().__init__(metric='fscore', average='binary', beta=1, threshold=threshold)
+
+
+@register_epoch_metric
+class BinaryPrecision(FBeta):
+    """
+    Alias class for :class:`~poutyne.FBeta` where ``metric == 'precision'`` and ``average='binary'``.
+
+    Possible string name in :class:`epoch_metrics argument <poutyne.Model>`:
+        - ``'binary_precision'``
+
+    Keys in :class:`logs<poutyne.Callback>` dictionary of callbacks:
+        - Train: ``'precision'``
+        - Validation: ``'val_precision'``
+    """
+
+    def __init__(self, threshold=0.0):
+        super().__init__(metric='precision', average='binary', threshold=threshold)
+
+
+@register_epoch_metric
+class BinaryRecall(FBeta):
+    """
+    Alias class for :class:`~poutyne.FBeta` where ``metric == 'recall'`` and ``average='binary'``.
+
+    Possible string name in :class:`epoch_metrics argument <poutyne.Model>`:
+        - ``'binary_recall'``
+
+    Keys in :class:`logs<poutyne.Callback>` dictionary of callbacks:
+        - Train: ``'recall'``
+        - Validation: ``'val_recall'``
+    """
+
+    def __init__(self, threshold=0.0):
+        super().__init__(metric='recall', average='binary', threshold=threshold)
 
 
 def _prf_divide(numerator, denominator):

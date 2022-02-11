@@ -2,21 +2,18 @@ from .utils import camel_to_snake
 
 
 def _get_registering_decorator(register_function):
-    def register(name_or_func, *extra_names):
-        if isinstance(name_or_func, str):
-            names = [name_or_func] + list(extra_names)
+    def decorator(*args, **kwargs):
+        def register(func):
+            register_function(func, args, **kwargs)
+            return func
 
-            def decorator_func(func):
-                register_function(func, names)
-                return func
+        if len(args) == 1 and callable(args[0]) and len(kwargs) == 0:
+            register_function(args[0])
+            return args[0]
+        else:
+            return register
 
-            return decorator_func
-
-        func = name_or_func
-        register_function(func)
-        return func
-
-    return register
+    return decorator
 
 
 batch_metrics_dict = {}
@@ -30,13 +27,14 @@ def clean_batch_metric_name(name):
 
 
 def register_batch_metric_function(func, names=None, unique_name=None):
-    names = [func.__name__] if names is None else names
+    names = [func.__name__] if names is None or len(names) == 0 else names
     names = [names] if isinstance(names, str) else names
     names = [clean_batch_metric_name(name) for name in names]
     if unique_name is None:
-        batch_metrics_dict.update({name: func for name in names})
+        update = {name: func for name in names}
     else:
-        batch_metrics_dict.update({name: (unique_name, func) for name in names})
+        update = {name: (unique_name, func) for name in names}
+    batch_metrics_dict.update(update)
     return names
 
 
@@ -68,13 +66,14 @@ def clean_epoch_metric_name(name):
 
 
 def register_epoch_metric_class(clz, names=None, unique_name=None):
-    names = [camel_to_snake(clz.__name__)] if names is None else names
+    names = [camel_to_snake(clz.__name__)] if names is None or len(names) == 0 else names
     names = [names] if isinstance(names, str) else names
     names = [clean_epoch_metric_name(name) for name in names]
     if unique_name is None:
-        epochs_metrics_dict.update({name: clz for name in names})
+        update = {name: clz for name in names}
     else:
-        epochs_metrics_dict.update({name: (unique_name, clz) for name in names})
+        update = {name: (unique_name, clz) for name in names}
+    epochs_metrics_dict.update(update)
     return names
 
 
