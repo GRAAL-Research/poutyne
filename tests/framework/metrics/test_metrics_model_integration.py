@@ -264,6 +264,16 @@ class MetricsModelIntegrationTest(unittest.TestCase):
         )
         self._test_history(model, expected_names, [1, 2])
 
+    def test_use_torch_metrics_as_epoch_metrics(self):
+        expected_names = ['metric1', 'metric2']
+        model = Model(
+            self.pytorch_network,
+            self.optimizer,
+            self.loss_function,
+            epoch_metrics=[('metric1', MyConstTorchMetric(1)), ('metric2', MyConstTorchMetric(2))],
+        )
+        self._test_history(model, expected_names, [1, 2])
+
     @skipIf(not torch.cuda.is_available(), "no gpu available")
     def test_torch_metrics_on_gpu(self):
         with torch.cuda.device(MetricsModelIntegrationTest.cuda_device):
