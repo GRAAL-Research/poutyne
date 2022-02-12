@@ -37,6 +37,7 @@ model = Model(
     'sgd',
     'binary_cross_entropy_with_logits',
     batch_metrics=['binary_accuracy'],
+    epoch_metrics=['binary_f1'],
     device=device,
 )
 model.fit(
