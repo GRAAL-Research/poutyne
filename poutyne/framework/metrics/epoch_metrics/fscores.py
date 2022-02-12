@@ -75,6 +75,7 @@ class FBeta(EpochMetric):
             ``'macro'``:
                 Calculate metrics for each label, and find their unweighted mean.
                 This does not take label imbalance into account.
+
             (Default value = 'macro')
         beta (float):
             The strength of recall versus precision in the F-score. (Default value = 1.0)
