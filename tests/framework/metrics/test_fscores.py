@@ -21,8 +21,9 @@ from unittest import TestCase
 
 import numpy
 import torch
+import torch.nn as nn
 
-from poutyne import FBeta
+from poutyne import FBeta, Model
 
 
 class FBetaTest(TestCase):
@@ -236,6 +237,38 @@ class FBetaTest(TestCase):
         self.assertEqual(['fscore_binary_1', 'precision_binary_1', 'recall_binary_1'], fbeta.__name__)
         fbeta = FBeta(average='binary', pos_label=0)
         self.assertEqual(['fscore_binary_0', 'precision_binary_0', 'recall_binary_0'], fbeta.__name__)
+
+    def test_predefined_names(self):
+        epoch_metrics = [
+            'f1',
+            'precision',
+            'recall',
+            'binaryf1',
+            'binf1',
+            'binaryprecision',
+            'binprecision',
+            'binaryrecall',
+            'binrecall',
+        ]
+        fmetric = ['fscore', 'precision', 'recall', 'fscore', 'fscore', 'precision', 'precision', 'recall', 'recall']
+        average = ['macro', 'macro', 'macro', 'binary', 'binary', 'binary', 'binary', 'binary', 'binary']
+        names = [
+            'fscore_macro',
+            'precision_macro',
+            'recall_macro',
+            'bin_fscore1',
+            'bin_fscore2',
+            'bin_precision1',
+            'bin_precision2',
+            'bin_recall1',
+            'bin_recall2',
+        ]
+        model = Model(nn.Linear(10, 2), 'sgd', 'cross_entropy', epoch_metrics=epoch_metrics)
+        actual_fmetric = [epoch_metric._metric for epoch_metric in model.epoch_metrics]
+        actual_average = [epoch_metric._average for epoch_metric in model.epoch_metrics]
+        self.assertEqual(fmetric, actual_fmetric)
+        self.assertEqual(average, actual_average)
+        self.assertEqual(names, model.epoch_metrics_names)
 
 
 class FBetaBinaryTest(TestCase):
