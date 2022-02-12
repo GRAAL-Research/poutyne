@@ -1405,7 +1405,7 @@ class Model:
         with torch.no_grad():
             batch_metrics, torch_metrics = self._compute_batch_and_torch_metrics(pred_y, y)
             for epoch_metric in self.epoch_metrics:
-                epoch_metric(pred_y, y)
+                epoch_metric.update(pred_y, y)
 
         pred_y = torch_to_numpy(pred_y) if return_pred else None
         return loss, batch_metrics, torch_metrics, pred_y
@@ -1419,7 +1419,7 @@ class Model:
         )
 
     def _get_epoch_metrics(self):
-        metrics = [epoch_metric.get_metric() for epoch_metric in self.epoch_metrics]
+        metrics = [epoch_metric.compute() for epoch_metric in self.epoch_metrics]
         for epoch_metric in self.epoch_metrics:
             epoch_metric.reset()
         return self._compute_metric_array(metrics, self.original_epoch_metrics_names)

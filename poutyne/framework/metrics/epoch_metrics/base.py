@@ -35,3 +35,9 @@ class EpochMetric(ABC, nn.Module):
         that a new epoch can be done.
         """
         pass
+
+    def update(self, y_pred, y_true) -> None:
+        return self.forward(y_pred, y_true)
+
+    def compute(self):
+        return self.get_metric()
