@@ -3,15 +3,14 @@ from .utils import camel_to_snake
 
 def _get_registering_decorator(register_function):
     def decorator(*args, **kwargs):
-        def register(func):
-            register_function(func, args, **kwargs)
-            return func
-
         if len(args) == 1 and callable(args[0]) and len(kwargs) == 0:
             register_function(args[0])
             return args[0]
-        else:
-            return register
+
+        def register(func):
+            register_function(func, args, **kwargs)
+            return func
+        return register
 
     return decorator
 
