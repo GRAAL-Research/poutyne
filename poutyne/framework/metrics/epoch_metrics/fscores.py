@@ -79,11 +79,14 @@ class FBeta(EpochMetric):
         beta (float):
             The strength of recall versus precision in the F-score. (Default value = 1.0)
         pos_label (int):
-            The class with respect to which the metric is computed when `average == 'binary'`. Otherwise, this
+            The class with respect to which the metric is computed when ``average == 'binary'``. Otherwise, this
             argument has no effect. (Default value = 1)
         ignore_index (int): Specifies a target value that is ignored. This also works in combination with
             a mask if provided. (Default value = -100)
-        threshold (float):
+        threshold (float): Threshold for when there is a single score for each prediction. If a sigmoid output is used,
+            this should be between 0 and 1. A suggested value would be 0.5. If a logits output is used, the threshold
+            would be between -inf and inf. The suggested default value is 0 as to give a probability of 0.5 if a sigmoid
+            output were used. (Default = 0)
         names (Optional[Union[str, List[str]]]): The names associated to the metrics. It is a string when
             a single metric is requested. It is a list of 3 strings if all metrics are requested.
             (Default value = None)
