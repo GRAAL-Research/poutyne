@@ -10,6 +10,7 @@ def _get_registering_decorator(register_function):
         def register(func):
             register_function(func, args, **kwargs)
             return func
+
         return register
 
     return decorator
