@@ -83,7 +83,6 @@ class SKLearnMetrics(EpochMetric):
     def get_metric(self) -> Dict:
         """
         Returns the metrics as a dictionary with the names as keys.
-        Note: This will reset the epoch metric value.
         """
         sample_weight = None
         if len(self.sample_weight_list) != 0:
