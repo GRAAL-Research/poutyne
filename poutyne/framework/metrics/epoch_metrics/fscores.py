@@ -180,23 +180,23 @@ class FBeta(EpochMetric):
                 ground truths and the second being a mask.
         """
 
-        if y_pred.shape[0] == 1:
-            y_pred, y_true = y_pred.squeeze().unsqueeze(0), y_true.squeeze().unsqueeze(0)
-        else:
-            y_pred, y_true = y_pred.squeeze(), y_true.squeeze()
-
-        mask = 1
         if isinstance(y_true, tuple):
             y_true, mask = y_true
-            mask = mask.byte()
+            mask = mask.bool()
+        else:
+            mask = torch.ones_like(y_true).bool()
 
         if self.ignore_index is not None:
-            mask *= (y_true != self.ignore_index).byte()
+            mask *= y_true != self.ignore_index
 
-        if not torch.is_tensor(mask):
-            mask = torch.ones_like(y_true, dtype=torch.bool)
+        if y_pred.shape[0] == 1:
+            y_pred, y_true, mask = (
+                y_pred.squeeze().unsqueeze(0),
+                y_true.squeeze().unsqueeze(0),
+                mask.squeeze().unsqueeze(0),
+            )
         else:
-            mask = mask.bool()
+            y_pred, y_true, mask = y_pred.squeeze(), y_true.squeeze(), mask.squeeze()
 
         num_classes = 2
         if y_pred.shape != y_true.shape:

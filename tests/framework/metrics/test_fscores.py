@@ -236,3 +236,56 @@ class FBetaTest(TestCase):
         self.assertEqual(['fscore_binary_1', 'precision_binary_1', 'recall_binary_1'], fbeta.__name__)
         fbeta = FBeta(average='binary', pos_label=0)
         self.assertEqual(['fscore_binary_0', 'precision_binary_0', 'recall_binary_0'], fbeta.__name__)
+
+
+class FBetaBinaryTest(TestCase):
+    def setUp(self):
+        # [0, 1, 1, 1, 0, 1]
+        self.predictions = torch.Tensor([[0.35, 0.25], [0.1, 0.6], [0.1, 0.6], [0.1, 0.5], [0.2, 0.1], [0.1, 0.6]])
+        self.targets = torch.Tensor([0, 0, 1, 0, 1, 0])
+
+        # detailed target state
+        self.pred_sum = [2, 4]
+        self.true_sum = [4, 2]
+        self.true_positive_sum = [1, 1]
+        self.true_negative_sum = [1, 1]
+        self.total_sum = [6, 6]
+
+        # desired_precisions = [1.00, 0.25, 0.00, 1.00, 0.00]
+        # desired_recalls = [0.33, 1.00, 0.00, 1.00, 0.00]
+        # desired_fscores = [
+        #     (2 * p * r) / (p + r) if p + r != 0.0 else 0.0 for p, r in zip(desired_precisions, desired_recalls)
+        # ]
+        # self.desired_precisions = desired_precisions
+        # self.desired_recalls = desired_recalls
+        # self.desired_fscores = desired_fscores
+
+    def test_fbeta_binary(self):
+        fbeta = FBeta(average='binary')
+        fbeta(self.predictions, self.targets)
+
+        # check state
+        numpy.testing.assert_almost_equal(fbeta._pred_sum.tolist(), self.pred_sum)
+        numpy.testing.assert_almost_equal(fbeta._true_sum.tolist(), self.true_sum)
+        numpy.testing.assert_almost_equal(fbeta._true_positive_sum.tolist(), self.true_positive_sum)
+        numpy.testing.assert_almost_equal(fbeta._total_sum.tolist(), self.total_sum)
+
+    def test_fbeta_binary_one_dim_pred(self):
+        fbeta = FBeta(average='binary')
+        fbeta(self.predictions[:, 1:] - self.predictions[:, 0:1], self.targets)
+
+        # check state
+        numpy.testing.assert_almost_equal(fbeta._pred_sum.tolist(), self.pred_sum)
+        numpy.testing.assert_almost_equal(fbeta._true_sum.tolist(), self.true_sum)
+        numpy.testing.assert_almost_equal(fbeta._true_positive_sum.tolist(), self.true_positive_sum)
+        numpy.testing.assert_almost_equal(fbeta._total_sum.tolist(), self.total_sum)
+
+    def test_fbeta_binary_zero_dim_pred(self):
+        fbeta = FBeta(average='binary')
+        fbeta(self.predictions[:, 1] - self.predictions[:, 0], self.targets)
+
+        # check state
+        numpy.testing.assert_almost_equal(fbeta._pred_sum.tolist(), self.pred_sum)
+        numpy.testing.assert_almost_equal(fbeta._true_sum.tolist(), self.true_sum)
+        numpy.testing.assert_almost_equal(fbeta._true_positive_sum.tolist(), self.true_positive_sum)
+        numpy.testing.assert_almost_equal(fbeta._total_sum.tolist(), self.total_sum)
