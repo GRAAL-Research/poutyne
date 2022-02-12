@@ -365,55 +365,58 @@ class Recall(FBeta):
         super().__init__(metric='recall', average=average)
 
 
-@register_epoch_metric
+@register_epoch_metric('binaryf1', 'binf1')
 class BinaryF1(FBeta):
     """
     Alias class for :class:`~poutyne.FBeta` where ``metric == 'fscore'``, ``average='binary'`` and ``beta == 1``.
 
     Possible string name in :class:`epoch_metrics argument <poutyne.Model>`:
         - ``'binary_f1'``
+        - ``'bin_f1'``
 
     Keys in :class:`logs<poutyne.Callback>` dictionary of callbacks:
-        - Train: ``'fscore'``
-        - Validation: ``'val_fscore'``
+        - Train: ``'bin_fscore'``
+        - Validation: ``'val_bin_fscore'``
     """
 
     def __init__(self, threshold=0.0):
-        super().__init__(metric='fscore', average='binary', beta=1, threshold=threshold)
+        super().__init__(metric='fscore', average='binary', beta=1, threshold=threshold, names='bin_fscore')
 
 
-@register_epoch_metric
+@register_epoch_metric('binaryprecision', 'binprecision')
 class BinaryPrecision(FBeta):
     """
     Alias class for :class:`~poutyne.FBeta` where ``metric == 'precision'`` and ``average='binary'``.
 
     Possible string name in :class:`epoch_metrics argument <poutyne.Model>`:
         - ``'binary_precision'``
+        - ``'bin_precision'``
 
     Keys in :class:`logs<poutyne.Callback>` dictionary of callbacks:
-        - Train: ``'precision'``
-        - Validation: ``'val_precision'``
+        - Train: ``'bin_precision'``
+        - Validation: ``'val_bin_precision'``
     """
 
     def __init__(self, threshold=0.0):
-        super().__init__(metric='precision', average='binary', threshold=threshold)
+        super().__init__(metric='precision', average='binary', threshold=threshold, names='bin_precision')
 
 
-@register_epoch_metric
+@register_epoch_metric('binaryrecall', 'binrecall')
 class BinaryRecall(FBeta):
     """
     Alias class for :class:`~poutyne.FBeta` where ``metric == 'recall'`` and ``average='binary'``.
 
     Possible string name in :class:`epoch_metrics argument <poutyne.Model>`:
         - ``'binary_recall'``
+        - ``'bin_recall'``
 
     Keys in :class:`logs<poutyne.Callback>` dictionary of callbacks:
-        - Train: ``'recall'``
-        - Validation: ``'val_recall'``
+        - Train: ``'bin_recall'``
+        - Validation: ``'val_bin_recall'``
     """
 
     def __init__(self, threshold=0.0):
-        super().__init__(metric='recall', average='binary', threshold=threshold)
+        super().__init__(metric='recall', average='binary', threshold=threshold, names='bin_recall')
 
 
 def _prf_divide(numerator, denominator):
