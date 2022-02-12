@@ -135,10 +135,20 @@ class ModelBundle:
                 Each metric function is called on each batch of the optimization and on the validation batches
                 at the end of the epoch.
                 (Default value = None)
-            epoch_metrics (list): List of functions with the same signature as :class:`~poutyne.EpochMetric`.
-                See :ref:`epoch metrics` for available epoch metrics. (Default value = None)
+            epoch_metrics (list): List of objects with the same signature as either :class:`~poutyne.EpochMetric` or
+                :class:`torchmetrics.Metric <torchmetrics.Metric>`.
+                See :ref:`epoch metrics` and the
+                `TorchMetrics documentation <https://torchmetrics.readthedocs.io/en/latest/references/modules.html>`__
+                for available epoch metrics. (Default value = None)
             torch_metrics (list): List of `TorchMetrics <https://torchmetrics.readthedocs.io/>`__  objects.
-                (Default value = None)
+                List of objects with the same signature as :class:`torchmetrics.Metric <torchmetrics.Metric>`.
+                See
+                `TorchMetrics documentation <https://torchmetrics.readthedocs.io/en/latest/references/modules.html>`__
+                for available torch metrics. (Default value = None)
+
+                .. warning:: When using this argument, the torch metrics are computed at each batch. This
+                    can significantly slow down the compuations depending on the metrics used. In such case, we advise
+                    to use them as epoch metrics instead.
             monitoring (bool): Whether or not to monitor the training. If True will track the best epoch.
                 If False, ``monitor_metric`` and ``monitor_mode`` are not used, and when testing, the last epoch is used
                 to test the model instead of the best epoch.

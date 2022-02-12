@@ -48,10 +48,20 @@ class Model:
             Each metric function is called on each batch of the optimization and on the validation batches
             at the end of the epoch.
             (Default value = None)
-        torch_metrics (list): List of `TorchMetrics <https://torchmetrics.readthedocs.io/>`__  objects.
+        epoch_metrics (list): List of objects with the same signature as either :class:`~poutyne.EpochMetric` or
+            :class:`torchmetrics.Metric <torchmetrics.Metric>`.
+            See :ref:`epoch metrics` and the
+            `TorchMetrics documentation <https://torchmetrics.readthedocs.io/en/latest/references/modules.html>`__ for
+            available epoch metrics.
             (Default value = None)
-        epoch_metrics (list): List of functions with the same signature as :class:`~poutyne.EpochMetric`.
-            See :ref:`epoch metrics` for available epoch metrics. (Default value = None)
+        torch_metrics (list): List of `TorchMetrics <https://torchmetrics.readthedocs.io/>`__  objects.
+            List of objects with the same signature as :class:`torchmetrics.Metric <torchmetrics.Metric>`.
+            See `TorchMetrics documentation <https://torchmetrics.readthedocs.io/en/latest/references/modules.html>`__
+            for available torch metrics. (Default value = None)
+
+            .. warning:: When using this argument, the torch metrics are computed at each batch. This
+                can significantly slow down the compuations depending on the metrics used. In such case, we advise to
+                use them as epoch metrics instead.
         device (Union[torch.torch.device, List[torch.torch.device]]): The device to which the network is
             sent or the list of device to which the network is sent. See :func:`~Model.to()` for details.
 
