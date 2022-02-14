@@ -153,9 +153,9 @@ When passed as epoch metrics, they are only displayed at the end of the epoch.
 When passed using the specialized ``torch_metrics`` argument, they are displayed for each batch and at the end of the epoch.
 See `TorchMetrics documentation <https://torchmetrics.readthedocs.io/en/latest/references/modules.html>`__ for available torch metrics.
 
-.. warning:: When using this argument, the torch metrics are computed at each batch. This
-    can significantly slow down the computations depending on the metrics used. In such case, we advise to
-    use them as epoch metrics instead.
+.. warning:: When using the ``torch_metrics`` argument, the torch metrics are computed at each batch.
+    This can significantly slow down the computations depending on the metrics used.
+    In such cases, we advise using them as epoch metrics instead.
 
 Here is an example using TorchMetrics:
 
