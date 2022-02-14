@@ -147,7 +147,7 @@ TorchMetrics
 `TorchMetrics <https://torchmetrics.readthedocs.io/>`__ is a library implementing a lot of known metrics in PyTorch.
 They are passed to :class:`~poutyne.Model` and :meth:`ModelBundle.from_network() <poutyne.ModelBundle.from_network()>` using either the  ``epoch_metrics`` argument or the ``torch_metrics`` argument.
 When passed as epoch metric, they are only displayed at the end of the epoch.
-When passed using specialized ``torch_metrics`` argument, they are ddisplayed for each batch and at the end of the epoch.
+When passed using the specialized ``torch_metrics`` argument, they are displayed for each batch and at the end of the epoch.
 See `TorchMetrics documentation <https://torchmetrics.readthedocs.io/en/latest/references/modules.html>`__ for available torch metrics.
 
 .. warning:: When using this argument, the torch metrics are computed at each batch. This
