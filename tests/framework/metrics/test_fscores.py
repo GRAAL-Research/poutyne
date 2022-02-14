@@ -21,8 +21,9 @@ from unittest import TestCase
 
 import numpy
 import torch
+import torch.nn as nn
 
-from poutyne import FBeta
+from poutyne import FBeta, Model
 
 
 class FBetaTest(TestCase):
@@ -236,3 +237,91 @@ class FBetaTest(TestCase):
         self.assertEqual(['fscore_binary_1', 'precision_binary_1', 'recall_binary_1'], fbeta.__name__)
         fbeta = FBeta(average='binary', pos_label=0)
         self.assertEqual(['fscore_binary_0', 'precision_binary_0', 'recall_binary_0'], fbeta.__name__)
+
+    def test_predefined_names(self):
+        epoch_metrics = [
+            'f1',
+            'precision',
+            'recall',
+            'binaryf1',
+            'binf1',
+            'binaryprecision',
+            'binprecision',
+            'binaryrecall',
+            'binrecall',
+        ]
+        fmetric = ['fscore', 'precision', 'recall', 'fscore', 'fscore', 'precision', 'precision', 'recall', 'recall']
+        average = ['macro', 'macro', 'macro', 'binary', 'binary', 'binary', 'binary', 'binary', 'binary']
+        names = [
+            'fscore_macro',
+            'precision_macro',
+            'recall_macro',
+            'bin_fscore1',
+            'bin_fscore2',
+            'bin_precision1',
+            'bin_precision2',
+            'bin_recall1',
+            'bin_recall2',
+        ]
+        model = Model(nn.Linear(10, 2), 'sgd', 'cross_entropy', epoch_metrics=epoch_metrics)
+        actual_fmetric = [epoch_metric._metric for epoch_metric in model.epoch_metrics]
+        actual_average = [epoch_metric._average for epoch_metric in model.epoch_metrics]
+        self.assertEqual(fmetric, actual_fmetric)
+        self.assertEqual(average, actual_average)
+        self.assertEqual(names, model.epoch_metrics_names)
+
+
+class FBetaBinaryTest(TestCase):
+    def setUp(self):
+        # [0, 1, 1, 1, 0, 1]
+        self.predictions = torch.Tensor([[0.35, 0.25], [0.1, 0.6], [0.1, 0.6], [0.1, 0.5], [0.2, 0.1], [0.1, 0.6]])
+        self.targets = torch.Tensor([0, 0, 1, 0, 1, 0])
+
+        # detailed target state
+        self.pred_sum = [2, 4]
+        self.true_sum = [4, 2]
+        self.true_positive_sum = [1, 1]
+        self.true_negative_sum = [1, 1]
+        self.total_sum = [6, 6]
+
+        desired_precision = 0.25
+        desired_recall = 0.5
+        desired_fscore = (
+            (2 * desired_precision * desired_recall) / (desired_precision + desired_recall)
+            if desired_precision + desired_recall != 0.0
+            else 0.0
+        )
+        self.output = [desired_fscore, desired_precision, desired_recall]
+
+    def test_fbeta_binary(self):
+        fbeta = FBeta(average='binary')
+        fbeta(self.predictions, self.targets)
+
+        # check state
+        numpy.testing.assert_almost_equal(fbeta._pred_sum.tolist(), self.pred_sum)
+        numpy.testing.assert_almost_equal(fbeta._true_sum.tolist(), self.true_sum)
+        numpy.testing.assert_almost_equal(fbeta._true_positive_sum.tolist(), self.true_positive_sum)
+        numpy.testing.assert_almost_equal(fbeta._total_sum.tolist(), self.total_sum)
+        numpy.testing.assert_almost_equal(fbeta.get_metric(), self.output)
+
+    def test_fbeta_binary_one_dim_pred(self):
+        fbeta = FBeta(average='binary')
+        fbeta(self.predictions[:, 1:] - self.predictions[:, 0:1], self.targets)
+
+        # check state
+        numpy.testing.assert_almost_equal(fbeta._pred_sum.tolist(), self.pred_sum)
+        numpy.testing.assert_almost_equal(fbeta._true_sum.tolist(), self.true_sum)
+        numpy.testing.assert_almost_equal(fbeta._true_positive_sum.tolist(), self.true_positive_sum)
+        numpy.testing.assert_almost_equal(fbeta._total_sum.tolist(), self.total_sum)
+        numpy.testing.assert_almost_equal(fbeta.get_metric(), self.output)
+
+    def test_fbeta_binary_zero_dim_pred(self):
+        fbeta = FBeta(average='binary')
+        fbeta(self.predictions[:, 1] - self.predictions[:, 0], self.targets)
+
+        # check state
+        numpy.testing.assert_almost_equal(fbeta._pred_sum.tolist(), self.pred_sum)
+        numpy.testing.assert_almost_equal(fbeta._true_sum.tolist(), self.true_sum)
+        numpy.testing.assert_almost_equal(fbeta._true_positive_sum.tolist(), self.true_positive_sum)
+        numpy.testing.assert_almost_equal(fbeta._total_sum.tolist(), self.total_sum)
+        numpy.testing.assert_almost_equal(fbeta.get_metric(), self.output)
