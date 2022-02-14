@@ -1,0 +1,25 @@
+
+name: Docker Image CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  release:
+    types: [created]
+  schedule:
+    # Run the tests at 00:00 each day
+    - cron: "0 0 * * *"
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Build the Docker image
+      run: |
+        docker build . --file Dockerfile --tag poutyne:$(date +%s)
