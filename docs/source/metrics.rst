@@ -137,6 +137,9 @@ Predefined Epoch Metrics
 .. autoclass:: F1
 .. autoclass:: Precision
 .. autoclass:: Recall
+.. autoclass:: BinaryF1
+.. autoclass:: BinaryPrecision
+.. autoclass:: BinaryRecall
 .. autoclass:: SKLearnMetrics
     :members:
 
