@@ -13,7 +13,7 @@ RUN CFLAGS="-g0 -Os -DNDEBUG -Wl,--strip-all -I/usr/include:/usr/local/include -
 		--compile \
 		--global-option=build_ext \
 		--global-option="-j 4" \
-		--no-deps -U git+https://github.com/GRAAL-Research/poutyne.git@dev
+		--no-deps -U git+https://github.com/GRAAL-Research/poutyne.git@stable
 
 RUN find /opt/conda/lib/ -follow -type f -name '*.a' -delete \
     && find /opt/conda/lib/ -follow -type f -name '*.pyc' -delete \
