@@ -176,6 +176,7 @@ intersphinx_mapping = {
     'numpy': ('http://docs.scipy.org/doc/numpy/', None),
     'matplotlib': ('https://matplotlib.org/stable/', None),
     'pandas': ('https://pandas.pydata.org/pandas-docs/stable/', None),
+    'torchmetrics': ('https://torchmetrics.readthedocs.io/en/latest/', None),
 }
 
 # -- Extension configuration -------------------------------------------------

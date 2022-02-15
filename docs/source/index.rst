@@ -50,6 +50,7 @@ Here is a simple example:
   import torch
   import torch.nn as nn
   import numpy as np
+  import torchmetrics
 
   num_features = 20
   num_classes = 5
@@ -91,9 +92,14 @@ You can now use Poutyne's model to train your network easily:
 
 .. code-block:: python
 
-  model = Model(network, 'sgd', 'cross_entropy',
-                batch_metrics=['accuracy'], epoch_metrics=['f1'],
-                device=device)
+  model = Model(
+      network,
+      'sgd',
+      'cross_entropy',
+      batch_metrics=['accuracy'],
+      epoch_metrics=['f1', torchmetrics.AUROC(num_classes=num_classes)],
+      device=device
+  )
   model.fit(
       train_x, train_y,
       validation_data=(valid_x, valid_y),
@@ -126,9 +132,10 @@ One of the strengths Poutyne are :ref:`callbacks <callbacks>`. They allow you to
 
   from poutyne import ModelBundle
 
-  # Everything is saved in ./expt/my_classification_network
-  model_bundle = ModelBundle.from_network('./expt/my_classification_network', network,
-                                          optimizer='sgd', task='classif', device=device)
+  # Everything is saved in ./saves/my_classification_network
+  model_bundle = ModelBundle.from_network(
+      './saves/my_classification_network', network, optimizer='sgd', task='classif', device=device
+  )
 
   model_bundle.train_data(train_x, train_y, validation_data=(valid_x, valid_y), epochs=5)
 
