@@ -99,15 +99,18 @@ def _apply(obj, func):
 
 
 def _concat(obj):
-    if isinstance(obj[0], (list, tuple)):
-        return type(obj[0])(_concat(ele) for ele in zip(*obj))
-    if isinstance(obj[0], dict):
+    first_item = obj[0]
+    if isinstance(first_item, (list, tuple)):
+        return type(first_item)(_concat(ele) for ele in zip(*obj))
+    if isinstance(first_item, dict):
         concat_dict = {}
-        for key in obj[0].keys():
+        for key in first_item.keys():
             concat_dict[key] = _concat([o[key] for o in obj])
         return concat_dict
-    if isinstance(obj[0], np.ndarray) and obj[0].shape != ():
+    if isinstance(first_item, np.ndarray) and len(first_item.shape) != 0:
         return np.concatenate(obj)
+    if torch.is_tensor(first_item) and len(first_item.shape) != 0:
+        return torch.cat(obj)
     return obj
 
 

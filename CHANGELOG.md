@@ -7,7 +7,7 @@
 * Add flag to [`TensorBoardLogger`](https://poutyne.org/callbacks.html#poutyne.TensorBoardLogger) to allow to put
   training and validation metrics in different graphs. This allow to have a behavior closer to Keras.
 * Add support for fscore on binary classification.
-*
+* Add `convert_to_numpy` flag to be able to obtain tensors instead of NumPy arrays in evaluate\* and predict\*.
 
 # v1.8
 

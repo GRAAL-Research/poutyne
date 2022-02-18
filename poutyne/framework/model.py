@@ -634,7 +634,16 @@ class Model:
             self._run_validation(valid_step_iterator, callback_list)
 
     def _fit_batch_n_batches_per_step(
-        self, x, y, batches_per_step, examples_in_step, *, callback=Callback(), step=None, return_pred=False
+        self,
+        x,
+        y,
+        batches_per_step,
+        examples_in_step,
+        *,
+        callback=Callback(),
+        step=None,
+        return_pred=False,
+        convert_to_numpy=True,
     ):
         # pylint: disable=too-many-locals
         zero_all_gradients = (step.number - 1) % batches_per_step == 0
@@ -644,7 +653,7 @@ class Model:
             self.optimizer.zero_grad()
 
         loss_tensor, batch_metrics, torch_metrics, pred_y = self._compute_loss_and_metrics(
-            x, y, return_loss_tensor=True, return_pred=return_pred
+            x, y, return_loss_tensor=True, return_pred=return_pred, convert_to_numpy=convert_to_numpy
         )
 
         adjusted_loss_tensor = loss_tensor * step.size
@@ -673,11 +682,11 @@ class Model:
 
             self._run_validation(valid_step_iterator, callback_list)
 
-    def _fit_batch(self, x, y, *, callback=Callback(), step=None, return_pred=False):
+    def _fit_batch(self, x, y, *, callback=Callback(), step=None, return_pred=False, convert_to_numpy=True):
         self.optimizer.zero_grad()
 
         loss_tensor, batch_metrics, torch_metrics, pred_y = self._compute_loss_and_metrics(
-            x, y, return_loss_tensor=True, return_pred=return_pred
+            x, y, return_loss_tensor=True, return_pred=return_pred, convert_to_numpy=convert_to_numpy
         )
 
         loss_tensor.backward()
@@ -729,7 +738,7 @@ class Model:
 
         return (x, y) if y is not None else x
 
-    def train_on_batch(self, x, y, return_pred=False, return_dict_format=False):
+    def train_on_batch(self, x, y, *, return_pred=False, return_dict_format=False, convert_to_numpy=True):
         """
         Trains the network for the batch ``(x, y)`` and computes the loss and the metrics, and
         optionally returns the predictions.
@@ -741,6 +750,8 @@ class Model:
                 (Default value = False)
             return_dict_format (bool, optional): Whether to return the loss and metrics in a dict format or not.
                 (Default value = False)
+            convert_to_numpy (bool, optional): Whether to convert the predictions into Numpy Arrays when ``return_pred``
+                is true. (Default value = True)
 
         Returns:
             Float ``loss`` if no metrics were specified and ``return_pred`` is false.
@@ -762,7 +773,9 @@ class Model:
 
         with self._set_training_mode(True):
             self._transfer_optimizer_state_to_right_device()
-            loss, batch_metrics, torch_metrics, pred_y = self._fit_batch(x, y, return_pred=return_pred)
+            loss, batch_metrics, torch_metrics, pred_y = self._fit_batch(
+                x, y, return_pred=return_pred, convert_to_numpy=convert_to_numpy
+            )
 
         if return_dict_format:
             logs = dict(loss=loss)
@@ -797,6 +810,7 @@ class Model:
         x,
         *,
         batch_size=32,
+        convert_to_numpy=True,
         verbose=True,
         progress_options: Union[dict, None] = None,
         callbacks=None,
@@ -812,6 +826,8 @@ class Model:
                 Union[tuple, list] of Union[Tensor, ndarray] if the model has multiple inputs.
             batch_size (int): Number of samples given to the network at one time.
                 (Default value = 32)
+            concatenate_returns (bool, optional): Whether to concatenate the predictions when returning them.
+                (Default value = True)
             verbose (bool): Whether to display the progress of the evaluation.
                 (Default value = True)
             progress_options (dict, optional): Keyword arguments to pass to the default progression callback used
@@ -831,6 +847,7 @@ class Model:
             dataset,
             batch_size=batch_size,
             concatenate_returns=True,
+            convert_to_numpy=convert_to_numpy,
             dataloader_kwargs=dataloader_kwargs,
             verbose=verbose,
             progress_options=progress_options,
@@ -846,6 +863,7 @@ class Model:
         has_ground_truth=False,
         return_ground_truth=False,
         concatenate_returns=True,
+        convert_to_numpy=True,
         num_workers=0,
         collate_fn=None,
         verbose=True,
@@ -871,6 +889,8 @@ class Model:
             concatenate_returns (bool, optional): Whether to concatenate the predictions
                 or the ground truths when returning them. See :func:`predict_generator()`
                 for details. (Default value = True)
+            concatenate_returns (bool, optional): Whether to concatenate the predictions
+                or the ground truths when returning them. (Default value = True)
             num_workers (int, optional): how many subprocesses to use for data loading.
                 ``0`` means that the data will be loaded in the main process.
                 (Default value = 0)
@@ -912,6 +932,7 @@ class Model:
             has_ground_truth=has_ground_truth,
             return_ground_truth=return_ground_truth,
             concatenate_returns=concatenate_returns,
+            convert_to_numpy=convert_to_numpy,
             verbose=verbose,
             progress_options=progress_options,
             callbacks=callbacks,
@@ -925,6 +946,7 @@ class Model:
         has_ground_truth=False,
         return_ground_truth=False,
         concatenate_returns=True,
+        convert_to_numpy=True,
         verbose=True,
         progress_options: Union[dict, None] = None,
         callbacks=None,
@@ -946,6 +968,8 @@ class Model:
                 set `has_ground_truth` to true. (Default value = False)
             concatenate_returns (bool, optional): Whether to concatenate the predictions
                 or the ground truths when returning them. (Default value = True)
+            convert_to_numpy (bool, optional): Whether to convert the predictions or ground truths into Numpy Arrays.
+                (Default value = True)
             verbose (bool): Whether to display the progress of the evaluation.
                 (Default value = True)
             progress_options (dict, optional): Keyword arguments to pass to the default progression callback used
@@ -990,9 +1014,11 @@ class Model:
                     x, y = self.preprocess_input(*batch)
                 else:
                     x = self.preprocess_input(batch)
-                pred_y.append(torch_to_numpy(self.network(*x)))
+
+                batch_pred = self.network(*x)
+                pred_y.append(torch_to_numpy(batch_pred) if convert_to_numpy else batch_pred)
                 if return_ground_truth:
-                    true_y.append(torch_to_numpy(y))
+                    true_y.append(torch_to_numpy(y) if convert_to_numpy else y)
 
                 batch_end_time = timeit.default_timer()
                 batch_total_time = batch_end_time - time_since_last_batch
@@ -1011,20 +1037,23 @@ class Model:
             return pred_y, true_y
         return pred_y
 
-    def predict_on_batch(self, x) -> Any:
+    def predict_on_batch(self, x, *, convert_to_numpy=True) -> Any:
         """
         Returns the predictions of the network given a batch ``x``, where the tensors are converted
         into Numpy arrays.
 
         Args:
             x: Input data as a batch.
+            convert_to_numpy (bool, optional): Whether to convert the predictions into Numpy Arrays.
+                (Default value = True)
 
         Returns:
             Return the predictions in the format outputted by the model.
         """
         with self._set_training_mode(False):
             x = self.preprocess_input(x)
-            return torch_to_numpy(self.network(*x))
+            y_pred = self.network(*x)
+            return torch_to_numpy(y_pred) if convert_to_numpy else y_pred
 
     def evaluate(
         self,
@@ -1034,6 +1063,7 @@ class Model:
         batch_size=32,
         return_pred=False,
         return_dict_format=False,
+        convert_to_numpy=True,
         callbacks=None,
         verbose=True,
         progress_options: Union[dict, None] = None,
@@ -1057,6 +1087,8 @@ class Model:
                 (Default value = False)
             return_dict_format (bool, optional): Whether to return the loss and metrics in a dict format or not.
                 (Default value = False)
+            convert_to_numpy (bool, optional): Whether to convert the predictions into Numpy Arrays when ``return_pred``
+                is true. (Default value = True)
             callbacks (List[~poutyne.Callback]): List of callbacks that will be called during
                 testing. (Default value = None)
             verbose (bool): Whether to display the progress of the evaluation.
@@ -1092,6 +1124,7 @@ class Model:
             return_pred=return_pred,
             return_dict_format=return_dict_format,
             concatenate_returns=True,
+            convert_to_numpy=convert_to_numpy,
             callbacks=callbacks,
             verbose=verbose,
             progress_options=progress_options,
@@ -1108,6 +1141,7 @@ class Model:
         return_ground_truth=False,
         return_dict_format=False,
         concatenate_returns=True,
+        convert_to_numpy=True,
         callbacks=None,
         num_workers=0,
         collate_fn=None,
@@ -1115,6 +1149,7 @@ class Model:
         verbose=True,
         progress_options: Union[dict, None] = None,
     ) -> Tuple:
+        # pylint: disable=too-many-locals
         """
         Computes the loss and the metrics of the network on batches of samples and optionally
         returns the predictions.
@@ -1133,6 +1168,8 @@ class Model:
                 (Default value = False)
             concatenate_returns (bool, optional): Whether to concatenate the predictions
                 or the ground truths when returning them. (Default value = True)
+            convert_to_numpy (bool, optional): Whether to convert the predictions or ground truths into Numpy Arrays
+                when ``return_pred`` or ``return_ground_truth`` are true. (Default value = True)
             callbacks (List[~poutyne.Callback]): List of callbacks that will be called during
                 testing. (Default value = None)
             num_workers (int, optional): how many subprocesses to use for data loading.
@@ -1185,6 +1222,7 @@ class Model:
             return_ground_truth=return_ground_truth,
             return_dict_format=return_dict_format,
             concatenate_returns=concatenate_returns,
+            convert_to_numpy=convert_to_numpy,
             callbacks=callbacks,
             verbose=verbose,
             progress_options=progress_options,
@@ -1199,6 +1237,7 @@ class Model:
         return_ground_truth=False,
         return_dict_format=False,
         concatenate_returns=True,
+        convert_to_numpy=True,
         verbose=True,
         progress_options: Union[dict, None] = None,
         callbacks=None,
@@ -1219,6 +1258,8 @@ class Model:
                 (Default value = False)
             return_dict_format (bool, optional): Whether to return the loss and metrics in a dict format or not.
                 (Default value = False)
+            convert_to_numpy (bool, optional): Whether to convert the predictions or ground truths into Numpy Arrays
+                when ``return_pred`` or ``return_ground_truth`` are true. (Default value = True)
             concatenate_returns (bool, optional): Whether to concatenate the predictions
                 or the ground truths when returning them. (Default value = True)
             verbose (bool): Whether to display the progress of the evaluation.
@@ -1337,7 +1378,10 @@ class Model:
 
         test_begin_time = timeit.default_timer()
         loss, batch_metrics, pred_y, true_y = self._validate(
-            step_iterator, return_pred=return_pred, return_ground_truth=return_ground_truth
+            step_iterator,
+            return_pred=return_pred,
+            return_ground_truth=return_ground_truth,
+            convert_to_numpy=convert_to_numpy,
         )
 
         step_iterator.epoch_metrics = self._get_epoch_metrics()
@@ -1360,7 +1404,7 @@ class Model:
         metrics = np.concatenate((batch_metrics, step_iterator.epoch_metrics, step_iterator.torch_metrics))
         return self._format_loss_metrics_return(loss, metrics, pred_y, return_pred, true_y, return_ground_truth)
 
-    def evaluate_on_batch(self, x, y, *, return_pred=False, return_dict_format=False) -> Tuple:
+    def evaluate_on_batch(self, x, y, *, return_pred=False, return_dict_format=False, convert_to_numpy=True) -> Tuple:
         """
         Computes the loss and the metrics of the network on a single batch of samples and optionally
         returns the predictions.
@@ -1372,6 +1416,8 @@ class Model:
                 (Default value = False)
             return_dict_format (bool, optional): Whether to return the loss and metrics in a dict format or not.
                 (Default value = False)
+            convert_to_numpy (bool, optional): Whether to convert the predictions into Numpy Arrays when ``return_pred``
+                is true. (Default value = True)
 
         Returns:
             Tuple ``(loss, metrics, pred_y)`` where specific elements are omitted if not
@@ -1388,7 +1434,9 @@ class Model:
             dictionary.
         """
         with self._set_training_mode(False):
-            loss, batch_metrics, torch_metrics, pred_y = self._compute_loss_and_metrics(x, y, return_pred=return_pred)
+            loss, batch_metrics, torch_metrics, pred_y = self._compute_loss_and_metrics(
+                x, y, return_pred=return_pred, convert_to_numpy=convert_to_numpy
+            )
 
         if return_dict_format:
             logs = dict(loss=loss)
@@ -1400,7 +1448,7 @@ class Model:
         metrics = np.concatenate((batch_metrics, torch_metrics))
         return self._format_loss_metrics_return(loss, metrics, pred_y, return_pred)
 
-    def _validate(self, step_iterator, return_pred=False, return_ground_truth=False):
+    def _validate(self, step_iterator, return_pred=False, return_ground_truth=False, convert_to_numpy=True):
         pred_list = None
         true_list = None
         if return_pred:
@@ -1411,18 +1459,21 @@ class Model:
         with self._set_training_mode(False):
             for step, (x, y) in step_iterator:
                 step.loss, step.batch_metrics, step.torch_metrics, pred_y = self._compute_loss_and_metrics(
-                    x, y, return_pred=return_pred
+                    x,
+                    y,
+                    return_pred=return_pred,
+                    convert_to_numpy=convert_to_numpy,
                 )
                 if return_pred:
                     pred_list.append(pred_y)
                 if return_ground_truth:
-                    true_list.append(torch_to_numpy(y))
+                    true_list.append(torch_to_numpy(y) if convert_to_numpy else y)
 
                 step.size = self.get_batch_size(x, y)
 
         return step_iterator.loss, step_iterator.batch_metrics, pred_list, true_list
 
-    def _compute_loss_and_metrics(self, x, y, return_loss_tensor=False, return_pred=False):
+    def _compute_loss_and_metrics(self, x, y, *, return_loss_tensor=False, return_pred=False, convert_to_numpy=True):
         x, y = self.preprocess_input(x, y)
         if self.other_device is not None:
             pred_y = torch.nn.parallel.data_parallel(self.network, x, [self.device] + self.other_device)
@@ -1436,7 +1487,11 @@ class Model:
             for epoch_metric in self.epoch_metrics:
                 epoch_metric.update(pred_y, y)
 
-        pred_y = torch_to_numpy(pred_y) if return_pred else None
+        if return_pred:
+            pred_y = torch_to_numpy(pred_y) if convert_to_numpy else pred_y
+        else:
+            pred_y = None
+
         return loss, batch_metrics, torch_metrics, pred_y
 
     def _compute_batch_and_torch_metrics(self, pred_y, y):
