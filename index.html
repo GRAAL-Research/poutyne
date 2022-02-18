@@ -8,7 +8,7 @@
 <meta content="https://poutyne.org/_static/logos/poutyne-notext.png" property="og:image" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Here is Poutyne &mdash; Poutyne 1.8 documentation</title>
+  <title>Here is Poutyne &mdash; Poutyne 1.9 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -34,7 +34,7 @@
             <img src="_static/poutyne-light.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                1.8
+                1.9
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -47,7 +47,7 @@
               <p class="caption" role="heading"><span class="caption-text">API</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="model.html">Model</a></li>
-<li class="toctree-l1"><a class="reference internal" href="experiment.html">Experiment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="experiment.html">Experiment and ModelBundle</a></li>
 <li class="toctree-l1"><a class="reference internal" href="metrics.html">Metrics</a></li>
 <li class="toctree-l1"><a class="reference internal" href="callbacks.html">Callbacks</a></li>
 <li class="toctree-l1"><a class="reference internal" href="layers.html">Layers</a></li>
@@ -101,12 +101,12 @@
 <p>Poutyne is compatible with the <strong>latest version of PyTorch</strong> and  <strong>Python &gt;= 3.6</strong>.</p>
 <section id="cite">
 <h2>Cite<a class="headerlink" href="#cite" title="Permalink to this headline"></a></h2>
-<div class="highlight-bib notranslate"><div class="highlight"><pre><span></span><span class="nc">@misc</span><span class="p">{</span><span class="nl">Paradis_Poutyne_A_Simplified_2020</span><span class="p">,</span>
-    <span class="na">author</span> <span class="p">=</span> <span class="s">{Paradis, Frédérik and Beauchemin, David and Godbout, Mathieu and Alain, Mathieu and Garneau, Nicolas and Otte, Stefan and Tremblay, Alexis and Bélanger, Marc-Antoine and Laviolette, François}</span><span class="p">,</span>
-    <span class="na">title</span>  <span class="p">=</span> <span class="s">{{Poutyne: A Simplified Framework for Deep Learning}}</span><span class="p">,</span>
-    <span class="na">year</span>   <span class="p">=</span> <span class="s">{2020}</span><span class="p">,</span>
-    <span class="na">url</span>    <span class="p">=</span> <span class="s">{https://poutyne.org}</span>
-<span class="p">}</span>
+<div class="highlight-bib notranslate"><div class="highlight"><pre><span></span><span class="nc">@misc</span><span class="p">{</span><span class="nl">Paradis_Poutyne_A_Simplified_2020</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="na">author</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{Paradis, Frédérik and Beauchemin, David and Godbout, Mathieu and Alain, Mathieu and Garneau, Nicolas and Otte, Stefan and Tremblay, Alexis and Bélanger, Marc-Antoine and Laviolette, François}</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="na">title</span><span class="w">  </span><span class="p">=</span><span class="w"> </span><span class="s">{{Poutyne: A Simplified Framework for Deep Learning}}</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="na">year</span><span class="w">   </span><span class="p">=</span><span class="w"> </span><span class="s">{2020}</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="na">url</span><span class="w">    </span><span class="p">=</span><span class="w"> </span><span class="s">{https://poutyne.org}</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
 </pre></div>
 </div>
 </section>
@@ -121,6 +121,7 @@
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">torchmetrics</span>
 
 <span class="n">num_features</span> <span class="o">=</span> <span class="mi">20</span>
 <span class="n">num_classes</span> <span class="o">=</span> <span class="mi">5</span>
@@ -153,9 +154,14 @@
 </pre></div>
 </div>
 <p>You can now use Poutyne’s model to train your network easily:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span><span class="n">network</span><span class="p">,</span> <span class="s1">&#39;sgd&#39;</span><span class="p">,</span> <span class="s1">&#39;cross_entropy&#39;</span><span class="p">,</span>
-              <span class="n">batch_metrics</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;accuracy&#39;</span><span class="p">],</span> <span class="n">epoch_metrics</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;f1&#39;</span><span class="p">],</span>
-              <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span>
+    <span class="n">network</span><span class="p">,</span>
+    <span class="s1">&#39;sgd&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;cross_entropy&#39;</span><span class="p">,</span>
+    <span class="n">batch_metrics</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;accuracy&#39;</span><span class="p">],</span>
+    <span class="n">epoch_metrics</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;f1&#39;</span><span class="p">,</span> <span class="n">torchmetrics</span><span class="o">.</span><span class="n">AUROC</span><span class="p">(</span><span class="n">num_classes</span><span class="o">=</span><span class="n">num_classes</span><span class="p">)],</span>
+    <span class="n">device</span><span class="o">=</span><span class="n">device</span>
+<span class="p">)</span>
 <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span>
     <span class="n">train_x</span><span class="p">,</span> <span class="n">train_y</span><span class="p">,</span>
     <span class="n">validation_data</span><span class="o">=</span><span class="p">(</span><span class="n">valid_x</span><span class="p">,</span> <span class="n">valid_y</span><span class="p">),</span>
@@ -174,24 +180,20 @@
 </pre></div>
 </div>
 <p><a class="reference external" href="https://github.com/GRAAL-Research/poutyne/blob/master/examples/basic_random_classification.py">See the complete code here.</a> Also, <a class="reference external" href="https://github.com/GRAAL-Research/poutyne/blob/master/examples/basic_random_regression.py">see this</a> for an example for regression that also uses <a class="reference internal" href="metrics.html#epoch-metrics"><span class="std std-ref">epoch metrics</span></a>.</p>
-<p>One of the strengths Poutyne are <a class="reference internal" href="callbacks.html#callbacks"><span class="std std-ref">callbacks</span></a>. They allow you to save checkpoints, log training statistics and more. See this <a class="reference external" href="https://github.com/GRAAL-Research/poutyne/blob/master/examples/introduction_pytorch_poutyne.ipynb">notebook</a> for an introduction to callbacks. In that vein, Poutyne also offers an <a class="reference internal" href="experiment.html#poutyne.Experiment" title="poutyne.Experiment"><code class="xref py py-class docutils literal notranslate"><span class="pre">Experiment</span></code></a> class that offers automatic checkpointing, logging and more using callbacks under the hood. Here is an example of usage.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">poutyne</span> <span class="kn">import</span> <span class="n">Experiment</span><span class="p">,</span> <span class="n">TensorDataset</span>
-<span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="kn">import</span> <span class="n">DataLoader</span>
+<p>One of the strengths Poutyne are <a class="reference internal" href="callbacks.html#callbacks"><span class="std std-ref">callbacks</span></a>. They allow you to save checkpoints, log training statistics and more. See this <a class="reference external" href="https://github.com/GRAAL-Research/poutyne/blob/master/examples/introduction_pytorch_poutyne.ipynb">notebook</a> for an introduction to callbacks. In that vein, Poutyne also offers an <a class="reference internal" href="experiment.html#poutyne.ModelBundle" title="poutyne.ModelBundle"><code class="xref py py-class docutils literal notranslate"><span class="pre">ModelBundle</span></code></a> class that offers automatic checkpointing, logging and more using callbacks under the hood. Here is an example of usage.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">poutyne</span> <span class="kn">import</span> <span class="n">ModelBundle</span>
 
-<span class="c1"># We need to use dataloaders (i.e. an iterable of batches) with Experiment</span>
-<span class="n">train_loader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">TensorDataset</span><span class="p">(</span><span class="n">train_x</span><span class="p">,</span> <span class="n">train_y</span><span class="p">),</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">)</span>
-<span class="n">valid_loader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">TensorDataset</span><span class="p">(</span><span class="n">valid_x</span><span class="p">,</span> <span class="n">valid_y</span><span class="p">),</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">)</span>
-<span class="n">test_loader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">TensorDataset</span><span class="p">(</span><span class="n">test_x</span><span class="p">,</span> <span class="n">test_y</span><span class="p">),</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">)</span>
+<span class="c1"># Everything is saved in ./saves/my_classification_network</span>
+<span class="n">model_bundle</span> <span class="o">=</span> <span class="n">ModelBundle</span><span class="o">.</span><span class="n">from_network</span><span class="p">(</span>
+    <span class="s1">&#39;./saves/my_classification_network&#39;</span><span class="p">,</span> <span class="n">network</span><span class="p">,</span> <span class="n">optimizer</span><span class="o">=</span><span class="s1">&#39;sgd&#39;</span><span class="p">,</span> <span class="n">task</span><span class="o">=</span><span class="s1">&#39;classif&#39;</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span>
+<span class="p">)</span>
 
-<span class="c1"># Everything is saved in ./expt/my_classification_network</span>
-<span class="n">expt</span> <span class="o">=</span> <span class="n">Experiment</span><span class="p">(</span><span class="s1">&#39;./expt/my_classification_network&#39;</span><span class="p">,</span> <span class="n">network</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span> <span class="n">optimizer</span><span class="o">=</span><span class="s1">&#39;sgd&#39;</span><span class="p">,</span> <span class="n">task</span><span class="o">=</span><span class="s1">&#39;classif&#39;</span><span class="p">)</span>
+<span class="n">model_bundle</span><span class="o">.</span><span class="n">train_data</span><span class="p">(</span><span class="n">train_x</span><span class="p">,</span> <span class="n">train_y</span><span class="p">,</span> <span class="n">validation_data</span><span class="o">=</span><span class="p">(</span><span class="n">valid_x</span><span class="p">,</span> <span class="n">valid_y</span><span class="p">),</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
 
-<span class="n">expt</span><span class="o">.</span><span class="n">train</span><span class="p">(</span><span class="n">train_loader</span><span class="p">,</span> <span class="n">valid_loader</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
-
-<span class="n">expt</span><span class="o">.</span><span class="n">test</span><span class="p">(</span><span class="n">test_loader</span><span class="p">)</span>
+<span class="n">model_bundle</span><span class="o">.</span><span class="n">test_data</span><span class="p">(</span><span class="n">test_x</span><span class="p">,</span> <span class="n">test_y</span><span class="p">)</span>
 </pre></div>
 </div>
-<p><a class="reference external" href="https://github.com/GRAAL-Research/poutyne/blob/master/examples/basic_random_classification_with_experiment.py">See the complete code here.</a> Also, <a class="reference external" href="https://github.com/GRAAL-Research/poutyne/blob/master/examples/basic_random_regression_with_experiment.py">see this</a> for an example for regression that again also uses <a class="reference internal" href="metrics.html#epoch-metrics"><span class="std std-ref">epoch metrics</span></a>.</p>
+<p><a class="reference external" href="https://github.com/GRAAL-Research/poutyne/blob/master/examples/basic_random_classification_with_model_bundle.py">See the complete code here.</a> Also, <a class="reference external" href="https://github.com/GRAAL-Research/poutyne/blob/master/examples/basic_random_regression_with_model_bundle.py">see this</a> for an example for regression that again also uses <a class="reference internal" href="metrics.html#epoch-metrics"><span class="std std-ref">epoch metrics</span></a>.</p>
 </section>
 <section id="installation">
 <h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline"></a></h1>
@@ -221,7 +223,7 @@
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline"></a></h2>
 <p>Look at notebook files with full working <a class="reference external" href="https://github.com/GRAAL-Research/poutyne/blob/master/examples/">examples</a>:</p>
 <ul class="simple">
-<li><p><a class="reference external" href="https://github.com/GRAAL-Research/poutyne/blob/master/examples/introduction_pytorch_poutyne.ipynb">introduction_pytorch_poutyne.ipynb</a>  (<a class="reference external" href="https://github.com/GRAAL-Research/poutyne/blob/master/tutorials/introduction_pytorch_poutyne_tutorial.ipynb">tutorial version</a>) - comparison of Poutyne with bare PyTorch and usage examples of Poutyne callbacks and the Experiment class.</p></li>
+<li><p><a class="reference external" href="https://github.com/GRAAL-Research/poutyne/blob/master/examples/introduction_pytorch_poutyne.ipynb">introduction_pytorch_poutyne.ipynb</a>  (<a class="reference external" href="https://github.com/GRAAL-Research/poutyne/blob/master/tutorials/introduction_pytorch_poutyne_tutorial.ipynb">tutorial version</a>) - comparison of Poutyne with bare PyTorch and usage examples of Poutyne callbacks and the ModelBundle class.</p></li>
 <li><p><a class="reference external" href="https://github.com/GRAAL-Research/poutyne/blob/master/examples/tips_and_tricks.ipynb">tips_and_tricks.ipynb</a> -  tips and tricks using Poutyne</p></li>
 <li><p><a class="reference external" href="https://github.com/GRAAL-Research/poutyne/blob/master/examples/transfer_learning.ipynb">transfer_learning.ipynb</a> - transfer learning on <code class="docutils literal notranslate"><span class="pre">ResNet-18</span></code> on the <a class="reference external" href="http://www.vision.caltech.edu/visipedia/CUB-200-2011.html">CUB-200</a> dataset.</p></li>
 <li><p><a class="reference external" href="https://github.com/GRAAL-Research/poutyne/blob/master/examples/policy_cifar_example.ipynb">policy_cifar_example.ipynb</a> - policies API, FastAI-like learning rate policies</p></li>
@@ -232,7 +234,7 @@
 </ul>
 <p>or in <code class="docutils literal notranslate"><span class="pre">Google</span> <span class="pre">Colab</span></code>:</p>
 <ul class="simple">
-<li><p><a class="reference external" href="https://colab.research.google.com/github/GRAAL-Research/poutyne/blob/master/examples/introduction_pytorch_poutyne.ipynb">introduction_pytorch_poutyne.ipynb</a> (<a class="reference external" href="https://colab.research.google.com/github/GRAAL-Research/poutyne/blob/master/tutorials/introduction_pytorch_poutyne_tutorial.ipynb">tutorial version</a>) - comparison of Poutyne with bare PyTorch and usage examples of Poutyne callbacks and the Experiment class.</p></li>
+<li><p><a class="reference external" href="https://colab.research.google.com/github/GRAAL-Research/poutyne/blob/master/examples/introduction_pytorch_poutyne.ipynb">introduction_pytorch_poutyne.ipynb</a> (<a class="reference external" href="https://colab.research.google.com/github/GRAAL-Research/poutyne/blob/master/tutorials/introduction_pytorch_poutyne_tutorial.ipynb">tutorial version</a>) - comparison of Poutyne with bare PyTorch and usage examples of Poutyne callbacks and the ModelBundle class.</p></li>
 <li><p><a class="reference external" href="https://colab.research.google.com/github/GRAAL-Research/poutyne/blob/master/examples/tips_and_tricks.ipynb">tips_and_tricks.ipynb</a> -  tips and tricks using Poutyne.</p></li>
 <li><p><a class="reference external" href="https://colab.research.google.com/github/GRAAL-Research/poutyne/blob/master/examples/transfer_learning.ipynb">transfer_learning.ipynb</a> - transfer learning on <code class="docutils literal notranslate"><span class="pre">ResNet-18</span></code> on the <a class="reference external" href="http://www.vision.caltech.edu/visipedia/CUB-200-2011.html">CUB-200</a> dataset.</p></li>
 <li><p><a class="reference external" href="https://colab.research.google.com/github/GRAAL-Research/poutyne/blob/master/examples/policy_cifar_example.ipynb">policy_cifar_example.ipynb</a> - policies API, FastAI-like learning rate policies</p></li>
@@ -273,7 +275,7 @@
 <p class="caption" role="heading"><span class="caption-text">API</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="model.html">Model</a></li>
-<li class="toctree-l1"><a class="reference internal" href="experiment.html">Experiment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="experiment.html">Experiment and ModelBundle</a></li>
 <li class="toctree-l1"><a class="reference internal" href="metrics.html">Metrics</a></li>
 <li class="toctree-l1"><a class="reference internal" href="callbacks.html">Callbacks</a></li>
 <li class="toctree-l1"><a class="reference internal" href="layers.html">Layers</a></li>
@@ -312,7 +314,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2018-2021, Frédérik Paradis.</p>
+    <p>&#169; Copyright 2018-2022, Frédérik Paradis.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

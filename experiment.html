@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Experiment &mdash; Poutyne 1.8 documentation</title>
+  <title>Experiment and ModelBundle &mdash; Poutyne 1.9 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -31,7 +31,7 @@
             <img src="_static/poutyne-light.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                1.8
+                1.9
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -44,7 +44,11 @@
               <p class="caption" role="heading"><span class="caption-text">API</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="model.html">Model</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Experiment</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Experiment and ModelBundle</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#experiment-function">Experiment function</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#modelbundle-class">ModelBundle class</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="metrics.html">Metrics</a></li>
 <li class="toctree-l1"><a class="reference internal" href="callbacks.html">Callbacks</a></li>
 <li class="toctree-l1"><a class="reference internal" href="layers.html">Layers</a></li>
@@ -76,7 +80,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>Experiment</li>
+      <li>Experiment and ModelBundle</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/experiment.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -86,29 +90,45 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="experiment">
-<h1>Experiment<a class="headerlink" href="#experiment" title="Permalink to this headline"></a></h1>
-<dl class="py class">
+  <section id="experiment-and-modelbundle">
+<h1>Experiment and ModelBundle<a class="headerlink" href="#experiment-and-modelbundle" title="Permalink to this headline"></a></h1>
+<section id="experiment-function">
+<h2>Experiment function<a class="headerlink" href="#experiment-function" title="Permalink to this headline"></a></h2>
+<dl class="py function">
 <dt class="sig sig-object py" id="poutyne.Experiment">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">poutyne.</span></span><span class="sig-name descname"><span class="pre">Experiment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">directory</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">network</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.nn.modules.module.Module</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">torch.device</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">torch.device</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logging</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">torch.optim.optimizer.Optimizer</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'sgd'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss_function</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">Callable</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_metrics</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epoch_metrics</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">monitoring</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">monitor_metric</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">monitor_mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">task</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poutyne/framework/experiment.html#Experiment"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.Experiment" title="Permalink to this definition"></a></dt>
-<dd><p>The Experiment class provides a straightforward experimentation tool for efficient and entirely
+<span class="sig-prename descclassname"><span class="pre">poutyne.</span></span><span class="sig-name descname"><span class="pre">Experiment</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#poutyne.Experiment" title="Permalink to this definition"></a></dt>
+<dd><p>Alias of <a class="reference internal" href="#poutyne.ModelBundle.from_network" title="poutyne.ModelBundle.from_network"><code class="xref py py-func docutils literal notranslate"><span class="pre">ModelBundle.from_network()</span></code></a>.</p>
+</dd></dl>
+
+</section>
+<section id="modelbundle-class">
+<h2>ModelBundle class<a class="headerlink" href="#modelbundle-class" title="Permalink to this headline"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="poutyne.ModelBundle">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">poutyne.</span></span><span class="sig-name descname"><span class="pre">ModelBundle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">directory</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="model.html#poutyne.Model" title="poutyne.framework.model.Model"><span class="pre">poutyne.framework.model.Model</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logging</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">monitoring</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">monitor_metric</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">monitor_mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_is_direct</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poutyne/framework/model_bundle.html#ModelBundle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.ModelBundle" title="Permalink to this definition"></a></dt>
+<dd><p>The <a class="reference internal" href="#poutyne.ModelBundle" title="poutyne.ModelBundle"><code class="xref py py-class docutils literal notranslate"><span class="pre">ModelBundle</span></code></a> class provides a straightforward experimentation tool for efficient and entirely
 customizable finetuning of the whole neural network training procedure with PyTorch. The
-<code class="docutils literal notranslate"><span class="pre">Experiment</span></code> object takes care of the training and testing processes while also managing to
-keep traces of all pertinent information via the automatic logging option.</p>
+<a class="reference internal" href="#poutyne.ModelBundle" title="poutyne.ModelBundle"><code class="xref py py-class docutils literal notranslate"><span class="pre">ModelBundle</span></code></a> object takes care of the training and testing processes while also managing to keep
+traces of all pertinent information via the automatic logging option.</p>
+<p>Use <code class="docutils literal notranslate"><span class="pre">ModelBundle.from_*</span></code> methods to instanciate a <a class="reference internal" href="#poutyne.ModelBundle" title="poutyne.ModelBundle"><code class="xref py py-class docutils literal notranslate"><span class="pre">ModelBundle</span></code></a>.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="poutyne.ModelBundle.from_network">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_network</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">directory</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">network</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.nn.modules.module.Module</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.10)"><span class="pre">Union</span></a><span class="p"><span class="pre">[</span></span><span class="pre">torch.device</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.10)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><span class="pre">torch.device</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.10)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logging</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.10)"><span class="pre">Union</span></a><span class="p"><span class="pre">[</span></span><span class="pre">torch.optim.optimizer.Optimizer</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'sgd'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss_function</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.10)"><span class="pre">Union</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.10)"><span class="pre">Callable</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_metrics</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.10)"><span class="pre">List</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epoch_metrics</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.10)"><span class="pre">List</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">torch_metrics</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.10)"><span class="pre">List</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">monitoring</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">monitor_metric</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">monitor_mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">task</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poutyne/framework/model_bundle.html#ModelBundle.from_network"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.ModelBundle.from_network" title="Permalink to this definition"></a></dt>
+<dd><p>Instanciate a <a class="reference internal" href="#poutyne.ModelBundle" title="poutyne.ModelBundle"><code class="xref py py-class docutils literal notranslate"><span class="pre">ModelBundle</span></code></a> from a PyTorch <a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="(in PyTorch v1.10.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></a> instance.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>directory</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Path to the experiment’s working directory. Will be used for automatic logging.</p></li>
+<li><p><strong>directory</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Path to the model bundle’s working directory. Will be used for automatic logging.</p></li>
 <li><p><strong>network</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="(in PyTorch v1.10.0)"><em>torch.nn.Module</em></a>) – A PyTorch network.</p></li>
-<li><p><strong>device</strong> (<em>Union</em><em>[</em><a class="reference external" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.torch.device" title="(in PyTorch v1.10.0)"><em>torch.torch.device</em></a><em>, </em><em>List</em><em>[</em><a class="reference external" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.torch.device" title="(in PyTorch v1.10.0)"><em>torch.torch.device</em></a><em>]</em><em>, </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)"><em>None</em></a><em>]</em>) – The device to which the model is sent
-or for multi-GPUs, the list of devices to which the model is to be sent. When using a string for a multiple
-GPUs, the option is “all”, for “take them all.” By default, the current device is used as the main one.
-If None, the model will be kept on its current device.
+<li><p><strong>device</strong> (<em>Union</em><em>[</em><a class="reference external" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.torch.device" title="(in PyTorch v1.10.0)"><em>torch.torch.device</em></a><em>, </em><em>List</em><em>[</em><a class="reference external" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.torch.device" title="(in PyTorch v1.10.0)"><em>torch.torch.device</em></a><em>]</em><em>, </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>, </em><em>None</em><em>]</em>) – The device to which the model is
+sent or for multi-GPUs, the list of devices to which the model is to be sent. When using a string for a
+multiple GPUs, the option is “all”, for “take them all.” By default, the current device is used as the
+main one. If None, the model will be kept on its current device.
 (Default value = None)</p></li>
-<li><p><strong>logging</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – Whether or not to log the experiment’s progress. If true, various logging
+<li><p><strong>logging</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – Whether or not to log the model bundle’s progress. If true, various logging
 callbacks will be inserted to output training and testing stats as well as to save model checkpoints,
-for example, automatically. See <a class="reference internal" href="#poutyne.Experiment.train" title="poutyne.Experiment.train"><code class="xref py py-func docutils literal notranslate"><span class="pre">train()</span></code></a> and <a class="reference internal" href="#poutyne.Experiment.test" title="poutyne.Experiment.test"><code class="xref py py-func docutils literal notranslate"><span class="pre">test()</span></code></a> for more details.
-(Default value = True)</p></li>
+for example, automatically. See <a class="reference internal" href="#poutyne.ModelBundle.train" title="poutyne.ModelBundle.train"><code class="xref py py-func docutils literal notranslate"><span class="pre">train()</span></code></a> and <a class="reference internal" href="#poutyne.ModelBundle.test" title="poutyne.ModelBundle.test"><code class="xref py py-func docutils literal notranslate"><span class="pre">test()</span></code></a> for more
+details. (Default value = True)</p></li>
 <li><p><strong>optimizer</strong> (<em>Union</em><em>[</em><a class="reference external" href="https://pytorch.org/docs/stable/optim.html#torch.optim.Optimizer" title="(in PyTorch v1.10.0)"><em>torch.optim.Optimizer</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>]</em>) – If Pytorch Optimizer, must already be initialized.
 If str, should be the optimizer’s name in Pytorch (i.e. ‘Adam’ for torch.optim.Adam).
 (Default value = ‘sgd’)</p></li>
@@ -125,14 +145,29 @@ for supplementary available batch metrics. ‘accuracy’ (or just ‘acc’) is
 Each metric function is called on each batch of the optimization and on the validation batches
 at the end of the epoch.
 (Default value = None)</p></li>
-<li><p><strong>epoch_metrics</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – List of functions with the same signature as <a class="reference internal" href="metrics.html#poutyne.EpochMetric" title="poutyne.EpochMetric"><code class="xref py py-class docutils literal notranslate"><span class="pre">EpochMetric</span></code></a>.
-See <a class="reference internal" href="metrics.html#epoch-metrics"><span class="std std-ref">Epoch Metrics</span></a> for available epoch metrics. (Default value = None)</p></li>
+<li><p><strong>epoch_metrics</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – List of objects with the same signature as either <a class="reference internal" href="metrics.html#poutyne.EpochMetric" title="poutyne.EpochMetric"><code class="xref py py-class docutils literal notranslate"><span class="pre">EpochMetric</span></code></a> or
+<a class="reference external" href="https://torchmetrics.readthedocs.io/en/latest/pages/implement.html#torchmetrics.Metric" title="(in PyTorch-Metrics v0.8.0dev)"><code class="xref py py-class docutils literal notranslate"><span class="pre">torchmetrics.Metric</span></code></a>.
+See <a class="reference internal" href="metrics.html#epoch-metrics"><span class="std std-ref">Epoch Metrics</span></a> and the
+<a class="reference external" href="https://torchmetrics.readthedocs.io/en/latest/references/modules.html">TorchMetrics documentation</a>
+for available epoch metrics. (Default value = None)</p></li>
+<li><p><strong>torch_metrics</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – <p>List of <a class="reference external" href="https://torchmetrics.readthedocs.io/">TorchMetrics</a>  objects.
+List of objects with the same signature as <a class="reference external" href="https://torchmetrics.readthedocs.io/en/latest/pages/implement.html#torchmetrics.Metric" title="(in PyTorch-Metrics v0.8.0dev)"><code class="xref py py-class docutils literal notranslate"><span class="pre">torchmetrics.Metric</span></code></a>.
+See
+<a class="reference external" href="https://torchmetrics.readthedocs.io/en/latest/references/modules.html">TorchMetrics documentation</a>
+for available torch metrics. (Default value = None)</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>When using this argument, the torch metrics are computed at each batch. This
+can significantly slow down the compuations depending on the metrics used. In such case, we advise
+to use them as epoch metrics instead.</p>
+</div>
+</p></li>
 <li><p><strong>monitoring</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – Whether or not to monitor the training. If True will track the best epoch.
-If False, <code class="docutils literal notranslate"><span class="pre">monitor_metric</span></code> and <code class="docutils literal notranslate"><span class="pre">monitor_mode</span></code> are not used, and when testing, the last epoch is used to
-test the model instead of the best epoch.
+If False, <code class="docutils literal notranslate"><span class="pre">monitor_metric</span></code> and <code class="docutils literal notranslate"><span class="pre">monitor_mode</span></code> are not used, and when testing, the last epoch is used
+to test the model instead of the best epoch.
 (Default value = True)</p></li>
-<li><p><strong>monitor_metric</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>, </em><em>optional</em>) – <p>Which metric to consider for best model performance calculation. Should be in
-the format ‘{metric_name}’ or ‘val_{metric_name}’ (i.e. ‘val_loss’). If None, will follow the value
+<li><p><strong>monitor_metric</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>, </em><em>optional</em>) – <p>Which metric to consider for best model performance calculation. Should be
+in the format ‘{metric_name}’ or ‘val_{metric_name}’ (i.e. ‘val_loss’). If None, will follow the value
 suggested by <code class="docutils literal notranslate"><span class="pre">task</span></code> or default to ‘val_loss’. If <code class="docutils literal notranslate"><span class="pre">monitoring</span></code> is set to False, will be ignore.</p>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
@@ -157,7 +192,7 @@ the F1 score and the default monitoring will be set on ‘val_acc’ with a ‘m
 <p>Using a PyTorch DataLoader, on classification task with SGD optimizer:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="kn">import</span> <span class="n">DataLoader</span><span class="p">,</span> <span class="n">TensorDataset</span>
-<span class="kn">from</span> <span class="nn">poutyne</span> <span class="kn">import</span> <span class="n">Experiment</span>
+<span class="kn">from</span> <span class="nn">poutyne</span> <span class="kn">import</span> <span class="n">ModelBundle</span>
 
 <span class="n">num_features</span> <span class="o">=</span> <span class="mi">20</span>
 <span class="n">num_classes</span> <span class="o">=</span> <span class="mi">5</span>
@@ -180,15 +215,15 @@ the F1 score and the default monitoring will be set on ‘val_acc’ with a ‘m
 <span class="n">pytorch_network</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">num_features</span><span class="p">,</span> <span class="n">num_train_samples</span><span class="p">)</span>
 
 <span class="c1"># Initialization of our experimentation and network training</span>
-<span class="n">exp</span> <span class="o">=</span> <span class="n">Experiment</span><span class="p">(</span><span class="s1">&#39;./simple_example&#39;</span><span class="p">,</span>
-                 <span class="n">pytorch_network</span><span class="p">,</span>
-                 <span class="n">optimizer</span><span class="o">=</span><span class="s1">&#39;sgd&#39;</span><span class="p">,</span>
-                 <span class="n">task</span><span class="o">=</span><span class="s1">&#39;classif&#39;</span><span class="p">)</span>
+<span class="n">exp</span> <span class="o">=</span> <span class="n">ModelBundle</span><span class="o">.</span><span class="n">from_network</span><span class="p">(</span><span class="s1">&#39;./simple_example&#39;</span><span class="p">,</span>
+                               <span class="n">pytorch_network</span><span class="p">,</span>
+                               <span class="n">optimizer</span><span class="o">=</span><span class="s1">&#39;sgd&#39;</span><span class="p">,</span>
+                               <span class="n">task</span><span class="o">=</span><span class="s1">&#39;classif&#39;</span><span class="p">)</span>
 <span class="n">exp</span><span class="o">.</span><span class="n">train</span><span class="p">(</span><span class="n">train_generator</span><span class="p">,</span> <span class="n">valid_generator</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>The above code will yield an output similar to the below lines. Note the automatic checkpoint saving
-in the experiment directory when the monitored metric improved.</p>
+in the model bundle directory when the monitored metric improved.</p>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Epoch 1/5 0.09s Step 25/25: loss: 6.351375, acc: 1.375000, val_loss: 6.236106, val_acc: 5.000000
 Epoch 1: val_acc improved from -inf to 5.00000, saving file to ./simple_example/checkpoint_epoch_1.ckpt
 Epoch 2/5 0.10s Step 25/25: loss: 6.054254, acc: 14.000000, val_loss: 5.944495, val_acc: 19.500000
@@ -221,34 +256,146 @@ lr: 0.01, loss: 4.09892, acc: 23.625, val_loss: 4.04057, val_acc: 21.5
 On best model: test_loss: 4.06664, test_acc: 17.5
 </pre></div>
 </div>
-<p>Finally, all the pertinent metrics specified to the Experiment at each epoch are stored in a specific logging
+<p>Finally, all the pertinent metrics specified to the ModelBundle at each epoch are stored in a specific logging
 file, found here at ‘./simple_example/log.tsv’.</p>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>epoch       time                lr      loss                    acc     val_loss            val_acc
-1       0.0721172170015052  0.01    6.351375141143799       1.375   6.23610631942749        5.0
-2       0.0298177790245972  0.01    6.054253826141357       14.000  5.94449516296386        19.5
-3       0.0637106419890187  0.01    5.759376544952392       22.875  5.65541223526001        21.0
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>epoch   time                lr      loss                    acc     val_loss            val_acc
+1           0.0721172170015052  0.01    6.351375141143799       1.375   6.23610631942749        5.0
+2           0.0298177790245972  0.01    6.054253826141357       14.000  5.94449516296386        19.5
+3           0.0637106419890187  0.01    5.759376544952392       22.875  5.65541223526001        21.0
 ...
 </pre></div>
 </div>
 <p>Also, we could use more than one GPU (on a single node) by using the device argument</p>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span># Initialization of our experimentation and network training
-exp = Experiment(&#39;./simple_example&#39;,
-                 pytorch_network,
-                 optimizer=&#39;sgd&#39;,
-                 task=&#39;classif&#39;,
-                 device=&quot;all&quot;)
+exp = ModelBundle.from_network(&#39;./simple_example&#39;,
+                               pytorch_network,
+                               optimizer=&#39;sgd&#39;,
+                               task=&#39;classif&#39;,
+                               device=&quot;all&quot;)
 exp.train(train_generator, valid_generator, epochs=5)
 </pre></div>
 </div>
-<dl class="py method">
-<dt class="sig sig-object py" id="poutyne.Experiment.get_path">
-<span class="sig-name descname"><span class="pre">get_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">paths</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></span><a class="reference internal" href="_modules/poutyne/framework/experiment.html#Experiment.get_path"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.Experiment.get_path" title="Permalink to this definition"></a></dt>
-<dd><p>Returns the path inside the experiment directory.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="poutyne.Experiment.get_best_epoch_stats">
-<span class="sig-name descname"><span class="pre">get_best_epoch_stats</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span></span></span><a class="reference internal" href="_modules/poutyne/framework/experiment.html#Experiment.get_best_epoch_stats"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.Experiment.get_best_epoch_stats" title="Permalink to this definition"></a></dt>
+<dt class="sig sig-object py" id="poutyne.ModelBundle.from_model">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">directory</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="model.html#poutyne.Model" title="poutyne.framework.model.Model"><span class="pre">poutyne.framework.model.Model</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logging</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">monitoring</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">monitor_metric</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">monitor_mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poutyne/framework/model_bundle.html#ModelBundle.from_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.ModelBundle.from_model" title="Permalink to this definition"></a></dt>
+<dd><p>Instanciate a <a class="reference internal" href="#poutyne.ModelBundle" title="poutyne.ModelBundle"><code class="xref py py-class docutils literal notranslate"><span class="pre">ModelBundle</span></code></a> from a <a class="reference internal" href="model.html#poutyne.Model" title="poutyne.Model"><code class="xref py py-class docutils literal notranslate"><span class="pre">Model</span></code></a> instance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>directory</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Path to the model bundle’s working directory. Will be used for automatic logging.</p></li>
+<li><p><strong>model</strong> (<a class="reference internal" href="model.html#poutyne.Model" title="poutyne.Model"><em>poutyne.Model</em></a>) – A Model instance..</p></li>
+<li><p><strong>logging</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – Whether or not to log the model bundle’s progress. If true, various logging
+callbacks will be inserted to output training and testing stats as well as to save model checkpoints,
+for example, automatically. See <a class="reference internal" href="#poutyne.ModelBundle.train" title="poutyne.ModelBundle.train"><code class="xref py py-func docutils literal notranslate"><span class="pre">train()</span></code></a> and <a class="reference internal" href="#poutyne.ModelBundle.test" title="poutyne.ModelBundle.test"><code class="xref py py-func docutils literal notranslate"><span class="pre">test()</span></code></a> for more
+details. (Default value = True)</p></li>
+<li><p><strong>monitoring</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – Whether or not to monitor the training. If True will track the best epoch.
+If False, <code class="docutils literal notranslate"><span class="pre">monitor_metric</span></code> and <code class="docutils literal notranslate"><span class="pre">monitor_mode</span></code> are not used, and when testing, the last epoch is used
+to test the model instead of the best epoch.
+(Default value = True)</p></li>
+<li><p><strong>monitor_metric</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>, </em><em>optional</em>) – <p>Which metric to consider for best model performance calculation. Should be
+in the format ‘{metric_name}’ or ‘val_{metric_name}’ (i.e. ‘val_loss’). If None, will follow the value
+suggested by <code class="docutils literal notranslate"><span class="pre">task</span></code> or default to ‘val_loss’. If <code class="docutils literal notranslate"><span class="pre">monitoring</span></code> is set to False, will be ignore.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>If you do not plan on using a validation set, you must set the monitor metric to another
+value.</p>
+</div>
+</p></li>
+<li><p><strong>monitor_mode</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>, </em><em>optional</em>) – Which mode, either ‘min’ or ‘max’, should be used when considering the
+<code class="docutils literal notranslate"><span class="pre">monitor_metric</span></code> value. If None, will follow the value suggested by <code class="docutils literal notranslate"><span class="pre">task</span></code> or default to ‘min’.
+If <code class="docutils literal notranslate"><span class="pre">monitoring</span></code> is set to False, will be ignore.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>Using a PyTorch DataLoader, on classification task with SGD optimizer:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="kn">import</span> <span class="n">DataLoader</span><span class="p">,</span> <span class="n">TensorDataset</span>
+<span class="kn">from</span> <span class="nn">poutyne</span> <span class="kn">import</span> <span class="n">Model</span><span class="p">,</span> <span class="n">ModelBundle</span>
+
+<span class="n">num_features</span> <span class="o">=</span> <span class="mi">20</span>
+<span class="n">num_classes</span> <span class="o">=</span> <span class="mi">5</span>
+
+<span class="c1"># Our training dataset with 800 samples.</span>
+<span class="n">num_train_samples</span> <span class="o">=</span> <span class="mi">800</span>
+<span class="n">train_x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">num_train_samples</span><span class="p">,</span> <span class="n">num_features</span><span class="p">)</span>
+<span class="n">train_y</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="n">num_classes</span><span class="p">,</span> <span class="p">(</span><span class="n">num_train_samples</span><span class="p">,</span> <span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">long</span><span class="p">)</span>
+<span class="n">train_dataset</span> <span class="o">=</span> <span class="n">TensorDataset</span><span class="p">(</span><span class="n">train_x</span><span class="p">,</span> <span class="n">train_y</span><span class="p">)</span>
+<span class="n">train_generator</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">train_dataset</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">)</span>
+
+<span class="c1"># Our validation dataset with 200 samples.</span>
+<span class="n">num_valid_samples</span> <span class="o">=</span> <span class="mi">200</span>
+<span class="n">valid_x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">num_valid_samples</span><span class="p">,</span> <span class="n">num_features</span><span class="p">)</span>
+<span class="n">valid_y</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="n">num_classes</span><span class="p">,</span> <span class="p">(</span><span class="n">num_valid_samples</span><span class="p">,</span> <span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">long</span><span class="p">)</span>
+<span class="n">valid_dataset</span> <span class="o">=</span> <span class="n">TensorDataset</span><span class="p">(</span><span class="n">valid_x</span><span class="p">,</span> <span class="n">valid_y</span><span class="p">)</span>
+<span class="n">valid_generator</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">valid_dataset</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">)</span>
+
+<span class="c1"># Our network</span>
+<span class="n">pytorch_network</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">num_features</span><span class="p">,</span> <span class="n">num_train_samples</span><span class="p">)</span>
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span><span class="n">pytorch_network</span><span class="p">,</span> <span class="s1">&#39;sgd&#39;</span><span class="p">,</span> <span class="s1">&#39;crossentropy&#39;</span><span class="p">,</span> <span class="n">batch_metrics</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;accuracy&#39;</span><span class="p">])</span>
+
+<span class="c1"># Initialization of our experimentation and network training</span>
+<span class="n">exp</span> <span class="o">=</span> <span class="n">ModelBundle</span><span class="o">.</span><span class="n">from_model</span><span class="p">(</span><span class="s1">&#39;./simple_example&#39;</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span>
+<span class="n">exp</span><span class="o">.</span><span class="n">train</span><span class="p">(</span><span class="n">train_generator</span><span class="p">,</span> <span class="n">valid_generator</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The above code will yield an output similar to the below lines. Note the automatic checkpoint saving
+in the model bundle directory when the monitored metric improved.</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Epoch 1/5 0.09s Step 25/25: loss: 6.351375, acc: 1.375000, val_loss: 6.236106, val_acc: 5.000000
+Epoch 1: val_acc improved from -inf to 5.00000, saving file to ./simple_example/checkpoint_epoch_1.ckpt
+Epoch 2/5 0.10s Step 25/25: loss: 6.054254, acc: 14.000000, val_loss: 5.944495, val_acc: 19.500000
+Epoch 2: val_acc improved from 5.00000 to 19.50000, saving file to ./simple_example/checkpoint_epoch_2.ckpt
+Epoch 3/5 0.09s Step 25/25: loss: 5.759377, acc: 22.875000, val_loss: 5.655412, val_acc: 21.000000
+Epoch 3: val_acc improved from 19.50000 to 21.00000, saving file to ./simple_example/checkpoint_epoch_3.ckpt
+...
+</pre></div>
+</div>
+<p>Training can now easily be resumed from the best checkpoint:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">exp</span><span class="o">.</span><span class="n">train</span><span class="p">(</span><span class="n">train_generator</span><span class="p">,</span> <span class="n">valid_generator</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Restoring model from ./simple_example/checkpoint_epoch_3.ckpt
+Loading weights from ./simple_example/checkpoint.ckpt and starting at epoch 6.
+Loading optimizer state from ./simple_example/checkpoint.optim and starting at epoch 6.
+Epoch 6/10 0.16s Step 25/25: loss: 4.897135, acc: 22.875000, val_loss: 4.813141, val_acc: 20.500000
+Epoch 7/10 0.10s Step 25/25: loss: 4.621514, acc: 22.625000, val_loss: 4.545359, val_acc: 20.500000
+Epoch 8/10 0.24s Step 25/25: loss: 4.354721, acc: 23.625000, val_loss: 4.287117, val_acc: 20.500000
+...
+</pre></div>
+</div>
+<p>Testing is also very intuitive:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">exp</span><span class="o">.</span><span class="n">test</span><span class="p">(</span><span class="n">test_generator</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Restoring model from ./simple_example/checkpoint_epoch_9.ckpt
+Found best checkpoint at epoch: 9
+lr: 0.01, loss: 4.09892, acc: 23.625, val_loss: 4.04057, val_acc: 21.5
+On best model: test_loss: 4.06664, test_acc: 17.5
+</pre></div>
+</div>
+<p>Finally, all the pertinent metrics specified to the ModelBundle at each epoch are stored in a specific logging
+file, found here at ‘./simple_example/log.tsv’.</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>epoch   time                lr      loss                    acc     val_loss            val_acc
+1           0.0721172170015052  0.01    6.351375141143799       1.375   6.23610631942749        5.0
+2           0.0298177790245972  0.01    6.054253826141357       14.000  5.94449516296386        19.5
+3           0.0637106419890187  0.01    5.759376544952392       22.875  5.65541223526001        21.0
+...
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="poutyne.ModelBundle.get_path">
+<span class="sig-name descname"><span class="pre">get_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">paths</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span></span><a class="reference internal" href="_modules/poutyne/framework/model_bundle.html#ModelBundle.get_path"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.ModelBundle.get_path" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the path inside the model bundle directory.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="poutyne.ModelBundle.get_best_epoch_stats">
+<span class="sig-name descname"><span class="pre">get_best_epoch_stats</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.10)"><span class="pre">Dict</span></a></span></span><a class="reference internal" href="_modules/poutyne/framework/model_bundle.html#ModelBundle.get_best_epoch_stats"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.ModelBundle.get_best_epoch_stats" title="Permalink to this definition"></a></dt>
 <dd><p>Returns all computed statistics corresponding to the best epoch according to the
 <code class="docutils literal notranslate"><span class="pre">monitor_metric</span></code> and <code class="docutils literal notranslate"><span class="pre">monitor_mode</span></code> attributes.</p>
 <dl class="field-list simple">
@@ -260,8 +407,8 @@ and values are the ones found at the best epoch.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="poutyne.Experiment.get_saved_epochs">
-<span class="sig-name descname"><span class="pre">get_saved_epochs</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/poutyne/framework/experiment.html#Experiment.get_saved_epochs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.Experiment.get_saved_epochs" title="Permalink to this definition"></a></dt>
+<dt class="sig sig-object py" id="poutyne.ModelBundle.get_saved_epochs">
+<span class="sig-name descname"><span class="pre">get_saved_epochs</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/poutyne/framework/model_bundle.html#ModelBundle.get_saved_epochs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.ModelBundle.get_saved_epochs" title="Permalink to this definition"></a></dt>
 <dd><p>Returns a pandas DataFrame which each row corresponds to an epoch having
 a saved checkpoint.</p>
 <dl class="field-list simple">
@@ -273,12 +420,12 @@ checkpoint.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="poutyne.Experiment.train">
-<span class="sig-name descname"><span class="pre">train</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">train_generator</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">valid_generator</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/poutyne/framework/experiment.html#Experiment.train"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.Experiment.train" title="Permalink to this definition"></a></dt>
+<dt class="sig sig-object py" id="poutyne.ModelBundle.train">
+<span class="sig-name descname"><span class="pre">train</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">train_generator</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">valid_generator</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.10)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.10)"><span class="pre">Dict</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/poutyne/framework/model_bundle.html#ModelBundle.train"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.ModelBundle.train" title="Permalink to this definition"></a></dt>
 <dd><p>Trains or finetunes the model on a dataset using a generator. If a previous training already occurred
 and lasted a total of <cite>n_previous</cite> epochs, then the model’s weights will be set to the last checkpoint and the
 training will be resumed for epochs range (<cite>n_previous</cite>, <cite>epochs</cite>].</p>
-<p>If the Experiment has logging enabled (i.e. self.logging is True), numerous callbacks will be automatically
+<p>If the ModelBundle has logging enabled (i.e. self.logging is True), numerous callbacks will be automatically
 included. Notably, two <a class="reference internal" href="callbacks.html#poutyne.ModelCheckpoint" title="poutyne.ModelCheckpoint"><code class="xref py py-class docutils literal notranslate"><span class="pre">ModelCheckpoint</span></code></a> objects will take care of saving the last and every
 new best (according to monitor mode) model weights in appropriate checkpoint files.
 <a class="reference internal" href="callbacks.html#poutyne.OptimizerCheckpoint" title="poutyne.OptimizerCheckpoint"><code class="xref py py-class docutils literal notranslate"><span class="pre">OptimizerCheckpoint</span></code></a> and <a class="reference internal" href="callbacks.html#poutyne.LRSchedulerCheckpoint" title="poutyne.LRSchedulerCheckpoint"><code class="xref py py-class docutils literal notranslate"><span class="pre">LRSchedulerCheckpoint</span></code></a> will also respectively
@@ -286,14 +433,6 @@ handle the saving of the optimizer and LR scheduler’s respective states for fu
 <a class="reference internal" href="callbacks.html#poutyne.AtomicCSVLogger" title="poutyne.AtomicCSVLogger"><code class="xref py py-class docutils literal notranslate"><span class="pre">AtomicCSVLogger</span></code></a> will save all available epoch statistics in an output .tsv file. Lastly, a
 <a class="reference internal" href="callbacks.html#poutyne.TensorBoardLogger" title="poutyne.TensorBoardLogger"><code class="xref py py-class docutils literal notranslate"><span class="pre">TensorBoardLogger</span></code></a> handles automatic TensorBoard logging of various neural network
 statistics.</p>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>With <strong>Jupyter Notebooks in Firefox</strong>, if <code class="docutils literal notranslate"><span class="pre">colorama</span></code> is installed and colors are enabled (as it
-is by default), a great number of epochs and steps per epoch can cause a spike in memory usage in Firefox.
-The problem does not occur in Google Chrome/Chromium. To avoid this problem, you can disable the colors by
-passing <code class="docutils literal notranslate"><span class="pre">progress_options={'coloring':</span> <span class="pre">False}</span></code>. See
-<a class="reference external" href="https://github.com/jupyter/notebook/issues/5897">this Github issue for details</a>.</p>
-</div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -310,7 +449,7 @@ that they are called after those.
 <li><p><strong>keep_only_last_best</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – Whether only the last saved best checkpoint is kept. Applies only when
 <cite>save_every_epoch</cite> is false.
 (Default value = False)</p></li>
-<li><p><strong>save_every_epoch</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a><em>, </em><em>optional</em>) – Whether or not to save the experiment model’s weights after
+<li><p><strong>save_every_epoch</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a><em>, </em><em>optional</em>) – Whether or not to save the model bundle’s model’s weights after
 every epoch.
 (Default value = False)</p></li>
 <li><p><strong>disable_tensorboard</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a><em>, </em><em>optional</em>) – Whether or not to disable the automatic tensorboard logging
@@ -328,12 +467,12 @@ callbacks.
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="poutyne.Experiment.train_dataset">
-<span class="sig-name descname"><span class="pre">train_dataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">train_dataset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">valid_dataset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/poutyne/framework/experiment.html#Experiment.train_dataset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.Experiment.train_dataset" title="Permalink to this definition"></a></dt>
+<dt class="sig sig-object py" id="poutyne.ModelBundle.train_dataset">
+<span class="sig-name descname"><span class="pre">train_dataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">train_dataset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">valid_dataset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.10)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.10)"><span class="pre">Dict</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/poutyne/framework/model_bundle.html#ModelBundle.train_dataset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.ModelBundle.train_dataset" title="Permalink to this definition"></a></dt>
 <dd><p>Trains or finetunes the model on a dataset. If a previous training already occurred
 and lasted a total of <cite>n_previous</cite> epochs, then the model’s weights will be set to the last checkpoint and the
 training will be resumed for epochs range (<cite>n_previous</cite>, <cite>epochs</cite>].</p>
-<p>If the Experiment has logging enabled (i.e. self.logging is True), numerous callbacks will be automatically
+<p>If the ModelBundle has logging enabled (i.e. self.logging is True), numerous callbacks will be automatically
 included. Notably, two <a class="reference internal" href="callbacks.html#poutyne.ModelCheckpoint" title="poutyne.ModelCheckpoint"><code class="xref py py-class docutils literal notranslate"><span class="pre">ModelCheckpoint</span></code></a> objects will take care of saving the last and every
 new best (according to monitor mode) model weights in appropriate checkpoint files.
 <a class="reference internal" href="callbacks.html#poutyne.OptimizerCheckpoint" title="poutyne.OptimizerCheckpoint"><code class="xref py py-class docutils literal notranslate"><span class="pre">OptimizerCheckpoint</span></code></a> and <a class="reference internal" href="callbacks.html#poutyne.LRSchedulerCheckpoint" title="poutyne.LRSchedulerCheckpoint"><code class="xref py py-class docutils literal notranslate"><span class="pre">LRSchedulerCheckpoint</span></code></a> will also respectively
@@ -354,7 +493,7 @@ that they are called after those.
 <li><p><strong>keep_only_last_best</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – Whether only the last saved best checkpoint is kept. Applies only when
 <cite>save_every_epoch</cite> is false.
 (Default value = False)</p></li>
-<li><p><strong>save_every_epoch</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a><em>, </em><em>optional</em>) – Whether or not to save the experiment model’s weights after
+<li><p><strong>save_every_epoch</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a><em>, </em><em>optional</em>) – Whether or not to save the model bundle’s model’s weights after
 every epoch.
 (Default value = False)</p></li>
 <li><p><strong>disable_tensorboard</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a><em>, </em><em>optional</em>) – Whether or not to disable the automatic tensorboard logging
@@ -372,12 +511,12 @@ callbacks.
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="poutyne.Experiment.train_data">
-<span class="sig-name descname"><span class="pre">train_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validation_data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/poutyne/framework/experiment.html#Experiment.train_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.Experiment.train_data" title="Permalink to this definition"></a></dt>
+<dt class="sig sig-object py" id="poutyne.ModelBundle.train_data">
+<span class="sig-name descname"><span class="pre">train_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validation_data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.10)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.10)"><span class="pre">Dict</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/poutyne/framework/model_bundle.html#ModelBundle.train_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.ModelBundle.train_data" title="Permalink to this definition"></a></dt>
 <dd><p>Trains or finetunes the model on data under the form of NumPy arrays or torch tensors. If a previous
 training already occurred and lasted a total of <cite>n_previous</cite> epochs, then the model’s weights will be set to the
 last checkpoint and the training will be resumed for epochs range (<cite>n_previous</cite>, <cite>epochs</cite>].</p>
-<p>If the Experiment has logging enabled (i.e. self.logging is True), numerous callbacks will be automatically
+<p>If the ModelBundle has logging enabled (i.e. self.logging is True), numerous callbacks will be automatically
 included. Notably, two <a class="reference internal" href="callbacks.html#poutyne.ModelCheckpoint" title="poutyne.ModelCheckpoint"><code class="xref py py-class docutils literal notranslate"><span class="pre">ModelCheckpoint</span></code></a> objects will take care of saving the last and every
 new best (according to monitor mode) model weights in appropriate checkpoint files.
 <a class="reference internal" href="callbacks.html#poutyne.OptimizerCheckpoint" title="poutyne.OptimizerCheckpoint"><code class="xref py py-class docutils literal notranslate"><span class="pre">OptimizerCheckpoint</span></code></a> and <a class="reference internal" href="callbacks.html#poutyne.LRSchedulerCheckpoint" title="poutyne.LRSchedulerCheckpoint"><code class="xref py py-class docutils literal notranslate"><span class="pre">LRSchedulerCheckpoint</span></code></a> will also respectively
@@ -388,9 +527,9 @@ statistics.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>x</strong> (<em>Union</em><em>[</em><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v1.10.0)"><em>Tensor</em></a><em>, </em><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.21)"><em>ndarray</em></a><em>] or </em><em>Union</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.10)"><em>tuple</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a><em>] </em><em>of Union</em><em>[</em><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v1.10.0)"><em>Tensor</em></a><em>, </em><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.21)"><em>ndarray</em></a><em>]</em>) – Training dataset. Union[Tensor, ndarray] if the model has a single input.
+<li><p><strong>x</strong> (<em>Union</em><em>[</em><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v1.10.0)"><em>Tensor</em></a><em>, </em><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.22)"><em>ndarray</em></a><em>] or </em><em>Union</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.10)"><em>tuple</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a><em>] </em><em>of Union</em><em>[</em><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v1.10.0)"><em>Tensor</em></a><em>, </em><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.22)"><em>ndarray</em></a><em>]</em>) – Training dataset. Union[Tensor, ndarray] if the model has a single input.
 Union[tuple, list] of Union[Tensor, ndarray] if the model has multiple inputs.</p></li>
-<li><p><strong>y</strong> (<em>Union</em><em>[</em><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v1.10.0)"><em>Tensor</em></a><em>, </em><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.21)"><em>ndarray</em></a><em>] or </em><em>Union</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.10)"><em>tuple</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a><em>] </em><em>of Union</em><em>[</em><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v1.10.0)"><em>Tensor</em></a><em>, </em><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.21)"><em>ndarray</em></a><em>]</em>) – Target. Union[Tensor, ndarray] if the model has a single output.
+<li><p><strong>y</strong> (<em>Union</em><em>[</em><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v1.10.0)"><em>Tensor</em></a><em>, </em><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.22)"><em>ndarray</em></a><em>] or </em><em>Union</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.10)"><em>tuple</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a><em>] </em><em>of Union</em><em>[</em><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v1.10.0)"><em>Tensor</em></a><em>, </em><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.22)"><em>ndarray</em></a><em>]</em>) – Target. Union[Tensor, ndarray] if the model has a single output.
 Union[tuple, list] of Union[Tensor, ndarray] if the model has multiple outputs.</p></li>
 <li><p><strong>validation_data</strong> (Tuple[<code class="docutils literal notranslate"><span class="pre">x_val</span></code>, <code class="docutils literal notranslate"><span class="pre">y_val</span></code>]) – Same format as <code class="docutils literal notranslate"><span class="pre">x</span></code> and <code class="docutils literal notranslate"><span class="pre">y</span></code> previously described. Validation dataset on which to
 evaluate the loss and any model metrics at the end of each epoch. The model will not be
@@ -404,7 +543,7 @@ that they are called after those.
 <li><p><strong>keep_only_last_best</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – Whether only the last saved best checkpoint is kept. Applies only when
 <cite>save_every_epoch</cite> is false.
 (Default value = False)</p></li>
-<li><p><strong>save_every_epoch</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a><em>, </em><em>optional</em>) – Whether or not to save the experiment model’s weights after
+<li><p><strong>save_every_epoch</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a><em>, </em><em>optional</em>) – Whether or not to save the model bundle’s model’s weights after
 every epoch.
 (Default value = False)</p></li>
 <li><p><strong>disable_tensorboard</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a><em>, </em><em>optional</em>) – Whether or not to disable the automatic tensorboard logging
@@ -422,8 +561,8 @@ callbacks.
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="poutyne.Experiment.load_checkpoint">
-<span class="sig-name descname"><span class="pre">load_checkpoint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">checkpoint</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/poutyne/framework/experiment.html#Experiment.load_checkpoint"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.Experiment.load_checkpoint" title="Permalink to this definition"></a></dt>
+<dt class="sig sig-object py" id="poutyne.ModelBundle.load_checkpoint">
+<span class="sig-name descname"><span class="pre">load_checkpoint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">checkpoint</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.10)"><span class="pre">Union</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.10)"><span class="pre">Dict</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/poutyne/framework/model_bundle.html#ModelBundle.load_checkpoint"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.ModelBundle.load_checkpoint" title="Permalink to this definition"></a></dt>
 <dd><p>Loads the model’s weights with the weights at a given checkpoint epoch.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -443,7 +582,7 @@ number and stats when checkpoint is ‘best’.
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>If checkpoint is ‘best’, will return the best epoch stats, as per <a class="reference internal" href="#poutyne.Experiment.get_best_epoch_stats" title="poutyne.Experiment.get_best_epoch_stats"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_best_epoch_stats()</span></code></a>,
+<dd class="field-even"><p>If checkpoint is ‘best’, will return the best epoch stats, as per <a class="reference internal" href="#poutyne.ModelBundle.get_best_epoch_stats" title="poutyne.ModelBundle.get_best_epoch_stats"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_best_epoch_stats()</span></code></a>,
 if checkpoint is ‘last’, will return the last epoch stats, if checkpoint is a int, will return the
 epoch number stats, if a path, will return the stats of that specific checkpoint.
 else None.</p>
@@ -452,11 +591,11 @@ else None.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="poutyne.Experiment.test">
-<span class="sig-name descname"><span class="pre">test</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">test_generator</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poutyne/framework/experiment.html#Experiment.test"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.Experiment.test" title="Permalink to this definition"></a></dt>
+<dt class="sig sig-object py" id="poutyne.ModelBundle.test">
+<span class="sig-name descname"><span class="pre">test</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">test_generator</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poutyne/framework/model_bundle.html#ModelBundle.test"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.ModelBundle.test" title="Permalink to this definition"></a></dt>
 <dd><p>Computes and returns the loss and the metrics of the model on a given test examples
 generator.</p>
-<p>If the Experiment has logging enabled (i.e. self.logging is True), a checkpoint (the best one by default)
+<p>If the ModelBundle has logging enabled (i.e. self.logging is True), a checkpoint (the best one by default)
 is loaded and test and validation statistics are saved in a specific test output .tsv file. Otherwise, the
 current weights of the network is used for testing and statistics are only shown in the standard output.</p>
 <dl class="field-list simple">
@@ -481,7 +620,7 @@ details on the types of generators supported.</p></li>
 </ul>
 </dd>
 </dl>
-<p>If the Experiment has logging enabled (i.e. self.logging is True), one callback will be automatically
+<p>If the ModelBundle has logging enabled (i.e. self.logging is True), one callback will be automatically
 included to save the test metrics. Moreover, a <a class="reference internal" href="callbacks.html#poutyne.AtomicCSVLogger" title="poutyne.AtomicCSVLogger"><code class="xref py py-class docutils literal notranslate"><span class="pre">AtomicCSVLogger</span></code></a> will save the test
 metrics in an output .tsv file.</p>
 <dl class="field-list simple">
@@ -492,10 +631,10 @@ metrics in an output .tsv file.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="poutyne.Experiment.test_dataset">
-<span class="sig-name descname"><span class="pre">test_dataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">test_dataset</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span></span></span><a class="reference internal" href="_modules/poutyne/framework/experiment.html#Experiment.test_dataset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.Experiment.test_dataset" title="Permalink to this definition"></a></dt>
+<dt class="sig sig-object py" id="poutyne.ModelBundle.test_dataset">
+<span class="sig-name descname"><span class="pre">test_dataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">test_dataset</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.10)"><span class="pre">Dict</span></a></span></span><a class="reference internal" href="_modules/poutyne/framework/model_bundle.html#ModelBundle.test_dataset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.ModelBundle.test_dataset" title="Permalink to this definition"></a></dt>
 <dd><p>Computes and returns the loss and the metrics of the model on a given test dataset.</p>
-<p>If the Experiment has logging enabled (i.e. self.logging is True), a checkpoint (the best one by default)
+<p>If the ModelBundle has logging enabled (i.e. self.logging is True), a checkpoint (the best one by default)
 is loaded and test and validation statistics are saved in a specific test output .tsv file. Otherwise, the
 current weights of the network is used for testing and statistics are only shown in the standard output.</p>
 <dl class="field-list simple">
@@ -519,7 +658,7 @@ current weights of the network is used for testing and statistics are only shown
 </ul>
 </dd>
 </dl>
-<p>If the Experiment has logging enabled (i.e. self.logging is True), one callback will be automatically
+<p>If the ModelBundle has logging enabled (i.e. self.logging is True), one callback will be automatically
 included to save the test metrics. Moreover, a <a class="reference internal" href="callbacks.html#poutyne.AtomicCSVLogger" title="poutyne.AtomicCSVLogger"><code class="xref py py-class docutils literal notranslate"><span class="pre">AtomicCSVLogger</span></code></a> will save the test
 metrics in an output .tsv file.</p>
 <dl class="field-list simple">
@@ -530,18 +669,18 @@ metrics in an output .tsv file.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="poutyne.Experiment.test_data">
-<span class="sig-name descname"><span class="pre">test_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span></span></span><a class="reference internal" href="_modules/poutyne/framework/experiment.html#Experiment.test_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.Experiment.test_data" title="Permalink to this definition"></a></dt>
+<dt class="sig sig-object py" id="poutyne.ModelBundle.test_data">
+<span class="sig-name descname"><span class="pre">test_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.10)"><span class="pre">Dict</span></a></span></span><a class="reference internal" href="_modules/poutyne/framework/model_bundle.html#ModelBundle.test_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.ModelBundle.test_data" title="Permalink to this definition"></a></dt>
 <dd><p>Computes and returns the loss and the metrics of the model on a given test dataset.</p>
-<p>If the Experiment has logging enabled (i.e. self.logging is True), a checkpoint (the best one by default)
+<p>If the ModelBundle has logging enabled (i.e. self.logging is True), a checkpoint (the best one by default)
 is loaded and test and validation statistics are saved in a specific test output .tsv file. Otherwise, the
 current weights of the network is used for testing and statistics are only shown in the standard output.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>x</strong> (<em>Union</em><em>[</em><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v1.10.0)"><em>Tensor</em></a><em>, </em><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.21)"><em>ndarray</em></a><em>] or </em><em>Union</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.10)"><em>tuple</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a><em>] </em><em>of Union</em><em>[</em><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v1.10.0)"><em>Tensor</em></a><em>, </em><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.21)"><em>ndarray</em></a><em>]</em>) – Input to the model. Union[Tensor, ndarray] if the model has a single input.
+<li><p><strong>x</strong> (<em>Union</em><em>[</em><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v1.10.0)"><em>Tensor</em></a><em>, </em><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.22)"><em>ndarray</em></a><em>] or </em><em>Union</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.10)"><em>tuple</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a><em>] </em><em>of Union</em><em>[</em><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v1.10.0)"><em>Tensor</em></a><em>, </em><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.22)"><em>ndarray</em></a><em>]</em>) – Input to the model. Union[Tensor, ndarray] if the model has a single input.
 Union[tuple, list] of Union[Tensor, ndarray] if the model has multiple inputs.</p></li>
-<li><p><strong>y</strong> (<em>Union</em><em>[</em><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v1.10.0)"><em>Tensor</em></a><em>, </em><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.21)"><em>ndarray</em></a><em>] or </em><em>Union</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.10)"><em>tuple</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a><em>] </em><em>of Union</em><em>[</em><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v1.10.0)"><em>Tensor</em></a><em>, </em><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.21)"><em>ndarray</em></a><em>]</em>) – Target, corresponding ground truth.
+<li><p><strong>y</strong> (<em>Union</em><em>[</em><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v1.10.0)"><em>Tensor</em></a><em>, </em><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.22)"><em>ndarray</em></a><em>] or </em><em>Union</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.10)"><em>tuple</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a><em>] </em><em>of Union</em><em>[</em><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v1.10.0)"><em>Tensor</em></a><em>, </em><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.22)"><em>ndarray</em></a><em>]</em>) – Target, corresponding ground truth.
 Union[Tensor, ndarray] if the model has a single output.
 Union[tuple, list] of Union[Tensor, ndarray] if the model has multiple outputs.</p></li>
 <li><p><strong>checkpoint</strong> (<em>Union</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a><em>]</em>) – <p>Which model checkpoint weights to load for the test evaluation.</p>
@@ -561,7 +700,7 @@ Union[tuple, list] of Union[Tensor, ndarray] if the model has multiple outputs.<
 </ul>
 </dd>
 </dl>
-<p>If the Experiment has logging enabled (i.e. self.logging is True), one callback will be automatically
+<p>If the ModelBundle has logging enabled (i.e. self.logging is True), one callback will be automatically
 included to save the test metrics. Moreover, a <a class="reference internal" href="callbacks.html#poutyne.AtomicCSVLogger" title="poutyne.AtomicCSVLogger"><code class="xref py py-class docutils literal notranslate"><span class="pre">AtomicCSVLogger</span></code></a> will save the test
 metrics in an output .tsv file.</p>
 <dl class="field-list simple">
@@ -572,8 +711,8 @@ metrics in an output .tsv file.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="poutyne.Experiment.infer">
-<span class="sig-name descname"><span class="pre">infer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">generator</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="reference internal" href="_modules/poutyne/framework/experiment.html#Experiment.infer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.Experiment.infer" title="Permalink to this definition"></a></dt>
+<dt class="sig sig-object py" id="poutyne.ModelBundle.infer">
+<span class="sig-name descname"><span class="pre">infer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">generator</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.10)"><span class="pre">Any</span></a></span></span><a class="reference internal" href="_modules/poutyne/framework/model_bundle.html#ModelBundle.infer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.ModelBundle.infer" title="Permalink to this definition"></a></dt>
 <dd><p>Returns the predictions of the network given batches of samples <code class="docutils literal notranslate"><span class="pre">x</span></code>, where the tensors are
 converted into Numpy arrays.</p>
 <dl class="field-list simple">
@@ -606,8 +745,8 @@ for the batches is returned with tensors converted into Numpy arrays.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="poutyne.Experiment.infer_dataset">
-<span class="sig-name descname"><span class="pre">infer_dataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="reference internal" href="_modules/poutyne/framework/experiment.html#Experiment.infer_dataset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.Experiment.infer_dataset" title="Permalink to this definition"></a></dt>
+<dt class="sig sig-object py" id="poutyne.ModelBundle.infer_dataset">
+<span class="sig-name descname"><span class="pre">infer_dataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.10)"><span class="pre">Any</span></a></span></span><a class="reference internal" href="_modules/poutyne/framework/model_bundle.html#ModelBundle.infer_dataset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.ModelBundle.infer_dataset" title="Permalink to this definition"></a></dt>
 <dd><p>Returns the inferred predictions of the network given a dataset, where the tensors are
 converted into Numpy arrays.</p>
 <dl class="field-list simple">
@@ -634,14 +773,14 @@ converted into Numpy arrays.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="poutyne.Experiment.infer_data">
-<span class="sig-name descname"><span class="pre">infer_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="reference internal" href="_modules/poutyne/framework/experiment.html#Experiment.infer_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.Experiment.infer_data" title="Permalink to this definition"></a></dt>
+<dt class="sig sig-object py" id="poutyne.ModelBundle.infer_data">
+<span class="sig-name descname"><span class="pre">infer_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.10)"><span class="pre">Any</span></a></span></span><a class="reference internal" href="_modules/poutyne/framework/model_bundle.html#ModelBundle.infer_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.ModelBundle.infer_data" title="Permalink to this definition"></a></dt>
 <dd><p>Returns the inferred predictions of the network given a dataset <code class="docutils literal notranslate"><span class="pre">x</span></code>, where the tensors are
 converted into Numpy arrays.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>x</strong> (<em>Union</em><em>[</em><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v1.10.0)"><em>Tensor</em></a><em>, </em><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.21)"><em>ndarray</em></a><em>] or </em><em>Union</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.10)"><em>tuple</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a><em>] </em><em>of Union</em><em>[</em><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v1.10.0)"><em>Tensor</em></a><em>, </em><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.21)"><em>ndarray</em></a><em>]</em>) – Input to the model. Union[Tensor, ndarray] if the model has a single input.
+<li><p><strong>x</strong> (<em>Union</em><em>[</em><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v1.10.0)"><em>Tensor</em></a><em>, </em><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.22)"><em>ndarray</em></a><em>] or </em><em>Union</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.10)"><em>tuple</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a><em>] </em><em>of Union</em><em>[</em><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v1.10.0)"><em>Tensor</em></a><em>, </em><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.22)"><em>ndarray</em></a><em>]</em>) – Input to the model. Union[Tensor, ndarray] if the model has a single input.
 Union[tuple, list] of Union[Tensor, ndarray] if the model has multiple inputs.</p></li>
 <li><p><strong>checkpoint</strong> (<em>Union</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a><em>]</em>) – <p>Which model checkpoint weights to load for the prediction.</p>
 <ul>
@@ -663,22 +802,23 @@ Union[tuple, list] of Union[Tensor, ndarray] if the model has multiple inputs.</
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="poutyne.Experiment.is_better_than">
-<span class="sig-name descname"><span class="pre">is_better_than</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">another_experiment</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="_modules/poutyne/framework/experiment.html#Experiment.is_better_than"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.Experiment.is_better_than" title="Permalink to this definition"></a></dt>
-<dd><p>Compare the results of the Experiment with another experiment. To compare, both Experiments need to be
+<dt class="sig sig-object py" id="poutyne.ModelBundle.is_better_than">
+<span class="sig-name descname"><span class="pre">is_better_than</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">another_model_bundle</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="_modules/poutyne/framework/model_bundle.html#ModelBundle.is_better_than"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.ModelBundle.is_better_than" title="Permalink to this definition"></a></dt>
+<dd><p>Compare the results of the ModelBundle with another model bundle. To compare, both ModelBundles need to be
 logged, monitor the same metric and the same monitor mode (“min” or “max”).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>another_experiment</strong> (<em> Experiment</em>) – Another Poutyne experiment to compare results with.</p>
+<dd class="field-odd"><p><strong>another_model_bundle</strong> (<a class="reference internal" href="#poutyne.ModelBundle" title="poutyne.ModelBundle"><em>ModelBundle</em></a>) – Another Poutyne model bundle to compare results with.</p>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Whether the Experiment is better than the Experiment to compare with.</p>
+<dd class="field-even"><p>Whether the ModelBundle is better than the ModelBundle to compare with.</p>
 </dd>
 </dl>
 </dd></dl>
 
 </dd></dl>
 
+</section>
 </section>
 
 
@@ -692,7 +832,7 @@ logged, monitor the same metric and the same monitor mode (“min” or “max�
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2018-2021, Frédérik Paradis.</p>
+    <p>&#169; Copyright 2018-2022, Frédérik Paradis.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

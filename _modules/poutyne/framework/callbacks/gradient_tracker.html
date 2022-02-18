@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>poutyne.framework.callbacks.tracker &mdash; Poutyne 1.8 documentation</title>
+  <title>poutyne.framework.callbacks.gradient_tracker &mdash; Poutyne 1.9 documentation</title>
       <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -28,7 +28,7 @@
             <img src="../../../../_static/poutyne-light.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                1.8
+                1.9
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
@@ -41,7 +41,7 @@
               <p class="caption" role="heading"><span class="caption-text">API</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../../model.html">Model</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../experiment.html">Experiment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../experiment.html">Experiment and ModelBundle</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../metrics.html">Metrics</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../callbacks.html">Callbacks</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../layers.html">Layers</a></li>
@@ -74,7 +74,7 @@
   <ul class="wy-breadcrumbs">
       <li><a href="../../../../index.html" class="icon icon-home"></a> &raquo;</li>
           <li><a href="../../../index.html">Module code</a> &raquo;</li>
-      <li>poutyne.framework.callbacks.tracker</li>
+      <li>poutyne.framework.callbacks.gradient_tracker</li>
       <li class="wy-breadcrumbs-aside">
       </li>
   </ul>
@@ -83,8 +83,27 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <h1>Source code for poutyne.framework.callbacks.tracker</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Iterable</span>
+  <h1>Source code for poutyne.framework.callbacks.gradient_tracker</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Copyright (c) 2022 Poutyne and all respective contributors.</span>
+
+<span class="sd">Each contributor holds copyright over their respective contributions. The project versioning (Git)</span>
+<span class="sd">records all such contribution source information.</span>
+
+<span class="sd">This file is part of Poutyne.</span>
+
+<span class="sd">Poutyne is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General Public</span>
+<span class="sd">License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later</span>
+<span class="sd">version.</span>
+
+<span class="sd">Poutyne is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty</span>
+<span class="sd">of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.</span>
+
+<span class="sd">You should have received a copy of the GNU Lesser General Public License along with Poutyne. If not, see</span>
+<span class="sd">&lt;https://www.gnu.org/licenses/&gt;.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Iterable</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">torch</span>
@@ -99,9 +118,12 @@
 <span class="sd">     max and absolute max per layer. The tracker is using the `Welford&#39;s online algorithm</span>
 <span class="sd">     &lt;https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Welford&#39;s_online_algorithm&gt;`_</span>
 <span class="sd">    to estimate the running mean and running variance of the absolute weights&#39; gradients.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        number_layers (int): The number of layers to track stats on.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">number_layers</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">number_layers</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">number_layers</span> <span class="o">=</span> <span class="n">number_layers</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
@@ -204,7 +226,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">count</span> <span class="o">=</span> <span class="mi">1</span>
 
 
-<span class="k">class</span> <span class="nc">Tracker</span><span class="p">(</span><span class="n">Callback</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">GradientTracker</span><span class="p">(</span><span class="n">Callback</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keep_bias</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
 
@@ -214,20 +236,20 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">tracker</span> <span class="o">=</span> <span class="kc">None</span>
 
-    <span class="k">def</span> <span class="nf">on_train_batch_end</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch_number</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">logs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">on_train_batch_end</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch_number</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">logs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="c1"># pylint: disable=unused-argument</span>
         <span class="n">named_parameters</span> <span class="o">=</span> <span class="p">((</span><span class="n">n</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span> <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">network</span><span class="o">.</span><span class="n">named_parameters</span><span class="p">()</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_keep_layer</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">n</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">tracker</span><span class="o">.</span><span class="n">batch_statistic_upgrade</span><span class="p">(</span><span class="n">named_parameters</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">on_train_begin</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">on_train_begin</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">for</span> <span class="n">layer_name</span><span class="p">,</span> <span class="n">layer_params</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">network</span><span class="o">.</span><span class="n">named_parameters</span><span class="p">():</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_update_layers_to_track</span><span class="p">(</span><span class="n">layer_name</span><span class="p">,</span> <span class="n">layer_params</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">tracker</span> <span class="o">=</span> <span class="n">WeightsGradientsStatsTracker</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">number_layers</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">on_epoch_end</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">epoch_number</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">logs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">on_epoch_end</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">epoch_number</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">logs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_on_epoch_end_log</span><span class="p">(</span><span class="n">epoch_number</span><span class="p">,</span> <span class="n">logs</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_on_epoch_end_log</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">epoch_number</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">logs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_on_epoch_end_log</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">epoch_number</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">logs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        The method to define the behavior of the logging tracker.</span>
 
@@ -243,14 +265,14 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">number_layers</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">layer_names</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_keep_layer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">layer_params</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">parameter</span><span class="o">.</span><span class="n">Parameter</span><span class="p">,</span> <span class="n">layer_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_keep_layer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">layer_params</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">parameter</span><span class="o">.</span><span class="n">Parameter</span><span class="p">,</span> <span class="n">layer_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
         <span class="n">layer_require_grad</span> <span class="o">=</span> <span class="n">layer_params</span><span class="o">.</span><span class="n">requires_grad</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">keep_bias</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">layer_require_grad</span>
         <span class="k">return</span> <span class="n">layer_require_grad</span> <span class="ow">and</span> <span class="p">(</span><span class="s2">&quot;bias&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">layer_name</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="TensorBoardGradientTracker"><a class="viewcode-back" href="../../../../callbacks.html#poutyne.TensorBoardGradientTracker">[docs]</a><span class="k">class</span> <span class="nc">TensorBoardGradientTracker</span><span class="p">(</span><span class="n">Tracker</span><span class="p">):</span>
+<div class="viewcode-block" id="TensorBoardGradientTracker"><a class="viewcode-back" href="../../../../callbacks.html#poutyne.TensorBoardGradientTracker">[docs]</a><span class="k">class</span> <span class="nc">TensorBoardGradientTracker</span><span class="p">(</span><span class="n">GradientTracker</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Wrapper to track the statistics of the weights&#39; gradient per layer and log them in TensorBoard per epoch.</span>
 
@@ -305,7 +327,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2018-2021, Frédérik Paradis.</p>
+    <p>&#169; Copyright 2018-2022, Frédérik Paradis.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Tips and Tricks &mdash; Poutyne 1.8 documentation</title>
+  <title>Tips and Tricks &mdash; Poutyne 1.9 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -31,7 +31,7 @@
             <img src="../_static/poutyne-light.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                1.8
+                1.9
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
@@ -44,7 +44,7 @@
               <p class="caption" role="heading"><span class="caption-text">API</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../model.html">Model</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../experiment.html">Experiment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../experiment.html">Experiment and ModelBundle</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../metrics.html">Metrics</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../callbacks.html">Callbacks</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../layers.html">Layers</a></li>
@@ -66,7 +66,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#bypassing-pytorch-dataloaders">Bypassing PyTorch DataLoaders</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#using-callbacks">Using Callbacks</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#making-your-own-callback">Making Your Own Callback</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#using-experiment">Using Experiment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#using-modelbundle">Using ModelBundle</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#coloring">Coloring</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#epoch-metrics">Epoch metrics</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#custom-metric-names">Custom Metric Names</a></li>
@@ -117,19 +117,20 @@
 <p>Poutyne over a variety of tools for fine-tuning the information generated during the training, such as colouring the training update message, a progress bar, multi-GPUs, user callbacks interface and a user naming interface for the metrics’ names.</p>
 <p>Let’s import all the needed packages.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">pickle</span>
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">shutil</span>
 
-<span class="kn">import</span> <span class="nn">fasttext</span>
-<span class="kn">import</span> <span class="nn">fasttext.util</span>
-<span class="kn">import</span> <span class="nn">requests</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="n">roc_auc_score</span>
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
 <span class="kn">import</span> <span class="nn">torch.optim</span> <span class="k">as</span> <span class="nn">optim</span>
-<span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="n">roc_auc_score</span>
-<span class="kn">from</span> <span class="nn">torch.nn.utils.rnn</span> <span class="kn">import</span> <span class="n">pad_packed_sequence</span><span class="p">,</span> <span class="n">pack_padded_sequence</span><span class="p">,</span> <span class="n">pad_sequence</span>
-<span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="kn">import</span> <span class="n">DataLoader</span>
+<span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="kn">import</span> <span class="n">random_split</span><span class="p">,</span> <span class="n">DataLoader</span>
+<span class="kn">from</span> <span class="nn">torchvision</span> <span class="kn">import</span> <span class="n">transforms</span><span class="p">,</span> <span class="n">utils</span>
+<span class="kn">from</span> <span class="nn">torchvision.datasets.mnist</span> <span class="kn">import</span> <span class="n">MNIST</span>
 
-<span class="kn">from</span> <span class="nn">poutyne</span> <span class="kn">import</span> <span class="n">set_seeds</span><span class="p">,</span> <span class="n">Model</span><span class="p">,</span> <span class="n">ModelCheckpoint</span><span class="p">,</span> <span class="n">CSVLogger</span><span class="p">,</span> <span class="n">Callback</span><span class="p">,</span> <span class="n">SKLearnMetrics</span>
+<span class="kn">from</span> <span class="nn">poutyne</span> <span class="kn">import</span> <span class="n">set_seeds</span><span class="p">,</span> <span class="n">Model</span><span class="p">,</span> <span class="n">ModelCheckpoint</span><span class="p">,</span> <span class="n">CSVLogger</span><span class="p">,</span> <span class="n">Callback</span><span class="p">,</span> <span class="n">ModelBundle</span><span class="p">,</span> <span class="n">SKLearnMetrics</span><span class="p">,</span> <span class="n">plot_history</span>
 </pre></div>
 </div>
 <section id="hyperparameters-dataset-and-network">
@@ -392,14 +393,14 @@
 </pre></div>
 </div>
 </section>
-<section id="using-experiment">
-<h2>Using Experiment<a class="headerlink" href="#using-experiment" title="Permalink to this headline"></a></h2>
+<section id="using-modelbundle">
+<h2>Using ModelBundle<a class="headerlink" href="#using-modelbundle" title="Permalink to this headline"></a></h2>
 <p>Most of the time, when using Poutyne (or even PyTorch in general), we will find ourselves in an iterative model hyperparameters finetuning loop. For efficient model search, we will usually wish to save our best performing models, their training and testing statistics and even sometimes wish to retrain an already trained model for further tuning. All of the above can be easily implemented with the flexibility of Poutyne Callbacks, but having to define and initialize each and every Callback object we wish for our model quickly feels cumbersome.</p>
-<p>This is why Poutyne provides an <a class="reference internal" href="../experiment.html#poutyne.Experiment" title="poutyne.Experiment"><code class="xref py py-class docutils literal notranslate"><span class="pre">Experiment</span></code></a> class, which aims specifically at enabling quick model iteration search, while not sacrificing the quality of a single experiment - statistics logging, best models saving, etc. Experiment is actually a simple wrapper between a PyTorch network and Poutyne’s core Callback objects for logging and saving. Given a working directory where to output the various logging files and a PyTorch network, the Experiment class reduces the whole training loop to a single line.</p>
-<p>The following code uses Poutyne’s <a class="reference internal" href="../experiment.html#poutyne.Experiment" title="poutyne.Experiment"><code class="xref py py-class docutils literal notranslate"><span class="pre">Experiment</span></code></a> class to train a network for 5 epochs. The code is quite simpler than the code in the Poutyne Callbacks section while doing more (only a few lines). Once trained for 5 epochs, it is then possible to resume the optimization at the 5th epoch for 5 more epochs until the 10th epoch using the same function.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">experiment_train</span><span class="p">(</span><span class="n">network</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
+<p>This is why Poutyne provides a <a class="reference internal" href="../experiment.html#poutyne.ModelBundle" title="poutyne.ModelBundle"><code class="xref py py-class docutils literal notranslate"><span class="pre">ModelBundle</span></code></a> class, which aims specifically at enabling quick model iteration search, while not sacrificing the quality of a single experiment - statistics logging, best models saving, etc. As the name says, ModelBundle is actually a simple wrapper between a PyTorch network and Poutyne’s core Callback objects for logging and saving. Given a working directory where to output the various logging files and a PyTorch network, the ModelBundle class reduces the whole training loop to a single line.</p>
+<p>The following code uses Poutyne’s <a class="reference internal" href="../experiment.html#poutyne.ModelBundle" title="poutyne.ModelBundle"><code class="xref py py-class docutils literal notranslate"><span class="pre">ModelBundle</span></code></a> class to train a network for 5 epochs. The code is quite simpler than the code in the Poutyne Callbacks section while doing more (only a few lines). Once trained for 5 epochs, it is then possible to resume the optimization at the 5th epoch for 5 more epochs until the 10th epoch using the same function.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">train_model_bundle</span><span class="p">(</span><span class="n">network</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    This function creates a Poutyne Experiment, trains the input module</span>
+<span class="sd">    This function creates a Poutyne ModelBundle, trains the input module</span>
 <span class="sd">    on the train loader and then tests its performance on the test loader.</span>
 <span class="sd">    All training and testing statistics are saved, as well as best model</span>
 <span class="sd">    checkpoints.</span>
@@ -412,24 +413,30 @@
     <span class="c1"># Everything is going to be saved in ./saves/{name}.</span>
     <span class="n">save_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s1">&#39;saves&#39;</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
 
-    <span class="c1"># Poutyne Experiment</span>
-    <span class="n">expt</span> <span class="o">=</span> <span class="n">Experiment</span><span class="p">(</span><span class="n">save_path</span><span class="p">,</span> <span class="n">network</span><span class="p">,</span> <span class="n">optimizer</span><span class="o">=</span><span class="n">optimizer</span><span class="p">,</span> <span class="n">task</span><span class="o">=</span><span class="s1">&#39;classif&#39;</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+    <span class="c1"># Poutyne ModelBundle</span>
+    <span class="n">model_bundle</span> <span class="o">=</span> <span class="n">ModelBundle</span><span class="o">.</span><span class="n">from_network</span><span class="p">(</span>
+        <span class="n">save_path</span><span class="p">,</span>
+        <span class="n">network</span><span class="p">,</span>
+        <span class="n">optimizer</span><span class="o">=</span><span class="n">optimizer</span><span class="p">,</span>
+        <span class="n">task</span><span class="o">=</span><span class="s1">&#39;classif&#39;</span><span class="p">,</span>
+        <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span>
+    <span class="p">)</span>
 
     <span class="c1"># Train</span>
-    <span class="n">expt</span><span class="o">.</span><span class="n">train</span><span class="p">(</span><span class="n">train_loader</span><span class="p">,</span> <span class="n">valid_loader</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="n">epochs</span><span class="p">)</span>
+    <span class="n">model_bundle</span><span class="o">.</span><span class="n">train</span><span class="p">(</span><span class="n">train_loader</span><span class="p">,</span> <span class="n">valid_loader</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="n">epochs</span><span class="p">)</span>
 
     <span class="c1"># Test</span>
-    <span class="n">expt</span><span class="o">.</span><span class="n">test</span><span class="p">(</span><span class="n">test_loader</span><span class="p">)</span>
+    <span class="n">model_bundle</span><span class="o">.</span><span class="n">test</span><span class="p">(</span><span class="n">test_loader</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">network</span> <span class="o">=</span> <span class="n">create_network</span><span class="p">()</span>
-<span class="n">experiment_train</span><span class="p">(</span><span class="n">network</span><span class="p">,</span> <span class="s1">&#39;convnet_mnist_experiment&#39;</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">train_model_bundle</span><span class="p">(</span><span class="n">network</span><span class="p">,</span> <span class="s1">&#39;convnet_mnist_model_bundle&#39;</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Notice how setting <code class="docutils literal notranslate"><span class="pre">task='classif'</span></code> when instantiating <a class="reference internal" href="../experiment.html#poutyne.Experiment" title="poutyne.Experiment"><code class="xref py py-class docutils literal notranslate"><span class="pre">Experiment</span></code></a> adds for use our loss function, the batch metric accuracy, the epoch metric F1 and set up callbacks that use them. If you wish, you still can use your own loss function and metrics instead of passing this argument.</p>
-<p>We have trained for 5 epochs, let’s now resume training for another 5 epochs for a total of 10 epochs. Notice that we reinstantiate the network. Experiment will load back the weights for us and resume training.</p>
+<p>Notice how setting <code class="docutils literal notranslate"><span class="pre">task='classif'</span></code> when instantiating <a class="reference internal" href="../experiment.html#poutyne.ModelBundle" title="poutyne.ModelBundle"><code class="xref py py-class docutils literal notranslate"><span class="pre">ModelBundle</span></code></a> adds for use our loss function, the batch metric accuracy, the epoch metric F1 and set up callbacks that use them. If you wish, you still can use your own loss function and metrics instead of passing this argument.</p>
+<p>We have trained for 5 epochs, let’s now resume training for another 5 epochs for a total of 10 epochs. Notice that we reinstantiate the network. ModelBundle will load back the weights for us and resume training.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">network</span> <span class="o">=</span> <span class="n">create_network</span><span class="p">()</span>
-<span class="n">experiment_train</span><span class="p">(</span><span class="n">network</span><span class="p">,</span> <span class="s1">&#39;convnet_mnist_experiment&#39;</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">train_model_bundle</span><span class="p">(</span><span class="n">network</span><span class="p">,</span> <span class="s1">&#39;convnet_mnist_model_bundle&#39;</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
@@ -576,7 +583,7 @@ If a field is not specified, the default color will be used.
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2018-2021, Frédérik Paradis.</p>
+    <p>&#169; Copyright 2018-2022, Frédérik Paradis.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Index &mdash; Poutyne 1.8 documentation</title>
+  <title>Index &mdash; Poutyne 1.9 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -28,7 +28,7 @@
             <img src="_static/poutyne-light.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                1.8
+                1.9
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -41,7 +41,7 @@
               <p class="caption" role="heading"><span class="caption-text">API</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="model.html">Model</a></li>
-<li class="toctree-l1"><a class="reference internal" href="experiment.html">Experiment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="experiment.html">Experiment and ModelBundle</a></li>
 <li class="toctree-l1"><a class="reference internal" href="metrics.html">Metrics</a></li>
 <li class="toctree-l1"><a class="reference internal" href="callbacks.html">Callbacks</a></li>
 <li class="toctree-l1"><a class="reference internal" href="layers.html">Layers</a></li>
@@ -125,11 +125,17 @@
 </li>
       <li><a href="callbacks.html#poutyne.BestModelRestore">BestModelRestore (class in poutyne)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="metrics.html#poutyne.bin_acc">bin_acc() (in module poutyne)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="metrics.html#poutyne.BinaryAccuracy">BinaryAccuracy (class in poutyne)</a>
+</li>
+      <li><a href="metrics.html#poutyne.BinaryF1">BinaryF1 (class in poutyne)</a>
+</li>
+      <li><a href="metrics.html#poutyne.BinaryPrecision">BinaryPrecision (class in poutyne)</a>
+</li>
+      <li><a href="metrics.html#poutyne.BinaryRecall">BinaryRecall (class in poutyne)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -143,12 +149,14 @@
 </li>
       <li><a href="callbacks.html#poutyne.ClipValue">ClipValue (class in poutyne)</a>
 </li>
-      <li><a href="callbacks.html#poutyne.CosineAnnealingLR">CosineAnnealingLR (class in poutyne)</a>
+      <li><a href="callbacks.html#poutyne.ConstantLR">ConstantLR (class in poutyne)</a>
 </li>
-      <li><a href="callbacks.html#poutyne.CosineAnnealingWarmRestarts">CosineAnnealingWarmRestarts (class in poutyne)</a>
+      <li><a href="callbacks.html#poutyne.CosineAnnealingLR">CosineAnnealingLR (class in poutyne)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="callbacks.html#poutyne.CosineAnnealingWarmRestarts">CosineAnnealingWarmRestarts (class in poutyne)</a>
+</li>
       <li><a href="callbacks.html#poutyne.cosinespace">cosinespace() (in module poutyne)</a>
 </li>
       <li><a href="model.html#poutyne.Model.cpu">cpu() (poutyne.Model method)</a>
@@ -189,7 +197,7 @@
 </li>
       <li><a href="model.html#poutyne.Model.evaluate_on_batch">evaluate_on_batch() (poutyne.Model method)</a>
 </li>
-      <li><a href="experiment.html#poutyne.Experiment">Experiment (class in poutyne)</a>
+      <li><a href="experiment.html#poutyne.Experiment">Experiment() (in module poutyne)</a>
 </li>
       <li><a href="callbacks.html#poutyne.ExponentialLR">ExponentialLR (class in poutyne)</a>
 </li>
@@ -207,10 +215,10 @@
 </li>
       <li><a href="model.html#poutyne.Model.fit_dataset">fit_dataset() (poutyne.Model method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="model.html#poutyne.Model.fit_generator">fit_generator() (poutyne.Model method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="metrics.html#poutyne.EpochMetric.forward">forward() (poutyne.EpochMetric method)</a>
 
       <ul>
@@ -219,6 +227,10 @@
         <li><a href="metrics.html#poutyne.SKLearnMetrics.forward">(poutyne.SKLearnMetrics method)</a>
 </li>
       </ul></li>
+      <li><a href="experiment.html#poutyne.ModelBundle.from_model">from_model() (poutyne.ModelBundle class method)</a>
+</li>
+      <li><a href="experiment.html#poutyne.ModelBundle.from_network">from_network() (poutyne.ModelBundle class method)</a>
+</li>
   </ul></td>
 </tr></table>
 
@@ -227,7 +239,7 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="model.html#poutyne.Model.get_batch_size">get_batch_size() (poutyne.Model method)</a>
 </li>
-      <li><a href="experiment.html#poutyne.Experiment.get_best_epoch_stats">get_best_epoch_stats() (poutyne.Experiment method)</a>
+      <li><a href="experiment.html#poutyne.ModelBundle.get_best_epoch_stats">get_best_epoch_stats() (poutyne.ModelBundle method)</a>
 </li>
       <li><a href="metrics.html#poutyne.EpochMetric.get_metric">get_metric() (poutyne.EpochMetric method)</a>
 
@@ -239,9 +251,9 @@
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="experiment.html#poutyne.Experiment.get_path">get_path() (poutyne.Experiment method)</a>
+      <li><a href="experiment.html#poutyne.ModelBundle.get_path">get_path() (poutyne.ModelBundle method)</a>
 </li>
-      <li><a href="experiment.html#poutyne.Experiment.get_saved_epochs">get_saved_epochs() (poutyne.Experiment method)</a>
+      <li><a href="experiment.html#poutyne.ModelBundle.get_saved_epochs">get_saved_epochs() (poutyne.ModelBundle method)</a>
 </li>
       <li><a href="model.html#poutyne.Model.get_weight_copies">get_weight_copies() (poutyne.Model method)</a>
 </li>
@@ -253,15 +265,15 @@
 <h2 id="I">I</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="experiment.html#poutyne.Experiment.infer">infer() (poutyne.Experiment method)</a>
+      <li><a href="experiment.html#poutyne.ModelBundle.infer">infer() (poutyne.ModelBundle method)</a>
 </li>
-      <li><a href="experiment.html#poutyne.Experiment.infer_data">infer_data() (poutyne.Experiment method)</a>
+      <li><a href="experiment.html#poutyne.ModelBundle.infer_data">infer_data() (poutyne.ModelBundle method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="experiment.html#poutyne.Experiment.infer_dataset">infer_dataset() (poutyne.Experiment method)</a>
+      <li><a href="experiment.html#poutyne.ModelBundle.infer_dataset">infer_dataset() (poutyne.ModelBundle method)</a>
 </li>
-      <li><a href="experiment.html#poutyne.Experiment.is_better_than">is_better_than() (poutyne.Experiment method)</a>
+      <li><a href="experiment.html#poutyne.ModelBundle.is_better_than">is_better_than() (poutyne.ModelBundle method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -275,14 +287,16 @@
 </li>
       <li><a href="callbacks.html#poutyne.LambdaLR">LambdaLR (class in poutyne)</a>
 </li>
+      <li><a href="callbacks.html#poutyne.LinearLR">LinearLR (class in poutyne)</a>
+</li>
       <li><a href="callbacks.html#poutyne.linspace">linspace() (in module poutyne)</a>
 </li>
-      <li><a href="experiment.html#poutyne.Experiment.load_checkpoint">load_checkpoint() (poutyne.Experiment method)</a>
-</li>
-      <li><a href="model.html#poutyne.Model.load_optimizer_state">load_optimizer_state() (poutyne.Model method)</a>
+      <li><a href="experiment.html#poutyne.ModelBundle.load_checkpoint">load_checkpoint() (poutyne.ModelBundle method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="model.html#poutyne.Model.load_optimizer_state">load_optimizer_state() (poutyne.Model method)</a>
+</li>
       <li><a href="model.html#poutyne.Model.load_weights">load_weights() (poutyne.Model method)</a>
 </li>
       <li><a href="callbacks.html#poutyne.MLFlowLogger.log_config_params">log_config_params() (poutyne.MLFlowLogger method)</a>
@@ -309,6 +323,8 @@
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="experiment.html#poutyne.ModelBundle">ModelBundle (class in poutyne)</a>
+</li>
       <li><a href="callbacks.html#poutyne.ModelCheckpoint">ModelCheckpoint (class in poutyne)</a>
 </li>
       <li><a href="callbacks.html#poutyne.MultiplicativeLR">MultiplicativeLR (class in poutyne)</a>
@@ -429,8 +445,6 @@
 </li>
       <li><a href="callbacks.html#poutyne.ReduceLROnPlateau">ReduceLROnPlateau (class in poutyne)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="metrics.html#poutyne.EpochMetric.reset">reset() (poutyne.EpochMetric method)</a>
 
       <ul>
@@ -440,21 +454,27 @@
 </li>
       </ul></li>
   </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="callbacks.html#poutyne.PeriodicSaveCallback.restore">restore() (poutyne.PeriodicSaveCallback method)</a>
+</li>
+  </ul></td>
 </tr></table>
 
 <h2 id="S">S</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="callbacks.html#poutyne.PeriodicSaveCallback.save_file">save_file() (poutyne.PeriodicSaveCallback method)</a>
+</li>
       <li><a href="model.html#poutyne.Model.save_optimizer_state">save_optimizer_state() (poutyne.Model method)</a>
 </li>
       <li><a href="model.html#poutyne.Model.save_weights">save_weights() (poutyne.Model method)</a>
 </li>
       <li><a href="callbacks.html#poutyne.Notificator.send_notification">send_notification() (poutyne.Notificator method)</a>
 </li>
-      <li><a href="utils.html#poutyne.set_seeds">set_seeds() (in module poutyne)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="utils.html#poutyne.set_seeds">set_seeds() (in module poutyne)</a>
+</li>
       <li><a href="model.html#poutyne.Model.set_weights">set_weights() (poutyne.Model method)</a>
 </li>
       <li><a href="callbacks.html#poutyne.sgdr_phases">sgdr_phases() (in module poutyne)</a>
@@ -475,11 +495,11 @@
 </li>
       <li><a href="callbacks.html#poutyne.TerminateOnNaN">TerminateOnNaN (class in poutyne)</a>
 </li>
-      <li><a href="experiment.html#poutyne.Experiment.test">test() (poutyne.Experiment method)</a>
+      <li><a href="experiment.html#poutyne.ModelBundle.test">test() (poutyne.ModelBundle method)</a>
 </li>
-      <li><a href="experiment.html#poutyne.Experiment.test_data">test_data() (poutyne.Experiment method)</a>
+      <li><a href="experiment.html#poutyne.ModelBundle.test_data">test_data() (poutyne.ModelBundle method)</a>
 </li>
-      <li><a href="experiment.html#poutyne.Experiment.test_dataset">test_dataset() (poutyne.Experiment method)</a>
+      <li><a href="experiment.html#poutyne.ModelBundle.test_dataset">test_dataset() (poutyne.ModelBundle method)</a>
 </li>
       <li><a href="model.html#poutyne.Model.to">to() (poutyne.Model method)</a>
 </li>
@@ -493,11 +513,11 @@
 </li>
       <li><a href="utils.html#poutyne.torch_to_numpy">torch_to_numpy() (in module poutyne)</a>
 </li>
-      <li><a href="experiment.html#poutyne.Experiment.train">train() (poutyne.Experiment method)</a>
+      <li><a href="experiment.html#poutyne.ModelBundle.train">train() (poutyne.ModelBundle method)</a>
 </li>
-      <li><a href="experiment.html#poutyne.Experiment.train_data">train_data() (poutyne.Experiment method)</a>
+      <li><a href="experiment.html#poutyne.ModelBundle.train_data">train_data() (poutyne.ModelBundle method)</a>
 </li>
-      <li><a href="experiment.html#poutyne.Experiment.train_dataset">train_dataset() (poutyne.Experiment method)</a>
+      <li><a href="experiment.html#poutyne.ModelBundle.train_dataset">train_dataset() (poutyne.ModelBundle method)</a>
 </li>
       <li><a href="model.html#poutyne.Model.train_on_batch">train_on_batch() (poutyne.Model method)</a>
 </li>
@@ -513,7 +533,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2018-2021, Frédérik Paradis.</p>
+    <p>&#169; Copyright 2018-2022, Frédérik Paradis.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

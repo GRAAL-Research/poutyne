@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>poutyne.framework.callbacks.checkpoint &mdash; Poutyne 1.8 documentation</title>
+  <title>poutyne.framework.callbacks.checkpoint &mdash; Poutyne 1.9 documentation</title>
       <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -28,7 +28,7 @@
             <img src="../../../../_static/poutyne-light.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                1.8
+                1.9
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
@@ -41,7 +41,7 @@
               <p class="caption" role="heading"><span class="caption-text">API</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../../model.html">Model</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../experiment.html">Experiment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../experiment.html">Experiment and ModelBundle</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../metrics.html">Metrics</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../callbacks.html">Callbacks</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../layers.html">Layers</a></li>
@@ -84,7 +84,26 @@
            <div itemprop="articleBody">
              
   <h1>Source code for poutyne.framework.callbacks.checkpoint</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">warnings</span>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Copyright (c) 2022 Poutyne and all respective contributors.</span>
+
+<span class="sd">Each contributor holds copyright over their respective contributions. The project versioning (Git)</span>
+<span class="sd">records all such contribution source information.</span>
+
+<span class="sd">This file is part of Poutyne.</span>
+
+<span class="sd">Poutyne is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General Public</span>
+<span class="sd">License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later</span>
+<span class="sd">version.</span>
+
+<span class="sd">Poutyne is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty</span>
+<span class="sd">of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.</span>
+
+<span class="sd">You should have received a copy of the GNU Lesser General Public License along with Poutyne. If not, see</span>
+<span class="sd">&lt;https://www.gnu.org/licenses/&gt;.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">warnings</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">IO</span>
 <span class="kn">import</span> <span class="nn">torch</span>
 
@@ -233,7 +252,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2018-2021, Frédérik Paradis.</p>
+    <p>&#169; Copyright 2018-2022, Frédérik Paradis.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

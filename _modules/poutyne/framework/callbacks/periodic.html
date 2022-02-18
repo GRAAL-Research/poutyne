@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>poutyne.framework.callbacks.periodic &mdash; Poutyne 1.8 documentation</title>
+  <title>poutyne.framework.callbacks.periodic &mdash; Poutyne 1.9 documentation</title>
       <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -28,7 +28,7 @@
             <img src="../../../../_static/poutyne-light.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                1.8
+                1.9
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
@@ -41,7 +41,7 @@
               <p class="caption" role="heading"><span class="caption-text">API</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../../model.html">Model</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../experiment.html">Experiment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../experiment.html">Experiment and ModelBundle</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../metrics.html">Metrics</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../callbacks.html">Callbacks</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../layers.html">Layers</a></li>
@@ -106,10 +106,27 @@
 <span class="sd">Copyright (c) 2015 - 2017, the respective contributors.</span>
 <span class="sd">All rights reserved.</span>
 
+<span class="sd">Copyright (c) 2022 Poutyne.</span>
+
 <span class="sd">Each contributor holds copyright over their respective contributions. The project versioning (Git)</span>
-<span class="sd">records all such contribution source information.</span>
+<span class="sd">records all such contribution source information on the Poutyne and Keras repository.</span>
 
 <span class="sd">LICENSE</span>
+
+<span class="sd">The LGPLv3 License</span>
+
+<span class="sd">This file is part of Poutyne.</span>
+
+<span class="sd">Poutyne is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General Public</span>
+<span class="sd">License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later</span>
+<span class="sd">version.</span>
+
+<span class="sd">Poutyne is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty</span>
+<span class="sd">of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.</span>
+
+<span class="sd">You should have received a copy of the GNU Lesser General Public License along with Poutyne. If not, see</span>
+<span class="sd">&lt;https://www.gnu.org/licenses/&gt;.</span>
+
 
 <span class="sd">The MIT License (MIT)</span>
 
@@ -128,25 +145,27 @@
 <span class="sd">OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN</span>
 <span class="sd">CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</span>
 <span class="sd">&quot;&quot;&quot;</span>
+
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">warnings</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">IO</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Callable</span>
+<span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
 
 <span class="kn">from</span> <span class="nn">._utils</span> <span class="kn">import</span> <span class="n">atomic_lambda_save</span>
 <span class="kn">from</span> <span class="nn">.callbacks</span> <span class="kn">import</span> <span class="n">Callback</span>
 
 
-<div class="viewcode-block" id="PeriodicSaveCallback"><a class="viewcode-back" href="../../../../callbacks.html#poutyne.PeriodicSaveCallback">[docs]</a><span class="k">class</span> <span class="nc">PeriodicSaveCallback</span><span class="p">(</span><span class="n">Callback</span><span class="p">):</span>
+<div class="viewcode-block" id="PeriodicSaveCallback"><a class="viewcode-back" href="../../../../callbacks.html#poutyne.PeriodicSaveCallback">[docs]</a><span class="k">class</span> <span class="nc">PeriodicSaveCallback</span><span class="p">(</span><span class="n">ABC</span><span class="p">,</span> <span class="n">Callback</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Write a file (or checkpoint) after every epoch. `filename` can contain named formatting options,</span>
-<span class="sd">    which will be filled the value of `epoch` and keys in `logs` (passed in `on_epoch_end`). For</span>
-<span class="sd">    example: if `filename` is `weights.{epoch:02d}-{val_loss:.2f}.txt`, then `save_file()` will be</span>
+<span class="sd">    Write a file (or checkpoint) after every epoch. ``filename`` can contain named formatting options,</span>
+<span class="sd">    which will be filled the value of ``epoch`` and keys in ``logs`` (passed in ``on_epoch_end``). For</span>
+<span class="sd">    example: if ``filename`` is ``weights.{epoch:02d}-{val_loss:.2f}.txt``, then ``save_file()`` will be</span>
 <span class="sd">    called with a file descriptor for a file with the epoch number and the validation loss in the</span>
 <span class="sd">    filename.</span>
 
 <span class="sd">    By default, the file is written atomically to the specified filename so that the training can</span>
 <span class="sd">    be killed and restarted later using the same filename for periodic file saving. To do so, a</span>
-<span class="sd">    temporary file is created with the name of `filename + &#39;.tmp&#39;` and is then moved to the final</span>
+<span class="sd">    temporary file is created with the name of ``filename + &#39;.tmp&#39;`` and is then moved to the final</span>
 <span class="sd">    destination after the checkpoint is done. The ``temporary_filename`` argument allows to change the</span>
 <span class="sd">    path of this temporary file.</span>
 
@@ -195,7 +214,7 @@
         <span class="n">atomic_write</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">open_mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;wb&#39;</span><span class="p">,</span>
         <span class="n">read_mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;rb&#39;</span><span class="p">,</span>
-    <span class="p">):</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">filename</span> <span class="o">=</span> <span class="n">filename</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">monitor</span> <span class="o">=</span> <span class="n">monitor</span>
@@ -226,10 +245,19 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">period</span> <span class="o">=</span> <span class="n">period</span>
 
-    <span class="k">def</span> <span class="nf">save_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fd</span><span class="p">:</span> <span class="n">IO</span><span class="p">,</span> <span class="n">epoch_number</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">logs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+<div class="viewcode-block" id="PeriodicSaveCallback.save_file"><a class="viewcode-back" href="../../../../callbacks.html#poutyne.PeriodicSaveCallback.save_file">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">save_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fd</span><span class="p">:</span> <span class="n">IO</span><span class="p">,</span> <span class="n">epoch_number</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">logs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Abstract method that is called every time a save needs to be done.</span>
 
-    <span class="k">def</span> <span class="nf">_save_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">epoch_number</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">logs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">):</span>
+<span class="sd">        Args:</span>
+<span class="sd">            fd (IO): The descriptor of the file in which to write.</span>
+<span class="sd">            epoch_number (int): The epoch number.</span>
+<span class="sd">            logs (Dict): Dictionary passed on epoch end.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+    <span class="k">def</span> <span class="nf">_save_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">epoch_number</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">logs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">atomic_lambda_save</span><span class="p">(</span>
             <span class="n">filename</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">save_file</span><span class="p">,</span>
@@ -239,37 +267,48 @@
             <span class="n">atomic</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">atomic_write</span><span class="p">,</span>
         <span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">on_epoch_end</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">epoch_number</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">logs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">on_epoch_end</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">epoch_number</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">logs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">filename</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">filename</span><span class="o">.</span><span class="n">format_map</span><span class="p">(</span><span class="n">logs</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">save_best_only</span><span class="p">:</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">monitor_op</span><span class="p">(</span><span class="n">logs</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">monitor</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_best</span><span class="p">):</span>
-                <span class="n">old_best</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_best</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">current_best</span> <span class="o">=</span> <span class="n">logs</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">monitor</span><span class="p">]</span>
-                <span class="n">old_best_filename</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">best_filename</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">best_filename</span> <span class="o">=</span> <span class="n">filename</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">monitor</span> <span class="ow">in</span> <span class="n">logs</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">monitor_op</span><span class="p">(</span><span class="n">logs</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">monitor</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_best</span><span class="p">):</span>
+                    <span class="n">old_best</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_best</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">current_best</span> <span class="o">=</span> <span class="n">logs</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">monitor</span><span class="p">]</span>
+                    <span class="n">old_best_filename</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">best_filename</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">best_filename</span> <span class="o">=</span> <span class="n">filename</span>
 
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
-                    <span class="nb">print</span><span class="p">(</span>
-                        <span class="sa">f</span><span class="s1">&#39;Epoch </span><span class="si">{</span><span class="n">epoch_number</span><span class="si">:</span><span class="s1">d</span><span class="si">}</span><span class="s1">: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">monitor</span><span class="si">}</span><span class="s1"> improved from </span><span class="si">{</span><span class="n">old_best</span><span class="si">:</span><span class="s1">0.5f</span><span class="si">}</span><span class="s1"> &#39;</span>
-                        <span class="sa">f</span><span class="s1">&#39;to </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">current_best</span><span class="si">:</span><span class="s1">0.5f</span><span class="si">}</span><span class="s1">, saving file to </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">best_filename</span><span class="si">}</span><span class="s1">&#39;</span>
-                    <span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_save_file</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">best_filename</span><span class="p">,</span> <span class="n">epoch_number</span><span class="p">,</span> <span class="n">logs</span><span class="p">)</span>
-                <span class="k">if</span> <span class="p">(</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">keep_only_last_best</span>
-                    <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">best_filename</span> <span class="o">!=</span> <span class="n">old_best_filename</span>
-                    <span class="ow">and</span> <span class="n">old_best_filename</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
-                <span class="p">):</span>
-                    <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">old_best_filename</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+                        <span class="nb">print</span><span class="p">(</span>
+                            <span class="sa">f</span><span class="s1">&#39;Epoch </span><span class="si">{</span><span class="n">epoch_number</span><span class="si">:</span><span class="s1">d</span><span class="si">}</span><span class="s1">: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">monitor</span><span class="si">}</span><span class="s1"> improved from </span><span class="si">{</span><span class="n">old_best</span><span class="si">:</span><span class="s1">0.5f</span><span class="si">}</span><span class="s1"> &#39;</span>
+                            <span class="sa">f</span><span class="s1">&#39;to </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">current_best</span><span class="si">:</span><span class="s1">0.5f</span><span class="si">}</span><span class="s1">, saving file to </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">best_filename</span><span class="si">}</span><span class="s1">&#39;</span>
+                        <span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_save_file</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">best_filename</span><span class="p">,</span> <span class="n">epoch_number</span><span class="p">,</span> <span class="n">logs</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">keep_only_last_best</span>
+                        <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">best_filename</span> <span class="o">!=</span> <span class="n">old_best_filename</span>
+                        <span class="ow">and</span> <span class="n">old_best_filename</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+                    <span class="p">):</span>
+                        <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">old_best_filename</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The monitored metric name </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">monitor</span><span class="si">}</span><span class="s2"> is not found in computed metrics.&quot;</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">epoch_number</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">period</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
                 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Epoch </span><span class="si">{</span><span class="n">epoch_number</span><span class="si">:</span><span class="s1">d</span><span class="si">}</span><span class="s1">: saving file to </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_save_file</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">epoch_number</span><span class="p">,</span> <span class="n">logs</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">restore</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fd</span><span class="p">:</span> <span class="n">IO</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+<div class="viewcode-block" id="PeriodicSaveCallback.restore"><a class="viewcode-back" href="../../../../callbacks.html#poutyne.PeriodicSaveCallback.restore">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">restore</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fd</span><span class="p">:</span> <span class="n">IO</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Abstract method that is called when a save needs to be restored. This happens at the end of the training when</span>
+<span class="sd">        ``restore_best`` is true.</span>
 
-    <span class="k">def</span> <span class="nf">on_train_end</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">):</span>
+<span class="sd">        Args:</span>
+<span class="sd">            fd (IO): The descriptor of the file to read.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+    <span class="k">def</span> <span class="nf">on_train_end</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">restore_best</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">best_filename</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
@@ -297,15 +336,15 @@
 <span class="sd">        :class:`~poutyne.PeriodicSaveCallback`</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">restore</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">restore</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">func</span> <span class="o">=</span> <span class="n">func</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_restore</span> <span class="o">=</span> <span class="n">restore</span>
 
-    <span class="k">def</span> <span class="nf">save_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fd</span><span class="p">:</span> <span class="n">IO</span><span class="p">,</span> <span class="n">epoch_number</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">logs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">save_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fd</span><span class="p">:</span> <span class="n">IO</span><span class="p">,</span> <span class="n">epoch_number</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">logs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">func</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="n">epoch_number</span><span class="p">,</span> <span class="n">logs</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">restore</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fd</span><span class="p">:</span> <span class="n">IO</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">restore</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fd</span><span class="p">:</span> <span class="n">IO</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_restore</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_restore</span><span class="p">(</span><span class="n">fd</span><span class="p">)</span></div>
 </pre></div>
@@ -317,7 +356,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2018-2021, Frédérik Paradis.</p>
+    <p>&#169; Copyright 2018-2022, Frédérik Paradis.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

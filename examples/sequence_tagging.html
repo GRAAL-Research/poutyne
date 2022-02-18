@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Sequence Tagging With an RNN &mdash; Poutyne 1.8 documentation</title>
+  <title>Sequence Tagging With an RNN &mdash; Poutyne 1.9 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -31,7 +31,7 @@
             <img src="../_static/poutyne-light.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                1.8
+                1.9
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
@@ -44,7 +44,7 @@
               <p class="caption" role="heading"><span class="caption-text">API</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../model.html">Model</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../experiment.html">Experiment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../experiment.html">Experiment and ModelBundle</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../metrics.html">Metrics</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../callbacks.html">Callbacks</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../layers.html">Layers</a></li>
@@ -126,7 +126,7 @@
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
 <span class="kn">import</span> <span class="nn">torch.optim</span> <span class="k">as</span> <span class="nn">optim</span>
-<span class="kn">from</span> <span class="nn">torch.nn.utils.rnn</span> <span class="kn">import</span> <span class="n">pad_packed_sequence</span><span class="p">,</span> <span class="n">pack_padded_sequence</span><span class="p">,</span> <span class="n">pad_sequence</span>
+<span class="kn">from</span> <span class="nn">torch.nn.utils.rnn</span> <span class="kn">import</span> <span class="n">pad_packed_sequence</span><span class="p">,</span> <span class="n">pack_padded_sequence</span><span class="p">,</span> <span class="n">pad_sequence</span><span class="p">,</span> <span class="n">PackedSequence</span>
 <span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="kn">import</span> <span class="n">DataLoader</span>
 
 <span class="kn">from</span> <span class="nn">poutyne</span> <span class="kn">import</span> <span class="n">set_seeds</span><span class="p">,</span> <span class="n">Model</span>
@@ -302,12 +302,11 @@
 <span class="sd">        label.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        A tuple (x, y). The element x is a tuple containing (1) a tensor of padded</span>
-<span class="sd">        word vectors and (2) their respective lengths of the sequences. The element</span>
-<span class="sd">        y is a tensor of padded tag indices. The word vectors are padded with vectors</span>
-<span class="sd">        of 0s and the tag indices are padded with -100s. Padding with -100 is done</span>
-<span class="sd">        because the cross-entropy loss, the accuracy metric and the F1 metric ignores</span>
-<span class="sd">        the targets with values -100.</span>
+<span class="sd">        A tuple (x, y). The element x is a tensor of packed sequence .</span>
+<span class="sd">        The element y is a tensor of padded tag indices. The word vectors are</span>
+<span class="sd">        padded with vectors of 0s and the tag indices are padded with -100s.</span>
+<span class="sd">        Padding with -100 is done because of the cross-entropy loss and the</span>
+<span class="sd">        accuracy metric ignores the targets with values -100.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="c1"># This gets us two lists of tensors and a list of integer.</span>
@@ -322,10 +321,13 @@
     <span class="n">lengths</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">LongTensor</span><span class="p">(</span><span class="n">lengths</span><span class="p">)</span>
 
     <span class="n">padded_sequences_vectors</span> <span class="o">=</span> <span class="n">pad_sequence</span><span class="p">(</span><span class="n">sequences_vectors</span><span class="p">,</span> <span class="n">batch_first</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">padding_value</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">pack_padded_sequences_vectors</span> <span class="o">=</span> <span class="n">pack_padded_sequence</span><span class="p">(</span>
+        <span class="n">padded_sequences_vectors</span><span class="p">,</span> <span class="n">lengths</span><span class="o">.</span><span class="n">cpu</span><span class="p">(),</span> <span class="n">batch_first</span><span class="o">=</span><span class="kc">True</span>
+    <span class="p">)</span>  <span class="c1"># We pack the padded sequence to improve the computational speed during training</span>
 
     <span class="n">padded_sequences_labels</span> <span class="o">=</span> <span class="n">pad_sequence</span><span class="p">(</span><span class="n">sequences_labels</span><span class="p">,</span> <span class="n">batch_first</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">padding_value</span><span class="o">=-</span><span class="mi">100</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="p">(</span><span class="n">padded_sequences_vectors</span><span class="p">,</span> <span class="n">lengths</span><span class="p">),</span> <span class="n">padded_sequences_labels</span>
+    <span class="k">return</span> <span class="n">pack_padded_sequences_vectors</span><span class="p">,</span> <span class="n">padded_sequences_labels</span>
 </pre></div>
 </div>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">train_loader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">train_data_vectorize</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">collate_fn</span><span class="o">=</span><span class="n">pad_collate_fn</span><span class="p">)</span>
@@ -345,19 +347,15 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">lstm_network</span> <span class="o">=</span> <span class="n">lstm_network</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">fully_connected_network</span> <span class="o">=</span> <span class="n">fully_connected_network</span>
 
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">padded_sequences_vectors</span><span class="p">,</span> <span class="n">lengths</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pack_padded_sequences_vectors</span><span class="p">:</span> <span class="n">PackedSequence</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">            Defines the computation performed at every call.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">total_length</span> <span class="o">=</span> <span class="n">padded_sequences_vectors</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-
-        <span class="n">pack_padded_sequences_vectors</span> <span class="o">=</span> <span class="n">pack_padded_sequence</span><span class="p">(</span><span class="n">padded_sequences_vectors</span><span class="p">,</span> <span class="n">lengths</span><span class="o">.</span><span class="n">cpu</span><span class="p">(),</span> <span class="n">batch_first</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-
         <span class="n">lstm_out</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">hidden_state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lstm_network</span><span class="p">(</span><span class="n">pack_padded_sequences_vectors</span><span class="p">)</span>
-        <span class="n">lstm_out</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">pad_packed_sequence</span><span class="p">(</span><span class="n">lstm_out</span><span class="p">,</span> <span class="n">batch_first</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">total_length</span><span class="o">=</span><span class="n">total_length</span><span class="p">)</span>
+        <span class="n">lstm_out</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">pad_packed_sequence</span><span class="p">(</span><span class="n">lstm_out</span><span class="p">,</span> <span class="n">batch_first</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
         <span class="n">tag_space</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fully_connected_network</span><span class="p">(</span><span class="n">lstm_out</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">tag_space</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="c1"># we need to transpose since it&#39;s a sequence</span>
+        <span class="k">return</span> <span class="n">tag_space</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>  <span class="c1"># We need to transpose since it&#39;s a sequence</span>
 
 <span class="n">full_network</span> <span class="o">=</span> <span class="n">FullNetWork</span><span class="p">(</span><span class="n">lstm_network</span><span class="p">,</span> <span class="n">fully_connected_network</span><span class="p">)</span>
 </pre></div>
@@ -428,8 +426,9 @@ Now that we have all the components for the network let’s define our SGD optim
     <span class="n">lengths</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">LongTensor</span><span class="p">(</span><span class="n">lengths</span><span class="p">)</span>
 
     <span class="n">padded_sequences_vectors</span> <span class="o">=</span> <span class="n">pad_sequence</span><span class="p">(</span><span class="n">sequences_vectors</span><span class="p">,</span> <span class="n">batch_first</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">padding_value</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">pack_padded_sequences_vectors</span> <span class="o">=</span> <span class="n">pack_padded_sequence</span><span class="p">(</span><span class="n">padded_sequences_vectors</span><span class="p">,</span> <span class="n">lengths</span><span class="o">.</span><span class="n">cpu</span><span class="p">(),</span> <span class="n">batch_first</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">padded_sequences_vectors</span><span class="p">,</span> <span class="n">lengths</span>
+    <span class="k">return</span> <span class="n">pack_padded_sequences_vectors</span>
 
 
 <span class="n">predict_loader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">predict_data_vectorized</span><span class="p">,</span>
@@ -493,7 +492,7 @@ Now that we have all the components for the network let’s define our SGD optim
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2018-2021, Frédérik Paradis.</p>
+    <p>&#169; Copyright 2018-2022, Frédérik Paradis.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

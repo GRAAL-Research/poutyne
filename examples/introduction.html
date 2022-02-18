@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Introduction to PyTorch and Poutyne &mdash; Poutyne 1.8 documentation</title>
+  <title>Introduction to PyTorch and Poutyne &mdash; Poutyne 1.9 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -31,7 +31,7 @@
             <img src="../_static/poutyne-light.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                1.8
+                1.9
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
@@ -44,7 +44,7 @@
               <p class="caption" role="heading"><span class="caption-text">API</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../model.html">Model</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../experiment.html">Experiment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../experiment.html">Experiment and ModelBundle</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../metrics.html">Metrics</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../callbacks.html">Callbacks</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../layers.html">Layers</a></li>
@@ -67,7 +67,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#training-the-poutyne-way">Training the Poutyne way</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#poutyne-callbacks">Poutyne Callbacks</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#making-your-own-callback">Making Your Own Callback</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#poutyne-experiment">Poutyne Experiment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#poutyne-modelbundle">Poutyne ModelBundle</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="tips_and_tricks.html">Tips and Tricks</a></li>
@@ -114,18 +114,19 @@
 </div>
 <p>In this example, we train a simple fully-connected network and a simple convolutional network on MNIST. First, we train it by coding our own training loop as the PyTorch library expects of us to. Then, we use Poutyne to simplify our code.</p>
 <p>Let’s import all the needed packages.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">math</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">math</span>
 
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
 <span class="kn">import</span> <span class="nn">torch.optim</span> <span class="k">as</span> <span class="nn">optim</span>
-<span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="kn">import</span> <span class="n">Subset</span><span class="p">,</span> <span class="n">DataLoader</span>
+<span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="kn">import</span> <span class="n">random_split</span><span class="p">,</span> <span class="n">DataLoader</span>
 <span class="kn">from</span> <span class="nn">torchvision</span> <span class="kn">import</span> <span class="n">transforms</span><span class="p">,</span> <span class="n">utils</span>
 <span class="kn">from</span> <span class="nn">torchvision.datasets.mnist</span> <span class="kn">import</span> <span class="n">MNIST</span>
 
-<span class="kn">from</span> <span class="nn">poutyne</span> <span class="kn">import</span> <span class="n">set_seeds</span><span class="p">,</span> <span class="n">Model</span>
+<span class="kn">from</span> <span class="nn">poutyne</span> <span class="kn">import</span> <span class="n">set_seeds</span><span class="p">,</span> <span class="n">Model</span><span class="p">,</span> <span class="n">ModelCheckpoint</span><span class="p">,</span> <span class="n">CSVLogger</span><span class="p">,</span> <span class="n">ModelBundle</span>
 </pre></div>
 </div>
 <p>Also, we need to set Pythons’s, NumPy’s and PyTorch’s seeds by using Poutyne function so that our training is (almost) reproducible.</p>
@@ -376,12 +377,12 @@
     <span class="n">y_pred</span> <span class="o">=</span> <span class="n">y_pred</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
     <span class="k">return</span> <span class="p">(</span><span class="n">y_pred</span> <span class="o">==</span> <span class="n">y_true</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="o">*</span> <span class="mi">100</span>
 
-<span class="k">def</span> <span class="nf">pytorch_train_one_epoch</span><span class="p">(</span><span class="n">pytorch_network</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">loss_function</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">pytorch_train_one_epoch</span><span class="p">(</span><span class="n">network</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">loss_function</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Trains the neural network for one epoch on the train DataLoader.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        pytorch_network (torch.nn.Module): The neural network to train.</span>
+<span class="sd">        network (torch.nn.Module): The neural network to train.</span>
 <span class="sd">        optimizer (torch.optim.Optimizer): The optimizer of the neural network</span>
 <span class="sd">        loss_function: The loss function.</span>
 
@@ -389,7 +390,7 @@
 <span class="sd">        A tuple (loss, accuracy) corresponding to an average of the losses and</span>
 <span class="sd">        an average of the accuracy, respectively, on the train DataLoader.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">pytorch_network</span><span class="o">.</span><span class="n">train</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">network</span><span class="o">.</span><span class="n">train</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
     <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">enable_grad</span><span class="p">():</span>
         <span class="n">loss_sum</span> <span class="o">=</span> <span class="mf">0.</span>
         <span class="n">acc_sum</span> <span class="o">=</span> <span class="mf">0.</span>
@@ -401,7 +402,7 @@
 
             <span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
 
-            <span class="n">y_pred</span> <span class="o">=</span> <span class="n">pytorch_network</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+            <span class="n">y_pred</span> <span class="o">=</span> <span class="n">network</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
 
             <span class="n">loss</span> <span class="o">=</span> <span class="n">loss_function</span><span class="p">(</span><span class="n">y_pred</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
 
@@ -420,12 +421,12 @@
     <span class="n">avg_acc</span> <span class="o">=</span> <span class="n">acc_sum</span> <span class="o">/</span> <span class="n">example_count</span>
     <span class="k">return</span> <span class="n">avg_loss</span><span class="p">,</span> <span class="n">avg_acc</span>
 
-<span class="k">def</span> <span class="nf">pytorch_test</span><span class="p">(</span><span class="n">pytorch_network</span><span class="p">,</span> <span class="n">loader</span><span class="p">,</span> <span class="n">loss_function</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">pytorch_test</span><span class="p">(</span><span class="n">network</span><span class="p">,</span> <span class="n">loader</span><span class="p">,</span> <span class="n">loss_function</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Tests the neural network on a DataLoader.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        pytorch_network (torch.nn.Module): The neural network to test.</span>
+<span class="sd">        network (torch.nn.Module): The neural network to test.</span>
 <span class="sd">        loader (torch.utils.data.DataLoader): The DataLoader to test on.</span>
 <span class="sd">        loss_function: The loss function.</span>
 
@@ -433,7 +434,7 @@
 <span class="sd">        A tuple (loss, accuracy) corresponding to an average of the losses and</span>
 <span class="sd">        an average of the accuracy, respectively, on the DataLoader.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">pytorch_network</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+    <span class="n">network</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
     <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
         <span class="n">loss_sum</span> <span class="o">=</span> <span class="mf">0.</span>
         <span class="n">acc_sum</span> <span class="o">=</span> <span class="mf">0.</span>
@@ -443,7 +444,7 @@
             <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
             <span class="n">y</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
 
-            <span class="n">y_pred</span> <span class="o">=</span> <span class="n">pytorch_network</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+            <span class="n">y_pred</span> <span class="o">=</span> <span class="n">network</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
             <span class="n">loss</span> <span class="o">=</span> <span class="n">loss_function</span><span class="p">(</span><span class="n">y_pred</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
 
             <span class="c1"># Since the loss and accuracy are averages for the batch, we multiply</span>
@@ -458,7 +459,7 @@
     <span class="k">return</span> <span class="n">avg_loss</span><span class="p">,</span> <span class="n">avg_acc</span>
 
 
-<span class="k">def</span> <span class="nf">pytorch_train</span><span class="p">(</span><span class="n">pytorch_network</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">pytorch_train</span><span class="p">(</span><span class="n">network</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This function transfers the neural network to the right device,</span>
 <span class="sd">    trains it for a certain number of epochs, tests at each epoch on</span>
@@ -466,7 +467,7 @@
 <span class="sd">    end of training.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        pytorch_network (torch.nn.Module): The neural network to train.</span>
+<span class="sd">        network (torch.nn.Module): The neural network to train.</span>
 
 <span class="sd">    Example:</span>
 <span class="sd">        This function displays something like this:</span>
@@ -482,27 +483,27 @@
 <span class="sd">                Loss: 0.09501855444908142</span>
 <span class="sd">                Accuracy: 97.12999725341797</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">pytorch_network</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">network</span><span class="p">)</span>
 
     <span class="c1"># Transfer weights on GPU if needed.</span>
-    <span class="n">pytorch_network</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+    <span class="n">network</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
 
-    <span class="n">optimizer</span> <span class="o">=</span> <span class="n">optim</span><span class="o">.</span><span class="n">SGD</span><span class="p">(</span><span class="n">pytorch_network</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="n">learning_rate</span><span class="p">)</span>
+    <span class="n">optimizer</span> <span class="o">=</span> <span class="n">optim</span><span class="o">.</span><span class="n">SGD</span><span class="p">(</span><span class="n">network</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="n">learning_rate</span><span class="p">)</span>
     <span class="n">loss_function</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">CrossEntropyLoss</span><span class="p">()</span>
 
     <span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">num_epochs</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
         <span class="c1"># Training the neural network via backpropagation</span>
-        <span class="n">train_loss</span><span class="p">,</span> <span class="n">train_acc</span> <span class="o">=</span> <span class="n">pytorch_train_one_epoch</span><span class="p">(</span><span class="n">pytorch_network</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">loss_function</span><span class="p">)</span>
+        <span class="n">train_loss</span><span class="p">,</span> <span class="n">train_acc</span> <span class="o">=</span> <span class="n">pytorch_train_one_epoch</span><span class="p">(</span><span class="n">network</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">loss_function</span><span class="p">)</span>
 
         <span class="c1"># Validation at the end of the epoch</span>
-        <span class="n">valid_loss</span><span class="p">,</span> <span class="n">valid_acc</span> <span class="o">=</span> <span class="n">pytorch_test</span><span class="p">(</span><span class="n">pytorch_network</span><span class="p">,</span> <span class="n">valid_loader</span><span class="p">,</span> <span class="n">loss_function</span><span class="p">)</span>
+        <span class="n">valid_loss</span><span class="p">,</span> <span class="n">valid_acc</span> <span class="o">=</span> <span class="n">pytorch_test</span><span class="p">(</span><span class="n">network</span><span class="p">,</span> <span class="n">valid_loader</span><span class="p">,</span> <span class="n">loss_function</span><span class="p">)</span>
 
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Epoch </span><span class="si">{}</span><span class="s2">/</span><span class="si">{}</span><span class="s2">: loss: </span><span class="si">{}</span><span class="s2">, acc: </span><span class="si">{}</span><span class="s2">, val_loss: </span><span class="si">{}</span><span class="s2">, val_acc: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
             <span class="n">epoch</span><span class="p">,</span> <span class="n">num_epochs</span><span class="p">,</span> <span class="n">train_loss</span><span class="p">,</span> <span class="n">train_acc</span><span class="p">,</span> <span class="n">valid_loss</span><span class="p">,</span> <span class="n">valid_acc</span>
         <span class="p">))</span>
 
     <span class="c1"># Test at the end of the training</span>
-    <span class="n">test_loss</span><span class="p">,</span> <span class="n">test_acc</span> <span class="o">=</span> <span class="n">pytorch_test</span><span class="p">(</span><span class="n">pytorch_network</span><span class="p">,</span> <span class="n">test_loader</span><span class="p">,</span> <span class="n">loss_function</span><span class="p">)</span>
+    <span class="n">test_loss</span><span class="p">,</span> <span class="n">test_acc</span> <span class="o">=</span> <span class="n">pytorch_test</span><span class="p">(</span><span class="n">network</span><span class="p">,</span> <span class="n">test_loader</span><span class="p">,</span> <span class="n">loss_function</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Test:</span><span class="se">\n\t</span><span class="s1">Loss: </span><span class="si">{}</span><span class="se">\n\t</span><span class="s1">Accuracy: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">test_loss</span><span class="p">,</span> <span class="n">test_acc</span><span class="p">))</span>
 </pre></div>
 </div>
@@ -520,22 +521,22 @@
 <section id="training-the-poutyne-way">
 <h2>Training the Poutyne way<a class="headerlink" href="#training-the-poutyne-way" title="Permalink to this headline"></a></h2>
 <p>That is, only 8 lines of code with a better output.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">poutyne_train</span><span class="p">(</span><span class="n">pytorch_network</span><span class="p">):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">poutyne_train</span><span class="p">(</span><span class="n">network</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This function creates a Poutyne Model (see https://poutyne.org/model.html), sends the</span>
 <span class="sd">    Model on the specified device, and uses the `fit_generator` method to train the</span>
 <span class="sd">    neural network. At the end, the `evaluate_generator` is used on  the test set.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        pytorch_network (torch.nn.Module): The neural network to train.</span>
+<span class="sd">        network (torch.nn.Module): The neural network to train.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">pytorch_network</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">network</span><span class="p">)</span>
 
-    <span class="n">optimizer</span> <span class="o">=</span> <span class="n">optim</span><span class="o">.</span><span class="n">SGD</span><span class="p">(</span><span class="n">pytorch_network</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="n">learning_rate</span><span class="p">)</span>
+    <span class="n">optimizer</span> <span class="o">=</span> <span class="n">optim</span><span class="o">.</span><span class="n">SGD</span><span class="p">(</span><span class="n">network</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="n">learning_rate</span><span class="p">)</span>
     <span class="n">loss_function</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">CrossEntropyLoss</span><span class="p">()</span>
 
     <span class="c1"># Poutyne Model on GPU</span>
-    <span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span><span class="n">pytorch_network</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">loss_function</span><span class="p">,</span> <span class="n">batch_metrics</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;accuracy&#39;</span><span class="p">],</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span><span class="n">network</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">loss_function</span><span class="p">,</span> <span class="n">batch_metrics</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;accuracy&#39;</span><span class="p">],</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
 
     <span class="c1"># Train</span>
     <span class="n">model</span><span class="o">.</span><span class="n">fit_generator</span><span class="p">(</span><span class="n">train_loader</span><span class="p">,</span> <span class="n">valid_loader</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="n">num_epochs</span><span class="p">)</span>
@@ -559,15 +560,15 @@
 <section id="poutyne-callbacks">
 <h2>Poutyne Callbacks<a class="headerlink" href="#poutyne-callbacks" title="Permalink to this headline"></a></h2>
 <p>One nice feature of Poutyne is <a class="reference internal" href="../callbacks.html#poutyne.Callback" title="poutyne.Callback"><code class="xref py py-class docutils literal notranslate"><span class="pre">callbacks</span></code></a>. Callbacks allow doing actions during the training of the neural network. In the following example, we use three callbacks. One that saves the latest weights in a file to be able to continue the optimization at the end of training if more epochs are needed. Another one that saves the best weights according to the performance on the validation dataset. Finally, another one that saves the displayed logs into a TSV file.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">train_with_callbacks</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">pytorch_network</span><span class="p">):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">train_with_callbacks</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">network</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    In addition to the the `poutyne_train`, this function saves checkpoints and logs as described above.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        name (str): a name used to save logs and checkpoints.</span>
-<span class="sd">        pytorch_network (torch.nn.Module): The neural network to train.</span>
+<span class="sd">        network (torch.nn.Module): The neural network to train.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">pytorch_network</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">network</span><span class="p">)</span>
 
     <span class="c1"># We are saving everything into ./saves/{name}.</span>
     <span class="n">save_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s1">&#39;saves&#39;</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
@@ -587,10 +588,10 @@
         <span class="n">CSVLogger</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">save_path</span><span class="p">,</span> <span class="s1">&#39;log.tsv&#39;</span><span class="p">),</span> <span class="n">separator</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">),</span>
     <span class="p">]</span>
 
-    <span class="n">optimizer</span> <span class="o">=</span> <span class="n">optim</span><span class="o">.</span><span class="n">SGD</span><span class="p">(</span><span class="n">pytorch_network</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="n">learning_rate</span><span class="p">)</span>
+    <span class="n">optimizer</span> <span class="o">=</span> <span class="n">optim</span><span class="o">.</span><span class="n">SGD</span><span class="p">(</span><span class="n">network</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="n">learning_rate</span><span class="p">)</span>
     <span class="n">loss_function</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">CrossEntropyLoss</span><span class="p">()</span>
 
-    <span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span><span class="n">pytorch_network</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">loss_function</span><span class="p">,</span> <span class="n">batch_metrics</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;accuracy&#39;</span><span class="p">],</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span><span class="n">network</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">loss_function</span><span class="p">,</span> <span class="n">batch_metrics</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;accuracy&#39;</span><span class="p">],</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
     <span class="n">model</span><span class="o">.</span><span class="n">fit_generator</span><span class="p">(</span><span class="n">train_loader</span><span class="p">,</span> <span class="n">valid_loader</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="n">num_epochs</span><span class="p">,</span> <span class="n">callbacks</span><span class="o">=</span><span class="n">callbacks</span><span class="p">)</span>
 
     <span class="n">test_loss</span><span class="p">,</span> <span class="n">test_acc</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">evaluate_generator</span><span class="p">(</span><span class="n">test_loader</span><span class="p">)</span>
@@ -612,48 +613,54 @@
 <h2>Making Your Own Callback<a class="headerlink" href="#making-your-own-callback" title="Permalink to this headline"></a></h2>
 <p>While Poutyne provides a great number of <a class="reference internal" href="../callbacks.html#callbacks"><span class="std std-ref">predefined callbacks</span></a>, it is sometimes useful to make your own callback. In addition to the documentation of the <a class="reference internal" href="../callbacks.html#poutyne.Callback" title="poutyne.Callback"><code class="xref py py-class docutils literal notranslate"><span class="pre">Callback</span></code></a> class, see the <a class="reference internal" href="tips_and_tricks.html#making-your-own-callback"><span class="std std-ref">Making Your Own Callback section</span></a> in the <a class="reference internal" href="tips_and_tricks.html#tips-and-tricks"><span class="std std-ref">Tips and Tricks page</span></a> for an example.</p>
 </section>
-<section id="poutyne-experiment">
-<h2>Poutyne Experiment<a class="headerlink" href="#poutyne-experiment" title="Permalink to this headline"></a></h2>
+<section id="poutyne-modelbundle">
+<h2>Poutyne ModelBundle<a class="headerlink" href="#poutyne-modelbundle" title="Permalink to this headline"></a></h2>
 <p>Most of the time when using Poutyne (or even Pytorch in general), we will find ourselves in an iterative model hyperparameters finetuning loop. For efficient model search, we will usually wish to save our best performing models, their training and testing statistics and even sometimes wish to retrain an already trained model for further tuning. All of the above can be easily implemented with the flexibility of Poutyne Callbacks, but having to define and initialize each and every Callback object we wish for our model quickly feels cumbersome.</p>
-<p>This is why Poutyne provides an <a class="reference internal" href="../experiment.html#poutyne.Experiment" title="poutyne.Experiment"><code class="xref py py-class docutils literal notranslate"><span class="pre">Experiment</span></code></a> class, which aims specifically at enabling quick model iteration search, while not sacrifying on the quality of a single experiment - statistics logging, best models saving, etc. Experiment is actually a simple wrapper between a PyTorch network and Poutyne’s core Callback objects for logging and saving. Given a working directory where to output the various logging files and a PyTorch network, the Experiment class reduces the whole training loop to a single line.</p>
-<p>The following code uses Poutyne’s <a class="reference internal" href="../experiment.html#poutyne.Experiment" title="poutyne.Experiment"><code class="xref py py-class docutils literal notranslate"><span class="pre">Experiment</span></code></a> class to train a network for 5 epochs. The code is quite simpler than the code in the Poutyne Callbacks section while doing more (only 3 lines). Once trained for 5 epochs, it is then possible to resume the optimization at the 5th epoch for 5 more epochs until the 10th epoch using the same function.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">experiment_train</span><span class="p">(</span><span class="n">pytorch_network</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
+<p>This is why Poutyne provides a <a class="reference internal" href="../experiment.html#poutyne.ModelBundle" title="poutyne.ModelBundle"><code class="xref py py-class docutils literal notranslate"><span class="pre">ModelBundle</span></code></a> class, which aims specifically at enabling quick model iteration search, while not sacrifying on the quality of a single experiment - statistics logging, best models saving, etc. ModelBundle is actually a simple wrapper between a PyTorch network and Poutyne’s core Callback objects for logging and saving. Given a working directory where to output the various logging files and a PyTorch network, the ModelBundle class reduces the whole training loop to a single line.</p>
+<p>The following code uses Poutyne’s <a class="reference internal" href="../experiment.html#poutyne.ModelBundle" title="poutyne.ModelBundle"><code class="xref py py-class docutils literal notranslate"><span class="pre">ModelBundle</span></code></a> class to train a network for 5 epochs. The code is quite simpler than the code in the Poutyne Callbacks section while doing more (only 3 lines). Once trained for 5 epochs, it is then possible to resume the optimization at the 5th epoch for 5 more epochs until the 10th epoch using the same function.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">train_model_bundle</span><span class="p">(</span><span class="n">network</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    This function creates a Poutyne Experiment, trains the input module</span>
+<span class="sd">    This function creates a Poutyne ModelBundle, trains the input module</span>
 <span class="sd">    on the train loader and then tests its performance on the test loader.</span>
 <span class="sd">    All training and testing statistics are saved, as well as best model</span>
 <span class="sd">    checkpoints.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        pytorch_network (torch.nn.Module): The neural network to train.</span>
+<span class="sd">        network (torch.nn.Module): The neural network to train.</span>
 <span class="sd">        working_directory (str): The directory where to output files to save.</span>
 <span class="sd">        epochs (int): The number of epochs. (Default: 5)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">pytorch_network</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">network</span><span class="p">)</span>
 
-    <span class="n">optimizer</span> <span class="o">=</span> <span class="n">optim</span><span class="o">.</span><span class="n">SGD</span><span class="p">(</span><span class="n">pytorch_network</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="n">learning_rate</span><span class="p">)</span>
+    <span class="n">optimizer</span> <span class="o">=</span> <span class="n">optim</span><span class="o">.</span><span class="n">SGD</span><span class="p">(</span><span class="n">network</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="n">learning_rate</span><span class="p">)</span>
 
     <span class="c1"># Everything is going to be saved in ./saves/{name}.</span>
     <span class="n">save_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s1">&#39;saves&#39;</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
 
-    <span class="c1"># Poutyne Experiment</span>
-    <span class="n">expt</span> <span class="o">=</span> <span class="n">Experiment</span><span class="p">(</span><span class="n">save_path</span><span class="p">,</span> <span class="n">pytorch_network</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span> <span class="n">optimizer</span><span class="o">=</span><span class="n">optimizer</span><span class="p">,</span> <span class="n">task</span><span class="o">=</span><span class="s1">&#39;classif&#39;</span><span class="p">)</span>
+    <span class="c1"># Poutyne ModelBundle</span>
+    <span class="n">model_bundle</span> <span class="o">=</span> <span class="n">ModelBundle</span><span class="o">.</span><span class="n">from_network</span><span class="p">(</span>
+        <span class="n">save_path</span><span class="p">,</span>
+        <span class="n">network</span><span class="p">,</span>
+        <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span>
+        <span class="n">optimizer</span><span class="o">=</span><span class="n">optimizer</span><span class="p">,</span>
+        <span class="n">task</span><span class="o">=</span><span class="s1">&#39;classif&#39;</span><span class="p">,</span>
+    <span class="p">)</span>
 
     <span class="c1"># Train</span>
-    <span class="n">expt</span><span class="o">.</span><span class="n">train</span><span class="p">(</span><span class="n">train_loader</span><span class="p">,</span> <span class="n">valid_loader</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="n">epochs</span><span class="p">)</span>
+    <span class="n">model_bundle</span><span class="o">.</span><span class="n">train</span><span class="p">(</span><span class="n">train_loader</span><span class="p">,</span> <span class="n">valid_loader</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="n">epochs</span><span class="p">)</span>
 
     <span class="c1"># Test</span>
-    <span class="n">expt</span><span class="o">.</span><span class="n">test</span><span class="p">(</span><span class="n">test_loader</span><span class="p">)</span>
+    <span class="n">model_bundle</span><span class="o">.</span><span class="n">test</span><span class="p">(</span><span class="n">test_loader</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Let’s train the convolutional network with Experiment for 5 epochs. Everything is saved in <code class="docutils literal notranslate"><span class="pre">./conv_net_experiment</span></code>.</p>
+<p>Let’s train the convolutional network with ModelBundle for 5 epochs. Everything is saved in <code class="docutils literal notranslate"><span class="pre">./conv_net_model_bundle</span></code>.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">conv_net</span> <span class="o">=</span> <span class="n">create_convolutional_network</span><span class="p">()</span>
-<span class="n">experiment_train</span><span class="p">(</span><span class="n">conv_net</span><span class="p">,</span> <span class="s1">&#39;conv_net_experiment&#39;</span><span class="p">)</span>
+<span class="n">train_model_bundle</span><span class="p">(</span><span class="n">conv_net</span><span class="p">,</span> <span class="s1">&#39;conv_net_model_bundle&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Let’s resume training for 5 more epochs (10 epochs total).</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">conv_net</span> <span class="o">=</span> <span class="n">create_convolutional_network</span><span class="p">()</span>
-<span class="n">experiment_train</span><span class="p">(</span><span class="n">conv_net</span><span class="p">,</span> <span class="s1">&#39;conv_net_experiment&#39;</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">train_model_bundle</span><span class="p">(</span><span class="n">conv_net</span><span class="p">,</span> <span class="s1">&#39;conv_net_model_bundle&#39;</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
@@ -670,7 +677,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2018-2021, Frédérik Paradis.</p>
+    <p>&#169; Copyright 2018-2022, Frédérik Paradis.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
