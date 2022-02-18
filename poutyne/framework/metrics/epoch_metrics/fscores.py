@@ -1,5 +1,25 @@
 """
-The source code of this file was copied from the AllenNLP project, and has been modified.
+The source code of this file was copied from the AllenNLP project, and has been modified. All modifications
+made from the original source code are under the LGPLv3 license.
+
+
+Copyright (c) 2022 Poutyne and all respective contributors.
+
+Each contributor holds copyright over their respective contributions. The project versioning (Git)
+records all such contribution source information on the Poutyne and AllenNLP repository.
+
+This file is part of Poutyne.
+
+Poutyne is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+version.
+
+Poutyne is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public License along with Poutyne. If not, see
+<https://www.gnu.org/licenses/>.
+
 
 Copyright 2019 AllenNLP
 
@@ -15,6 +35,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+
 from typing import Optional, Union, List, Tuple
 import torch
 from .base import EpochMetric
