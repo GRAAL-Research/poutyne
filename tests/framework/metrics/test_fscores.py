@@ -99,7 +99,7 @@ class FBetaTest(TestCase):
 
     def test_fbeta_multiclass_state(self):
         fbeta = FBeta()
-        fbeta(self.predictions, self.targets)
+        fbeta.update(self.predictions, self.targets)
 
         # check state
         numpy.testing.assert_almost_equal(fbeta._pred_sum.tolist(), self.pred_sum)
@@ -111,7 +111,7 @@ class FBetaTest(TestCase):
         mask = torch.Tensor([1, 1, 1, 1, 1, 0])
 
         fbeta = FBeta()
-        fbeta(self.predictions, (self.targets, mask))
+        fbeta.update(self.predictions, (self.targets, mask))
 
         numpy.testing.assert_almost_equal(fbeta._pred_sum.tolist(), [1, 3, 0, 1, 0])
         numpy.testing.assert_almost_equal(fbeta._true_sum.tolist(), [2, 1, 0, 1, 1])
@@ -121,7 +121,7 @@ class FBetaTest(TestCase):
         targets = self.targets.clone()
         targets[-1] = -100
         fbeta = FBeta()
-        fbeta(self.predictions, targets)
+        fbeta.update(self.predictions, targets)
 
         numpy.testing.assert_almost_equal(fbeta._pred_sum.tolist(), [1, 3, 0, 1, 0])
         numpy.testing.assert_almost_equal(fbeta._true_sum.tolist(), [2, 1, 0, 1, 1])
@@ -133,7 +133,7 @@ class FBetaTest(TestCase):
         mask = torch.Tensor([1, 1, 1, 1, 0, 1])
 
         fbeta = FBeta()
-        fbeta(self.predictions, (targets, mask))
+        fbeta.update(self.predictions, (targets, mask))
 
         numpy.testing.assert_almost_equal(fbeta._pred_sum.tolist(), [1, 3, 0, 0, 0])
         numpy.testing.assert_almost_equal(fbeta._true_sum.tolist(), [2, 1, 0, 0, 1])
@@ -195,7 +195,7 @@ class FBetaTest(TestCase):
 
     def test_fbeta_multiclass_macro_average_metric_multireturn(self):
         fbeta = FBeta(average='macro')
-        fbeta(self.predictions, self.targets)
+        fbeta.update(self.predictions, self.targets)
         fscore, precision, recall = fbeta.get_metric()
 
         macro_precision = numpy.mean(self.desired_precisions)
@@ -218,7 +218,7 @@ class FBetaTest(TestCase):
         mask = torch.Tensor([1])
 
         fbeta = FBeta()
-        fbeta(predictions, (targets, mask))
+        fbeta.update(predictions, (targets, mask))
 
         numpy.testing.assert_almost_equal(fbeta._pred_sum.tolist(), [0.0, 1.0, 0.0, 0.0])
         numpy.testing.assert_almost_equal(fbeta._true_sum.tolist(), [0.0, 1.0, 0.0, 0.0])
@@ -230,7 +230,7 @@ class FBetaTest(TestCase):
         targets[-1] = -100
         mask = torch.Tensor([1, 1, 1, 1, 0, 1])
 
-        fbeta = FBeta(return_batch_value=True)
+        fbeta = FBeta()
         batch_value = fbeta(self.predictions, (targets, mask))
         epoch_value = fbeta.get_metric()
 
@@ -238,7 +238,7 @@ class FBetaTest(TestCase):
 
     def _compute(self, *args, **kwargs):
         fbeta = FBeta(*args, **kwargs)
-        fbeta(self.predictions, self.targets)
+        fbeta.update(self.predictions, self.targets)
         return fbeta.get_metric()
 
     def test_names(self):
@@ -334,7 +334,7 @@ class FBetaBinaryTest(TestCase):
 
     def test_fbeta_binary(self):
         fbeta = FBeta(average='binary')
-        fbeta(self.predictions, self.targets)
+        fbeta.update(self.predictions, self.targets)
 
         # check state
         numpy.testing.assert_almost_equal(fbeta._pred_sum.tolist(), self.pred_sum)
@@ -345,7 +345,7 @@ class FBetaBinaryTest(TestCase):
 
     def test_fbeta_binary_one_dim_pred(self):
         fbeta = FBeta(average='binary')
-        fbeta(self.predictions[:, 1:] - self.predictions[:, 0:1], self.targets)
+        fbeta.update(self.predictions[:, 1:] - self.predictions[:, 0:1], self.targets)
 
         # check state
         numpy.testing.assert_almost_equal(fbeta._pred_sum.tolist(), self.pred_sum)
@@ -356,7 +356,7 @@ class FBetaBinaryTest(TestCase):
 
     def test_fbeta_binary_zero_dim_pred(self):
         fbeta = FBeta(average='binary')
-        fbeta(self.predictions[:, 1] - self.predictions[:, 0], self.targets)
+        fbeta.update(self.predictions[:, 1] - self.predictions[:, 0], self.targets)
 
         # check state
         numpy.testing.assert_almost_equal(fbeta._pred_sum.tolist(), self.pred_sum)
@@ -366,7 +366,7 @@ class FBetaBinaryTest(TestCase):
         numpy.testing.assert_almost_equal(fbeta.get_metric(), self.output)
 
     def test_fbeta_binary_with_return_batch_value(self):
-        fbeta = FBeta(average='binary', return_batch_value=True)
+        fbeta = FBeta(average='binary')
         batch_value = fbeta(self.predictions, self.targets)
         epoch_value = fbeta.get_metric()
 

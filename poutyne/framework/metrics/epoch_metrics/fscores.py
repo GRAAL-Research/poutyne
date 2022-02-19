@@ -125,7 +125,6 @@ class FBeta(EpochMetric):
         ignore_index: int = -100,
         threshold: float = 0.0,
         names: Optional[Union[str, List[str]]] = None,
-        return_batch_value=False,
     ) -> None:
         super().__init__()
         self.metric_options = ('fscore', 'precision', 'recall')
@@ -153,7 +152,6 @@ class FBeta(EpochMetric):
         self.ignore_index = ignore_index
         self.threshold = threshold
         self.__name__ = self._get_names(names)
-        self.return_batch_value = return_batch_value
 
         # statistics
         # the total number of true positive instances under each class
@@ -198,7 +196,6 @@ class FBeta(EpochMetric):
             raise ValueError(f"`names` should contain names for the following metrics: {', '.join(default_name)}.")
 
     def forward(self, y_pred: torch.Tensor, y_true: Union[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]) -> None:
-        # pylint: disable=too-many-branches
         """
         Update the confusion matrix for calculating the F-score.
 
@@ -210,7 +207,14 @@ class FBeta(EpochMetric):
                 It can also be a tuple with two tensors of the same shape, the first being the
                 ground truths and the second being a mask.
         """
+        true_positive_sum, pred_sum, true_sum = self._update(y_pred, y_true)
+        return self._compute(true_positive_sum, pred_sum, true_sum)
 
+    def update(self, y_pred: torch.Tensor, y_true: Union[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]) -> None:
+        self._update(y_pred, y_true)
+
+    def _update(self, y_pred: torch.Tensor, y_true: Union[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]) -> None:
+        # pylint: disable=too-many-branches
         if isinstance(y_true, tuple):
             y_true, mask = y_true
             mask = mask.bool()
@@ -284,9 +288,7 @@ class FBeta(EpochMetric):
         self._true_sum += true_sum
         self._total_sum += mask.sum().to(torch.float)
 
-        if self.return_batch_value:
-            return self._compute(true_positive_sum, pred_sum, true_sum)
-        return None
+        return true_positive_sum, pred_sum, true_sum
 
     def get_metric(self) -> Union[float, List[float]]:
         """
