@@ -229,6 +229,7 @@ class Model:
         epoch_metrics = list(map(get_epoch_metric, epoch_metrics))
         self.epoch_metrics, epoch_metrics_names = get_callables_and_names(epoch_metrics)
 
+        torch_metrics = list(map(get_epoch_metric, torch_metrics))
         self.torch_metrics, torch_metrics_names = get_callables_and_names(torch_metrics)
 
         self.original_batch_metrics_names, self.original_epoch_metrics_names, self.original_torch_metrics_names = (

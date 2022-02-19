@@ -345,6 +345,30 @@ class MetricsModelIntegrationTest(unittest.TestCase):
                 self.assertIn('val_' + name, logs)
                 self.assertEqual(ANY, logs['val_' + name])
 
+    def test_torch_metrics_with_str_str_tuple(self):
+        dataset_size = MetricsModelIntegrationTest.batch_size * MetricsModelIntegrationTest.steps_per_epoch
+        torch.manual_seed(42)
+        train_x = torch.rand(dataset_size, 1)
+        train_y = torch.randint(10, (dataset_size,))
+        valid_x = torch.rand(dataset_size, 1)
+        valid_y = torch.randint(10, (dataset_size,))
+
+        model = Model(nn.Linear(1, 10), 'sgd', 'cross_entropy', torch_metrics=['f1', ('f1_2', 'f1')])
+        names = ['fscore_macro', 'f1_2']
+        history = model.fit(
+            train_x,
+            train_y,
+            validation_data=(valid_x, valid_y),
+            batch_size=MetricsModelIntegrationTest.batch_size,
+            epochs=MetricsModelIntegrationTest.epochs,
+        )
+        for logs in history:
+            for name in names:
+                self.assertIn(name, logs)
+                self.assertEqual(ANY, logs[name])
+                self.assertIn('val_' + name, logs)
+                self.assertEqual(ANY, logs['val_' + name])
+
 
 class MetricsRenamingTest(unittest.TestCase):
     def test_batch_metrics(self):
