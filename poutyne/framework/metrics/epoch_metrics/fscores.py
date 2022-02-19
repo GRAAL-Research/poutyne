@@ -36,6 +36,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+import warnings
 from typing import Optional, Union, List, Tuple
 import torch
 from .base import EpochMetric
@@ -130,6 +131,9 @@ class FBeta(EpochMetric):
         self.metric_options = ('fscore', 'precision', 'recall')
         if metric is not None and metric not in self.metric_options:
             raise ValueError(f"`metric` has to be one of {self.metric_options}.")
+
+        if metric in ('precision', 'recall') and beta != 1.0:
+            warnings.warn(f"The use of the `beta` argument is useless with {repr(metric)}.")
 
         average_options = ('binary', 'micro', 'macro')
         if average not in average_options and not isinstance(average, int):
@@ -350,8 +354,9 @@ class F1(FBeta):
         where ``{average}`` is replaced by the value of the respective parameter.
     """
 
-    def __init__(self, average='macro'):
-        super().__init__(metric='fscore', average=average, beta=1)
+    def __init__(self, **kwargs):
+        _raise_invalid_use_of_beta('F1', kwargs)
+        super().__init__(metric='fscore', **kwargs)
 
 
 @register_epoch_metric
@@ -369,8 +374,8 @@ class Precision(FBeta):
         where ``{average}`` is replaced by the value of the respective parameter.
     """
 
-    def __init__(self, average='macro'):
-        super().__init__(metric='precision', average=average)
+    def __init__(self, **kwargs):
+        super().__init__(metric='precision', **kwargs)
 
 
 @register_epoch_metric
@@ -388,8 +393,8 @@ class Recall(FBeta):
         where ``{average}`` is replaced by the value of the respective parameter.
     """
 
-    def __init__(self, average='macro'):
-        super().__init__(metric='recall', average=average)
+    def __init__(self, **kwargs):
+        super().__init__(metric='recall', **kwargs)
 
 
 @register_epoch_metric('binaryf1', 'binf1')
@@ -406,8 +411,10 @@ class BinaryF1(FBeta):
         - Validation: ``'val_bin_fscore'``
     """
 
-    def __init__(self, threshold=0.0):
-        super().__init__(metric='fscore', average='binary', beta=1, threshold=threshold, names='bin_fscore')
+    def __init__(self, **kwargs):
+        _raise_invalid_use_of_beta('BinaryF1', kwargs)
+        kwargs = {'names': 'bin_fscore', **kwargs}
+        super().__init__(metric='fscore', average='binary', **kwargs)
 
 
 @register_epoch_metric('binaryprecision', 'binprecision')
@@ -424,8 +431,9 @@ class BinaryPrecision(FBeta):
         - Validation: ``'val_bin_precision'``
     """
 
-    def __init__(self, threshold=0.0):
-        super().__init__(metric='precision', average='binary', threshold=threshold, names='bin_precision')
+    def __init__(self, **kwargs):
+        kwargs = {'names': 'bin_precision', **kwargs}
+        super().__init__(metric='precision', average='binary', **kwargs)
 
 
 @register_epoch_metric('binaryrecall', 'binrecall')
@@ -442,8 +450,9 @@ class BinaryRecall(FBeta):
         - Validation: ``'val_bin_recall'``
     """
 
-    def __init__(self, threshold=0.0):
-        super().__init__(metric='recall', average='binary', threshold=threshold, names='bin_recall')
+    def __init__(self, **kwargs):
+        kwargs = {'names': 'bin_recall', **kwargs}
+        super().__init__(metric='recall', average='binary', **kwargs)
 
 
 def _prf_divide(numerator, denominator):
@@ -459,3 +468,8 @@ def _prf_divide(numerator, denominator):
     # remove nan
     result[mask] = 0.0
     return result
+
+
+def _raise_invalid_use_of_beta(name, kwargs):
+    if 'beta' in kwargs:
+        raise ValueError(f"The use of the `beta` argument with {name} is invalid. Use FBeta instead.")

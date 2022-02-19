@@ -43,7 +43,7 @@ import numpy
 import torch
 import torch.nn as nn
 
-from poutyne import FBeta, Model
+from poutyne import FBeta, F1, BinaryF1, Model
 
 
 class FBetaTest(TestCase):
@@ -83,6 +83,14 @@ class FBetaTest(TestCase):
 
         # Bad average option
         self.assertRaises(ValueError, FBeta, average='mega')
+
+        # F1 classes with beta different than 1.
+        self.assertRaises(ValueError, F1, beta=2.0)
+        self.assertRaises(ValueError, BinaryF1, beta=2.0)
+
+        # Precision and recall with beta different than 1.
+        self.assertWarns(UserWarning, FBeta, metric='precision', beta=2.0)
+        self.assertWarns(UserWarning, FBeta, metric='recall', beta=2.0)
 
     def test_runtime_errors(self):
         fbeta = FBeta()
