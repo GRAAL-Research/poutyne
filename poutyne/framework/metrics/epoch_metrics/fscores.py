@@ -124,6 +124,7 @@ class FBeta(EpochMetric):
         ignore_index: int = -100,
         threshold: float = 0.0,
         names: Optional[Union[str, List[str]]] = None,
+        return_batch_value=False,
     ) -> None:
         super().__init__()
         self.metric_options = ('fscore', 'precision', 'recall')
@@ -148,6 +149,7 @@ class FBeta(EpochMetric):
         self.ignore_index = ignore_index
         self.threshold = threshold
         self.__name__ = self._get_names(names)
+        self.return_batch_value = return_batch_value
 
         # statistics
         # the total number of true positive instances under each class
@@ -278,6 +280,10 @@ class FBeta(EpochMetric):
         self._true_sum += true_sum
         self._total_sum += mask.sum().to(torch.float)
 
+        if self.return_batch_value:
+            return self._compute(true_positive_sum, pred_sum, true_sum)
+        return None
+
     def get_metric(self) -> Union[float, List[float]]:
         """
         Returns either a float if a single metric is set in the ``__init__`` or a list
@@ -286,10 +292,9 @@ class FBeta(EpochMetric):
         if self._true_positive_sum is None:
             raise RuntimeError("You never call this metric before.")
 
-        tp_sum = self._true_positive_sum
-        pred_sum = self._pred_sum
-        true_sum = self._true_sum
+        return self._compute(self._true_positive_sum, self._pred_sum, self._true_sum)
 
+    def _compute(self, tp_sum, pred_sum, true_sum):
         if self._average == 'micro':
             tp_sum = tp_sum.sum()
             pred_sum = pred_sum.sum()

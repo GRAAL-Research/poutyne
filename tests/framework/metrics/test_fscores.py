@@ -217,6 +217,17 @@ class FBetaTest(TestCase):
         numpy.testing.assert_almost_equal(fbeta._true_positive_sum.tolist(), [0.0, 1.0, 0.0, 0.0])
         numpy.testing.assert_almost_equal(fbeta._total_sum.tolist(), [1.0, 1.0, 1.0, 1.0])
 
+    def test_fbeta_with_return_batch_value(self):
+        targets = self.targets.clone()
+        targets[-1] = -100
+        mask = torch.Tensor([1, 1, 1, 1, 0, 1])
+
+        fbeta = FBeta(return_batch_value=True)
+        batch_value = fbeta(self.predictions, (targets, mask))
+        epoch_value = fbeta.get_metric()
+
+        self.assertEqual(batch_value, epoch_value)
+
     def _compute(self, *args, **kwargs):
         fbeta = FBeta(*args, **kwargs)
         fbeta(self.predictions, self.targets)
@@ -345,3 +356,10 @@ class FBetaBinaryTest(TestCase):
         numpy.testing.assert_almost_equal(fbeta._true_positive_sum.tolist(), self.true_positive_sum)
         numpy.testing.assert_almost_equal(fbeta._total_sum.tolist(), self.total_sum)
         numpy.testing.assert_almost_equal(fbeta.get_metric(), self.output)
+
+    def test_fbeta_binary_with_return_batch_value(self):
+        fbeta = FBeta(average='binary', return_batch_value=True)
+        batch_value = fbeta(self.predictions, self.targets)
+        epoch_value = fbeta.get_metric()
+
+        self.assertEqual(batch_value, epoch_value)
