@@ -11,7 +11,18 @@ import torch.nn as nn
 import wandb
 
 from tests.framework.tools import some_data_generator
-from poutyne import Model, WandBLogger, ModelCheckpoint
+from poutyne import Model, WandBLogger, ModelCheckpoint, Callback
+
+
+class History(Callback):
+    def on_epoch_end(self, epoch_number, logs):
+        self.history.append(logs)
+
+    def on_train_batch_end(self, batch_number, logs):
+        self.history.append(logs)
+
+    def on_train_begin(self, logs):
+        self.history = []
 
 
 class WandBLoggerTest(TestCase):
@@ -161,11 +172,11 @@ class WandBLoggerTest(TestCase):
             experience_call = []
             for log in history:
                 epoch = log["epoch"]
-                train_metrics = {key: value for (key, value) in log.items() if "val_" not in key}
+                train_metrics = {key: value for (key, value) in log.items() if not key.startswith("val_")}
                 train_metrics = {"training": train_metrics}
                 experience_call.append(call.log(train_metrics, step=epoch))
 
-                val_metrics = {key.replace("val_", ""): value for (key, value) in log.items() if "val_" in key}
+                val_metrics = {key[4:]: value for (key, value) in log.items() if key.startswith("val_")}
                 val_metrics = {"validation": val_metrics}
                 experience_call.append(call(val_metrics, step=epoch))
 
@@ -182,12 +193,34 @@ class WandBLoggerTest(TestCase):
             wandb_patch.run = None
             num_batchs = 5
             logger = WandBLogger(name=self.a_name, log_gradient_frequency=1, batch_granularity=True)
+            history = History()
             self.model.fit_generator(
-                train_gen, valid_gen, epochs=self.num_epochs, steps_per_epoch=num_batchs, callbacks=[logger]
+                train_gen, valid_gen, epochs=self.num_epochs, steps_per_epoch=num_batchs, callbacks=[logger, history]
             )
+            experience_call = []
+            for log in history.history:
+                try:
+                    epoch = log["epoch"]
+                    train_metrics = {key: value for (key, value) in log.items() if not key.startswith("val_")}
+                    train_metrics = {"training": {"epoch": train_metrics}}
+                    # experience_call.append(call.log(train_metrics, step=epoch))
+                    experience_call.append(call.log(train_metrics))
+                    val_metrics = {key[4:]: value for (key, value) in log.items() if key.startswith("val_")}
+                    val_metrics = {"validation": {"epoch": val_metrics}}
+                    # experience_call.append(call(val_metrics, step=epoch))
+                    experience_call.append(call(val_metrics))
 
-            call_count = self.num_epochs * num_batchs + 3 * self.num_epochs
-            self.assertEqual(logger.run.log.call_count, call_count)
+                    # experience_call.append(call({"params": {"lr": self.a_lr}}, step=epoch))
+                    experience_call.append(call({"params": {"lr": self.a_lr}}))
+                except KeyError:
+                    train_metrics = {key: value for (key, value) in log.items() if not key.startswith("val_")}
+                    val_metrics = {key[4:]: value for (key, value) in log.items() if key.startswith("val_")}
+                    train_metrics = {"training": {"batch": train_metrics}}
+                    val_metrics = {"validation": {"batch": val_metrics}}
+                    experience_call.append(call(train_metrics))
+                    experience_call.append(call(val_metrics))
+
+            logger.run.log.assert_has_calls(experience_call, any_order=False)
 
     def test_log_testgenerator(self):
 
@@ -243,6 +276,7 @@ class WandBLoggerTest(TestCase):
                 with patch("poutyne.framework.torch.randn") as torch_randn_patch:
                     train_gen = some_data_generator(20)
                     valid_gen = some_data_generator(20)
+
                     wandb_patch.init = self.initialize_experience
                     wandb_patch.run = None
                     num_batchs = 5

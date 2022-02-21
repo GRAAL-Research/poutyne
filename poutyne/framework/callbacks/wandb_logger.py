@@ -20,46 +20,47 @@ class WandBLogger(Logger):
     parameters, metrics update, models log, gradient
     values and other information. The logger will log
     all run into the same experiment.
+
     Args:
         name(str): Display name for the run.
-        group (Optional[str]): the name of the group to which this run belongs.
-        config (Optional[Dict]): a dictionary summarizing the configuration
-        related to the current run.
+        group (Optional[str]): Specify a group to organize individual runs into a larger experiment
+        config (Optional[Dict]): A dictionary summarizing the configuration
+            related to the current run.
         save_dir(str): Path where data is saved (wandb dir by default).
-        offline(bool): Run offline (data can be streamed later to wandb servers).
+        offline(bool): Run logger offline to later stream data to a remote server.
         id(str): Sets the version, mainly used to resume a previous run.
         version(str): Same as id.
         anonymous(bool): Enables or explicitly disables anonymous logging.
-        project(str): The name of the project to which this run will belong.
+        project(str): The project's name to which this run will belong.
         experiment: Experiment to use instead of creating a new one.
         batch_granularity(bool): Whether to also output the result of each batch in addition to the epochs.
-        (Default value = False).
-        checkpoints_path (Optional[str]): a string leading to the checkpoint saving directory.
-        Specify this argument if you which to log the model checkpoints at the end of the
-        training phase.
+            (Default value = False).
+        checkpoints_path (Optional[str]): A path leading to the checkpoint saving directory.
+            You need to specify this argument to log the model checkpoints at the end of the training phase.
         initial_artifacts_paths (Optional[List[str]]): a list of paths leading to artifacts
-        to be logged before the start of the training.
+            to be logged before the start of the training.
         log_gradient_frequency(int): log gradients and parameters every N batches (Default value = None).
-        training_batch_shape(tuples): Shape of a training batch. Used for logging architecture on wandb
+        training_batch_shape(tuples): Shape of a training batch. Used for logging architecture on wandb.
+
     Example:
         .. code-block:: python
 
             wandb_logger = WandBLogger(
-                                        name="First_run",
-                                        project="Test_project",
-                                        save_dir="/absolute/path/to/directory",
-                                        experiment="First experiment"
-                                       )
+                name="First_run",
+                project="Test_project",
+                save_dir="/absolute/path/to/directory",
+                experiment="First experiment"
+            )
             wandb_logger.log_config_params(config_params=cfg_dict) # logging the config dictionary
             # our Poutyne experiment
             experiment = Experiment(
-                                     directory=saving_directory,
-                                     network=network,
-                                     device=device,
-                                     optimizer=optimizer,
-                                     loss_function=cross_entropy_loss,
-                                     batch_metrics=[accuracy]
-                                    )
+                directory=saving_directory,
+                network=network,
+                device=device,
+                optimizer=optimizer,
+                loss_function=cross_entropy_loss,
+                batch_metrics=[accuracy]
+            )
             # Using the WandB logger callback during training
             experiment.train(train_generator=train_loader, valid_generator=valid_loader, epochs=1,
                              seed=42, callbacks=[wandb_logger])
@@ -115,8 +116,8 @@ class WandBLogger(Logger):
                 self.run = wandb.init(**self._wandb_init)
             else:
                 warnings.warn(
-                    "There is already a wandb run experience running. This callback will reuse this run. If you want "
-                    "to start a new one stop this process and call `wandb.finish()` before starting again."
+                    "There is already a wandb running experience. This callback will reuse this run. If you want"
+                    "to start a new one, stop this process and call `wandb.finish()` before starting again."
                 )
                 self.run = wandb.run
         else:
@@ -166,30 +167,36 @@ class WandBLogger(Logger):
         Log the batch metric.
         """
         if self.batch_granularity:
-            train_metrics = {key: value for (key, value) in logs.items() if "val_" not in key}
+            train_metrics = {key: value for (key, value) in logs.items() if not key.startswith("val_")}
+            val_metrics = {key[4:]: value for (key, value) in logs.items() if key.startswith("val_")}
             train_metrics = {"training": {"batch": train_metrics}}
-            self._log_metrics(train_metrics)
+            val_metrics = {"validation": {"batch": val_metrics}}
+            step = None
+            self._log_metrics(train_metrics, step=step)
+            self._log_metrics(val_metrics, step=step)
 
     def _on_epoch_end_write(self, epoch_number: int, logs: Dict) -> None:
         """
         Log the epoch metric.
         """
-        train_metrics = {key: value for (key, value) in logs.items() if "val_" not in key}
-        val_metrics = {key.replace("val_", ""): value for (key, value) in logs.items() if "val_" in key}
+        train_metrics = {key: value for (key, value) in logs.items() if not key.startswith("val_")}
+        val_metrics = {key[4:]: value for (key, value) in logs.items() if key.startswith("val_")}
         learning_rate = self._get_current_learning_rates()
 
         if self.batch_granularity:
             train_metrics = {"training": {"epoch": train_metrics}}
+            val_metrics = {"validation": {"epoch": val_metrics}}
+            step = None
         else:
             train_metrics = {"training": train_metrics}
+            val_metrics = {"validation": val_metrics}
+            step = epoch_number
 
-        val_metrics = {"validation": val_metrics}
+        self._log_metrics(train_metrics, step=step)
+        self._log_metrics(val_metrics, step=step)
+        self._log_params(learning_rate, step=step)
 
-        self._log_metrics(train_metrics, step=epoch_number)
-        self._log_metrics(val_metrics, step=epoch_number)
-        self._log_params(learning_rate, step=epoch_number)
-
-    def _on_train_end_write(self, logs: Dict):
+    def _on_train_end_write(self, logs: Dict) -> None:
         if self.checkpoints_path is not None:
             self._log_artifacts([self.checkpoints_path], "Checkpoints", artifact_type="Model-weights")
 
@@ -197,40 +204,40 @@ class WandBLogger(Logger):
         """
         Log metrics for a specific step.
         Args:
-            metrics (Dict): the metrics to log in the form of a dictionary.
-            step (int): the corresponding step.
+            metrics (Dict): The metrics to log in the form of a dictionary.
+            step (int): The corresponding step.
         """
         if self.batch_granularity:
             self.run.log(metrics)
         else:
             self.run.log(metrics, step=step)
 
-    def _log_params(self, params: Dict, step: int):
+    def _log_params(self, params: Dict, step: int) -> None:
         """
         Log parameters for a specific step.
         This functions logs parameters as metrics since wandb doesn't support
-        parameter logging. However, the logged parameters are prepended by the keyword
-        `parameter` so as to easily identify them.
+        parameter logging. However, the logged parameters are appended by the keyword
+        `parameter` to easily identify them.
         Args:
-            params (Dict): the parameters to log in the form of a dictionary.
-            step (int): the corresponding step.
+            params (Dict): The parameters to log in the form of a dictionary.
+            step (int): The corresponding step.
         """
         if self.batch_granularity:
             self.run.log({"params": params})
         else:
             self.run.log({"params": params}, step=step)
 
-    def _log_artifacts(self, paths: List[str], name: str, artifact_type: str):
+    def _log_artifacts(self, paths: List[str], name: str, artifact_type: str) -> None:
         """
         Log artifacts for a specific step.
         This function logs multiple artifacts under the same artifact group. if
-        you wish to log multiple artifacts alone (i.e: under different artifact
+        you wish to log multiple artifacts alone (i.e. under different artifact
         groups), you should make multiple calls to this function.
         Args:
-            paths (List[str]): a list of paths leading to the directories or files
+            paths (List[str]): A list of paths leading to the directories or files
                 that are to be logged.
-            name (str): the name of the artifact group.
-            artifact_type (str): the type of the artifact group.
+            name (str): The artifact group name.
+            artifact_type (str): The artifact group type.
         """
 
         artifact = wandb.Artifact(name=name, type=artifact_type)
@@ -248,7 +255,7 @@ class WandBLogger(Logger):
     def _on_test_end_write(self, logs: Dict):
         # The test metrics are logged a step further than the training's
         # last step
-        logs = {"testing": {key.replace("test_", ""): value for (key, value) in logs.items()}}
+        logs = {"testing": {key[:5]: value for (key, value) in logs.items()}}
         self._log_metrics(logs, step=self.run.step + 1)
 
     def on_test_end(self, logs: Dict):
