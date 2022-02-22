@@ -203,22 +203,18 @@ class WandBLoggerTest(TestCase):
                     epoch = log["epoch"]
                     train_metrics = {key: value for (key, value) in log.items() if not key.startswith("val_")}
                     train_metrics = {"training": {"epoch": train_metrics}}
-                    # experience_call.append(call.log(train_metrics, step=epoch))
+
                     experience_call.append(call.log(train_metrics))
                     val_metrics = {key[4:]: value for (key, value) in log.items() if key.startswith("val_")}
                     val_metrics = {"validation": {"epoch": val_metrics}}
-                    # experience_call.append(call(val_metrics, step=epoch))
+
                     experience_call.append(call(val_metrics))
 
-                    # experience_call.append(call({"params": {"lr": self.a_lr}}, step=epoch))
                     experience_call.append(call({"params": {"lr": self.a_lr}}))
                 except KeyError:
                     train_metrics = {key: value for (key, value) in log.items() if not key.startswith("val_")}
-                    val_metrics = {key[4:]: value for (key, value) in log.items() if key.startswith("val_")}
                     train_metrics = {"training": {"batch": train_metrics}}
-                    val_metrics = {"validation": {"batch": val_metrics}}
                     experience_call.append(call(train_metrics))
-                    experience_call.append(call(val_metrics))
 
             logger.run.log.assert_has_calls(experience_call, any_order=False)
 

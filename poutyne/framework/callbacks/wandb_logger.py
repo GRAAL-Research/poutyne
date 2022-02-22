@@ -48,7 +48,7 @@ class WandBLogger(Logger):
             wandb_logger = WandBLogger(
                 name="First_run",
                 project="Test_project",
-                save_dir="/absolute/path/to/directory",
+                save_dir="/path/to/directory",
                 experiment="First experiment"
             )
             wandb_logger.log_config_params(config_params=cfg_dict) # logging the config dictionary
@@ -104,7 +104,7 @@ class WandBLogger(Logger):
             id=version or run_id,
             dir=save_dir,
             resume="allow",
-            anonymous=anonymous_lut.get(anonymous, anonymous),
+            anonymous=anonymous_lut.get(anonymous),
         )
 
         if experiment is None:
@@ -167,13 +167,9 @@ class WandBLogger(Logger):
         Log the batch metric.
         """
         if self.batch_granularity:
-            train_metrics = {key: value for (key, value) in logs.items() if not key.startswith("val_")}
-            val_metrics = {key[4:]: value for (key, value) in logs.items() if key.startswith("val_")}
-            train_metrics = {"training": {"batch": train_metrics}}
-            val_metrics = {"validation": {"batch": val_metrics}}
+            train_metrics = {"training": {"batch": logs}}
             step = None
             self._log_metrics(train_metrics, step=step)
-            self._log_metrics(val_metrics, step=step)
 
     def _on_epoch_end_write(self, epoch_number: int, logs: Dict) -> None:
         """
