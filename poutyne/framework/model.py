@@ -1406,7 +1406,9 @@ class Model:
             return self._format_truth_pred_return((test_metrics_log,), pred_y, return_pred, true_y, return_ground_truth)
 
         metrics = np.concatenate((step_iterator.batch_metrics, step_iterator.epoch_metrics))
-        return self._format_loss_metrics_return(step_iterator.loss, metrics, pred_y, return_pred, true_y, return_ground_truth)
+        return self._format_loss_metrics_return(
+            step_iterator.loss, metrics, pred_y, return_pred, true_y, return_ground_truth
+        )
 
     def evaluate_on_batch(self, x, y, *, return_pred=False, return_dict_format=False, convert_to_numpy=True) -> Tuple:
         """

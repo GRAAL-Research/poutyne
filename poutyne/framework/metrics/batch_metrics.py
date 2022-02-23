@@ -230,13 +230,9 @@ def top1(y_pred, y_true, **kwargs):
 
 
 for k_value in range(2, 11):
-    register_metric_func_function(
-        TopKAccuracy(k_value), [f'top{k_value}', f'top{k_value}acc', f'top{k_value}accuracy']
-    )
+    register_metric_func_function(TopKAccuracy(k_value), [f'top{k_value}', f'top{k_value}acc', f'top{k_value}accuracy'])
 del k_value
 
 for k_value in range(20, 110, 10):
-    register_metric_func_function(
-        TopKAccuracy(k_value), [f'top{k_value}', f'top{k_value}acc', f'top{k_value}accuracy']
-    )
+    register_metric_func_function(TopKAccuracy(k_value), [f'top{k_value}', f'top{k_value}acc', f'top{k_value}accuracy'])
 del k_value
