@@ -21,7 +21,7 @@ You should have received a copy of the GNU Lesser General Public License along w
 # pylint: disable=abstract-method
 import torch.nn as nn
 
-from .metrics_registering import get_loss_or_metric, get_epoch_metric
+from .metrics_registering import get_metric
 from .utils import get_names_of_metric
 from .epoch_metrics.base import EpochMetric
 
@@ -55,14 +55,14 @@ class IndexedArgumentMetric(nn.Module):
 class IndexedArgumentBatchMetric(IndexedArgumentMetric):
     def __init__(self, metric, **kwargs):
         if isinstance(metric, str):
-            metric = get_loss_or_metric(metric)
+            metric = get_metric(metric)
         super().__init__(metric, **kwargs)
 
 
 class IndexedArgumentEpochMetric(IndexedArgumentMetric, EpochMetric):
     def __init__(self, metric, **kwargs):
         if isinstance(metric, str):
-            metric = get_epoch_metric(metric)
+            metric = get_metric(metric)
         super().__init__(metric, **kwargs)
 
     def get_metric(self):

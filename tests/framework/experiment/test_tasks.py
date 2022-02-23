@@ -55,8 +55,9 @@ class ExperimentTasksTest(TestCase):
     def _test_task_classif(self, expt):
         self.assertEqual(expt.monitor_metric, 'val_acc')
         self.assertEqual(expt.monitor_mode, 'max')
-        self.assertEqual(expt.model.loss_function, F.cross_entropy)
-        self.assertEqual(expt.model.batch_metrics, [acc])
+        self.assertEqual(expt.model.loss_function.func, F.cross_entropy)
+        self.assertEqual(len(expt.model.batch_metrics), 1)
+        self.assertEqual(expt.model.batch_metrics[0].func, acc)
         self.assertEqual(len(expt.model.epoch_metrics), 1)
         self.assertIsInstance(expt.model.epoch_metrics[0], FBeta)
 
@@ -80,6 +81,6 @@ class ExperimentTasksTest(TestCase):
     def _test_task_regr(self, expt):
         self.assertEqual(expt.monitor_metric, 'val_loss')
         self.assertEqual(expt.monitor_mode, 'min')
-        self.assertEqual(expt.model.loss_function, F.mse_loss)
+        self.assertEqual(expt.model.loss_function.func, F.mse_loss)
         self.assertEqual(len(expt.model.batch_metrics), 0)
         self.assertEqual(len(expt.model.epoch_metrics), 0)

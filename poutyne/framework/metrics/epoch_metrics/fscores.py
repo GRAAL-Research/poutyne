@@ -40,7 +40,7 @@ import warnings
 from typing import Optional, Union, List, Tuple
 import torch
 from .base import EpochMetric
-from ..metrics_registering import register_epoch_metric
+from ..metrics_registering import register_metric_class
 
 
 class FBeta(EpochMetric):
@@ -341,7 +341,7 @@ class FBeta(EpochMetric):
         self._total_sum = None
 
 
-@register_epoch_metric
+@register_metric_class
 class F1(FBeta):
     """
     Alias class for :class:`~poutyne.FBeta` where ``metric == 'fscore'`` and ``beta == 1``.
@@ -361,7 +361,7 @@ class F1(FBeta):
         super().__init__(metric='fscore', **kwargs)
 
 
-@register_epoch_metric
+@register_metric_class
 class Precision(FBeta):
     """
     Alias class for :class:`~poutyne.FBeta` where ``metric == 'precision'``.
@@ -380,7 +380,7 @@ class Precision(FBeta):
         super().__init__(metric='precision', **kwargs)
 
 
-@register_epoch_metric
+@register_metric_class
 class Recall(FBeta):
     """
     Alias class for :class:`~poutyne.FBeta` where ``metric == 'recall'``.
@@ -399,7 +399,7 @@ class Recall(FBeta):
         super().__init__(metric='recall', **kwargs)
 
 
-@register_epoch_metric('binaryf1', 'binf1')
+@register_metric_class('binaryf1', 'binf1')
 class BinaryF1(FBeta):
     """
     Alias class for :class:`~poutyne.FBeta` where ``metric == 'fscore'``, ``average='binary'`` and ``beta == 1``.
@@ -419,7 +419,7 @@ class BinaryF1(FBeta):
         super().__init__(metric='fscore', average='binary', **kwargs)
 
 
-@register_epoch_metric('binaryprecision', 'binprecision')
+@register_metric_class('binaryprecision', 'binprecision')
 class BinaryPrecision(FBeta):
     """
     Alias class for :class:`~poutyne.FBeta` where ``metric == 'precision'`` and ``average='binary'``.
@@ -438,7 +438,7 @@ class BinaryPrecision(FBeta):
         super().__init__(metric='precision', average='binary', **kwargs)
 
 
-@register_epoch_metric('binaryrecall', 'binrecall')
+@register_metric_class('binaryrecall', 'binrecall')
 class BinaryRecall(FBeta):
     """
     Alias class for :class:`~poutyne.FBeta` where ``metric == 'recall'`` and ``average='binary'``.

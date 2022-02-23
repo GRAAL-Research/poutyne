@@ -20,8 +20,6 @@ You should have received a copy of the GNU Lesser General Public License along w
 import itertools
 import timeit
 
-import numpy as np
-
 
 class Step:
     def __init__(self, number):
@@ -29,7 +27,6 @@ class Step:
 
         self.loss = None
         self.batch_metrics = None
-        self.torch_metrics = None
         self.size = None
 
 
@@ -52,7 +49,6 @@ class StepIterator:
         steps_per_epoch,
         batch_metrics_names,
         epoch_metrics_names,
-        torch_metrics_names,
         callback=None,
         mode=None,
     ):
@@ -62,7 +58,6 @@ class StepIterator:
         self.prefix = "" if mode == "train" else f"{mode}_"
         self.batch_metrics_names = [self.prefix + metric_name for metric_name in batch_metrics_names]
         self.epoch_metrics_names = [self.prefix + metric_name for metric_name in epoch_metrics_names]
-        self.torch_metrics_names = [self.prefix + metric_name for metric_name in torch_metrics_names]
 
         self.on_batch_begin = lambda *_: None
         self.on_batch_end = lambda *_: None
@@ -77,27 +72,17 @@ class StepIterator:
             self.on_batch_begin = callback.on_valid_batch_begin
             self.on_batch_end = callback.on_valid_batch_end
 
-        self.losses_sum = 0.0
-        self.batch_metrics_sum = np.zeros(len(self.batch_metrics_names))
-        self.sizes_sum = 0.0
+        self.loss = None
+        self.batch_metrics = None
         self.epoch_metrics = None
 
     @property
     def metrics_logs(self):
         logs = dict(zip(self.batch_metrics_names, self.batch_metrics))
         logs.update(dict(zip(self.epoch_metrics_names, self.epoch_metrics)))
-        logs.update(dict(zip(self.torch_metrics_names, self.torch_metrics)))
 
         logs = {f'{self.prefix}loss': self.loss, **logs}
         return logs
-
-    @property
-    def loss(self):
-        return self.losses_sum / self.sizes_sum
-
-    @property
-    def batch_metrics(self):
-        return self.batch_metrics_sum / self.sizes_sum
 
     def __iter__(self):
         time_since_last_batch = timeit.default_timer()
@@ -107,17 +92,11 @@ class StepIterator:
             step_data = Step(step)
             yield step_data, data
 
-            self.losses_sum += step_data.loss * step_data.size
-            self.batch_metrics_sum += step_data.batch_metrics * step_data.size
-            self.sizes_sum += step_data.size
-
             batch_end_time = timeit.default_timer()
             batch_total_time = batch_end_time - time_since_last_batch
             time_since_last_batch = batch_end_time
 
             metrics_log = dict(zip(self.batch_metrics_names, step_data.batch_metrics))
-            metrics_log.update(dict(zip(self.torch_metrics_names, step_data.torch_metrics)))
-
             batch_logs = {
                 'batch': step,
                 'size': step_data.size,
@@ -147,7 +126,6 @@ class EpochIterator:
         callback,
         batch_metrics_names,
         epoch_metrics_names,
-        torch_metrics_names,
     ):
         self.model = model
         self.train_generator = train_generator
@@ -159,7 +137,6 @@ class EpochIterator:
         self.callback = callback
         self.batch_metrics_names = batch_metrics_names
         self.epoch_metrics_names = epoch_metrics_names
-        self.torch_metrics_names = torch_metrics_names
         self.epoch_logs = []
 
         params = {'epochs': self.epochs, 'steps': self.steps_per_epoch}
@@ -192,7 +169,6 @@ class EpochIterator:
                 self.steps_per_epoch,
                 self.batch_metrics_names,
                 self.epoch_metrics_names,
-                self.torch_metrics_names,
                 self.callback,
                 mode="train",
             )
@@ -204,7 +180,6 @@ class EpochIterator:
                     self.validation_steps,
                     self.batch_metrics_names,
                     self.epoch_metrics_names,
-                    self.torch_metrics_names,
                     self.callback,
                     mode="val",
                 )
