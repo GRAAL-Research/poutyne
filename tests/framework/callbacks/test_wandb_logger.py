@@ -291,7 +291,7 @@ class WandBLoggerTest(TestCase):
                     )
 
                     torch_onx_patch.export.assert_called_once_with(
-                        self.pytorch_network, torch_randn_patch(), f"a_path/{self.a_name}_model.onnx"
+                        self.pytorch_network, torch_randn_patch().to(), f"a_path/{self.a_name}_model.onnx"
                     )
                     logger.run.save.assert_called_once_with(f"a_path/{self.a_name}_model.onnx")
 

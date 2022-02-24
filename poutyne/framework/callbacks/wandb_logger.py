@@ -140,7 +140,8 @@ class WandBLogger(Logger):
         """
         Save architecture.
         """
-        dummies_batch = torch.randn(self.training_batch_shape)
+        device = self.model.device
+        dummies_batch = torch.randn(self.training_batch_shape).to(device)
         save_path = self.run.dir + "/" + self.run.name + "_model.onnx"
         torch.onnx.export(self.model.network, dummies_batch, save_path)
         self.run.save(save_path)
@@ -251,7 +252,7 @@ class WandBLogger(Logger):
     def _on_test_end_write(self, logs: Dict):
         # The test metrics are logged a step further than the training's
         # last step
-        logs = {"testing": {key[:5]: value for (key, value) in logs.items()}}
+        logs = {"testing": {key.replace("test_",""): value for (key, value) in logs.items()}}
         self._log_metrics(logs, step=self.run.step + 1)
 
     def on_test_end(self, logs: Dict):
