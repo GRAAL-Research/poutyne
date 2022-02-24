@@ -116,7 +116,7 @@ class WandBLogger(Logger):
                 self.run = wandb.init(**self._wandb_init)
             else:
                 warnings.warn(
-                    "There is already a wandb running experience. This callback will reuse this run. If you want"
+                    "There is already a wandb running experiment. This callback will reuse this run. If you want"
                     "to start a new one, stop this process and call `wandb.finish()` before starting again."
                 )
                 self.run = wandb.run
