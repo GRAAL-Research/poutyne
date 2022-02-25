@@ -32,7 +32,7 @@ class WandBLogger(Logger):
         version(str): Same as id.
         anonymous(bool): Enables or explicitly disables anonymous logging.
         project(str): The project's name to which this run will belong.
-        experiment: WandB run to use instead of creating a new one. The other WandB's configuration 
+        experiment: WandB run to use instead of creating a new one. The other WandB's configuration
             parameters will be ignored.
         batch_granularity(bool): Whether to also output the result of each batch in addition to the epochs.
             (Default value = False).
@@ -257,4 +257,3 @@ class WandBLogger(Logger):
 
     def on_test_end(self, logs: Dict):
         self._on_test_end_write(logs)
-
