@@ -202,7 +202,7 @@ class WandBLoggerTest(TestCase):
             experiment_call = []
             for is_epoch, log in history.history:
                 if is_epoch:
-                    epoch = log["epoch"]
+
                     train_metrics = {key: value for (key, value) in log.items() if not key.startswith("val_")}
                     train_metrics = {"training": {"epoch": train_metrics}}
 
