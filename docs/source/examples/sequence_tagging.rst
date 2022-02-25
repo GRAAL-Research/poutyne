@@ -253,7 +253,7 @@ To do this padding, we use the ``collate_fn`` argument of the PyTorch :class:`~t
         # Each tensor in the second list is a sequence of tag indices.
         # The list of integer consist of the lengths of the sequences in order.
         sequences_vectors, sequences_labels, lengths = zip(*[
-            (torch.FloatTensor(seq_vectors), torch.LongTensor(labels), len(seq_vectors))
+            (torch.FloatTensor(np.stack(seq_vectors)), torch.LongTensor(labels), len(seq_vectors))
             for (seq_vectors, labels) in sorted(batch, key=lambda x: len(x[0]), reverse=True)
         ])
 

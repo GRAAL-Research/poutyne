@@ -1,5 +1,25 @@
 """
-The source code of this file was copied from the AllenNLP project, and has been modified.
+The source code of this file was copied from the AllenNLP project, and has been modified. All modifications
+made from the original source code are under the LGPLv3 license.
+
+
+Copyright (c) 2022 Poutyne and all respective contributors.
+
+Each contributor holds copyright over their respective contributions. The project versioning (Git)
+records all such contribution source information on the Poutyne and AllenNLP repository.
+
+This file is part of Poutyne.
+
+Poutyne is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+version.
+
+Poutyne is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public License along with Poutyne. If not, see
+<https://www.gnu.org/licenses/>.
+
 
 Copyright 2019 AllenNLP
 
@@ -21,8 +41,9 @@ from unittest import TestCase
 
 import numpy
 import torch
+import torch.nn as nn
 
-from poutyne import FBeta
+from poutyne import FBeta, F1, BinaryF1, Model
 
 
 class FBetaTest(TestCase):
@@ -63,6 +84,14 @@ class FBetaTest(TestCase):
         # Bad average option
         self.assertRaises(ValueError, FBeta, average='mega')
 
+        # F1 classes with beta different than 1.
+        self.assertRaises(ValueError, F1, beta=2.0)
+        self.assertRaises(ValueError, BinaryF1, beta=2.0)
+
+        # Precision and recall with beta different than 1.
+        self.assertWarns(UserWarning, FBeta, metric='precision', beta=2.0)
+        self.assertWarns(UserWarning, FBeta, metric='recall', beta=2.0)
+
     def test_runtime_errors(self):
         fbeta = FBeta()
         # Metric was never called.
@@ -70,7 +99,7 @@ class FBetaTest(TestCase):
 
     def test_fbeta_multiclass_state(self):
         fbeta = FBeta()
-        fbeta(self.predictions, self.targets)
+        fbeta.update(self.predictions, self.targets)
 
         # check state
         numpy.testing.assert_almost_equal(fbeta._pred_sum.tolist(), self.pred_sum)
@@ -82,7 +111,7 @@ class FBetaTest(TestCase):
         mask = torch.Tensor([1, 1, 1, 1, 1, 0])
 
         fbeta = FBeta()
-        fbeta(self.predictions, (self.targets, mask))
+        fbeta.update(self.predictions, (self.targets, mask))
 
         numpy.testing.assert_almost_equal(fbeta._pred_sum.tolist(), [1, 3, 0, 1, 0])
         numpy.testing.assert_almost_equal(fbeta._true_sum.tolist(), [2, 1, 0, 1, 1])
@@ -92,7 +121,7 @@ class FBetaTest(TestCase):
         targets = self.targets.clone()
         targets[-1] = -100
         fbeta = FBeta()
-        fbeta(self.predictions, targets)
+        fbeta.update(self.predictions, targets)
 
         numpy.testing.assert_almost_equal(fbeta._pred_sum.tolist(), [1, 3, 0, 1, 0])
         numpy.testing.assert_almost_equal(fbeta._true_sum.tolist(), [2, 1, 0, 1, 1])
@@ -104,7 +133,7 @@ class FBetaTest(TestCase):
         mask = torch.Tensor([1, 1, 1, 1, 0, 1])
 
         fbeta = FBeta()
-        fbeta(self.predictions, (targets, mask))
+        fbeta.update(self.predictions, (targets, mask))
 
         numpy.testing.assert_almost_equal(fbeta._pred_sum.tolist(), [1, 3, 0, 0, 0])
         numpy.testing.assert_almost_equal(fbeta._true_sum.tolist(), [2, 1, 0, 0, 1])
@@ -166,7 +195,7 @@ class FBetaTest(TestCase):
 
     def test_fbeta_multiclass_macro_average_metric_multireturn(self):
         fbeta = FBeta(average='macro')
-        fbeta(self.predictions, self.targets)
+        fbeta.update(self.predictions, self.targets)
         fscore, precision, recall = fbeta.get_metric()
 
         macro_precision = numpy.mean(self.desired_precisions)
@@ -189,16 +218,27 @@ class FBetaTest(TestCase):
         mask = torch.Tensor([1])
 
         fbeta = FBeta()
-        fbeta(predictions, (targets, mask))
+        fbeta.update(predictions, (targets, mask))
 
         numpy.testing.assert_almost_equal(fbeta._pred_sum.tolist(), [0.0, 1.0, 0.0, 0.0])
         numpy.testing.assert_almost_equal(fbeta._true_sum.tolist(), [0.0, 1.0, 0.0, 0.0])
         numpy.testing.assert_almost_equal(fbeta._true_positive_sum.tolist(), [0.0, 1.0, 0.0, 0.0])
         numpy.testing.assert_almost_equal(fbeta._total_sum.tolist(), [1.0, 1.0, 1.0, 1.0])
 
+    def test_fbeta_with_return_batch_value(self):
+        targets = self.targets.clone()
+        targets[-1] = -100
+        mask = torch.Tensor([1, 1, 1, 1, 0, 1])
+
+        fbeta = FBeta()
+        batch_value = fbeta(self.predictions, (targets, mask))
+        epoch_value = fbeta.get_metric()
+
+        self.assertEqual(batch_value, epoch_value)
+
     def _compute(self, *args, **kwargs):
         fbeta = FBeta(*args, **kwargs)
-        fbeta(self.predictions, self.targets)
+        fbeta.update(self.predictions, self.targets)
         return fbeta.get_metric()
 
     def test_names(self):
@@ -236,3 +276,98 @@ class FBetaTest(TestCase):
         self.assertEqual(['fscore_binary_1', 'precision_binary_1', 'recall_binary_1'], fbeta.__name__)
         fbeta = FBeta(average='binary', pos_label=0)
         self.assertEqual(['fscore_binary_0', 'precision_binary_0', 'recall_binary_0'], fbeta.__name__)
+
+    def test_predefined_names(self):
+        epoch_metrics = [
+            'f1',
+            'precision',
+            'recall',
+            'binaryf1',
+            'binf1',
+            'binaryprecision',
+            'binprecision',
+            'binaryrecall',
+            'binrecall',
+        ]
+        fmetric = ['fscore', 'precision', 'recall', 'fscore', 'fscore', 'precision', 'precision', 'recall', 'recall']
+        average = ['macro', 'macro', 'macro', 'binary', 'binary', 'binary', 'binary', 'binary', 'binary']
+        names = [
+            'fscore_macro',
+            'precision_macro',
+            'recall_macro',
+            'bin_fscore1',
+            'bin_fscore2',
+            'bin_precision1',
+            'bin_precision2',
+            'bin_recall1',
+            'bin_recall2',
+        ]
+        model = Model(nn.Linear(10, 2), 'sgd', 'cross_entropy', epoch_metrics=epoch_metrics)
+        actual_fmetric = [epoch_metric._metric for epoch_metric in model.epoch_metrics]
+        actual_average = [epoch_metric._average for epoch_metric in model.epoch_metrics]
+        self.assertEqual(fmetric, actual_fmetric)
+        self.assertEqual(average, actual_average)
+        self.assertEqual(names, model.epoch_metrics_names)
+
+
+class FBetaBinaryTest(TestCase):
+    def setUp(self):
+        # [0, 1, 1, 1, 0, 1]
+        self.predictions = torch.Tensor([[0.35, 0.25], [0.1, 0.6], [0.1, 0.6], [0.1, 0.5], [0.2, 0.1], [0.1, 0.6]])
+        self.targets = torch.Tensor([0, 0, 1, 0, 1, 0])
+
+        # detailed target state
+        self.pred_sum = [2, 4]
+        self.true_sum = [4, 2]
+        self.true_positive_sum = [1, 1]
+        self.true_negative_sum = [1, 1]
+        self.total_sum = [6, 6]
+
+        desired_precision = 0.25
+        desired_recall = 0.5
+        desired_fscore = (
+            (2 * desired_precision * desired_recall) / (desired_precision + desired_recall)
+            if desired_precision + desired_recall != 0.0
+            else 0.0
+        )
+        self.output = [desired_fscore, desired_precision, desired_recall]
+
+    def test_fbeta_binary(self):
+        fbeta = FBeta(average='binary')
+        fbeta.update(self.predictions, self.targets)
+
+        # check state
+        numpy.testing.assert_almost_equal(fbeta._pred_sum.tolist(), self.pred_sum)
+        numpy.testing.assert_almost_equal(fbeta._true_sum.tolist(), self.true_sum)
+        numpy.testing.assert_almost_equal(fbeta._true_positive_sum.tolist(), self.true_positive_sum)
+        numpy.testing.assert_almost_equal(fbeta._total_sum.tolist(), self.total_sum)
+        numpy.testing.assert_almost_equal(fbeta.get_metric(), self.output)
+
+    def test_fbeta_binary_one_dim_pred(self):
+        fbeta = FBeta(average='binary')
+        fbeta.update(self.predictions[:, 1:] - self.predictions[:, 0:1], self.targets)
+
+        # check state
+        numpy.testing.assert_almost_equal(fbeta._pred_sum.tolist(), self.pred_sum)
+        numpy.testing.assert_almost_equal(fbeta._true_sum.tolist(), self.true_sum)
+        numpy.testing.assert_almost_equal(fbeta._true_positive_sum.tolist(), self.true_positive_sum)
+        numpy.testing.assert_almost_equal(fbeta._total_sum.tolist(), self.total_sum)
+        numpy.testing.assert_almost_equal(fbeta.get_metric(), self.output)
+
+    def test_fbeta_binary_zero_dim_pred(self):
+        fbeta = FBeta(average='binary')
+        fbeta.update(self.predictions[:, 1] - self.predictions[:, 0], self.targets)
+
+        # check state
+        numpy.testing.assert_almost_equal(fbeta._pred_sum.tolist(), self.pred_sum)
+        numpy.testing.assert_almost_equal(fbeta._true_sum.tolist(), self.true_sum)
+        numpy.testing.assert_almost_equal(fbeta._true_positive_sum.tolist(), self.true_positive_sum)
+        numpy.testing.assert_almost_equal(fbeta._total_sum.tolist(), self.total_sum)
+        numpy.testing.assert_almost_equal(fbeta.get_metric(), self.output)
+
+    def test_fbeta_binary_with_return_batch_value(self):
+        fbeta = FBeta(average='binary')
+        batch_value = fbeta(self.predictions, self.targets)
+        epoch_value = fbeta.get_metric()
+
+        self.assertEqual(batch_value, epoch_value)

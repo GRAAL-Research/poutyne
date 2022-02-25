@@ -1,22 +1,38 @@
+"""
+Copyright (c) 2022 Poutyne and all respective contributors.
+
+Each contributor holds copyright over their respective contributions. The project versioning (Git)
+records all such contribution source information.
+
+This file is part of Poutyne.
+
+Poutyne is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+version.
+
+Poutyne is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public License along with Poutyne. If not, see
+<https://www.gnu.org/licenses/>.
+"""
+
 from .utils import camel_to_snake
 
 
 def _get_registering_decorator(register_function):
-    def register(name_or_func, *extra_names):
-        if isinstance(name_or_func, str):
-            names = [name_or_func] + list(extra_names)
+    def decorator(*args, **kwargs):
+        if len(args) == 1 and callable(args[0]) and len(kwargs) == 0:
+            register_function(args[0])
+            return args[0]
 
-            def decorator_func(func):
-                register_function(func, names)
-                return func
+        def register(func):
+            register_function(func, args, **kwargs)
+            return func
 
-            return decorator_func
+        return register
 
-        func = name_or_func
-        register_function(func)
-        return func
-
-    return register
+    return decorator
 
 
 batch_metrics_dict = {}
@@ -30,13 +46,14 @@ def clean_batch_metric_name(name):
 
 
 def register_batch_metric_function(func, names=None, unique_name=None):
-    names = [func.__name__] if names is None else names
+    names = [func.__name__] if names is None or len(names) == 0 else names
     names = [names] if isinstance(names, str) else names
     names = [clean_batch_metric_name(name) for name in names]
     if unique_name is None:
-        batch_metrics_dict.update({name: func for name in names})
+        update = {name: func for name in names}
     else:
-        batch_metrics_dict.update({name: (unique_name, func) for name in names})
+        update = {name: (unique_name, func) for name in names}
+    batch_metrics_dict.update(update)
     return names
 
 
@@ -68,13 +85,14 @@ def clean_epoch_metric_name(name):
 
 
 def register_epoch_metric_class(clz, names=None, unique_name=None):
-    names = [camel_to_snake(clz.__name__)] if names is None else names
+    names = [camel_to_snake(clz.__name__)] if names is None or len(names) == 0 else names
     names = [names] if isinstance(names, str) else names
     names = [clean_epoch_metric_name(name) for name in names]
     if unique_name is None:
-        epochs_metrics_dict.update({name: clz for name in names})
+        update = {name: clz for name in names}
     else:
-        epochs_metrics_dict.update({name: (unique_name, clz) for name in names})
+        update = {name: (unique_name, clz) for name in names}
+    epochs_metrics_dict.update(update)
     return names
 
 

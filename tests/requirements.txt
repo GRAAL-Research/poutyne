@@ -10,4 +10,5 @@ mlflow
 omegaconf
 matplotlib
 pillow
+torchmetrics
 wandb

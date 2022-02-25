@@ -68,7 +68,7 @@ def main():
             'Topic :: Scientific/Engineering :: Artificial Intelligence',
         ],
         packages=packages,
-        install_requires=['numpy', 'torch'],
+        install_requires=['numpy', 'torch', 'torchmetrics'],
         python_requires='>=3.6.1',
         description='A simplified framework and utilities for PyTorch.',
         long_description=readme,

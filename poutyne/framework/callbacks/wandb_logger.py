@@ -176,8 +176,8 @@ class WandBLogger(Logger):
         """
         Log the epoch metric.
         """
-        train_metrics = {key: value for (key, value) in logs.items() if not key.startswith("val_")}
-        val_metrics = {key[4:]: value for (key, value) in logs.items() if key.startswith("val_")}
+        train_metrics = {key: value for key, value in logs.items() if not key.startswith("val_")}
+        val_metrics = {key[4:]: value for key, value in logs.items() if key.startswith("val_")}
         learning_rate = self._get_current_learning_rates()
 
         if self.batch_granularity:
@@ -252,7 +252,7 @@ class WandBLogger(Logger):
     def _on_test_end_write(self, logs: Dict):
         # The test metrics are logged a step further than the training's
         # last step
-        logs = {"testing": {key.replace("test_",""): value for (key, value) in logs.items()}}
+        logs = {"testing": {key.replace("test_", ""): value for key, value in logs.items()}}
         self._log_metrics(logs, step=self.run.step + 1)
 
     def on_test_end(self, logs: Dict):

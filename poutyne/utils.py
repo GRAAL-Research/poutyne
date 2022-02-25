@@ -1,3 +1,22 @@
+"""
+Copyright (c) 2022 Poutyne and all respective contributors.
+
+Each contributor holds copyright over their respective contributions. The project versioning (Git)
+records all such contribution source information.
+
+This file is part of Poutyne.
+
+Poutyne is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+version.
+
+Poutyne is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public License along with Poutyne. If not, see
+<https://www.gnu.org/licenses/>.
+"""
+
 # -*- coding: utf-8 -*-
 import random
 
@@ -80,15 +99,18 @@ def _apply(obj, func):
 
 
 def _concat(obj):
-    if isinstance(obj[0], (list, tuple)):
-        return type(obj[0])(_concat(ele) for ele in zip(*obj))
-    if isinstance(obj[0], dict):
+    first_item = obj[0]
+    if isinstance(first_item, (list, tuple)):
+        return type(first_item)(_concat(ele) for ele in zip(*obj))
+    if isinstance(first_item, dict):
         concat_dict = {}
-        for key in obj[0].keys():
+        for key in first_item.keys():
             concat_dict[key] = _concat([o[key] for o in obj])
         return concat_dict
-    if isinstance(obj[0], np.ndarray) and obj[0].shape != ():
+    if isinstance(first_item, np.ndarray) and len(first_item.shape) != 0:
         return np.concatenate(obj)
+    if torch.is_tensor(first_item) and len(first_item.shape) != 0:
+        return torch.cat(obj)
     return obj
 
 

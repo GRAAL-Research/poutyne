@@ -1,5 +1,25 @@
 """
-The source code of this file was copied from the AllenNLP project, and has been modified.
+The source code of this file was copied from the AllenNLP project, and has been modified. All modifications
+made from the original source code are under the LGPLv3 license.
+
+
+Copyright (c) 2022 Poutyne and all respective contributors.
+
+Each contributor holds copyright over their respective contributions. The project versioning (Git)
+records all such contribution source information on the Poutyne and AllenNLP repository.
+
+This file is part of Poutyne.
+
+Poutyne is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+version.
+
+Poutyne is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public License along with Poutyne. If not, see
+<https://www.gnu.org/licenses/>.
+
 
 Copyright 2019 AllenNLP
 
@@ -15,6 +35,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+
+import warnings
 from typing import Optional, Union, List, Tuple
 import torch
 from .base import EpochMetric
@@ -76,14 +98,18 @@ class FBeta(EpochMetric):
                 Calculate metrics for each label, and find their unweighted mean.
                 This does not take label imbalance into account.
 
-            (Default value = 'micro')
+            (Default value = 'macro')
         beta (float):
             The strength of recall versus precision in the F-score. (Default value = 1.0)
         pos_label (int):
-            The class with respect to which the metric is computed when `average == 'binary'`. Otherwise, this
+            The class with respect to which the metric is computed when ``average == 'binary'``. Otherwise, this
             argument has no effect. (Default value = 1)
         ignore_index (int): Specifies a target value that is ignored. This also works in combination with
             a mask if provided. (Default value = -100)
+        threshold (float): Threshold for when there is a single score for each prediction. If a sigmoid output is used,
+            this should be between 0 and 1. A suggested value would be 0.5. If a logits output is used, the threshold
+            would be between -inf and inf. The suggested default value is 0 as to give a probability of 0.5 if a sigmoid
+            output were used. (Default = 0)
         names (Optional[Union[str, List[str]]]): The names associated to the metrics. It is a string when
             a single metric is requested. It is a list of 3 strings if all metrics are requested.
             (Default value = None)
@@ -97,12 +123,16 @@ class FBeta(EpochMetric):
         beta: float = 1.0,
         pos_label: int = 1,
         ignore_index: int = -100,
+        threshold: float = 0.0,
         names: Optional[Union[str, List[str]]] = None,
     ) -> None:
         super().__init__()
         self.metric_options = ('fscore', 'precision', 'recall')
         if metric is not None and metric not in self.metric_options:
             raise ValueError(f"`metric` has to be one of {self.metric_options}.")
+
+        if metric in ('precision', 'recall') and beta != 1.0:
+            warnings.warn(f"The use of the `beta` argument is useless with {repr(metric)}.")
 
         average_options = ('binary', 'micro', 'macro')
         if average not in average_options and not isinstance(average, int):
@@ -120,6 +150,7 @@ class FBeta(EpochMetric):
             self._label = pos_label
         self._beta = beta
         self.ignore_index = ignore_index
+        self.threshold = threshold
         self.__name__ = self._get_names(names)
 
         # statistics
@@ -165,7 +196,6 @@ class FBeta(EpochMetric):
             raise ValueError(f"`names` should contain names for the following metrics: {', '.join(default_name)}.")
 
     def forward(self, y_pred: torch.Tensor, y_true: Union[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]) -> None:
-        # pylint: disable=too-many-branches
         """
         Update the confusion matrix for calculating the F-score.
 
@@ -177,22 +207,36 @@ class FBeta(EpochMetric):
                 It can also be a tuple with two tensors of the same shape, the first being the
                 ground truths and the second being a mask.
         """
+        true_positive_sum, pred_sum, true_sum = self._update(y_pred, y_true)
+        return self._compute(true_positive_sum, pred_sum, true_sum)
 
-        mask = 1
+    def update(self, y_pred: torch.Tensor, y_true: Union[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]) -> None:
+        self._update(y_pred, y_true)
+
+    def _update(self, y_pred: torch.Tensor, y_true: Union[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]) -> None:
+        # pylint: disable=too-many-branches
         if isinstance(y_true, tuple):
             y_true, mask = y_true
-            mask = mask.byte()
+            mask = mask.bool()
+        else:
+            mask = torch.ones_like(y_true).bool()
 
         if self.ignore_index is not None:
-            mask *= (y_true != self.ignore_index).byte()
+            mask *= y_true != self.ignore_index
 
-        if not torch.is_tensor(mask):
-            mask = torch.ones_like(y_true, dtype=torch.bool)
+        if y_pred.shape[0] == 1:
+            y_pred, y_true, mask = (
+                y_pred.squeeze().unsqueeze(0),
+                y_true.squeeze().unsqueeze(0),
+                mask.squeeze().unsqueeze(0),
+            )
         else:
-            mask = mask.bool()
+            y_pred, y_true, mask = y_pred.squeeze(), y_true.squeeze(), mask.squeeze()
 
-        # Calculate true_positive_sum, true_negative_sum, pred_sum, true_sum
-        num_classes = y_pred.size(1)
+        num_classes = 2
+        if y_pred.shape != y_true.shape:
+            num_classes = y_pred.size(1)
+
         if (y_true >= num_classes).any():
             raise ValueError(
                 f"A gold label passed to FBetaMeasure contains an id >= {num_classes}, the number of classes."
@@ -211,7 +255,10 @@ class FBeta(EpochMetric):
 
         y_true = y_true.float()
 
-        argmax_y_pred = y_pred.argmax(1).float()
+        if y_pred.shape != y_true.shape:
+            argmax_y_pred = y_pred.argmax(1).float()
+        else:
+            argmax_y_pred = (y_pred > self.threshold).float()
         true_positives = (y_true == argmax_y_pred) * mask
         true_positives_bins = y_true[true_positives]
 
@@ -241,6 +288,8 @@ class FBeta(EpochMetric):
         self._true_sum += true_sum
         self._total_sum += mask.sum().to(torch.float)
 
+        return true_positive_sum, pred_sum, true_sum
+
     def get_metric(self) -> Union[float, List[float]]:
         """
         Returns either a float if a single metric is set in the ``__init__`` or a list
@@ -249,10 +298,9 @@ class FBeta(EpochMetric):
         if self._true_positive_sum is None:
             raise RuntimeError("You never call this metric before.")
 
-        tp_sum = self._true_positive_sum
-        pred_sum = self._pred_sum
-        true_sum = self._true_sum
+        return self._compute(self._true_positive_sum, self._pred_sum, self._true_sum)
 
+    def _compute(self, tp_sum, pred_sum, true_sum):
         if self._average == 'micro':
             tp_sum = tp_sum.sum()
             pred_sum = pred_sum.sum()
@@ -298,7 +346,7 @@ class F1(FBeta):
     """
     Alias class for :class:`~poutyne.FBeta` where ``metric == 'fscore'`` and ``beta == 1``.
 
-    Possible string name in :class:`batch_metrics argument <poutyne.Model>`:
+    Possible string name in :class:`epoch_metrics argument <poutyne.Model>`:
         - ``'f1'``
 
     Keys in :class:`logs<poutyne.Callback>` dictionary of callbacks:
@@ -308,16 +356,17 @@ class F1(FBeta):
         where ``{average}`` is replaced by the value of the respective parameter.
     """
 
-    def __init__(self, average='macro'):
-        super().__init__(metric='fscore', average=average, beta=1)
+    def __init__(self, **kwargs):
+        _raise_invalid_use_of_beta('F1', kwargs)
+        super().__init__(metric='fscore', **kwargs)
 
 
 @register_epoch_metric
 class Precision(FBeta):
     """
-    Alias class for :class:`~poutyne.FBeta` where ``metric == 'precision'`` and ``beta == 1``.
+    Alias class for :class:`~poutyne.FBeta` where ``metric == 'precision'``.
 
-    Possible string name in :class:`batch_metrics argument <poutyne.Model>`:
+    Possible string name in :class:`epoch_metrics argument <poutyne.Model>`:
         - ``'precision'``
 
     Keys in :class:`logs<poutyne.Callback>` dictionary of callbacks:
@@ -327,16 +376,16 @@ class Precision(FBeta):
         where ``{average}`` is replaced by the value of the respective parameter.
     """
 
-    def __init__(self, average='macro'):
-        super().__init__(metric='precision', average=average, beta=1)
+    def __init__(self, **kwargs):
+        super().__init__(metric='precision', **kwargs)
 
 
 @register_epoch_metric
 class Recall(FBeta):
     """
-    Alias class for :class:`~poutyne.FBeta` where ``metric == 'recall'`` and ``beta == 1``.
+    Alias class for :class:`~poutyne.FBeta` where ``metric == 'recall'``.
 
-    Possible string name in :class:`batch_metrics argument <poutyne.Model>`:
+    Possible string name in :class:`epoch_metrics argument <poutyne.Model>`:
         - ``'recall'``
 
     Keys in :class:`logs<poutyne.Callback>` dictionary of callbacks:
@@ -346,8 +395,66 @@ class Recall(FBeta):
         where ``{average}`` is replaced by the value of the respective parameter.
     """
 
-    def __init__(self, average='macro'):
-        super().__init__(metric='recall', average=average, beta=1)
+    def __init__(self, **kwargs):
+        super().__init__(metric='recall', **kwargs)
+
+
+@register_epoch_metric('binaryf1', 'binf1')
+class BinaryF1(FBeta):
+    """
+    Alias class for :class:`~poutyne.FBeta` where ``metric == 'fscore'``, ``average='binary'`` and ``beta == 1``.
+
+    Possible string name in :class:`epoch_metrics argument <poutyne.Model>`:
+        - ``'binary_f1'``
+        - ``'bin_f1'``
+
+    Keys in :class:`logs<poutyne.Callback>` dictionary of callbacks:
+        - Train: ``'bin_fscore'``
+        - Validation: ``'val_bin_fscore'``
+    """
+
+    def __init__(self, **kwargs):
+        _raise_invalid_use_of_beta('BinaryF1', kwargs)
+        kwargs = {'names': 'bin_fscore', **kwargs}
+        super().__init__(metric='fscore', average='binary', **kwargs)
+
+
+@register_epoch_metric('binaryprecision', 'binprecision')
+class BinaryPrecision(FBeta):
+    """
+    Alias class for :class:`~poutyne.FBeta` where ``metric == 'precision'`` and ``average='binary'``.
+
+    Possible string name in :class:`epoch_metrics argument <poutyne.Model>`:
+        - ``'binary_precision'``
+        - ``'bin_precision'``
+
+    Keys in :class:`logs<poutyne.Callback>` dictionary of callbacks:
+        - Train: ``'bin_precision'``
+        - Validation: ``'val_bin_precision'``
+    """
+
+    def __init__(self, **kwargs):
+        kwargs = {'names': 'bin_precision', **kwargs}
+        super().__init__(metric='precision', average='binary', **kwargs)
+
+
+@register_epoch_metric('binaryrecall', 'binrecall')
+class BinaryRecall(FBeta):
+    """
+    Alias class for :class:`~poutyne.FBeta` where ``metric == 'recall'`` and ``average='binary'``.
+
+    Possible string name in :class:`epoch_metrics argument <poutyne.Model>`:
+        - ``'binary_recall'``
+        - ``'bin_recall'``
+
+    Keys in :class:`logs<poutyne.Callback>` dictionary of callbacks:
+        - Train: ``'bin_recall'``
+        - Validation: ``'val_bin_recall'``
+    """
+
+    def __init__(self, **kwargs):
+        kwargs = {'names': 'bin_recall', **kwargs}
+        super().__init__(metric='recall', average='binary', **kwargs)
 
 
 def _prf_divide(numerator, denominator):
@@ -363,3 +470,8 @@ def _prf_divide(numerator, denominator):
     # remove nan
     result[mask] = 0.0
     return result
+
+
+def _raise_invalid_use_of_beta(name, kwargs):
+    if 'beta' in kwargs:
+        raise ValueError(f"The use of the `beta` argument with {name} is invalid. Use FBeta instead.")
