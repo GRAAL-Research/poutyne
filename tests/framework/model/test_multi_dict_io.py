@@ -17,8 +17,6 @@ You should have received a copy of the GNU Lesser General Public License along w
 <https://www.gnu.org/licenses/>.
 """
 
-# Because nn.Module has the abstract method _forward_unimplemented
-# pylint: disable=abstract-method
 import numpy as np
 import torch
 import torch.nn as nn

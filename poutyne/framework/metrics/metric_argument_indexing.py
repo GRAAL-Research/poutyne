@@ -17,10 +17,6 @@ You should have received a copy of the GNU Lesser General Public License along w
 <https://www.gnu.org/licenses/>.
 """
 
-# Because nn.Module has the abstract method _forward_unimplemented
-# pylint: disable=abstract-method
-import torch.nn as nn
-
 from .utils import get_names_of_metric
 from .metrics_registering import get_metric
 from .base import Metric

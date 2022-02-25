@@ -17,14 +17,13 @@ You should have received a copy of the GNU Lesser General Public License along w
 <https://www.gnu.org/licenses/>.
 """
 
-# Because nn.Module has the abstract method _forward_unimplemented
-# pylint: disable=abstract-method
+from abc import ABC
 import torch.nn as nn
 
 from ..metrics_registering import register_metric_func, register_metric_func_function
 
 
-class BatchMetric(nn.Module):
+class BatchMetric(ABC, nn.Module):
     def __init__(self, reduction: str = 'mean'):
         super().__init__()
         REDUCTIONS = ['none', 'mean', 'sum']
