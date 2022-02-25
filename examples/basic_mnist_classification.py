@@ -5,6 +5,7 @@ import torch.nn as nn
 from torch.utils.data import random_split
 from torchvision.datasets import MNIST
 from torchvision.transforms import ToTensor
+import torchmetrics
 
 # Instanciate the MNIST dataset
 train_valid_dataset = MNIST('./datasets', train=True, download=True, transform=ToTensor())
@@ -32,7 +33,10 @@ model = Model(
     'sgd',
     'cross_entropy',
     batch_metrics=['accuracy'],
-    epoch_metrics=['f1'],
+    epoch_metrics=['f1', torchmetrics.AUROC(num_classes=10)],
+    # Can also be put in torch_metrics argument to show the metric for each batch but
+    # sometimes this significantly slow down the computations.
+    # torch_metrics=[torchmetrics.AUROC(num_classes=10)],
     device=device,
 )
 # Change the number of epochs to find the optimum value for your work

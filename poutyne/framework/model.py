@@ -1,3 +1,22 @@
+"""
+Copyright (c) 2022 Poutyne and all respective contributors.
+
+Each contributor holds copyright over their respective contributions. The project versioning (Git)
+records all such contribution source information.
+
+This file is part of Poutyne.
+
+Poutyne is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+version.
+
+Poutyne is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public License along with Poutyne. If not, see
+<https://www.gnu.org/licenses/>.
+"""
+
 # pylint: disable=too-many-lines,too-many-public-methods
 import contextlib
 import numbers
@@ -48,8 +67,20 @@ class Model:
             Each metric function is called on each batch of the optimization and on the validation batches
             at the end of the epoch.
             (Default value = None)
-        epoch_metrics (list): List of functions with the same signature as :class:`~poutyne.EpochMetric`.
-            See :ref:`epoch metrics` for available epoch metrics. (Default value = None)
+        epoch_metrics (list): List of objects with the same signature as either :class:`~poutyne.EpochMetric` or
+            :class:`torchmetrics.Metric <torchmetrics.Metric>`.
+            See :ref:`epoch metrics` and the
+            `TorchMetrics documentation <https://torchmetrics.readthedocs.io/en/latest/references/modules.html>`__ for
+            available epoch metrics.
+            (Default value = None)
+        torch_metrics (list): List of `TorchMetrics <https://torchmetrics.readthedocs.io/>`__  objects.
+            List of objects with the same signature as :class:`torchmetrics.Metric <torchmetrics.Metric>`.
+            See `TorchMetrics documentation <https://torchmetrics.readthedocs.io/en/latest/references/modules.html>`__
+            for available torch metrics. (Default value = None)
+
+            .. warning:: When using this argument, the torch metrics are computed at each batch. This
+                can significantly slow down the compuations depending on the metrics used. In such case, we advise to
+                use them as epoch metrics instead.
         device (Union[torch.torch.device, List[torch.torch.device]]): The device to which the network is
             sent or the list of device to which the network is sent. See :func:`~Model.to()` for details.
 
@@ -142,7 +173,17 @@ class Model:
 
     """
 
-    def __init__(self, network, optimizer, loss_function, *, batch_metrics=None, epoch_metrics=None, device=None):
+    def __init__(
+        self,
+        network,
+        optimizer,
+        loss_function,
+        *,
+        batch_metrics=None,
+        epoch_metrics=None,
+        torch_metrics=None,
+        device=None,
+    ):
         if not isinstance(network, nn.Module):
             raise ValueError(f"network should be of type derived from nn.Module, received {type(network)}.")
 
@@ -151,6 +192,7 @@ class Model:
 
         batch_metrics = [] if batch_metrics is None else batch_metrics
         epoch_metrics = [] if epoch_metrics is None else epoch_metrics
+        torch_metrics = [] if torch_metrics is None else torch_metrics
 
         self.network = network
         self.optimizer = get_optimizer(optimizer, self.network)
@@ -160,7 +202,7 @@ class Model:
             self.loss_function = self.loss_function[1]
 
         self._check_network_optimizer_parameters_match()
-        self._set_metrics_attributes(batch_metrics, epoch_metrics)
+        self._set_metrics_attributes(batch_metrics, epoch_metrics, torch_metrics)
 
         self.device = None
         self.other_device = None
@@ -180,22 +222,33 @@ class Model:
                             "actually consider all parameters."
                         )
 
-    def _set_metrics_attributes(self, batch_metrics, epoch_metrics):
+    def _set_metrics_attributes(self, batch_metrics, epoch_metrics, torch_metrics):
         batch_metrics = list(map(get_loss_or_metric, batch_metrics))
         self.batch_metrics, batch_metrics_names = get_callables_and_names(batch_metrics)
 
         epoch_metrics = list(map(get_epoch_metric, epoch_metrics))
         self.epoch_metrics, epoch_metrics_names = get_callables_and_names(epoch_metrics)
 
-        self.original_batch_metrics_names, self.original_epoch_metrics_names = batch_metrics_names, epoch_metrics_names
-        batch_metrics_names, epoch_metrics_names = rename_doubles(batch_metrics_names, epoch_metrics_names)
+        torch_metrics = list(map(get_epoch_metric, torch_metrics))
+        self.torch_metrics, torch_metrics_names = get_callables_and_names(torch_metrics)
+
+        self.original_batch_metrics_names, self.original_epoch_metrics_names, self.original_torch_metrics_names = (
+            batch_metrics_names,
+            epoch_metrics_names,
+            torch_metrics_names,
+        )
+        batch_metrics_names, epoch_metrics_names, torch_metrics_names = rename_doubles(
+            batch_metrics_names, epoch_metrics_names, torch_metrics_names
+        )
 
         self.unflatten_batch_metrics_names = batch_metrics_names
         self.unflatten_epoch_metrics_names = epoch_metrics_names
+        self.unflatten_torch_metrics_names = torch_metrics_names
 
         self.batch_metrics_names = flatten_metric_names(batch_metrics_names)
         self.epoch_metrics_names = flatten_metric_names(epoch_metrics_names)
-        self.metrics_names = self.batch_metrics_names + self.epoch_metrics_names
+        self.torch_metrics_names = flatten_metric_names(torch_metrics_names)
+        self.metrics_names = self.batch_metrics_names + self.epoch_metrics_names + self.torch_metrics_names
 
     @contextlib.contextmanager
     def _set_training_mode(self, training):
@@ -538,6 +591,7 @@ class Model:
             callback=callback_list,
             batch_metrics_names=self.batch_metrics_names,
             epoch_metrics_names=self.epoch_metrics_names,
+            torch_metrics_names=self.torch_metrics_names,
         )
 
         if batches_per_step > 1:
@@ -557,7 +611,13 @@ class Model:
 
                     examples_in_step += step.size
 
-                    step.loss, step.metrics, did_backprop, _ = self._fit_batch_n_batches_per_step(
+                    (
+                        step.loss,
+                        step.batch_metrics,
+                        step.torch_metrics,
+                        did_backprop,
+                        _,
+                    ) = self._fit_batch_n_batches_per_step(
                         x, y, batches_per_step, examples_in_step, callback=callback_list, step=step
                     )
 
@@ -570,23 +630,21 @@ class Model:
                 self.optimizer.step()
 
             train_step_iterator.epoch_metrics = self._get_epoch_metrics()
+            train_step_iterator.torch_metrics = self._get_torch_metrics()
 
-            if valid_step_iterator is not None:
-                valid_begin_time = timeit.default_timer()
-
-                callback_list.on_valid_begin({})
-                self._validate(valid_step_iterator)
-
-                valid_step_iterator.epoch_metrics = self._get_epoch_metrics()
-                valid_total_time = timeit.default_timer() - valid_begin_time
-
-                valid_metrics_log = {'time': valid_total_time}
-                valid_metrics_log.update(valid_step_iterator.metrics_logs)
-
-                callback_list.on_valid_end(valid_metrics_log)
+            self._run_validation(valid_step_iterator, callback_list)
 
     def _fit_batch_n_batches_per_step(
-        self, x, y, batches_per_step, examples_in_step, *, callback=Callback(), step=None, return_pred=False
+        self,
+        x,
+        y,
+        batches_per_step,
+        examples_in_step,
+        *,
+        callback=Callback(),
+        step=None,
+        return_pred=False,
+        convert_to_numpy=True,
     ):
         # pylint: disable=too-many-locals
         zero_all_gradients = (step.number - 1) % batches_per_step == 0
@@ -595,8 +653,8 @@ class Model:
         if zero_all_gradients:
             self.optimizer.zero_grad()
 
-        loss_tensor, metrics, pred_y = self._compute_loss_and_metrics(
-            x, y, return_loss_tensor=True, return_pred=return_pred
+        loss_tensor, batch_metrics, torch_metrics, pred_y = self._compute_loss_and_metrics(
+            x, y, return_loss_tensor=True, return_pred=return_pred, convert_to_numpy=convert_to_numpy
         )
 
         adjusted_loss_tensor = loss_tensor * step.size
@@ -609,35 +667,27 @@ class Model:
             self.optimizer.step()
 
         loss = float(loss_tensor)
-        return loss, metrics, do_backprop, pred_y
+        return loss, batch_metrics, torch_metrics, do_backprop, pred_y
 
     def _fit_generator_one_batch_per_step(self, epoch_iterator, callback_list):
         for train_step_iterator, valid_step_iterator in epoch_iterator:
             with self._set_training_mode(True):
                 for step, (x, y) in train_step_iterator:
-                    step.loss, step.metrics, _ = self._fit_batch(x, y, callback=callback_list, step=step.number)
+                    step.loss, step.batch_metrics, step.torch_metrics, _ = self._fit_batch(
+                        x, y, callback=callback_list, step=step.number
+                    )
                     step.size = self.get_batch_size(x, y)
 
             train_step_iterator.epoch_metrics = self._get_epoch_metrics()
+            train_step_iterator.torch_metrics = self._get_torch_metrics()
 
-            if valid_step_iterator is not None:
-                callback_list.on_valid_begin({})
-                valid_begin_time = timeit.default_timer()
-                self._validate(valid_step_iterator)
+            self._run_validation(valid_step_iterator, callback_list)
 
-                valid_step_iterator.epoch_metrics = self._get_epoch_metrics()
-                valid_total_time = timeit.default_timer() - valid_begin_time
-
-                valid_metrics_log = {'time': valid_total_time}
-                valid_metrics_log.update(valid_step_iterator.metrics_logs)
-
-                callback_list.on_valid_end(valid_metrics_log)
-
-    def _fit_batch(self, x, y, *, callback=Callback(), step=None, return_pred=False):
+    def _fit_batch(self, x, y, *, callback=Callback(), step=None, return_pred=False, convert_to_numpy=True):
         self.optimizer.zero_grad()
 
-        loss_tensor, metrics, pred_y = self._compute_loss_and_metrics(
-            x, y, return_loss_tensor=True, return_pred=return_pred
+        loss_tensor, batch_metrics, torch_metrics, pred_y = self._compute_loss_and_metrics(
+            x, y, return_loss_tensor=True, return_pred=return_pred, convert_to_numpy=convert_to_numpy
         )
 
         loss_tensor.backward()
@@ -645,7 +695,24 @@ class Model:
         self.optimizer.step()
 
         loss = float(loss_tensor)
-        return loss, metrics, pred_y
+        return loss, batch_metrics, torch_metrics, pred_y
+
+    def _run_validation(self, valid_step_iterator, callback_list):
+        if valid_step_iterator is not None:
+            valid_begin_time = timeit.default_timer()
+
+            callback_list.on_valid_begin({})
+            self._validate(valid_step_iterator)
+
+            valid_step_iterator.epoch_metrics = self._get_epoch_metrics()
+            valid_step_iterator.torch_metrics = self._get_torch_metrics()
+
+            valid_total_time = timeit.default_timer() - valid_begin_time
+
+            valid_metrics_log = {'time': valid_total_time}
+            valid_metrics_log.update(valid_step_iterator.metrics_logs)
+
+            callback_list.on_valid_end(valid_metrics_log)
 
     def _adjust_step_size(self, examples_in_step):
         for param in self.network.parameters():
@@ -672,7 +739,7 @@ class Model:
 
         return (x, y) if y is not None else x
 
-    def train_on_batch(self, x, y, return_pred=False, return_dict_format=False):
+    def train_on_batch(self, x, y, *, return_pred=False, return_dict_format=False, convert_to_numpy=True):
         """
         Trains the network for the batch ``(x, y)`` and computes the loss and the metrics, and
         optionally returns the predictions.
@@ -684,6 +751,8 @@ class Model:
                 (Default value = False)
             return_dict_format (bool, optional): Whether to return the loss and metrics in a dict format or not.
                 (Default value = False)
+            convert_to_numpy (bool, optional): Whether to convert the predictions into Numpy Arrays when ``return_pred``
+                is true. (Default value = True)
 
         Returns:
             Float ``loss`` if no metrics were specified and ``return_pred`` is false.
@@ -705,14 +774,18 @@ class Model:
 
         with self._set_training_mode(True):
             self._transfer_optimizer_state_to_right_device()
-            loss, metrics, pred_y = self._fit_batch(x, y, return_pred=return_pred)
+            loss, batch_metrics, torch_metrics, pred_y = self._fit_batch(
+                x, y, return_pred=return_pred, convert_to_numpy=convert_to_numpy
+            )
 
         if return_dict_format:
             logs = dict(loss=loss)
-            logs.update(zip(self.batch_metrics_names, metrics))
+            logs.update(zip(self.batch_metrics_names, batch_metrics))
+            logs.update(zip(self.torch_metrics_names, torch_metrics))
 
             return self._format_truth_pred_return((logs,), pred_y, return_pred)
 
+        metrics = np.concatenate((batch_metrics, torch_metrics))
         return self._format_loss_metrics_return(loss, metrics, pred_y, return_pred)
 
     def _format_loss_metrics_return(self, loss, metrics, pred_y, return_pred, true_y=None, return_ground_truth=False):
@@ -738,6 +811,7 @@ class Model:
         x,
         *,
         batch_size=32,
+        convert_to_numpy=True,
         verbose=True,
         progress_options: Union[dict, None] = None,
         callbacks=None,
@@ -753,6 +827,8 @@ class Model:
                 Union[tuple, list] of Union[Tensor, ndarray] if the model has multiple inputs.
             batch_size (int): Number of samples given to the network at one time.
                 (Default value = 32)
+            concatenate_returns (bool, optional): Whether to concatenate the predictions when returning them.
+                (Default value = True)
             verbose (bool): Whether to display the progress of the evaluation.
                 (Default value = True)
             progress_options (dict, optional): Keyword arguments to pass to the default progression callback used
@@ -772,6 +848,7 @@ class Model:
             dataset,
             batch_size=batch_size,
             concatenate_returns=True,
+            convert_to_numpy=convert_to_numpy,
             dataloader_kwargs=dataloader_kwargs,
             verbose=verbose,
             progress_options=progress_options,
@@ -787,6 +864,7 @@ class Model:
         has_ground_truth=False,
         return_ground_truth=False,
         concatenate_returns=True,
+        convert_to_numpy=True,
         num_workers=0,
         collate_fn=None,
         verbose=True,
@@ -812,6 +890,8 @@ class Model:
             concatenate_returns (bool, optional): Whether to concatenate the predictions
                 or the ground truths when returning them. See :func:`predict_generator()`
                 for details. (Default value = True)
+            concatenate_returns (bool, optional): Whether to concatenate the predictions
+                or the ground truths when returning them. (Default value = True)
             num_workers (int, optional): how many subprocesses to use for data loading.
                 ``0`` means that the data will be loaded in the main process.
                 (Default value = 0)
@@ -853,6 +933,7 @@ class Model:
             has_ground_truth=has_ground_truth,
             return_ground_truth=return_ground_truth,
             concatenate_returns=concatenate_returns,
+            convert_to_numpy=convert_to_numpy,
             verbose=verbose,
             progress_options=progress_options,
             callbacks=callbacks,
@@ -866,6 +947,7 @@ class Model:
         has_ground_truth=False,
         return_ground_truth=False,
         concatenate_returns=True,
+        convert_to_numpy=True,
         verbose=True,
         progress_options: Union[dict, None] = None,
         callbacks=None,
@@ -887,6 +969,8 @@ class Model:
                 set `has_ground_truth` to true. (Default value = False)
             concatenate_returns (bool, optional): Whether to concatenate the predictions
                 or the ground truths when returning them. (Default value = True)
+            convert_to_numpy (bool, optional): Whether to convert the predictions or ground truths into Numpy Arrays.
+                (Default value = True)
             verbose (bool): Whether to display the progress of the evaluation.
                 (Default value = True)
             progress_options (dict, optional): Keyword arguments to pass to the default progression callback used
@@ -931,9 +1015,11 @@ class Model:
                     x, y = self.preprocess_input(*batch)
                 else:
                     x = self.preprocess_input(batch)
-                pred_y.append(torch_to_numpy(self.network(*x)))
+
+                batch_pred = self.network(*x)
+                pred_y.append(torch_to_numpy(batch_pred) if convert_to_numpy else batch_pred)
                 if return_ground_truth:
-                    true_y.append(torch_to_numpy(y))
+                    true_y.append(torch_to_numpy(y) if convert_to_numpy else y)
 
                 batch_end_time = timeit.default_timer()
                 batch_total_time = batch_end_time - time_since_last_batch
@@ -952,20 +1038,23 @@ class Model:
             return pred_y, true_y
         return pred_y
 
-    def predict_on_batch(self, x) -> Any:
+    def predict_on_batch(self, x, *, convert_to_numpy=True) -> Any:
         """
         Returns the predictions of the network given a batch ``x``, where the tensors are converted
         into Numpy arrays.
 
         Args:
             x: Input data as a batch.
+            convert_to_numpy (bool, optional): Whether to convert the predictions into Numpy Arrays.
+                (Default value = True)
 
         Returns:
             Return the predictions in the format outputted by the model.
         """
         with self._set_training_mode(False):
             x = self.preprocess_input(x)
-            return torch_to_numpy(self.network(*x))
+            y_pred = self.network(*x)
+            return torch_to_numpy(y_pred) if convert_to_numpy else y_pred
 
     def evaluate(
         self,
@@ -975,6 +1064,7 @@ class Model:
         batch_size=32,
         return_pred=False,
         return_dict_format=False,
+        convert_to_numpy=True,
         callbacks=None,
         verbose=True,
         progress_options: Union[dict, None] = None,
@@ -998,6 +1088,8 @@ class Model:
                 (Default value = False)
             return_dict_format (bool, optional): Whether to return the loss and metrics in a dict format or not.
                 (Default value = False)
+            convert_to_numpy (bool, optional): Whether to convert the predictions into Numpy Arrays when ``return_pred``
+                is true. (Default value = True)
             callbacks (List[~poutyne.Callback]): List of callbacks that will be called during
                 testing. (Default value = None)
             verbose (bool): Whether to display the progress of the evaluation.
@@ -1033,6 +1125,7 @@ class Model:
             return_pred=return_pred,
             return_dict_format=return_dict_format,
             concatenate_returns=True,
+            convert_to_numpy=convert_to_numpy,
             callbacks=callbacks,
             verbose=verbose,
             progress_options=progress_options,
@@ -1049,6 +1142,7 @@ class Model:
         return_ground_truth=False,
         return_dict_format=False,
         concatenate_returns=True,
+        convert_to_numpy=True,
         callbacks=None,
         num_workers=0,
         collate_fn=None,
@@ -1056,6 +1150,7 @@ class Model:
         verbose=True,
         progress_options: Union[dict, None] = None,
     ) -> Tuple:
+        # pylint: disable=too-many-locals
         """
         Computes the loss and the metrics of the network on batches of samples and optionally
         returns the predictions.
@@ -1074,6 +1169,8 @@ class Model:
                 (Default value = False)
             concatenate_returns (bool, optional): Whether to concatenate the predictions
                 or the ground truths when returning them. (Default value = True)
+            convert_to_numpy (bool, optional): Whether to convert the predictions or ground truths into Numpy Arrays
+                when ``return_pred`` or ``return_ground_truth`` are true. (Default value = True)
             callbacks (List[~poutyne.Callback]): List of callbacks that will be called during
                 testing. (Default value = None)
             num_workers (int, optional): how many subprocesses to use for data loading.
@@ -1126,6 +1223,7 @@ class Model:
             return_ground_truth=return_ground_truth,
             return_dict_format=return_dict_format,
             concatenate_returns=concatenate_returns,
+            convert_to_numpy=convert_to_numpy,
             callbacks=callbacks,
             verbose=verbose,
             progress_options=progress_options,
@@ -1140,6 +1238,7 @@ class Model:
         return_ground_truth=False,
         return_dict_format=False,
         concatenate_returns=True,
+        convert_to_numpy=True,
         verbose=True,
         progress_options: Union[dict, None] = None,
         callbacks=None,
@@ -1160,6 +1259,8 @@ class Model:
                 (Default value = False)
             return_dict_format (bool, optional): Whether to return the loss and metrics in a dict format or not.
                 (Default value = False)
+            convert_to_numpy (bool, optional): Whether to convert the predictions or ground truths into Numpy Arrays
+                when ``return_pred`` or ``return_ground_truth`` are true. (Default value = True)
             concatenate_returns (bool, optional): Whether to concatenate the predictions
                 or the ground truths when returning them. (Default value = True)
             verbose (bool): Whether to display the progress of the evaluation.
@@ -1267,15 +1368,25 @@ class Model:
         callback_list.on_test_begin({})
 
         step_iterator = StepIterator(
-            generator, steps, self.batch_metrics_names, self.epoch_metrics_names, callback_list, mode="test"
+            generator,
+            steps,
+            self.batch_metrics_names,
+            self.epoch_metrics_names,
+            self.torch_metrics_names,
+            callback_list,
+            mode="test",
         )
 
         test_begin_time = timeit.default_timer()
         loss, batch_metrics, pred_y, true_y = self._validate(
-            step_iterator, return_pred=return_pred, return_ground_truth=return_ground_truth
+            step_iterator,
+            return_pred=return_pred,
+            return_ground_truth=return_ground_truth,
+            convert_to_numpy=convert_to_numpy,
         )
 
         step_iterator.epoch_metrics = self._get_epoch_metrics()
+        step_iterator.torch_metrics = self._get_torch_metrics()
         test_total_time = timeit.default_timer() - test_begin_time
 
         if return_pred and concatenate_returns:
@@ -1291,10 +1402,10 @@ class Model:
         if return_dict_format:
             return self._format_truth_pred_return((test_metrics_log,), pred_y, return_pred, true_y, return_ground_truth)
 
-        metrics = np.concatenate((batch_metrics, step_iterator.epoch_metrics))
+        metrics = np.concatenate((batch_metrics, step_iterator.epoch_metrics, step_iterator.torch_metrics))
         return self._format_loss_metrics_return(loss, metrics, pred_y, return_pred, true_y, return_ground_truth)
 
-    def evaluate_on_batch(self, x, y, *, return_pred=False, return_dict_format=False) -> Tuple:
+    def evaluate_on_batch(self, x, y, *, return_pred=False, return_dict_format=False, convert_to_numpy=True) -> Tuple:
         """
         Computes the loss and the metrics of the network on a single batch of samples and optionally
         returns the predictions.
@@ -1306,6 +1417,8 @@ class Model:
                 (Default value = False)
             return_dict_format (bool, optional): Whether to return the loss and metrics in a dict format or not.
                 (Default value = False)
+            convert_to_numpy (bool, optional): Whether to convert the predictions into Numpy Arrays when ``return_pred``
+                is true. (Default value = True)
 
         Returns:
             Tuple ``(loss, metrics, pred_y)`` where specific elements are omitted if not
@@ -1322,17 +1435,21 @@ class Model:
             dictionary.
         """
         with self._set_training_mode(False):
-            loss, metrics, pred_y = self._compute_loss_and_metrics(x, y, return_pred=return_pred)
+            loss, batch_metrics, torch_metrics, pred_y = self._compute_loss_and_metrics(
+                x, y, return_pred=return_pred, convert_to_numpy=convert_to_numpy
+            )
 
         if return_dict_format:
             logs = dict(loss=loss)
-            logs.update(zip(self.batch_metrics_names, metrics))
+            logs.update(zip(self.batch_metrics_names, batch_metrics))
+            logs.update(zip(self.torch_metrics_names, torch_metrics))
 
             return self._format_truth_pred_return((logs,), pred_y, return_pred)
 
+        metrics = np.concatenate((batch_metrics, torch_metrics))
         return self._format_loss_metrics_return(loss, metrics, pred_y, return_pred)
 
-    def _validate(self, step_iterator, return_pred=False, return_ground_truth=False):
+    def _validate(self, step_iterator, return_pred=False, return_ground_truth=False, convert_to_numpy=True):
         pred_list = None
         true_list = None
         if return_pred:
@@ -1342,17 +1459,22 @@ class Model:
 
         with self._set_training_mode(False):
             for step, (x, y) in step_iterator:
-                step.loss, step.metrics, pred_y = self._compute_loss_and_metrics(x, y, return_pred=return_pred)
+                step.loss, step.batch_metrics, step.torch_metrics, pred_y = self._compute_loss_and_metrics(
+                    x,
+                    y,
+                    return_pred=return_pred,
+                    convert_to_numpy=convert_to_numpy,
+                )
                 if return_pred:
                     pred_list.append(pred_y)
                 if return_ground_truth:
-                    true_list.append(torch_to_numpy(y))
+                    true_list.append(torch_to_numpy(y) if convert_to_numpy else y)
 
                 step.size = self.get_batch_size(x, y)
 
         return step_iterator.loss, step_iterator.batch_metrics, pred_list, true_list
 
-    def _compute_loss_and_metrics(self, x, y, return_loss_tensor=False, return_pred=False):
+    def _compute_loss_and_metrics(self, x, y, *, return_loss_tensor=False, return_pred=False, convert_to_numpy=True):
         x, y = self.preprocess_input(x, y)
         if self.other_device is not None:
             pred_y = torch.nn.parallel.data_parallel(self.network, x, [self.device] + self.other_device)
@@ -1362,22 +1484,36 @@ class Model:
         if not return_loss_tensor:
             loss = float(loss)
         with torch.no_grad():
-            metrics = self._compute_batch_metrics(pred_y, y)
+            batch_metrics, torch_metrics = self._compute_batch_and_torch_metrics(pred_y, y)
             for epoch_metric in self.epoch_metrics:
-                epoch_metric(pred_y, y)
+                epoch_metric.update(pred_y, y)
 
-        pred_y = torch_to_numpy(pred_y) if return_pred else None
-        return loss, metrics, pred_y
+        if return_pred:
+            pred_y = torch_to_numpy(pred_y) if convert_to_numpy else pred_y
+        else:
+            pred_y = None
 
-    def _compute_batch_metrics(self, pred_y, y):
-        metrics = [metric(pred_y, y) for metric in self.batch_metrics]
-        return self._compute_metric_array(metrics, self.original_batch_metrics_names)
+        return loss, batch_metrics, torch_metrics, pred_y
+
+    def _compute_batch_and_torch_metrics(self, pred_y, y):
+        batch_metrics = [metric(pred_y, y) for metric in self.batch_metrics]
+        torch_metrics = [metric(pred_y, y) for metric in self.torch_metrics]
+        return (
+            self._compute_metric_array(batch_metrics, self.original_batch_metrics_names),
+            self._compute_metric_array(torch_metrics, self.original_torch_metrics_names),
+        )
 
     def _get_epoch_metrics(self):
-        metrics = [epoch_metric.get_metric() for epoch_metric in self.epoch_metrics]
+        metrics = [epoch_metric.compute() for epoch_metric in self.epoch_metrics]
         for epoch_metric in self.epoch_metrics:
             epoch_metric.reset()
         return self._compute_metric_array(metrics, self.original_epoch_metrics_names)
+
+    def _get_torch_metrics(self):
+        metrics = [torch_metric.compute() for torch_metric in self.torch_metrics]
+        for torch_metric in self.torch_metrics:
+            torch_metric.reset()
+        return self._compute_metric_array(metrics, self.original_torch_metrics_names)
 
     def _compute_metric_array(self, metrics_list, names_list):
         def _get_metric(names, metrics):
@@ -1712,7 +1848,7 @@ class Model:
         if isinstance(self.loss_function, torch.nn.Module):
             self.loss_function.to(self.device)
 
-        for metric in self.batch_metrics + self.epoch_metrics:
+        for metric in self.batch_metrics + self.epoch_metrics + self.torch_metrics:
             if isinstance(metric, torch.nn.Module):
                 metric.to(self.device)
 

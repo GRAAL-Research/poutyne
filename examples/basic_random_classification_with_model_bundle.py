@@ -40,7 +40,7 @@ network = nn.Sequential(
 
 # Everything is saved in ./saves/my_classification_network
 model_bundle = ModelBundle.from_network(
-    './saves/my_classification_network', network, device=device, optimizer='sgd', task='classif'
+    './saves/my_classification_network', network, optimizer='sgd', task='classif', device=device
 )
 
 model_bundle.train_data(train_x, train_y, validation_data=(valid_x, valid_y), epochs=5)

@@ -1,3 +1,22 @@
+"""
+Copyright (c) 2022 Poutyne and all respective contributors.
+
+Each contributor holds copyright over their respective contributions. The project versioning (Git)
+records all such contribution source information.
+
+This file is part of Poutyne.
+
+Poutyne is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+version.
+
+Poutyne is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public License along with Poutyne. If not, see
+<https://www.gnu.org/licenses/>.
+"""
+
 # pylint: disable=too-many-lines
 import os
 import warnings
@@ -96,6 +115,7 @@ class ModelBundle:
         loss_function: Union[Callable, str] = None,
         batch_metrics: Union[List, None] = None,
         epoch_metrics: Union[List, None] = None,
+        torch_metrics: Union[List, None] = None,
         monitoring: bool = True,
         monitor_metric: Union[str, None] = None,
         monitor_mode: Union[str, None] = None,
@@ -134,8 +154,20 @@ class ModelBundle:
                 Each metric function is called on each batch of the optimization and on the validation batches
                 at the end of the epoch.
                 (Default value = None)
-            epoch_metrics (list): List of functions with the same signature as :class:`~poutyne.EpochMetric`.
-                See :ref:`epoch metrics` for available epoch metrics. (Default value = None)
+            epoch_metrics (list): List of objects with the same signature as either :class:`~poutyne.EpochMetric` or
+                :class:`torchmetrics.Metric <torchmetrics.Metric>`.
+                See :ref:`epoch metrics` and the
+                `TorchMetrics documentation <https://torchmetrics.readthedocs.io/en/latest/references/modules.html>`__
+                for available epoch metrics. (Default value = None)
+            torch_metrics (list): List of `TorchMetrics <https://torchmetrics.readthedocs.io/>`__  objects.
+                List of objects with the same signature as :class:`torchmetrics.Metric <torchmetrics.Metric>`.
+                See
+                `TorchMetrics documentation <https://torchmetrics.readthedocs.io/en/latest/references/modules.html>`__
+                for available torch metrics. (Default value = None)
+
+                .. warning:: When using this argument, the torch metrics are computed at each batch. This
+                    can significantly slow down the compuations depending on the metrics used. In such case, we advise
+                    to use them as epoch metrics instead.
             monitoring (bool): Whether or not to monitor the training. If True will track the best epoch.
                 If False, ``monitor_metric`` and ``monitor_mode`` are not used, and when testing, the last epoch is used
                 to test the model instead of the best epoch.
@@ -269,7 +301,13 @@ class ModelBundle:
         )
 
         model = Model(
-            network, optimizer, loss_function, batch_metrics=batch_metrics, epoch_metrics=epoch_metrics, device=device
+            network,
+            optimizer,
+            loss_function,
+            batch_metrics=batch_metrics,
+            epoch_metrics=epoch_metrics,
+            torch_metrics=torch_metrics,
+            device=device,
         )
 
         return ModelBundle(

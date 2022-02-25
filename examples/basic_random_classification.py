@@ -3,6 +3,7 @@ from poutyne import Model
 import torch
 import torch.nn as nn
 import numpy as np
+import torchmetrics
 
 # Define a random toy dataset
 num_features = 20
@@ -37,7 +38,7 @@ model = Model(
     'sgd',
     'cross_entropy',
     batch_metrics=['accuracy'],
-    epoch_metrics=['f1'],
+    epoch_metrics=['f1', torchmetrics.AUROC(num_classes=num_classes)],
     device=device,
 )
 model.fit(

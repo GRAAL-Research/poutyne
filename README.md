@@ -44,6 +44,7 @@ from poutyne import Model
 import torch
 import torch.nn as nn
 import numpy as np
+import torchmetrics
 
 num_features = 20
 num_classes = 5
@@ -82,9 +83,14 @@ network = nn.Sequential(
 You can now use Poutyne's model to train your network easily:
 
 ```python
-model = Model(network, 'sgd', 'cross_entropy',
-              batch_metrics=['accuracy'], epoch_metrics=['f1'],
-              device=device)
+model = Model(
+    network,
+    'sgd',
+    'cross_entropy',
+    batch_metrics=['accuracy'],
+    epoch_metrics=['f1', torchmetrics.AUROC(num_classes=num_classes)],
+    device=device
+)
 model.fit(
     train_x, train_y,
     validation_data=(valid_x, valid_y),
@@ -114,9 +120,10 @@ One of the strengths Poutyne are [callbacks](https://poutyne.org/callbacks.html)
 ```python
 from poutyne import ModelBundle
 
-# Everything is saved in ./expt/my_classification_network
-model_bundle = ModelBundle.from_network('./expt/my_classification_network', network,
-                                        optimizer='sgd', task='classif', device=device)
+# Everything is saved in ./saves/my_classification_network
+model_bundle = ModelBundle.from_network(
+    './saves/my_classification_network', network, optimizer='sgd', task='classif', device=device
+)
 
 model_bundle.train_data(train_x, train_y, validation_data=(valid_x, valid_y), epochs=5)
 
@@ -157,10 +164,10 @@ pip install -U git+https://github.com/GRAAL-Research/poutyne.git@dev
 
 Look at notebook files with full working [examples](https://github.com/GRAAL-Research/poutyne/blob/master/examples/):
 
-* [introduction_pytorch_poutyne.ipynb](https://github.com/GRAAL-Research/poutyne/blob/master/examples/introduction_pytorch_poutyne.ipynb) ([tutorial version](https://github.com/GRAAL-Research/poutyne/blob/master/tutorials/introduction_pytorch_poutyne_tutorial.ipynb)) - comparison of Poutyne with bare PyTorch and usage examples of Poutyne callbacks and the Experiment class.
+* [introduction.ipynb](https://github.com/GRAAL-Research/poutyne/blob/master/examples/introduction.ipynb) ([tutorial version](https://github.com/GRAAL-Research/poutyne/blob/master/tutorials/introduction_pytorch_poutyne_tutorial.ipynb)) - comparison of Poutyne with bare PyTorch and usage examples of Poutyne callbacks and the ModelBundle class.
 * [tips_and_tricks.ipynb](https://github.com/GRAAL-Research/poutyne/blob/master/examples/tips_and_tricks.ipynb) - tips and tricks using Poutyne
+* [sequence_tagging.ipynb](https://github.com/GRAAL-Research/poutyne/blob/master/examples/sequence_tagging.ipynb) - Sequence tagging with an RNN
 * [transfer_learning.ipynb](https://github.com/GRAAL-Research/poutyne/blob/master/examples/transfer_learning.ipynb) - transfer learning on `ResNet-18` on the [CUB-200](http://www.vision.caltech.edu/visipedia/CUB-200-2011.html) dataset.
-* [policy_cifar_example.ipynb](https://github.com/GRAAL-Research/poutyne/blob/master/examples/policy_cifar_example.ipynb) - policies API, FastAI-like learning rate policies
 * [policy_interface.ipynb](https://github.com/GRAAL-Research/poutyne/blob/master/examples/policy_interface.ipynb) - example of policies
 * [image_reconstruction.ipynb](https://github.com/GRAAL-Research/poutyne/blob/master/examples/image_reconstruction.ipynb) - example of image reconstruction
 * [classification_and_regression.ipynb](https://github.com/GRAAL-Research/poutyne/blob/master/examples/classification_and_regression.ipynb) - example of multitask learning with classification and regression
@@ -168,10 +175,10 @@ Look at notebook files with full working [examples](https://github.com/GRAAL-Res
 
 or in ``Google Colab``:
 
-* [introduction_pytorch_poutyne.ipynb](https://colab.research.google.com/github/GRAAL-Research/poutyne/blob/master/examples/introduction_pytorch_poutyne.ipynb) ([tutorial version](https://colab.research.google.com/github/GRAAL-Research/poutyne/blob/master/tutorials/introduction_pytorch_poutyne_tutorial.ipynb)) - comparison of Poutyne with bare PyTorch and usage examples of Poutyne callbacks and the Experiment class.
+* [introduction.ipynb](https://colab.research.google.com/github/GRAAL-Research/poutyne/blob/master/examples/introduction.ipynb) ([tutorial version](https://colab.research.google.com/github/GRAAL-Research/poutyne/blob/master/tutorials/introduction_pytorch_poutyne_tutorial.ipynb)) - comparison of Poutyne with bare PyTorch and usage examples of Poutyne callbacks and the ModelBundle class.
 * [tips_and_tricks.ipynb](https://colab.research.google.com/github/GRAAL-Research/poutyne/blob/master/examples/tips_and_tricks.ipynb) - tips and tricks using Poutyne
+* [sequence_tagging.ipynb](https://colab.research.google.com/github/GRAAL-Research/poutyne/blob/master/examples/sequence_tagging.ipynb) - Sequence tagging with an RNN
 * [transfer_learning.ipynb](https://colab.research.google.com/github/GRAAL-Research/poutyne/blob/master/examples/transfer_learning.ipynb) - transfer learning on `ResNet-18` on the [CUB-200](http://www.vision.caltech.edu/visipedia/CUB-200-2011.html) dataset.
-* [policy_cifar_example.ipynb](https://colab.research.google.com/github/GRAAL-Research/poutyne/blob/master/examples/policy_cifar_example.ipynb) - policies API, FastAI-like learning rate policies
 * [policy_interface.ipynb](https://colab.research.google.com/github/GRAAL-Research/poutyne/blob/master/examples/policy_interface.ipynb) - example of policies
 * [image_reconstruction.ipynb](https://colab.research.google.com/github/GRAAL-Research/poutyne/blob/master/examples/image_reconstruction.ipynb) - example of image reconstruction
 * [classification_and_regression.ipynb](https://colab.research.google.com/github/GRAAL-Research/poutyne/blob/master/examples/classification_and_regression.ipynb) - example of multitask learning with classification and regression
