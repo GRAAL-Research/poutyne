@@ -32,7 +32,8 @@ class WandBLogger(Logger):
         version(str): Same as id.
         anonymous(bool): Enables or explicitly disables anonymous logging.
         project(str): The project's name to which this run will belong.
-        experiment: Experiment to use instead of creating a new one.
+        experiment: WandB run to use instead of creating a new one. The other WandB's configuration 
+            parameters will be ignored.
         batch_granularity(bool): Whether to also output the result of each batch in addition to the epochs.
             (Default value = False).
         checkpoints_path (Optional[str]): A path leading to the checkpoint saving directory.
@@ -45,28 +46,27 @@ class WandBLogger(Logger):
     Example:
         .. code-block:: python
 
-            wandb_logger = WandBLogger(
-                name="First_run",
-                project="Test_project",
-                save_dir="/path/to/directory",
-                experiment="First experiment"
-            )
-            wandb_logger.log_config_params(config_params=cfg_dict) # logging the config dictionary
+            wandb_logger = pt.WandBLogger(name="A run", project="A project")
+            config_dict = {"Optimizer": "sgd", "Loss": "Cross-Entropy", "lr": 0.01}
+            wandb_logger.log_config_params(config_params=config_dict)  # logging the config dictionary
             # our Poutyne experiment
-            experiment = Experiment(
-                directory=saving_directory,
+            experiment = pt.Experiment(
+                directory="a/path",
                 network=network,
-                device=device,
-                optimizer=optimizer,
-                loss_function=cross_entropy_loss,
-                batch_metrics=[accuracy]
+                device="cpu",
+                optimizer="sgd",
+                loss_function="cross_entropy",
+                batch_metrics=["accuracy"],
             )
             # Using the WandB logger callback during training
-            experiment.train(train_generator=train_loader, valid_generator=valid_loader, epochs=1,
-                             seed=42, callbacks=[wandb_logger])
+            experiment.train(
+                train_generator=train_loader, valid_generator=valid_loader, epochs=2, seed=42, callbacks=[wandb_logger]
+            )
             # You can access the wandb run via the attribute .run if you want to use other wandb features
-            image = wandb.Image(an_image, caption="a caption")
-            wandb_logger.run.log({"an example": image})
+            image = wandb.Image('a/image.png', caption="a caption")
+            wandb_logger.run.log({"My image": image})
+
+            wandb.finish()  # Call once your finished with your experiment.
     """
 
     def __init__(
@@ -257,4 +257,4 @@ class WandBLogger(Logger):
 
     def on_test_end(self, logs: Dict):
         self._on_test_end_write(logs)
-        wandb.finish()
+

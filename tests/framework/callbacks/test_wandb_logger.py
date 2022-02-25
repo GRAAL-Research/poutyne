@@ -231,16 +231,7 @@ class WandBLoggerTest(TestCase):
             self.model.evaluate(x, y, callbacks=[logger])
             logger.run.log.called_once()
 
-    def test_end_run_after_test(self):
 
-        with patch("poutyne.framework.wandb_logger.wandb") as wandb_patch:
-            x = torch.rand(10, 1)
-            y = torch.rand(10, 1)
-            wandb_patch.init = self.initialize_experiment
-            wandb_patch.run = None
-            logger = WandBLogger(name=self.a_name, log_gradient_frequency=1, batch_granularity=True)
-            self.model.evaluate(x, y, callbacks=[logger])
-            wandb_patch.finish.called_once()
 
     def test_log_checkpoints(self):
 
