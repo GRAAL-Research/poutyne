@@ -39,11 +39,11 @@ limitations under the License.
 import warnings
 from typing import Optional, Union, List, Tuple
 import torch
-from .base import EpochMetric
+from ..base import Metric
 from ..metrics_registering import register_metric_class
 
 
-class FBeta(EpochMetric):
+class FBeta(Metric):
     """
     The source code of this class is under the Apache v2 License and was copied from
     the AllenNLP project and has been modified.
@@ -196,6 +196,10 @@ class FBeta(EpochMetric):
             raise ValueError(f"`names` should contain names for the following metrics: {', '.join(default_name)}.")
 
     def forward(self, y_pred: torch.Tensor, y_true: Union[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]) -> None:
+        true_positive_sum, pred_sum, true_sum = self._update(y_pred, y_true)
+        return self._compute(true_positive_sum, pred_sum, true_sum)
+
+    def update(self, y_pred: torch.Tensor, y_true: Union[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]) -> None:
         """
         Update the confusion matrix for calculating the F-score.
 
@@ -207,10 +211,6 @@ class FBeta(EpochMetric):
                 It can also be a tuple with two tensors of the same shape, the first being the
                 ground truths and the second being a mask.
         """
-        true_positive_sum, pred_sum, true_sum = self._update(y_pred, y_true)
-        return self._compute(true_positive_sum, pred_sum, true_sum)
-
-    def update(self, y_pred: torch.Tensor, y_true: Union[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]) -> None:
         self._update(y_pred, y_true)
 
     def _update(self, y_pred: torch.Tensor, y_true: Union[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]) -> None:
@@ -290,7 +290,7 @@ class FBeta(EpochMetric):
 
         return true_positive_sum, pred_sum, true_sum
 
-    def get_metric(self) -> Union[float, List[float]]:
+    def compute(self) -> Union[float, List[float]]:
         """
         Returns either a float if a single metric is set in the ``__init__`` or a list
         of floats [f-score, precision, recall] if all metrics are requested.

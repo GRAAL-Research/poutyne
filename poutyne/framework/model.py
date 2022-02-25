@@ -37,7 +37,7 @@ from .callbacks import CallbackList, ProgressionCallback, Callback
 from .iterators import EpochIterator, _get_step_iterator, StepIterator
 from .metrics import get_metric
 from .metrics import get_callables_and_names, rename_doubles, flatten_metric_names
-from .metrics.decomposable import DecomposableMetric
+from .metrics.decomposable import convert_decomposable_metric_to_object
 from .optimizers import get_optimizer
 from .warning_manager import warning_settings
 from ..utils import TensorDataset, _concat
@@ -206,7 +206,7 @@ class Model:
         self.loss_function = get_metric(loss_function)
         if isinstance(self.loss_function, tuple):
             self.loss_function = self.loss_function[1]
-        self.loss_function = self._convert_decomposable_metric_to_object(self.loss_function, 'loss')
+        self.loss_function = convert_decomposable_metric_to_object(self.loss_function, 'loss')
 
         self._check_network_optimizer_parameters_match()
         self._set_metrics_attributes(batch_metrics, epoch_metrics)
@@ -233,14 +233,14 @@ class Model:
         batch_metrics = list(map(get_metric, batch_metrics))
         batch_metrics, batch_metrics_names = get_callables_and_names(batch_metrics)
         self.batch_metrics = [
-            self._convert_decomposable_metric_to_object(metric, names)
+            convert_decomposable_metric_to_object(metric, names)
             for metric, names in zip(batch_metrics, batch_metrics_names)
         ]
 
         epoch_metrics = list(map(get_metric, epoch_metrics))
         epoch_metrics, epoch_metrics_names = get_callables_and_names(epoch_metrics)
         self.epoch_metrics = [
-            self._convert_decomposable_metric_to_object(metric, names, is_epoch_metric=True)
+            convert_decomposable_metric_to_object(metric, names, is_epoch_metric=True)
             for metric, names in zip(epoch_metrics, epoch_metrics_names)
         ]
 
@@ -256,15 +256,6 @@ class Model:
         self.batch_metrics_names = flatten_metric_names(batch_metrics_names)
         self.epoch_metrics_names = flatten_metric_names(epoch_metrics_names)
         self.metrics_names = self.batch_metrics_names + self.epoch_metrics_names
-
-    def _convert_decomposable_metric_to_object(self, metric, names, is_epoch_metric=False):
-        if (
-            isinstance(metric, nn.Module)
-            and hasattr(metric, 'compute')
-            and (not is_epoch_metric or hasattr(metric, 'update'))
-        ):
-            return metric
-        return DecomposableMetric(metric, names)
 
     @contextlib.contextmanager
     def _set_training_mode(self, training):

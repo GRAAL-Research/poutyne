@@ -17,6 +17,7 @@ You should have received a copy of the GNU Lesser General Public License along w
 <https://www.gnu.org/licenses/>.
 """
 
+import warnings
 from abc import ABC, abstractmethod
 
 import torch.nn as nn
@@ -27,6 +28,12 @@ class EpochMetric(ABC, nn.Module):
     The abstract class representing a epoch metric which can be accumulated at each batch and calculated at the end
     of the epoch.
     """
+
+    def __init__(self) -> None:
+        super().__init__()
+        warnings.warn(
+            "Using the EpochMetric class is deprecated. Use the Metric class instead and follow its interface."
+        )
 
     @abstractmethod
     def forward(self, y_pred, y_true) -> None:

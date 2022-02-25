@@ -21,15 +21,21 @@ You should have received a copy of the GNU Lesser General Public License along w
 # pylint: disable=abstract-method
 import torch.nn as nn
 
-from .metrics_registering import get_metric
 from .utils import get_names_of_metric
-from .epoch_metrics.base import EpochMetric
+from .metrics_registering import get_metric
+from .base import Metric
+from .decomposable import convert_decomposable_metric_to_object
 
 
-class IndexedArgumentMetric(nn.Module):
+class IndexedArgumentMetric(Metric):
     def __init__(self, metric, *, index=None, pred_index=None, true_index=None):
         super().__init__()
+
+        if isinstance(metric, str):
+            metric = get_metric(metric)
         names, metric = get_names_of_metric(metric)
+        metric = convert_decomposable_metric_to_object(metric, names)
+
         self.__name__ = names
         self.metric = metric
 
@@ -44,29 +50,23 @@ class IndexedArgumentMetric(nn.Module):
             self.pred_index = pred_index
             self.true_index = true_index
 
-    def forward(self, y_pred, y_true):
+    def _select_indices(self, y_pred, y_true):
         if self.pred_index is not None:
             y_pred = y_pred[self.pred_index]
         if self.true_index is not None:
             y_true = y_true[self.true_index]
+        return y_pred, y_true
+
+    def forward(self, y_pred, y_true):
+        y_pred, y_true = self._select_indices(y_pred, y_true)
         return self.metric(y_pred, y_true)
 
+    def update(self, y_pred, y_true):
+        y_pred, y_true = self._select_indices(y_pred, y_true)
+        return self.metric.update(y_pred, y_true)
 
-class IndexedArgumentBatchMetric(IndexedArgumentMetric):
-    def __init__(self, metric, **kwargs):
-        if isinstance(metric, str):
-            metric = get_metric(metric)
-        super().__init__(metric, **kwargs)
-
-
-class IndexedArgumentEpochMetric(IndexedArgumentMetric, EpochMetric):
-    def __init__(self, metric, **kwargs):
-        if isinstance(metric, str):
-            metric = get_metric(metric)
-        super().__init__(metric, **kwargs)
-
-    def get_metric(self):
-        return self.metric.get_metric()
+    def compute(self):
+        return self.metric.compute()
 
     def reset(self) -> None:
         return self.metric.reset()

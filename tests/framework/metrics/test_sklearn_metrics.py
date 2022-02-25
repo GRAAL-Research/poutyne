@@ -167,6 +167,6 @@ class SKLearnMetricsTest(TestCase):
 
         with torch.no_grad():
             for y_pred, y_true in loader:
-                epoch_metric(y_pred, y_true)
-        actual = epoch_metric.get_metric()
+                epoch_metric.update(y_pred, y_true)
+        actual = epoch_metric.compute()
         self.assertEqual(expected, actual)

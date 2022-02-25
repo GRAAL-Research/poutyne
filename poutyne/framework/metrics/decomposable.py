@@ -22,6 +22,7 @@ from typing import Mapping, Iterable
 import warnings
 import numpy as np
 import torch
+import torch.nn as nn
 
 from .base import Metric
 from ..warning_manager import warning_settings
@@ -141,3 +142,14 @@ class DecomposableMetric(Metric):
                 "tensor or a Numpy array.\n"
             )
         return 1
+
+
+def convert_decomposable_metric_to_object(metric, names, is_epoch_metric=False):
+    if (
+        isinstance(metric, nn.Module)
+        and hasattr(metric, 'compute')
+        and (not is_epoch_metric or hasattr(metric, 'update'))
+        and hasattr(metric, 'reset')
+    ):
+        return metric
+    return DecomposableMetric(metric, names)

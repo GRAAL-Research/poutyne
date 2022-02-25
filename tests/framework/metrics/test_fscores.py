@@ -95,7 +95,7 @@ class FBetaTest(TestCase):
     def test_runtime_errors(self):
         fbeta = FBeta()
         # Metric was never called.
-        self.assertRaises(RuntimeError, fbeta.get_metric)
+        self.assertRaises(RuntimeError, fbeta.compute)
 
     def test_fbeta_multiclass_state(self):
         fbeta = FBeta()
@@ -196,7 +196,7 @@ class FBetaTest(TestCase):
     def test_fbeta_multiclass_macro_average_metric_multireturn(self):
         fbeta = FBeta(average='macro')
         fbeta.update(self.predictions, self.targets)
-        fscore, precision, recall = fbeta.get_metric()
+        fscore, precision, recall = fbeta.compute()
 
         macro_precision = numpy.mean(self.desired_precisions)
         macro_recall = numpy.mean(self.desired_recalls)
@@ -232,14 +232,14 @@ class FBetaTest(TestCase):
 
         fbeta = FBeta()
         batch_value = fbeta(self.predictions, (targets, mask))
-        epoch_value = fbeta.get_metric()
+        epoch_value = fbeta.compute()
 
         self.assertEqual(batch_value, epoch_value)
 
     def _compute(self, *args, **kwargs):
         fbeta = FBeta(*args, **kwargs)
         fbeta.update(self.predictions, self.targets)
-        return fbeta.get_metric()
+        return fbeta.compute()
 
     def test_names(self):
         fbeta = FBeta(average='macro')
@@ -341,7 +341,7 @@ class FBetaBinaryTest(TestCase):
         numpy.testing.assert_almost_equal(fbeta._true_sum.tolist(), self.true_sum)
         numpy.testing.assert_almost_equal(fbeta._true_positive_sum.tolist(), self.true_positive_sum)
         numpy.testing.assert_almost_equal(fbeta._total_sum.tolist(), self.total_sum)
-        numpy.testing.assert_almost_equal(fbeta.get_metric(), self.output)
+        numpy.testing.assert_almost_equal(fbeta.compute(), self.output)
 
     def test_fbeta_binary_one_dim_pred(self):
         fbeta = FBeta(average='binary')
@@ -352,7 +352,7 @@ class FBetaBinaryTest(TestCase):
         numpy.testing.assert_almost_equal(fbeta._true_sum.tolist(), self.true_sum)
         numpy.testing.assert_almost_equal(fbeta._true_positive_sum.tolist(), self.true_positive_sum)
         numpy.testing.assert_almost_equal(fbeta._total_sum.tolist(), self.total_sum)
-        numpy.testing.assert_almost_equal(fbeta.get_metric(), self.output)
+        numpy.testing.assert_almost_equal(fbeta.compute(), self.output)
 
     def test_fbeta_binary_zero_dim_pred(self):
         fbeta = FBeta(average='binary')
@@ -363,11 +363,11 @@ class FBetaBinaryTest(TestCase):
         numpy.testing.assert_almost_equal(fbeta._true_sum.tolist(), self.true_sum)
         numpy.testing.assert_almost_equal(fbeta._true_positive_sum.tolist(), self.true_positive_sum)
         numpy.testing.assert_almost_equal(fbeta._total_sum.tolist(), self.total_sum)
-        numpy.testing.assert_almost_equal(fbeta.get_metric(), self.output)
+        numpy.testing.assert_almost_equal(fbeta.compute(), self.output)
 
     def test_fbeta_binary_with_return_batch_value(self):
         fbeta = FBeta(average='binary')
         batch_value = fbeta(self.predictions, self.targets)
-        epoch_value = fbeta.get_metric()
+        epoch_value = fbeta.compute()
 
         self.assertEqual(batch_value, epoch_value)
