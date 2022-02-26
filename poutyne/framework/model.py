@@ -19,7 +19,6 @@ You should have received a copy of the GNU Lesser General Public License along w
 
 # pylint: disable=too-many-lines,too-many-public-methods
 import contextlib
-import numbers
 import timeit
 import warnings
 from collections import defaultdict
@@ -39,8 +38,7 @@ from .metrics import get_metric
 from .metrics import get_callables_and_names, rename_doubles, flatten_metric_names
 from .metrics.decomposable import convert_decomposable_metric_to_object
 from .optimizers import get_optimizer
-from .warning_manager import warning_settings
-from ..utils import TensorDataset, _concat
+from ..utils import TensorDataset, _concat, get_batch_size
 
 
 class Model:
@@ -613,7 +611,7 @@ class Model:
 
             with self._set_training_mode(True):
                 for step, (x, y) in train_step_iterator:
-                    step.size = self.get_batch_size(x, y)
+                    step.size = get_batch_size(x, y)
 
                     examples_in_step += step.size
 
@@ -675,7 +673,7 @@ class Model:
             with self._set_training_mode(True):
                 for step, (x, y) in train_step_iterator:
                     step.loss, step.batch_metrics, _ = self._fit_batch(x, y, callback=callback_list, step=step.number)
-                    step.size = self.get_batch_size(x, y)
+                    step.size = get_batch_size(x, y)
 
             train_step_iterator.loss = self._get_loss()
             train_step_iterator.batch_metrics = self._get_batch_metrics()
@@ -1461,7 +1459,7 @@ class Model:
                 if return_ground_truth:
                     true_list.append(torch_to_numpy(y) if convert_to_numpy else y)
 
-                step.size = self.get_batch_size(x, y)
+                step.size = get_batch_size(x, y)
 
         return pred_list, true_list
 
@@ -1522,81 +1520,6 @@ class Model:
         return np.array(
             [metric for names, metrics in zip(names_list, metrics_list) for metric in _get_metric(names, metrics)]
         )
-
-    def get_batch_size(self, x, y):
-        """
-        This method infers the batch size of a batch. Here is the inferring algorithm used to compute the
-        batch size. ``x`` and ``y`` are tested in this order at each step of the inferring algorithm. If one
-        step succeed for one of ``x`` or ``y``, the algorithm stops.
-
-        - Step 1: if ``x`` or ``y`` is a tensor or a Numpy array, then the ``len()`` is returned.
-        - Step 2: if ``x`` or ``y`` is a list or a tuple, then the ``len()`` of the first element is returned if it
-          is a tensor or a Numpy array.
-        - Step 3: if ``x`` or ``y`` is a dict, then the value for the key ``'batch_size'`` is returned if it is of
-          integral type.
-        - Step 4: if ``x`` or ``y`` is a dict, then the ``len()`` of the first element of ``.values()`` is returned
-          if it is a tensor or a Numpy array.
-
-        If inferring the batch size is not possible, the batch size is set to 1 and, thus, the computed
-        loss and metrics at the end of each epoch is the mean of the batches' losses and metrics. In which
-        case, a warning is also raised. To disable this warning, set
-
-        .. code-block:: python
-
-            from poutyne import warning_settings\n
-            warning_settings['batch_size'] = 'ignore'\n\n
-
-        Args:
-            x: Input data as a batch.
-            y: Target data as a batch.
-        """
-
-        def is_torch_or_numpy(v):
-            return torch.is_tensor(v) or isinstance(v, np.ndarray)
-
-        for v in [x, y]:
-            if is_torch_or_numpy(v):
-                return len(v)
-        for v in [x, y]:
-            if isinstance(v, (tuple, list)):
-                if is_torch_or_numpy(v[0]):
-                    return len(v[0])
-        for v in [x, y]:
-            if isinstance(v, dict):
-                if 'batch_size' in v and isinstance(v['batch_size'], numbers.Integral):
-                    return v['batch_size']
-        for v in [x, y]:
-            if isinstance(v, dict):
-                first_value = list(v.values())[0]
-                if is_torch_or_numpy(first_value):
-                    return len(first_value)
-
-        if warning_settings['batch_size'] == 'warn':
-            warnings.warn(
-                "Inferring the batch size is not possible. Hence, "
-                "the batch size is set to 1 and, thus, the computed "
-                "loss and metrics at the end of each epoch is the "
-                "mean of the batches' losses and metrics. To disable "
-                "this warning, set\n"
-                "from poutyne import warning_settings\n"
-                "warning_settings['batch_size'] = 'ignore'\n\n"
-                "Here is the inferring algorithm used to compute the "
-                "batch size. 'x' and 'y' are tested in this order at "
-                "each step of the inferring algorithm. If one step "
-                "succeed for one of 'x' or 'y', the algorithm stops.\n\n"
-                "Step 1: if 'x' or 'y' is a tensor or a Numpy array, "
-                "then the 'len()' is returned.\n"
-                "Step 2: if 'x' or 'y' is a list or a tuple, then the "
-                "'len()' of the first element is returned if it is a "
-                "tensor or a Numpy array.\n"
-                "Step 3: if 'x' or 'y' is a dict, then the value for "
-                "the key 'batch_size' is returned if it is of integral "
-                "type.\n"
-                "Step 4: if 'x' or 'y' is a dict, then the 'len()' of "
-                "the first element of '.values()' is returned if it is a "
-                "tensor or a Numpy array.\n"
-            )
-        return 1
 
     def load_weights(self, f, strict=True):
         """

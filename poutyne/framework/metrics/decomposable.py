@@ -17,15 +17,13 @@ You should have received a copy of the GNU Lesser General Public License along w
 <https://www.gnu.org/licenses/>.
 """
 
-import numbers
 from typing import Mapping, Iterable
-import warnings
 import numpy as np
 import torch
 import torch.nn as nn
 
 from .base import Metric
-from ..warning_manager import warning_settings
+from ...utils import get_batch_size
 
 
 class DecomposableMetric(Metric):
@@ -36,11 +34,17 @@ class DecomposableMetric(Metric):
         self.__name__ = self.names
         self.reset()
 
+    def forward(self, y_pred, y_true):
+        return self._update(y_pred, y_true)
+
     def update(self, y_pred, y_true):
+        self._update(y_pred, y_true)
+
+    def _update(self, y_pred, y_true):
         output = self.func(y_pred, y_true)
 
         np_output = self._output_to_array(output)
-        batch_size = self._get_batch_size(y_pred, y_true)
+        batch_size = get_batch_size(y_pred, y_true)
         self.output_sums += np_output * batch_size
         self.size += batch_size
 
@@ -63,85 +67,6 @@ class DecomposableMetric(Metric):
     def reset(self) -> None:
         self.output_sums = np.zeros(len(self.names))
         self.size = 0
-
-    def _get_batch_size(self, y_pred, y_true):
-        """
-        This method infers the batch size of a batch. Here is the inferring algorithm used to compute the
-        batch size. ``y_true`` and ``y_pred`` are tested in this order at each step of the inferring algorithm. If one
-        step succeed for one of ``y_true`` or ``y_pred``, the algorithm stops.
-
-        - Step 1: if ``y_true`` or ``y_pred`` is a tensor or a Numpy array, then the ``len()`` is returned.
-        - Step 2: if ``y_true`` or ``y_pred`` is a list or a tuple, then the ``len()`` of the first element is returned
-          if it is a tensor or a Numpy array.
-        - Step 3: if ``y_true`` or ``y_pred`` is a dict, then the value for the key ``'batch_size'`` is returned if it
-          is of integral type.
-        - Step 4: if ``y_true`` or ``y_pred`` is a dict, then the ``len()`` of the first element of ``.values()`` is
-          returned if it is a tensor or a Numpy array.
-
-        If inferring the batch size is not possible, the batch size is set to 1 and, thus, the computed
-        loss and metrics at the end of each epoch is the mean of the batches' losses and metrics. In which
-        case, a warning is also raised. To disable this warning, set
-
-        .. code-block:: python
-
-            from poutyne import warning_settings\n
-            warning_settings['batch_size'] = 'ignore'\n\n
-
-        Args:
-            y_pred: Predictions for a batch.
-            y_true: Target data of a batch.
-        """
-
-        for v in [y_true, y_pred]:
-            if torch.is_tensor(v):
-                return len(v)
-        for v in [y_true, y_pred]:
-            if isinstance(v, (tuple, list)):
-                if torch.is_tensor(v[0]):
-                    return len(v[0])
-        for v in [y_true, y_pred]:
-            if isinstance(v, dict):
-                if 'batch_size' in v and isinstance(v['batch_size'], numbers.Integral):
-                    return v['batch_size']
-        for v in [y_true, y_pred]:
-            if isinstance(v, dict):
-                first_value = list(v.values())[0]
-                if torch.is_tensor(first_value):
-                    return len(first_value)
-
-        if warning_settings['batch_size'] == 'warn':
-            warnings.warn(
-                "Inferring the batch size is not possible. Hence, "
-                "the batch size is set to 1 and, thus, the computed "
-                "loss and metrics at the end of each epoch is the "
-                "mean of the batches' losses and metrics. To disable "
-                "this warning, set\n"
-                "from poutyne import warning_settings\n"
-                "warning_settings['batch_size'] = 'ignore'\n\n"
-                #
-                #
-                "Here is the inferring algorithm used to compute the "
-                "batch size. 'y_true' and 'y_pred' are tested in this order at "
-                "each step of the inferring algorithm. If one step "
-                "succeed for one of 'y_true' or 'y_pred', the algorithm stops.\n\n"
-                #
-                #
-                "Step 1: if 'y_true' or 'y_pred' is a tensor or a Numpy array, "
-                "then the 'len()' is returned.\n"
-                #
-                "Step 2: if 'y_true' or 'y_pred' is a list or a tuple, then the "
-                "'len()' of the first element is returned if it is a "
-                "tensor or a Numpy array.\n"
-                #
-                "Step 3: if 'y_true' or 'y_pred' is a dict, then the value for "
-                "the key 'batch_size' is returned if it is of integral "
-                "type.\n"
-                #
-                "Step 4: if 'y_true' or 'y_pred' is a dict, then the 'len()' of "
-                "the first element of '.values()' is returned if it is a "
-                "tensor or a Numpy array.\n"
-            )
-        return 1
 
 
 def convert_decomposable_metric_to_object(metric, names, is_epoch_metric=False):
