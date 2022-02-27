@@ -59,27 +59,29 @@ class Model:
             object name). The loss function must have the signature ``loss_function(input, target)`` where
             ``input`` is the prediction of the network and ``target`` is the ground truth.
             (Default value = None)
-        batch_metrics (list): List of functions with the same signature as the loss function. Each metric
-            can be any PyTorch loss function. It can also be a string with the same name as a PyTorch
-            loss function (either the functional or object name). Furthermore, see :ref:`batch metrics`
-            for supplementary available batch metrics. 'accuracy' (or just 'acc') is an often used metric.
-            Each metric function is called on each batch of the optimization and on the validation batches
-            at the end of the epoch.
-            (Default value = None)
-        epoch_metrics (list): List of objects with the same signature as either :class:`~poutyne.EpochMetric` or
-            :class:`torchmetrics.Metric <torchmetrics.Metric>`.
-            See :ref:`epoch metrics` and the
-            `TorchMetrics documentation <https://torchmetrics.readthedocs.io/en/latest/references/modules.html>`__ for
-            available epoch metrics.
-            (Default value = None)
-        torch_metrics (list): List of `TorchMetrics <https://torchmetrics.readthedocs.io/>`__  objects.
-            List of objects with the same signature as :class:`torchmetrics.Metric <torchmetrics.Metric>`.
-            See `TorchMetrics documentation <https://torchmetrics.readthedocs.io/en/latest/references/modules.html>`__
-            for available torch metrics. (Default value = None)
+        batch_metrics (list): List of functions with the same signature as a loss function or objects with the same
+            signature as either :class:`~poutyne.Metric` or :class:`torchmetrics.Metric <torchmetrics.Metric>`. It can
+            also be a string with the same name as a PyTorch loss function (either the functional or object name).
+            Some metrics, such as  'accuracy' (or just 'acc'), are also available as strings. See :ref:`metrics` and
+            the `TorchMetrics documentation <https://torchmetrics.readthedocs.io/en/latest/references/modules.html>`__
+            for available metrics.
 
-            .. warning:: When using this argument, the torch metrics are computed at each batch. This
-                can significantly slow down the compuations depending on the metrics used. In such case, we advise to
-                use them as epoch metrics instead.
+            Batch metric are computed on computed for each batch.
+            (Default value = None)
+
+            .. warning:: When using this argument, the metrics are computed for each batch. This can significantly slow
+                down the compuations depending on the metrics used. This mostly happens on non-decomposable metrics
+                such as :class:`torchmetrics.AUROC <torchmetrics.AUROC>` where an ordering of the elements is necessary
+                to compute the metric. In such case, we advise to use them as epoch metrics instead.
+        epoch_metrics (list): List of functions with the same signature as a loss function or objects with the same
+            signature as either :class:`~poutyne.Metric` or :class:`torchmetrics.Metric <torchmetrics.Metric>`. It can
+            also be a string with the same name as a PyTorch loss function (either the functional or object name).
+            Some metrics, such as  'accuracy' (or just 'acc'), are also available as strings. See :ref:`metrics` and
+            the `TorchMetrics documentation <https://torchmetrics.readthedocs.io/en/latest/references/modules.html>`__
+            for available metrics.
+
+            Epoch metrics are computed only at the end of the epoch.
+            (Default value = None)
         device (Union[torch.torch.device, List[torch.torch.device]]): The device to which the network is
             sent or the list of device to which the network is sent. See :func:`~Model.to()` for details.
 

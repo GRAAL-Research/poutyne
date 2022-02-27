@@ -31,7 +31,7 @@ class Metric(ABC, nn.Module):
     def forward(self, y_pred, y_true):
         """
         Update the current state of the metric and return the metric for the current batch. This method has to
-        be implement if the metric is used as a batch metric. If used as an epoch metric, it does not need to be
+        be implemented if the metric is used as a **batch metric**. If used as an epoch metric, it does not need to be
         implemented.
 
         Args:
@@ -45,13 +45,14 @@ class Metric(ABC, nn.Module):
 
     def update(self, y_pred, y_true) -> None:
         """
-        Update the current state of the metric.
+        Update the current state of the metric. This method has to be implemented if the metric is used as an **epoch
+        metric**. If used as a batch metric, it does not need to be implemented.
 
         Args:
             y_pred: The prediction of the model.
             y_true: Target to evaluate the model.
         """
-        pass
+        raise NotImplementedError
 
     @abstractmethod
     def compute(self):

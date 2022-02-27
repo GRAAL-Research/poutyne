@@ -113,7 +113,7 @@ Or only predict on new data:
 predictions = model.predict(test_x)
 ```
 
-[See the complete code here.](https://github.com/GRAAL-Research/poutyne/blob/master/examples/basic_random_classification.py) Also, [see this](https://github.com/GRAAL-Research/poutyne/blob/master/examples/basic_random_regression.py) for an example for regression that again also uses [epoch metrics](http://poutyne.org/metrics.html#epoch-metrics).
+[See the complete code here.](https://github.com/GRAAL-Research/poutyne/blob/master/examples/basic_random_classification.py) Also, [see this](https://github.com/GRAAL-Research/poutyne/blob/master/examples/basic_random_regression.py) for an example for regression.
 
 One of the strengths Poutyne are [callbacks](https://poutyne.org/callbacks.html). They allow you to save checkpoints, log training statistics and more. See this [notebook](https://github.com/GRAAL-Research/poutyne/blob/master/examples/introduction_pytorch_poutyne.ipynb) for an introduction to callbacks. In that vein, Poutyne also offers an [ModelBundle class](https://poutyne.org/experiment.html#poutyne.ModelBundle) that offers automatic checkpointing, logging and more using callbacks under the hood. Here is an example of usage.
 
@@ -130,7 +130,7 @@ model_bundle.train_data(train_x, train_y, validation_data=(valid_x, valid_y), ep
 model_bundle.test_data(test_x, test_y)
 ```
 
-[See the complete code here.](https://github.com/GRAAL-Research/poutyne/blob/master/examples/basic_random_classification_with_model_bundle.py) Also, [see this](https://github.com/GRAAL-Research/poutyne/blob/master/examples/basic_random_regression_with_model_bundle.py) for an example for regression that again also uses [epoch metrics](http://poutyne.org/metrics.html#epoch-metrics).
+[See the complete code here.](https://github.com/GRAAL-Research/poutyne/blob/master/examples/basic_random_classification_with_model_bundle.py) Also, [see this](https://github.com/GRAAL-Research/poutyne/blob/master/examples/basic_random_regression_with_model_bundle.py) for an example for regression.
 
 
 ------------------

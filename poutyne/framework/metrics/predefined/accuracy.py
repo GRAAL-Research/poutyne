@@ -47,7 +47,7 @@ class Accuracy(BatchMetric):
             elements in the output, ``'sum'``: the output will be summed.
 
 
-    Possible string name in :class:`batch_metrics argument <poutyne.Model>`:
+    Possible string name:
         - ``'acc'``
         - ``'accuracy'``
 
@@ -110,7 +110,7 @@ class BinaryAccuracy(BatchMetric):
             ``'mean'``: the sum of the output will be divided by the number of
             elements in the output, ``'sum'``: the output will be summed.
 
-    Possible string name in :class:`batch_metrics argument <poutyne.Model>`:
+    Possible string name:
         - ``'bin_acc'``
         - ``'binary_acc'``
         - ``'binary_accuracy'``
@@ -168,7 +168,7 @@ class TopKAccuracy(BatchMetric):
             elements in the output, ``'sum'``: the output will be summed.
 
 
-    Possible string name in :class:`batch_metrics argument <poutyne.Model>`:
+    Possible string name:
         - ``'top{k}'``
         - ``'top{k}_acc'``
         - ``'top{k}_accuracy'``

@@ -80,6 +80,20 @@ class SKLearnMetrics(Metric):
         return names
 
     def forward(self, y_pred: torch.Tensor, y_true: Union[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]) -> None:
+        """
+        Accumulate the predictions, ground truths and sample weights if any, and compute the metric for the current
+        batch.
+
+        Args:
+            y_pred (torch.Tensor): A tensor of predictions of the shape expected by
+                the metric functions passed to the class.
+            y_true (Union[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]):
+                Ground truths. A tensor of ground truths of the shape expected by
+                the metric functions passed to the class.
+                It can also be a tuple with two tensors, the first being the
+                ground truths and the second corresponding the ``sample_weight``
+                argument passed to the metric functions in Scikit-Learn.
+        """
         y_pred, y_true, sample_weight = self._update(y_pred, y_true)
         return self._compute(y_true, y_pred, sample_weight)
 

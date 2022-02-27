@@ -173,7 +173,7 @@ texinfo_documents = [
 intersphinx_mapping = {
     'PyTorch': ('https://pytorch.org/docs/stable/', None),
     'python': ('https://docs.python.org/3', None),
-    'numpy': ('http://docs.scipy.org/doc/numpy/', None),
+    'numpy': ('https://numpy.org/doc/stable/', None),
     'matplotlib': ('https://matplotlib.org/stable/', None),
     'pandas': ('https://pandas.pydata.org/pandas-docs/stable/', None),
     'torchmetrics': ('https://torchmetrics.readthedocs.io/en/latest/', None),

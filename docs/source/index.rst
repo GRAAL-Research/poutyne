@@ -123,7 +123,7 @@ Or only predict on new data:
 
   predictions = model.predict(test_x)
 
-`See the complete code here. <https://github.com/GRAAL-Research/poutyne/blob/master/examples/basic_random_classification.py>`__ Also, `see this <https://github.com/GRAAL-Research/poutyne/blob/master/examples/basic_random_regression.py>`__ for an example for regression that also uses :ref:`epoch metrics <epoch metrics>`.
+`See the complete code here. <https://github.com/GRAAL-Research/poutyne/blob/master/examples/basic_random_classification.py>`__ Also, `see this <https://github.com/GRAAL-Research/poutyne/blob/master/examples/basic_random_regression.py>`__ for an example for regression.
 
 
 One of the strengths Poutyne are :ref:`callbacks <callbacks>`. They allow you to save checkpoints, log training statistics and more. See this `notebook <https://github.com/GRAAL-Research/poutyne/blob/master/examples/introduction_pytorch_poutyne.ipynb>`__ for an introduction to callbacks. In that vein, Poutyne also offers an :class:`~poutyne.ModelBundle` class that offers automatic checkpointing, logging and more using callbacks under the hood. Here is an example of usage.
@@ -141,7 +141,7 @@ One of the strengths Poutyne are :ref:`callbacks <callbacks>`. They allow you to
 
   model_bundle.test_data(test_x, test_y)
 
-`See the complete code here. <https://github.com/GRAAL-Research/poutyne/blob/master/examples/basic_random_classification_with_model_bundle.py>`__ Also, `see this <https://github.com/GRAAL-Research/poutyne/blob/master/examples/basic_random_regression_with_model_bundle.py>`__ for an example for regression that again also uses :ref:`epoch metrics <epoch metrics>`.
+`See the complete code here. <https://github.com/GRAAL-Research/poutyne/blob/master/examples/basic_random_classification_with_model_bundle.py>`__ Also, `see this <https://github.com/GRAAL-Research/poutyne/blob/master/examples/basic_random_regression_with_model_bundle.py>`__ for an example for regression.
 
 
 Installation

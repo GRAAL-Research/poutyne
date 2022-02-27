@@ -195,7 +195,25 @@ class FBeta(Metric):
         if len(names_list) != len(default_name):
             raise ValueError(f"`names` should contain names for the following metrics: {', '.join(default_name)}.")
 
-    def forward(self, y_pred: torch.Tensor, y_true: Union[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]) -> None:
+    def forward(
+        self, y_pred: torch.Tensor, y_true: Union[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]
+    ) -> Union[float, Tuple[float]]:
+        """
+        Update the confusion matrix for calculating the F-score and compute the metrics for the current batch. See
+        :meth:`FBeta.compute` for details on the return value.
+
+        Args:
+            y_pred (torch.Tensor): A tensor of predictions of shape (batch_size, num_classes, ...).
+            y_true (Union[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]):
+                Ground truths. A tensor of the integer class label of shape (batch_size, ...). It must
+                be the same shape as the ``y_pred`` tensor without the ``num_classes`` dimension.
+                It can also be a tuple with two tensors of the same shape, the first being the
+                ground truths and the second being a mask.
+
+        Returns:
+            A float if a single metric is set in the ``__init__`` or a tuple of floats (f-score, precision, recall) if
+            all metrics are requested.
+        """
         true_positive_sum, pred_sum, true_sum = self._update(y_pred, y_true)
         return self._compute(true_positive_sum, pred_sum, true_sum)
 
@@ -290,10 +308,10 @@ class FBeta(Metric):
 
         return true_positive_sum, pred_sum, true_sum
 
-    def compute(self) -> Union[float, List[float]]:
+    def compute(self) -> Union[float, Tuple[float]]:
         """
-        Returns either a float if a single metric is set in the ``__init__`` or a list
-        of floats [f-score, precision, recall] if all metrics are requested.
+        Returns either a float if a single metric is set in the ``__init__`` or a tuple
+        of floats (f-score, precision, recall) if all metrics are requested.
         """
         if self._true_positive_sum is None:
             raise RuntimeError("You never call this metric before.")
@@ -346,7 +364,7 @@ class F1(FBeta):
     """
     Alias class for :class:`~poutyne.FBeta` where ``metric == 'fscore'`` and ``beta == 1``.
 
-    Possible string name in :class:`epoch_metrics argument <poutyne.Model>`:
+    Possible string name:
         - ``'f1'``
 
     Keys in :class:`logs<poutyne.Callback>` dictionary of callbacks:
@@ -366,7 +384,7 @@ class Precision(FBeta):
     """
     Alias class for :class:`~poutyne.FBeta` where ``metric == 'precision'``.
 
-    Possible string name in :class:`epoch_metrics argument <poutyne.Model>`:
+    Possible string name:
         - ``'precision'``
 
     Keys in :class:`logs<poutyne.Callback>` dictionary of callbacks:
@@ -385,7 +403,7 @@ class Recall(FBeta):
     """
     Alias class for :class:`~poutyne.FBeta` where ``metric == 'recall'``.
 
-    Possible string name in :class:`epoch_metrics argument <poutyne.Model>`:
+    Possible string name:
         - ``'recall'``
 
     Keys in :class:`logs<poutyne.Callback>` dictionary of callbacks:
@@ -404,7 +422,7 @@ class BinaryF1(FBeta):
     """
     Alias class for :class:`~poutyne.FBeta` where ``metric == 'fscore'``, ``average='binary'`` and ``beta == 1``.
 
-    Possible string name in :class:`epoch_metrics argument <poutyne.Model>`:
+    Possible string name:
         - ``'binary_f1'``
         - ``'bin_f1'``
 
@@ -424,7 +442,7 @@ class BinaryPrecision(FBeta):
     """
     Alias class for :class:`~poutyne.FBeta` where ``metric == 'precision'`` and ``average='binary'``.
 
-    Possible string name in :class:`epoch_metrics argument <poutyne.Model>`:
+    Possible string name:
         - ``'binary_precision'``
         - ``'bin_precision'``
 
@@ -443,7 +461,7 @@ class BinaryRecall(FBeta):
     """
     Alias class for :class:`~poutyne.FBeta` where ``metric == 'recall'`` and ``average='binary'``.
 
-    Possible string name in :class:`epoch_metrics argument <poutyne.Model>`:
+    Possible string name:
         - ``'binary_recall'``
         - ``'bin_recall'``
 
