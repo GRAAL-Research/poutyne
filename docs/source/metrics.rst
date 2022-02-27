@@ -185,6 +185,10 @@ Examples:
         (('a', 'b'), my_custom_metric3),
         (('metric_3', 'metric_4'), CustomMetric()),
         (('c', 'd'), CustomMetric2()),
-        CustomMetric3(),  # No need to pass the names since the class sets the attribute __name__.
-        (('F1Score', 'Precision', 'Recall'), metric_collection),  # The names are the keys returned by MetricCollection.
+
+        # No need to pass the names since the class sets the attribute __name__.
+        CustomMetric3(),
+
+        # The names are the keys returned by MetricCollection.
+        (('F1Score', 'Precision', 'Recall'), metric_collection),
     ]
