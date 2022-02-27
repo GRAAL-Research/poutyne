@@ -220,11 +220,11 @@ def get_batch_size(*values):
 
     - Step 1: if a value is a tensor or a Numpy array, then the ``len()`` is returned.
     - Step 2: if a value is a list or a tuple, then the ``len()`` of the first element is returned
-        if it is a tensor or a Numpy array.
+      if it is a tensor or a Numpy array.
     - Step 3: if a value is a dict, then the value for the key ``'batch_size'`` is returned if it
-        is of integral type.
+      is of integral type.
     - Step 4: if a value is a dict, then the ``len()`` of the first element of ``.values()`` is
-        returned if it is a tensor or a Numpy array.
+      returned if it is a tensor or a Numpy array.
 
     If inferring the batch size is not possible, the batch size is set to 1 and a warning is raised.
     To disable this warning, set
@@ -235,7 +235,7 @@ def get_batch_size(*values):
         warning_settings['batch_size'] = 'ignore'\n\n
 
     Args:
-        values:
+        values: The values used for inferring the batch size.
     """
 
     def is_torch_or_numpy(v):
