@@ -22,11 +22,9 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from poutyne import Model, warning_settings
+from poutyne import Model
 
 from .base import ModelFittingTestCase
-
-warning_settings['concatenate_returns'] = 'ignore'
 
 
 class DictIOModel(nn.Module):

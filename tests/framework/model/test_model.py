@@ -30,7 +30,7 @@ import torch.nn.functional as F
 from torch.nn.utils.rnn import PackedSequence
 from torch.utils.data import DataLoader, Dataset
 
-from poutyne import Model, warning_settings, TensorDataset
+from poutyne import Model, TensorDataset
 from tests.framework.tools import (
     some_data_tensor_generator,
     SomeDataGeneratorUsingStopIteration,
@@ -47,8 +47,6 @@ from tests.framework.tools import (
 )
 from tests.utils import populate_packed_sequence
 from .base import ModelFittingTestCase
-
-warning_settings['concatenate_returns'] = 'ignore'
 
 
 def some_ndarray_generator(batch_size):
