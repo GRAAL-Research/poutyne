@@ -26,21 +26,21 @@ Here is an example using metrics:
 
 .. code-block:: python
 
-  from poutyne import Model, Accuracy, F1
-  import torchmetrics
+    from poutyne import Model, Accuracy, F1
+    import torchmetrics
 
-  model = Model(
-      network,
-      'sgd',
-      'cross_entropy',
+    model = Model(
+        network,
+        'sgd',
+        'cross_entropy',
 
-      batch_metrics=[Accuracy(), F1()],
-      # Can also use a string in this case:
-      # batch_metrics=['accuracy', 'f1'],
+        batch_metrics=[Accuracy(), F1()],
+        # Can also use a string in this case:
+        # batch_metrics=['accuracy', 'f1'],
 
-      epoch_metrics=[torchmetrics.AUROC(num_classes=10)],
-  )
-  model.fit_dataset(train_dataset, valid_dataset)
+        epoch_metrics=[torchmetrics.AUROC(num_classes=10)],
+    )
+    model.fit_dataset(train_dataset, valid_dataset)
 
 
 Interface
