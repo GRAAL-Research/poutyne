@@ -260,34 +260,25 @@ def get_batch_size(*values):
 
     if warning_settings['batch_size'] == 'warn':
         warnings.warn(
-            "Inferring the batch size is not possible. Hence, "
-            "the batch size is set to 1 and, thus, the computed "
-            "loss and metrics at the end of each epoch is the "
-            "mean of the batches' losses and metrics. To disable "
-            "this warning, set\n"
+            "Inferring the batch size is not possible. Hence, the batch size is set to 1. To disable this warning, "
+            "set\n"
             "from poutyne import warning_settings\n"
             "warning_settings['batch_size'] = 'ignore'\n\n"
             #
             #
-            "Here is the inferring algorithm used to compute the "
-            "batch size. 'y_true' and 'y_pred' are tested in this order at "
-            "each step of the inferring algorithm. If one step "
-            "succeed for one of 'y_true' or 'y_pred', the algorithm stops.\n\n"
+            "Here is the inferring algorithm used to compute the batch size. The values are tested in order at each "
+            "step of the inferring algorithm. If one step succeed for one of the values, the algorithm stops.\n\n"
             #
             #
-            "Step 1: if 'y_true' or 'y_pred' is a tensor or a Numpy array, "
-            "then the 'len()' is returned.\n"
+            "Step 1: if a value is a tensor or a Numpy array, then the 'len()' is returned.\n"
             #
-            "Step 2: if 'y_true' or 'y_pred' is a list or a tuple, then the "
-            "'len()' of the first element is returned if it is a "
+            "Step 2: if a value is a list or a tuple, then the 'len()' of the first element is returned if it is a "
             "tensor or a Numpy array.\n"
             #
-            "Step 3: if 'y_true' or 'y_pred' is a dict, then the value for "
-            "the key 'batch_size' is returned if it is of integral "
+            "Step 3: if a value is a dict, then the value for the key 'batch_size' is returned if it is of integral "
             "type.\n"
             #
-            "Step 4: if 'y_true' or 'y_pred' is a dict, then the 'len()' of "
-            "the first element of '.values()' is returned if it is a "
+            "Step 4: if a value is a dict, then the 'len()' of the first element of '.values()' is returned if it is a "
             "tensor or a Numpy array.\n"
         )
     return 1
