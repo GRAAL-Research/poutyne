@@ -1,6 +1,6 @@
 # v1.x.x
 
-* 
+* Add a [WandB logger](https://poutyne.org/callbacks.html#poutyne.WandBLogger).
 
 # v1.9
 

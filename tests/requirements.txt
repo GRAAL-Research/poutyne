@@ -11,3 +11,4 @@ omegaconf
 matplotlib
 pillow
 torchmetrics
+wandb
