@@ -52,8 +52,8 @@ When using that interface, the metric is assumed to be decomposable and is avera
 The batch size is inferred with :func:`poutyne.get_batch_size()` using `y_pred` and `y_true` as values.
 
 The second interface is defined by the :class:`~poutyne.Metric` class.
-As documented in the class, it provides methods for updating and computing  the metric.
-This interface is compatible with `TorchMetrics <https://torchmetrics.readthedocs.io/>`__, a library implementing a lot of known metrics in PyTorch.
+As documented in the class, it provides methods for updating and computing the metric.
+This interface is compatible with `TorchMetrics <https://torchmetrics.readthedocs.io/>`__, a library implementing many known metrics in PyTorch.
 See the `TorchMetrics documentation <https://torchmetrics.readthedocs.io/en/latest/references/modules.html>`__ for available TorchMetrics metrics.
 
 Note that if one implements a metric intended to be used as both a batch and an epoch metric, the methods :meth:`Metric.forward()` and :meth:`Metric.update()` need both be implemented.
