@@ -142,13 +142,28 @@ class SKLearnMetricsTest(TestCase):
 
         if with_sample_weight:
             loader = self._get_data_loader(pred, (true, self.sample_weight))
-            sample_weight = self.sample_weight.numpy()
         else:
             loader = self._get_data_loader(pred, true)
-            sample_weight = None
 
+        expected = self._get_expected_value(pred, true, sklearn_metrics, with_sample_weight, kwargs=kwargs, names=names)
+
+        with torch.no_grad():
+            for y_pred, y_true in loader:
+                epoch_metric.update(y_pred, y_true)
+                batch_metric(y_pred, y_true)
+        actual_epoch_metric = epoch_metric.compute()
+        actual_batch_metric = batch_metric.compute()
+
+        self.assertEqual(expected, actual_epoch_metric)
+        self.assertEqual(expected, actual_batch_metric)
+
+    def _get_expected_value(self, pred, true, sklearn_metrics, with_sample_weight, *, kwargs=None, names=None):
         true = true.numpy()
         pred = pred.numpy()
+
+        sample_weight = None
+        if with_sample_weight:
+            sample_weight = self.sample_weight.numpy()
 
         if not isinstance(sklearn_metrics, list):
             sklearn_metrics = [sklearn_metrics]
@@ -161,16 +176,7 @@ class SKLearnMetricsTest(TestCase):
             names = [names]
         names = [func.__name__ for func in sklearn_metrics] if names is None else names
 
-        expected = {
+        return {
             name: f(true, pred, sample_weight=sample_weight, **kw)
             for name, f, kw in zip(names, sklearn_metrics, kwargs)
         }
-
-        with torch.no_grad():
-            for y_pred, y_true in loader:
-                epoch_metric.update(y_pred, y_true)
-                batch_metric(y_pred, y_true)
-        actual_epoch_metric = epoch_metric.compute()
-        actual_batch_metric = epoch_metric.compute()
-        self.assertEqual(expected, actual_epoch_metric)
-        self.assertEqual(expected, actual_batch_metric)
