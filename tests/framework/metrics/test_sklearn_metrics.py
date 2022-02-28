@@ -112,7 +112,7 @@ class SKLearnMetricsTest(TestCase):
         self._test_regression(two_skl_metrics, False)
 
     def _test_classification(self, sklearn_metrics, with_sample_weight, *, kwargs=None, names=None):
-        return self._test_epoch_metric(
+        return self._test_metric(
             self.classification_pred,
             self.classification_true,
             sklearn_metrics,
@@ -122,7 +122,7 @@ class SKLearnMetricsTest(TestCase):
         )
 
     def _test_multiclass_classification(self, sklearn_metrics, with_sample_weight, *, kwargs=None, names=None):
-        return self._test_epoch_metric(
+        return self._test_metric(
             self.multiclass_classification_pred,
             self.multiclass_classification_true,
             sklearn_metrics,
@@ -132,12 +132,13 @@ class SKLearnMetricsTest(TestCase):
         )
 
     def _test_regression(self, sklearn_metrics, with_sample_weight, *, kwargs=None, names=None):
-        return self._test_epoch_metric(
+        return self._test_metric(
             self.regression_pred, self.regression_true, sklearn_metrics, with_sample_weight, kwargs=kwargs, names=names
         )
 
-    def _test_epoch_metric(self, pred, true, sklearn_metrics, with_sample_weight, *, kwargs=None, names=None):
+    def _test_metric(self, pred, true, sklearn_metrics, with_sample_weight, *, kwargs=None, names=None):
         epoch_metric = SKLearnMetrics(sklearn_metrics, kwargs=kwargs, names=names)
+        batch_metric = SKLearnMetrics(sklearn_metrics, kwargs=kwargs, names=names)
 
         if with_sample_weight:
             loader = self._get_data_loader(pred, (true, self.sample_weight))
@@ -168,5 +169,8 @@ class SKLearnMetricsTest(TestCase):
         with torch.no_grad():
             for y_pred, y_true in loader:
                 epoch_metric.update(y_pred, y_true)
-        actual = epoch_metric.compute()
-        self.assertEqual(expected, actual)
+                batch_metric(y_pred, y_true)
+        actual_epoch_metric = epoch_metric.compute()
+        actual_batch_metric = epoch_metric.compute()
+        self.assertEqual(expected, actual_epoch_metric)
+        self.assertEqual(expected, actual_batch_metric)
