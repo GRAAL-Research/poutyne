@@ -105,6 +105,7 @@ class Model:
             from poutyne import Model
             import torch
             import numpy as np
+            import torchmetrics
 
             num_features = 20
             num_classes = 5
@@ -122,7 +123,9 @@ class Model:
             pytorch_network = torch.nn.Linear(num_features, num_classes) # Our network
 
             # We create and optimize our model
-            model = Model(pytorch_network, 'sgd', 'cross_entropy', batch_metrics=['accuracy'])
+            model = Model(pytorch_network, 'sgd', 'cross_entropy',
+                          batch_metrics=['accuracy'],
+                          epoch_metrics=[torchmetrics.AUROC(num_classes=num_classes)])
             model.fit(train_x, train_y,
                       validation_data=(valid_x, valid_y),
                       epochs=5,
@@ -130,9 +133,12 @@ class Model:
 
         .. code-block:: none
 
-            Epoch 1/5 0.02s Step 25/25: loss: 1.719885, acc: 19.375000, val_loss: 1.667446, val_acc: 22.000000
-            Epoch 2/5 0.02s Step 25/25: loss: 1.705489, acc: 19.750000, val_loss: 1.660806, val_acc: 22.000000
-            Epoch 3/5 0.01s Step 25/25: loss: 1.692345, acc: 19.625000, val_loss: 1.655008, val_acc: 22.500000
+            Epoch: 1/5 Train steps: 25 Val steps: 7 0.51s loss: 1.757784 acc: 20.750000 auroc: 0.494891
+            val_loss: 1.756639 val_acc: 18.500000 val_auroc: 0.499404
+            Epoch: 2/5 Train steps: 25 Val steps: 7 0.03s loss: 1.749623 acc: 20.375000 auroc: 0.496878
+            val_loss: 1.748795 val_acc: 19.000000 val_auroc: 0.499723
+            Epoch: 3/5 Train steps: 25 Val steps: 7 0.03s loss: 1.742070 acc: 20.250000 auroc: 0.499461
+            val_loss: 1.741379 val_acc: 19.000000 val_auroc: 0.498577
             ...
 
         Using PyTorch DataLoader::
@@ -140,6 +146,7 @@ class Model:
            import torch
            from torch.utils.data import DataLoader, TensorDataset
            from poutyne import Model
+           import torchmetrics
 
            num_features = 20
            num_classes = 5
@@ -158,18 +165,23 @@ class Model:
            valid_dataset = TensorDataset(valid_x, valid_y)
            valid_generator = DataLoader(valid_dataset, batch_size=32)
 
-           pytorch_network = torch.nn.Linear(num_features, num_train_samples)
+           pytorch_network = torch.nn.Linear(num_features, num_classes)
 
-           model = Model(pytorch_network, 'sgd', 'cross_entropy', batch_metrics=['accuracy'])
+           model = Model(pytorch_network, 'sgd', 'cross_entropy',
+                         batch_metrics=['accuracy'],
+                         epoch_metrics=[torchmetrics.AUROC(num_classes=num_classes)])
            model.fit_generator(train_generator,
                                valid_generator,
                                epochs=5)
 
         .. code-block:: none
 
-            Epoch 1/5 0.05s Step 25/25: loss: 6.752676, acc: 0.000000, val_loss: 6.575071, val_acc: 0.000000
-            Epoch 2/5 0.03s Step 25/25: loss: 6.454859, acc: 0.125000, val_loss: 6.279577, val_acc: 0.000000
-            Epoch 3/5 0.03s Step 25/25: loss: 6.158523, acc: 2.125000, val_loss: 5.985811, val_acc: 9.500000
+            Epoch: 1/5 Train steps: 25 Val steps: 7 0.07s loss: 1.614473 acc: 20.500000 auroc: 0.516850
+            val_loss: 1.617141 val_acc: 21.500000 val_auroc: 0.522068
+            Epoch: 2/5 Train steps: 25 Val steps: 7 0.03s loss: 1.614454 acc: 20.125000 auroc: 0.517618
+            val_loss: 1.615585 val_acc: 22.000000 val_auroc: 0.521051
+            Epoch: 3/5 Train steps: 25 Val steps: 7 0.03s loss: 1.613709 acc: 20.125000 auroc: 0.518307
+            val_loss: 1.614440 val_acc: 22.000000 val_auroc: 0.520762
             ...
 
     """
