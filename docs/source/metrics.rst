@@ -47,7 +47,7 @@ Interface
 ---------
 
 There are two interfaces available for metrics.
-The first interface is the same as PyTorch loss function, that is ``metric(y_pred, y_true)``.
+The first interface is the same as PyTorch loss functions: ``metric(y_pred, y_true)``.
 When using that interface, the metric is assumed to be decomposable and is average for the whole epoch.
 The batch size is infered with :func:`poutyne.get_batch_size()` using `y_pred` and `y_true` as values.
 
