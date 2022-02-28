@@ -30,7 +30,7 @@ import torch
 import torch.nn as nn
 import torchmetrics
 
-from poutyne import Model, EpochMetric, rename_doubles, register_metric_class_function, unregister_metric_class
+from poutyne import Model, EpochMetric, rename_doubles, do_register_metric_class, unregister_metric_class
 
 
 class MyConstTorchMetric(torchmetrics.Metric):
@@ -257,7 +257,7 @@ class MetricsModelIntegrationTest(unittest.TestCase):
         self._test_history(model, ['mse', 'mse2'], [ANY, ANY])
 
     def test_epoch_metrics_registered_with_unique_name(self):
-        names = register_metric_class_function(SomeMetricName, names=['some1', 'some2'], unique_name='unique_some')
+        names = do_register_metric_class(SomeMetricName, names=['some1', 'some2'], unique_name='unique_some')
         model = Model(
             self.pytorch_network, self.optimizer, self.loss_function, epoch_metrics=['some2', ('something', 'some1')]
         )

@@ -45,7 +45,7 @@ def clean_metric_func_name(name):
     return name
 
 
-def register_metric_func_function(func, names=None, unique_name=None):
+def do_register_metric_func(func, names=None, unique_name=None):
     names = [func.__name__] if names is None or len(names) == 0 else names
     names = [names] if isinstance(names, str) else names
     names = [clean_metric_func_name(name) for name in names]
@@ -57,7 +57,7 @@ def register_metric_func_function(func, names=None, unique_name=None):
     return names
 
 
-register_metric_func = _get_registering_decorator(register_metric_func_function)
+register_metric_func = _get_registering_decorator(do_register_metric_func)
 
 metric_classes_dict = {}
 
@@ -69,7 +69,7 @@ def clean_metric_class_name(name):
     return name
 
 
-def register_metric_class_function(clz, names=None, unique_name=None):
+def do_register_metric_class(clz, names=None, unique_name=None):
     names = [camel_to_snake(clz.__name__)] if names is None or len(names) == 0 else names
     names = [names] if isinstance(names, str) else names
     names = [clean_metric_class_name(name) for name in names]
@@ -86,7 +86,7 @@ def unregister_metric_class(names):
         del metric_classes_dict[name]
 
 
-register_metric_class = _get_registering_decorator(register_metric_class_function)
+register_metric_class = _get_registering_decorator(do_register_metric_class)
 
 
 def get_metric(metric):

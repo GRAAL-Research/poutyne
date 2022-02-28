@@ -20,7 +20,7 @@ You should have received a copy of the GNU Lesser General Public License along w
 from abc import ABC
 import torch.nn as nn
 
-from ..metrics_registering import register_metric_func, register_metric_func_function
+from ..metrics_registering import register_metric_func, do_register_metric_func
 
 
 class BatchMetric(ABC, nn.Module):
@@ -229,9 +229,9 @@ def top1(y_pred, y_true, **kwargs):
 
 
 for k_value in range(2, 11):
-    register_metric_func_function(TopKAccuracy(k_value), [f'top{k_value}', f'top{k_value}acc', f'top{k_value}accuracy'])
+    do_register_metric_func(TopKAccuracy(k_value), [f'top{k_value}', f'top{k_value}acc', f'top{k_value}accuracy'])
 del k_value
 
 for k_value in range(20, 110, 10):
-    register_metric_func_function(TopKAccuracy(k_value), [f'top{k_value}', f'top{k_value}acc', f'top{k_value}accuracy'])
+    do_register_metric_func(TopKAccuracy(k_value), [f'top{k_value}', f'top{k_value}acc', f'top{k_value}accuracy'])
 del k_value
