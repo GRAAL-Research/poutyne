@@ -19,8 +19,6 @@ You should have received a copy of the GNU Lesser General Public License along w
 
 # pylint: disable=too-many-locals,too-many-lines
 
-import warnings
-from collections import OrderedDict
 from math import ceil
 from unittest import skipIf, main
 from unittest.mock import MagicMock, ANY
@@ -32,7 +30,7 @@ import torch.nn.functional as F
 from torch.nn.utils.rnn import PackedSequence
 from torch.utils.data import DataLoader, Dataset
 
-from poutyne import Model, warning_settings, TensorDataset
+from poutyne import Model, TensorDataset
 from tests.framework.tools import (
     some_data_tensor_generator,
     SomeDataGeneratorUsingStopIteration,
@@ -49,8 +47,6 @@ from tests.framework.tools import (
 )
 from tests.utils import populate_packed_sequence
 from .base import ModelFittingTestCase
-
-warning_settings['concatenate_returns'] = 'ignore'
 
 
 def some_ndarray_generator(batch_size):
@@ -984,85 +980,6 @@ class ModelTest(ModelFittingTestCase):
                 validation_steps=ModelTest.steps_per_epoch,
                 callbacks=[self.mock_callback],
             )
-
-    def test_get_batch_size(self):
-        batch_size = ModelTest.batch_size
-        x = np.random.rand(batch_size, 1).astype(np.float32)
-        y = np.random.rand(batch_size, 1).astype(np.float32)
-
-        batch_size2 = ModelTest.batch_size + 1
-        x2 = np.random.rand(batch_size2, 1).astype(np.float32)
-        y2 = np.random.rand(batch_size2, 1).astype(np.float32)
-
-        other_batch_size = batch_size2 + 1
-
-        inf_batch_size = self.model.get_batch_size(x, y)
-        self.assertEqual(inf_batch_size, batch_size)
-
-        inf_batch_size = self.model.get_batch_size(x2, y2)
-        self.assertEqual(inf_batch_size, batch_size2)
-
-        inf_batch_size = self.model.get_batch_size(x, y2)
-        self.assertEqual(inf_batch_size, batch_size)
-
-        inf_batch_size = self.model.get_batch_size(x2, y)
-        self.assertEqual(inf_batch_size, batch_size2)
-
-        inf_batch_size = self.model.get_batch_size((x, x2), y)
-        self.assertEqual(inf_batch_size, batch_size)
-
-        inf_batch_size = self.model.get_batch_size((x2, x), y)
-        self.assertEqual(inf_batch_size, batch_size)
-
-        inf_batch_size = self.model.get_batch_size((x, x2), (y, y2))
-        self.assertEqual(inf_batch_size, batch_size)
-
-        inf_batch_size = self.model.get_batch_size((x2, x), (y, y2))
-        self.assertEqual(inf_batch_size, batch_size2)
-
-        inf_batch_size = self.model.get_batch_size([x, x2], y)
-        self.assertEqual(inf_batch_size, batch_size)
-
-        inf_batch_size = self.model.get_batch_size([x2, x], y)
-        self.assertEqual(inf_batch_size, batch_size)
-
-        inf_batch_size = self.model.get_batch_size([x, x2], [y, y2])
-        self.assertEqual(inf_batch_size, batch_size)
-
-        inf_batch_size = self.model.get_batch_size([x2, x], [y, y2])
-        self.assertEqual(inf_batch_size, batch_size2)
-
-        inf_batch_size = self.model.get_batch_size({'batch_size': other_batch_size, 'x': x}, {'y': y})
-        self.assertEqual(inf_batch_size, other_batch_size)
-
-        inf_batch_size = self.model.get_batch_size({'x': x}, {'batch_size': other_batch_size, 'y': y})
-        self.assertEqual(inf_batch_size, other_batch_size)
-
-        inf_batch_size = self.model.get_batch_size({'x': x}, {'y': y})
-        self.assertEqual(inf_batch_size, batch_size)
-
-        inf_batch_size = self.model.get_batch_size(OrderedDict([('x1', x), ('x2', x2)]), {'y': y})
-        self.assertEqual(inf_batch_size, batch_size)
-
-        inf_batch_size = self.model.get_batch_size(OrderedDict([('x1', x2), ('x2', x)]), {'y': y})
-        self.assertEqual(inf_batch_size, batch_size2)
-
-        inf_batch_size = self.model.get_batch_size([1, 2, 3], {'y': y})
-        self.assertEqual(inf_batch_size, batch_size)
-
-    def test_get_batch_size_warning(self):
-        with warnings.catch_warnings(record=True) as w:
-            warnings.simplefilter("always")
-            inf_batch_size = self.model.get_batch_size([1, 2, 3], [4, 5, 6])
-            self.assertEqual(inf_batch_size, 1)
-            self.assertEqual(len(w), 1)
-
-        with warnings.catch_warnings(record=True) as w:
-            warnings.simplefilter("always")
-            warning_settings['batch_size'] = 'ignore'
-            inf_batch_size = self.model.get_batch_size([1, 2, 3], [4, 5, 6])
-            self.assertEqual(inf_batch_size, 1)
-            self.assertEqual(len(w), 0)
 
 
 class SomeDataset(Dataset):

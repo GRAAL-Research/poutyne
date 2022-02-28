@@ -23,3 +23,9 @@ Plotting
 
 .. autofunction:: plot_history
 .. autofunction:: plot_metric
+
+
+Miscellaneous
+-------------
+
+.. autofunction:: get_batch_size

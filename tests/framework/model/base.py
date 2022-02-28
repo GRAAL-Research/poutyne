@@ -17,8 +17,7 @@ You should have received a copy of the GNU Lesser General Public License along w
 <https://www.gnu.org/licenses/>.
 """
 
-# abstract-method because nn.Module has the abstract method _forward_unimplemented
-# pylint: disable=too-many-locals,abstract-method
+# pylint: disable=too-many-locals
 import os
 from unittest.mock import MagicMock, call, ANY
 

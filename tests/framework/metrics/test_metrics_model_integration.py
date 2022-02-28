@@ -30,7 +30,7 @@ import torch
 import torch.nn as nn
 import torchmetrics
 
-from poutyne import Model, EpochMetric, rename_doubles, register_epoch_metric_class, unregister_epoch_metric
+from poutyne import Model, EpochMetric, rename_doubles, do_register_metric_class, unregister_metric_class
 
 
 class MyConstTorchMetric(torchmetrics.Metric):
@@ -241,17 +241,28 @@ class MetricsModelIntegrationTest(unittest.TestCase):
         )
         self._test_history(model, self.metric_names, self.metric_values)
 
+    def test_decomposable_metric_as_epoch_metric(self):
+        batch_metric = get_const_batch_metric(tuple(self.metric_values))
+        model = Model(
+            self.pytorch_network, self.optimizer, self.loss_function, epoch_metrics=[(self.metric_names, batch_metric)]
+        )
+        self._test_history(model, self.metric_names, self.metric_values)
+
+    def test_predefined_decomposable_metric_as_epoch_metric(self):
+        model = Model(self.pytorch_network, self.optimizer, self.loss_function, epoch_metrics=['mse'])
+        self._test_history(model, ['mse'], [ANY])
+
     def test_batch_metrics_with_str_str_tuple(self):
         model = Model(self.pytorch_network, self.optimizer, self.loss_function, batch_metrics=['mse', ('mse2', 'mse')])
         self._test_history(model, ['mse', 'mse2'], [ANY, ANY])
 
     def test_epoch_metrics_registered_with_unique_name(self):
-        names = register_epoch_metric_class(SomeMetricName, names=['some1', 'some2'], unique_name='unique_some')
+        names = do_register_metric_class(SomeMetricName, names=['some1', 'some2'], unique_name='unique_some')
         model = Model(
             self.pytorch_network, self.optimizer, self.loss_function, epoch_metrics=['some2', ('something', 'some1')]
         )
         self._test_history(model, ['unique_some', 'something'], [0.0, 0.0])
-        unregister_epoch_metric(names)
+        unregister_metric_class(names)
 
     def test_torchmetrics_handling(self):
         expected_names = ['r2_score', 'spearman_corr_coef']
@@ -259,7 +270,7 @@ class MetricsModelIntegrationTest(unittest.TestCase):
             self.pytorch_network,
             self.optimizer,
             self.loss_function,
-            torch_metrics=[torchmetrics.R2Score(), torchmetrics.SpearmanCorrCoef()],
+            batch_metrics=[torchmetrics.R2Score(), torchmetrics.SpearmanCorrCoef()],
         )
         self._test_history(model, expected_names, [ANY, ANY])
 
@@ -269,17 +280,7 @@ class MetricsModelIntegrationTest(unittest.TestCase):
             self.pytorch_network,
             self.optimizer,
             self.loss_function,
-            torch_metrics=[MyConstTorchMetric(1), MyConstTorchMetric(2)],
-        )
-        self._test_history(model, expected_names, [1, 2])
-
-    def test_repeated_torch_metrics_handling_with_different_names(self):
-        expected_names = ['metric1', 'metric2']
-        model = Model(
-            self.pytorch_network,
-            self.optimizer,
-            self.loss_function,
-            torch_metrics=[('metric1', MyConstTorchMetric(1)), ('metric2', MyConstTorchMetric(2))],
+            batch_metrics=[MyConstTorchMetric(1), MyConstTorchMetric(2)],
         )
         self._test_history(model, expected_names, [1, 2])
 
@@ -301,7 +302,7 @@ class MetricsModelIntegrationTest(unittest.TestCase):
                 self.pytorch_network,
                 self.optimizer,
                 self.loss_function,
-                torch_metrics=[torchmetrics.R2Score(), torchmetrics.SpearmanCorrCoef()],
+                batch_metrics=[torchmetrics.R2Score(), torchmetrics.SpearmanCorrCoef()],
             )
             model.cuda()
             self._test_history(model, expected_names, [ANY, ANY])
@@ -372,72 +373,50 @@ class MetricsModelIntegrationTest(unittest.TestCase):
 
 class MetricsRenamingTest(unittest.TestCase):
     def test_batch_metrics(self):
-        actual = rename_doubles(['a', 'a'], [], [])
-        expected = ['a1', 'a2'], [], []
+        actual = rename_doubles(['a', 'a'], [])
+        expected = ['a1', 'a2'], []
         self.assertEqual(expected, actual)
 
-        actual = rename_doubles(['a', 'b', 'a', 'a', 'c', 'd'], [], [])
-        expected = ['a1', 'b', 'a2', 'a3', 'c', 'd'], [], []
+        actual = rename_doubles(['a', 'b', 'a', 'a', 'c', 'd'], [])
+        expected = ['a1', 'b', 'a2', 'a3', 'c', 'd'], []
         self.assertEqual(expected, actual)
 
     def test_epoch_metrics(self):
-        actual = rename_doubles([], ['a', 'a'], [])
-        expected = [], ['a1', 'a2'], []
+        actual = rename_doubles([], ['a', 'a'])
+        expected = [], ['a1', 'a2']
         self.assertEqual(expected, actual)
 
-        actual = rename_doubles([], ['a', 'b', 'a', 'a', 'c', 'd'], [])
-        expected = [], ['a1', 'b', 'a2', 'a3', 'c', 'd'], []
-        self.assertEqual(expected, actual)
-
-    def test_torch_metrics(self):
-        actual = rename_doubles([], [], ['a', 'a'])
-        expected = [], [], ['a1', 'a2']
-        self.assertEqual(expected, actual)
-
-        actual = rename_doubles([], [], ['a', 'b', 'a', 'a', 'c', 'd'])
-        expected = [], [], ['a1', 'b', 'a2', 'a3', 'c', 'd']
-        self.assertEqual(expected, actual)
-
-    def test_batch_epoch_torch_metrics(self):
-        actual = rename_doubles(['a', 'b', 'c'], ['d', 'a', 'e', 'a'], ['f', 'a', 'g'])
-        expected = ['a1', 'b', 'c'], ['d', 'a2', 'e', 'a3'], ['f', 'a4', 'g']
-        self.assertEqual(expected, actual)
-
-        actual = rename_doubles(['a', 'b', 'c', 'b'], ['d', 'a', 'e', 'a', 'e'], ['f', 'a'])
-        expected = ['a1', 'b1', 'c', 'b2'], ['d', 'a2', 'e1', 'a3', 'e2'], ['f', 'a4']
-        self.assertEqual(expected, actual)
-
-        actual = rename_doubles(['a', 'b', 'c'], ['d', 'a', 'e', 'a', 'e'], ['f', 'a'])
-        expected = ['a1', 'b', 'c'], ['d', 'a2', 'e1', 'a3', 'e2'], ['f', 'a4']
+        actual = rename_doubles([], ['a', 'b', 'a', 'a', 'c', 'd'])
+        expected = [], ['a1', 'b', 'a2', 'a3', 'c', 'd']
         self.assertEqual(expected, actual)
 
     def test_nested_batch_metrics(self):
-        actual = rename_doubles([['a', 'a']], [], [])
-        expected = [['a1', 'a2']], [], []
+        actual = rename_doubles([['a', 'a']], [])
+        expected = [['a1', 'a2']], []
         self.assertEqual(expected, actual)
 
-        actual = rename_doubles([['a', 'b'], 'b'], [], [])
-        expected = [['a', 'b1'], 'b2'], [], []
+        actual = rename_doubles([['a', 'b'], 'b'], [])
+        expected = [['a', 'b1'], 'b2'], []
         self.assertEqual(expected, actual)
 
     def test_nested_epoch_metrics(self):
-        actual = rename_doubles([], [['a', 'a']], [])
-        expected = [], [['a1', 'a2']], []
+        actual = rename_doubles([], [['a', 'a']])
+        expected = [], [['a1', 'a2']]
         self.assertEqual(expected, actual)
 
-        actual = rename_doubles([], [['a', 'b'], 'b'], [])
-        expected = [], [['a', 'b1'], 'b2'], []
+        actual = rename_doubles([], [['a', 'b'], 'b'])
+        expected = [], [['a', 'b1'], 'b2']
         self.assertEqual(expected, actual)
 
     def test_nested_batch_epoch_metrics(self):
-        actual = rename_doubles([['a']], [['a']], [])
-        expected = [['a1']], [['a2']], []
+        actual = rename_doubles([['a']], [['a']])
+        expected = [['a1']], [['a2']]
         self.assertEqual(expected, actual)
 
-        actual = rename_doubles([['a', 'b']], [['c', 'a']], [])
-        expected = [['a1', 'b']], [['c', 'a2']], []
+        actual = rename_doubles([['a', 'b']], [['c', 'a']])
+        expected = [['a1', 'b']], [['c', 'a2']]
         self.assertEqual(expected, actual)
 
-        actual = rename_doubles(['a', 'b', ['b', 'a'], 'c', 'a', 'd'], ['e', ['c', 'a'], 'f', 'a'], [])
-        expected = ['a1', 'b1', ['b2', 'a2'], 'c1', 'a3', 'd'], ['e', ['c2', 'a4'], 'f', 'a5'], []
+        actual = rename_doubles(['a', 'b', ['b', 'a'], 'c', 'a', 'd'], ['e', ['c', 'a'], 'f', 'a'])
+        expected = ['a1', 'b1', ['b2', 'a2'], 'c1', 'a3', 'd'], ['e', ['c2', 'a4'], 'f', 'a5']
         self.assertEqual(expected, actual)

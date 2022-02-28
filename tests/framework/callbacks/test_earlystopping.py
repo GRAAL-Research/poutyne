@@ -22,12 +22,12 @@ import unittest
 import torch
 import torch.nn as nn
 
-from poutyne import Model, EarlyStopping, EpochMetric, Callback
+from poutyne import Model, EarlyStopping, Metric, Callback
 from tests.framework.base import CaptureOutputBase
 from tests.framework.tools import some_data_generator
 
 
-class EarlyStoppingDummyMetric(EpochMetric):
+class EarlyStoppingDummyMetric(Metric):
     __name__ = 'dummy'
 
     def __init__(self, values) -> None:
@@ -35,10 +35,10 @@ class EarlyStoppingDummyMetric(EpochMetric):
         self.values = values
         self.current_epoch = None
 
-    def forward(self, y_pred, y_true):
+    def update(self, y_pred, y_true):
         pass
 
-    def get_metric(self):
+    def compute(self):
         return self.values[self.current_epoch - 1]
 
     def reset(self) -> None:

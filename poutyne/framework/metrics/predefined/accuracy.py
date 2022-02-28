@@ -17,14 +17,13 @@ You should have received a copy of the GNU Lesser General Public License along w
 <https://www.gnu.org/licenses/>.
 """
 
-# Because nn.Module has the abstract method _forward_unimplemented
-# pylint: disable=abstract-method
+from abc import ABC
 import torch.nn as nn
 
-from .metrics_registering import register_batch_metric, register_batch_metric_function
+from ..metrics_registering import register_metric_func, do_register_metric_func
 
 
-class BatchMetric(nn.Module):
+class BatchMetric(ABC, nn.Module):
     def __init__(self, reduction: str = 'mean'):
         super().__init__()
         REDUCTIONS = ['none', 'mean', 'sum']
@@ -48,7 +47,7 @@ class Accuracy(BatchMetric):
             elements in the output, ``'sum'``: the output will be summed.
 
 
-    Possible string name in :class:`batch_metrics argument <poutyne.Model>`:
+    Possible string name:
         - ``'acc'``
         - ``'accuracy'``
 
@@ -75,7 +74,7 @@ class Accuracy(BatchMetric):
         return acc(y_pred, y_true, ignore_index=self.ignore_index, reduction=self.reduction)
 
 
-@register_batch_metric('acc', 'accuracy')
+@register_metric_func('acc', 'accuracy')
 def acc(y_pred, y_true, *, ignore_index=-100, reduction='mean'):
     """
     Computes the accuracy.
@@ -111,7 +110,7 @@ class BinaryAccuracy(BatchMetric):
             ``'mean'``: the sum of the output will be divided by the number of
             elements in the output, ``'sum'``: the output will be summed.
 
-    Possible string name in :class:`batch_metrics argument <poutyne.Model>`:
+    Possible string name:
         - ``'bin_acc'``
         - ``'binary_acc'``
         - ``'binary_accuracy'``
@@ -136,7 +135,7 @@ class BinaryAccuracy(BatchMetric):
         return bin_acc(y_pred, y_true, threshold=self.threshold, reduction=self.reduction)
 
 
-@register_batch_metric('binacc', 'binaryacc', 'binaryaccuracy')
+@register_metric_func('binacc', 'binaryacc', 'binaryaccuracy')
 def bin_acc(y_pred, y_true, *, threshold=0.0, reduction='mean'):
     """
     Computes the binary accuracy.
@@ -169,7 +168,7 @@ class TopKAccuracy(BatchMetric):
             elements in the output, ``'sum'``: the output will be summed.
 
 
-    Possible string name in :class:`batch_metrics argument <poutyne.Model>`:
+    Possible string name:
         - ``'top{k}'``
         - ``'top{k}_acc'``
         - ``'top{k}_accuracy'``
@@ -224,19 +223,15 @@ def topk(y_pred, y_true, k, *, ignore_index=-100, reduction='mean'):
     return topk_acc * 100
 
 
-@register_batch_metric('top1', 'top1acc', 'top1accuracy')
+@register_metric_func('top1', 'top1acc', 'top1accuracy')
 def top1(y_pred, y_true, **kwargs):
     return acc(y_pred, y_true, **kwargs)
 
 
 for k_value in range(2, 11):
-    register_batch_metric_function(
-        TopKAccuracy(k_value), [f'top{k_value}', f'top{k_value}acc', f'top{k_value}accuracy']
-    )
+    do_register_metric_func(TopKAccuracy(k_value), [f'top{k_value}', f'top{k_value}acc', f'top{k_value}accuracy'])
 del k_value
 
 for k_value in range(20, 110, 10):
-    register_batch_metric_function(
-        TopKAccuracy(k_value), [f'top{k_value}', f'top{k_value}acc', f'top{k_value}accuracy']
-    )
+    do_register_metric_func(TopKAccuracy(k_value), [f'top{k_value}', f'top{k_value}acc', f'top{k_value}accuracy'])
 del k_value

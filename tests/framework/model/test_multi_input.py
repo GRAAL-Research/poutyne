@@ -22,11 +22,9 @@ import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
 
-from poutyne import Model, warning_settings, TensorDataset
+from poutyne import Model, TensorDataset
 
 from .base import ModelFittingTestCase, MultiIOModel
-
-warning_settings['concatenate_returns'] = 'ignore'
 
 
 def some_data_tensor_generator_multi_input(batch_size):

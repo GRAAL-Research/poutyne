@@ -18,6 +18,9 @@ You should have received a copy of the GNU Lesser General Public License along w
 """
 
 # -*- coding: utf-8 -*-
+import warnings
+from collections import OrderedDict
+
 import unittest
 from unittest import TestCase, skipIf
 from unittest.mock import MagicMock, call
@@ -26,7 +29,7 @@ import numpy as np
 import torch
 from torch.nn.utils.rnn import PackedSequence
 
-from poutyne import TensorDataset, torch_apply
+from poutyne import TensorDataset, torch_apply, warning_settings, get_batch_size
 from poutyne.utils import _concat
 from tests.utils import populate_packed_sequence
 
@@ -368,6 +371,89 @@ class ConcatTest(TestCase):
             for j in range(5):
                 self.assertTrue(concat['a'][0][i * 5 + j] == j)
         self.assertTrue((concat['a'][1] == 1).all())
+
+
+class GetBatchSizeTest(TestCase):
+    batch_size = 20
+
+    def test_get_batch_size(self):
+        batch_size = GetBatchSizeTest.batch_size
+        x = np.random.rand(batch_size, 1).astype(np.float32)
+        y = np.random.rand(batch_size, 1).astype(np.float32)
+
+        batch_size2 = batch_size + 1
+        x2 = np.random.rand(batch_size2, 1).astype(np.float32)
+        y2 = np.random.rand(batch_size2, 1).astype(np.float32)
+
+        other_batch_size = batch_size2 + 1
+
+        inf_batch_size = get_batch_size(x, y)
+        self.assertEqual(inf_batch_size, batch_size)
+
+        inf_batch_size = get_batch_size(x2, y2)
+        self.assertEqual(inf_batch_size, batch_size2)
+
+        inf_batch_size = get_batch_size(x, y2)
+        self.assertEqual(inf_batch_size, batch_size)
+
+        inf_batch_size = get_batch_size(x2, y)
+        self.assertEqual(inf_batch_size, batch_size2)
+
+        inf_batch_size = get_batch_size((x, x2), y)
+        self.assertEqual(inf_batch_size, batch_size)
+
+        inf_batch_size = get_batch_size((x2, x), y)
+        self.assertEqual(inf_batch_size, batch_size)
+
+        inf_batch_size = get_batch_size((x, x2), (y, y2))
+        self.assertEqual(inf_batch_size, batch_size)
+
+        inf_batch_size = get_batch_size((x2, x), (y, y2))
+        self.assertEqual(inf_batch_size, batch_size2)
+
+        inf_batch_size = get_batch_size([x, x2], y)
+        self.assertEqual(inf_batch_size, batch_size)
+
+        inf_batch_size = get_batch_size([x2, x], y)
+        self.assertEqual(inf_batch_size, batch_size)
+
+        inf_batch_size = get_batch_size([x, x2], [y, y2])
+        self.assertEqual(inf_batch_size, batch_size)
+
+        inf_batch_size = get_batch_size([x2, x], [y, y2])
+        self.assertEqual(inf_batch_size, batch_size2)
+
+        inf_batch_size = get_batch_size({'batch_size': other_batch_size, 'x': x}, {'y': y})
+        self.assertEqual(inf_batch_size, other_batch_size)
+
+        inf_batch_size = get_batch_size({'x': x}, {'batch_size': other_batch_size, 'y': y})
+        self.assertEqual(inf_batch_size, other_batch_size)
+
+        inf_batch_size = get_batch_size({'x': x}, {'y': y})
+        self.assertEqual(inf_batch_size, batch_size)
+
+        inf_batch_size = get_batch_size(OrderedDict([('x1', x), ('x2', x2)]), {'y': y})
+        self.assertEqual(inf_batch_size, batch_size)
+
+        inf_batch_size = get_batch_size(OrderedDict([('x1', x2), ('x2', x)]), {'y': y})
+        self.assertEqual(inf_batch_size, batch_size2)
+
+        inf_batch_size = get_batch_size([1, 2, 3], {'y': y})
+        self.assertEqual(inf_batch_size, batch_size)
+
+    def test_get_batch_size_warning(self):
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("always")
+            inf_batch_size = get_batch_size([1, 2, 3], [4, 5, 6])
+            self.assertEqual(inf_batch_size, 1)
+            self.assertEqual(len(w), 1)
+
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("always")
+            warning_settings['batch_size'] = 'ignore'
+            inf_batch_size = get_batch_size([1, 2, 3], [4, 5, 6])
+            self.assertEqual(inf_batch_size, 1)
+            self.assertEqual(len(w), 0)
 
 
 if __name__ == '__main__':

@@ -20,10 +20,10 @@ You should have received a copy of the GNU Lesser General Public License along w
 from typing import Optional, Union, List, Callable, Dict, Tuple
 import numpy as np
 import torch
-from .base import EpochMetric
+from ..base import Metric
 
 
-class SKLearnMetrics(EpochMetric):
+class SKLearnMetrics(Metric):
     """
     Wrap metrics with Scikit-learn-like interface
     (``metric(y_true, y_pred, sample_weight=sample_weight, **kwargs)``).
@@ -81,6 +81,24 @@ class SKLearnMetrics(EpochMetric):
 
     def forward(self, y_pred: torch.Tensor, y_true: Union[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]) -> None:
         """
+        Accumulate the predictions, ground truths and sample weights if any, and compute the metric for the current
+        batch.
+
+        Args:
+            y_pred (torch.Tensor): A tensor of predictions of the shape expected by
+                the metric functions passed to the class.
+            y_true (Union[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]):
+                Ground truths. A tensor of ground truths of the shape expected by
+                the metric functions passed to the class.
+                It can also be a tuple with two tensors, the first being the
+                ground truths and the second corresponding the ``sample_weight``
+                argument passed to the metric functions in Scikit-Learn.
+        """
+        y_pred, y_true, sample_weight = self._update(y_pred, y_true)
+        return self._compute(y_true, y_pred, sample_weight)
+
+    def update(self, y_pred: torch.Tensor, y_true: Union[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]) -> None:
+        """
         Accumulate the predictions, ground truths and sample weights if any.
 
         Args:
@@ -93,13 +111,25 @@ class SKLearnMetrics(EpochMetric):
                 ground truths and the second corresponding the ``sample_weight``
                 argument passed to the metric functions in Scikit-Learn.
         """
-        self.y_pred_list.append(y_pred.cpu().numpy())
+        self._update(y_pred, y_true)
+
+    def _update(self, y_pred: torch.Tensor, y_true: Union[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]) -> None:
+        y_pred = y_pred.cpu().numpy()
+        self.y_pred_list.append(y_pred)
+
+        sample_weight = None
         if isinstance(y_true, (tuple, list)):
             y_true, sample_weight = y_true
-            self.sample_weight_list.append(sample_weight.cpu().numpy())
-        self.y_true_list.append(y_true.cpu().numpy())
 
-    def get_metric(self) -> Dict:
+            sample_weight = sample_weight.cpu().numpy()
+            self.sample_weight_list.append(sample_weight)
+
+        y_true = y_true.cpu().numpy()
+        self.y_true_list.append(y_true)
+
+        return y_pred, y_true, sample_weight
+
+    def compute(self) -> Dict:
         """
         Returns the metrics as a dictionary with the names as keys.
         """
@@ -108,7 +138,9 @@ class SKLearnMetrics(EpochMetric):
             sample_weight = np.concatenate(self.sample_weight_list)
         y_pred = np.concatenate(self.y_pred_list)
         y_true = np.concatenate(self.y_true_list)
+        return self._compute(y_true, y_pred, sample_weight)
 
+    def _compute(self, y_true, y_pred, sample_weight):
         return {
             name: func(y_true, y_pred, sample_weight=sample_weight, **kwargs)
             for name, func, kwargs in zip(self.__name__, self.funcs, self.kwargs)

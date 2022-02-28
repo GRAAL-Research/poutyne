@@ -19,11 +19,15 @@ You should have received a copy of the GNU Lesser General Public License along w
 
 # -*- coding: utf-8 -*-
 import random
+import numbers
+import warnings
 
 import numpy as np
 import torch
 from torch.nn.utils.rnn import PackedSequence
 from torch.utils.data import Dataset
+
+from .warning_manager import warning_settings
 
 
 def torch_to_numpy(obj, copy=False):
@@ -206,3 +210,75 @@ def is_in_jupyter_notebook():
         jupyter = False
 
     return jupyter
+
+
+def get_batch_size(*values):
+    """
+    This method infers the batch size of a batch. Here is the inferring algorithm used to compute the
+    batch size. The values are tested in order at each step of the inferring algorithm. If one
+    step succeed for one of the values, the algorithm stops.
+
+    - Step 1: if a value is a tensor or a Numpy array, then the ``len()`` is returned.
+    - Step 2: if a value is a list or a tuple, then the ``len()`` of the first element is returned
+      if it is a tensor or a Numpy array.
+    - Step 3: if a value is a dict, then the value for the key ``'batch_size'`` is returned if it
+      is of integral type.
+    - Step 4: if a value is a dict, then the ``len()`` of the first element of ``.values()`` is
+      returned if it is a tensor or a Numpy array.
+
+    If inferring the batch size is not possible, the batch size is set to 1 and a warning is raised.
+    To disable this warning, set
+
+    .. code-block:: python
+
+        from poutyne import warning_settings\n
+        warning_settings['batch_size'] = 'ignore'\n\n
+
+    Args:
+        values: The values used for inferring the batch size.
+    """
+
+    def is_torch_or_numpy(v):
+        return torch.is_tensor(v) or isinstance(v, np.ndarray)
+
+    for v in values:
+        if is_torch_or_numpy(v):
+            return len(v)
+    for v in values:
+        if isinstance(v, (tuple, list)):
+            if is_torch_or_numpy(v[0]):
+                return len(v[0])
+    for v in values:
+        if isinstance(v, dict):
+            if 'batch_size' in v and isinstance(v['batch_size'], numbers.Integral):
+                return v['batch_size']
+    for v in values:
+        if isinstance(v, dict):
+            first_value = list(v.values())[0]
+            if is_torch_or_numpy(first_value):
+                return len(first_value)
+
+    if warning_settings['batch_size'] == 'warn':
+        warnings.warn(
+            "Inferring the batch size is not possible. Hence, the batch size is set to 1. To disable this warning, "
+            "set\n"
+            "from poutyne import warning_settings\n"
+            "warning_settings['batch_size'] = 'ignore'\n\n"
+            #
+            #
+            "Here is the inferring algorithm used to compute the batch size. The values are tested in order at each "
+            "step of the inferring algorithm. If one step succeed for one of the values, the algorithm stops.\n\n"
+            #
+            #
+            "Step 1: if a value is a tensor or a Numpy array, then the 'len()' is returned.\n"
+            #
+            "Step 2: if a value is a list or a tuple, then the 'len()' of the first element is returned if it is a "
+            "tensor or a Numpy array.\n"
+            #
+            "Step 3: if a value is a dict, then the value for the key 'batch_size' is returned if it is of integral "
+            "type.\n"
+            #
+            "Step 4: if a value is a dict, then the 'len()' of the first element of '.values()' is returned if it is a "
+            "tensor or a Numpy array.\n"
+        )
+    return 1

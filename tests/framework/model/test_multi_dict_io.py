@@ -17,18 +17,14 @@ You should have received a copy of the GNU Lesser General Public License along w
 <https://www.gnu.org/licenses/>.
 """
 
-# Because nn.Module has the abstract method _forward_unimplemented
-# pylint: disable=abstract-method
 import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from poutyne import Model, warning_settings
+from poutyne import Model
 
 from .base import ModelFittingTestCase
-
-warning_settings['concatenate_returns'] = 'ignore'
 
 
 class DictIOModel(nn.Module):

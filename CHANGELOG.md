@@ -1,6 +1,15 @@
 # v1.x.x
 
 * Add a [WandB logger](https://poutyne.org/callbacks.html#poutyne.WandBLogger).
+* [Epoch and batch metrics are now unified.](https://poutyne.org/metrics.html) Their only difference is whether the
+  metric for the batch is computed. The main interface is now the
+  [`Metric` class](https://poutyne.org/metrics.html#poutyne.Metric). It is compatible with
+  [TorchMetrics](https://torchmetrics.readthedocs.io/). Thus, TorchMetrics metrics can now be passed as either batch or
+  epoch metrics. The metrics with the interface `metric(y_pred, y_true)` are internally wrapped into a `Metric` object
+  and are still fully supported. The `torch_metrics` keyword argument and the `EpochMetric` class are now **deprecated**
+  and will be removed in future versions.
+* `Model.get_batch_size` is replaced by
+  [`poutyne.get_batch_size()`](https://poutyne.org/utils.html#poutyne.get_batch_size).
 
 # v1.9
 
