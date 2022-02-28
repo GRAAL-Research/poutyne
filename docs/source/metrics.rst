@@ -102,7 +102,7 @@ Computing Multiple Metrics at Once
 
 When passing the metrics to :class:`~poutyne.Model` and :meth:`ModelBundle.from_network() <poutyne.ModelBundle.from_network()>`, each metric name can be changed by passing a tuple ``(name, metric)`` instead of simply the metric function or object, where ``name`` is the alternative name of the metric.
 
-Metrics can return multiple metrics (e.g. an metric could return an F1-score with the associated precision and recall).
+Metrics can return multiple metrics (e.g. a metric could return an F1-score with the associated precision and recall).
 The metrics can be returned via an iterable (tuple, list, Numpy arrays, tensors, etc.) or via a mapping (e.g. a dict).
 However, in this case, the names of the different metric has to be passed in some way.
 
