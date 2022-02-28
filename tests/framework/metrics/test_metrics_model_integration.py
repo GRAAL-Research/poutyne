@@ -241,6 +241,17 @@ class MetricsModelIntegrationTest(unittest.TestCase):
         )
         self._test_history(model, self.metric_names, self.metric_values)
 
+    def test_decomposable_metric_as_epoch_metric(self):
+        batch_metric = get_const_batch_metric(tuple(self.metric_values))
+        model = Model(
+            self.pytorch_network, self.optimizer, self.loss_function, epoch_metrics=[(self.metric_names, batch_metric)]
+        )
+        self._test_history(model, self.metric_names, self.metric_values)
+
+    def test_predefined_decomposable_metric_as_epoch_metric(self):
+        model = Model(self.pytorch_network, self.optimizer, self.loss_function, epoch_metrics=['mse'])
+        self._test_history(model, ['mse'], [ANY])
+
     def test_batch_metrics_with_str_str_tuple(self):
         model = Model(self.pytorch_network, self.optimizer, self.loss_function, batch_metrics=['mse', ('mse2', 'mse')])
         self._test_history(model, ['mse', 'mse2'], [ANY, ANY])
