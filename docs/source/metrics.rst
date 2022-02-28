@@ -100,7 +100,7 @@ Below is a functional version of some of the classes in the :ref:`object oriente
 Computing Multiple Metrics at Once
 ----------------------------------
 
-When passing the metrics to :class:`~poutyne.Model` and :meth:`ModelBundle.from_network() <poutyne.ModelBundle.from_network()>`, the name of each metric can be change by passing a tuple ``(name, metric)`` instead of simply the metric function or object, where ``name`` is the alternative name of the metric.
+When passing the metrics to :class:`~poutyne.Model` and :meth:`ModelBundle.from_network() <poutyne.ModelBundle.from_network()>`, each metric name can be changed by passing a tuple ``(name, metric)`` instead of simply the metric function or object, where ``name`` is the alternative name of the metric.
 
 Metrics can return multiple metrics (e.g. an metric could return an F1-score with the associated precision and recall).
 The metrics can be returned via an iterable (tuple, list, Numpy arrays, tensors, etc.) or via a mapping (e.g. a dict).
