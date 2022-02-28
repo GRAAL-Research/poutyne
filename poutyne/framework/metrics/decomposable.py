@@ -43,11 +43,14 @@ class DecomposableMetric(Metric):
     def _update(self, y_pred, y_true):
         output = self.func(y_pred, y_true)
 
+        # In order to aggregate the batches, it is simpler to put into a NumPy array all relevant values.
         np_output = self._output_to_array(output)
         batch_size = get_batch_size(y_pred, y_true)
         self.output_sums += np_output * batch_size
         self.size += batch_size
 
+        # We return `output` on purpose in order to keep the tensors as is so that a DecomposableMetric object can
+        # be used as a loss function.
         return output
 
     def _output_to_array(self, output):
