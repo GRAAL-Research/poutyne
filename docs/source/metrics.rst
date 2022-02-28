@@ -56,8 +56,8 @@ As documented in the class, it provides methods for updating and computing the m
 This interface is compatible with `TorchMetrics <https://torchmetrics.readthedocs.io/>`__, a library implementing many known metrics in PyTorch.
 See the `TorchMetrics documentation <https://torchmetrics.readthedocs.io/en/latest/references/modules.html>`__ for available TorchMetrics metrics.
 
-Note that if one implements a metric intended to be used as both a batch and an epoch metric, the methods :meth:`Metric.forward()` and :meth:`Metric.update()` need both be implemented.
-To avoid having to implement both methods, one can `implement a TorchMetrics metric <https://torchmetrics.readthedocs.io/en/latest/pages/implement.html>`__ at the potential cost of higher computational load as described in the `TorchMetrics documentation <https://torchmetrics.readthedocs.io/en/latest/pages/implement.html#internal-implementation-details>`__.
+Note that if one implements a metric intended as both a batch and epoch metric, the methods :meth:`Metric.forward()` and :meth:`Metric.update()` need to be implemented.
+To avoid implementing both methods, one can `implement a TorchMetrics metric <https://torchmetrics.readthedocs.io/en/latest/pages/implement.html>`__ at the potential cost of higher computational load as described in the `TorchMetrics documentation <https://torchmetrics.readthedocs.io/en/latest/pages/implement.html#internal-implementation-details>`__.
 
 
 .. autoclass:: Metric
