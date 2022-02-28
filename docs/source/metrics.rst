@@ -88,7 +88,7 @@ Below are classes for predefined metrics available in Poutyne.
 Functional
 ----------
 
-Below is the functional version of some of the classes in the :ref:`object oriented metrics` section.
+Below is a functional version of some of the classes in the :ref:`object oriented metrics` section.
 
 .. autofunction:: acc
 .. autofunction:: bin_acc
