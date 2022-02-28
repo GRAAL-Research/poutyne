@@ -18,9 +18,9 @@ The key in :class:`callback logs<poutyne.Callback>` associated with each is the 
 Note that you can also pass the PyTorch loss functions as a loss function in :class:`~poutyne.Model` in the same way.
 
 .. warning:: When using the ``batch_metrics`` argument, the metrics are computed for each batch.
-    This can significantly slow down the compuations depending on the metrics used.
+    This can significantly slow down the computations depending on the metrics used.
     This mostly happens on non-decomposable metrics such as :class:`torchmetrics.AUROC <torchmetrics.AUROC>` where an ordering of the elements is necessary to compute the metric.
-    In such case, we advise to use them as epoch metrics instead.
+    In such a case, we advise using them as epoch metrics instead.
 
 Here is an example using metrics:
 
