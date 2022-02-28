@@ -14,7 +14,7 @@ Batch metrics are passed to :class:`~poutyne.Model` and :meth:`ModelBundle.from_
 Epoch metrics are passed to :class:`~poutyne.Model` and :meth:`ModelBundle.from_network() <poutyne.ModelBundle.from_network()>` using the ``epoch_metrics`` argument.
 
 In addition to the predefined metrics below, all PyTorch loss functions can be used by string name under their `functional <https://pytorch.org/docs/stable/nn.functional.html#loss-functions>`_ name.
-The key in :class:`callback logs<poutyne.Callback>` associated with each of them is the same as its name but without the ``_loss`` suffix. For example, the loss function :func:`~torch.nn.functional.mse_loss` can be passed as a metric with the name ``'mse_loss'`` or simply ``'mse'`` and the keys are going to be ``'mse'`` and ``'val_mse'`` for the training and validation MSE, respectively.
+The key in :class:`callback logs<poutyne.Callback>` associated with each is the same as its name but without the ``_loss`` suffix. For example, the loss function :func:`~torch.nn.functional.mse_loss` can be passed as a metric with the name ``'mse_loss'`` or simply ``'mse'``, and the keys will be ``'mse'`` and ``'val_mse'`` for the training and validation MSE, respectively.
 Note that you can also pass the PyTorch loss functions as a loss function in :class:`~poutyne.Model` in the same way.
 
 .. warning:: When using the ``batch_metrics`` argument, the metrics are computed for each batch.
