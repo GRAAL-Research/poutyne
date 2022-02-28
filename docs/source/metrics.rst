@@ -9,7 +9,7 @@ Metrics
 .. currentmodule:: poutyne
 
 Poutyne offers two kinds of metrics: batch and epoch metrics.
-The main difference between batch and epoch metrics is that **batch metrics** are computed at each batch whereas **epoch metrics** compute statistics for each batch and compute the metric at the end of the epoch.
+The main difference between batch and epoch metrics is that **batch metrics** are computed at each batch, whereas **epoch metrics** compute statistics for each batch and compute the metric at the end of the epoch.
 Batch metrics are passed to :class:`~poutyne.Model` and :meth:`ModelBundle.from_network() <poutyne.ModelBundle.from_network()>` using the ``batch_metrics`` argument.
 Epoch metrics are passed to :class:`~poutyne.Model` and :meth:`ModelBundle.from_network() <poutyne.ModelBundle.from_network()>` using the ``epoch_metrics`` argument.
 
