@@ -360,7 +360,7 @@ class ColorProgress:
         return update
 
     def _do_update(self):
-        if not jupyter or not self.coloring_enabled:
+        if not jupyter:
             return True
 
         new_time = time.time()
