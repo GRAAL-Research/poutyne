@@ -36,19 +36,18 @@ class EmptyStringAttrClass:
         return ''
 
 
+jupyter = is_in_jupyter_notebook()
+
 try:
     from colorama import Fore, Style, init
 
     colorama = True
-
-    jupyter = is_in_jupyter_notebook()
 
     # We don't init when Jupyter Notebook see issue https://github.com/jupyter/notebook/issues/2284
     if not jupyter:
         init()
 except ImportError:
     colorama = None
-    jupyter = False
 
     Fore = EmptyStringAttrClass()
     Style = EmptyStringAttrClass()
@@ -63,7 +62,7 @@ default_color_settings = {
 
 
 class ColorProgress:
-    JUPYTER_COLORING_PRINT_RATE = 0.1
+    JUPYTER_PRINT_RATE = 0.1
     """
     Class to managed the color templating of the training progress.
 
@@ -364,7 +363,7 @@ class ColorProgress:
             return True
 
         new_time = time.time()
-        if self.prev_print_time is None or new_time - self.prev_print_time >= ColorProgress.JUPYTER_COLORING_PRINT_RATE:
+        if self.prev_print_time is None or new_time - self.prev_print_time >= ColorProgress.JUPYTER_PRINT_RATE:
             self.prev_print_time = new_time
             return True
 
