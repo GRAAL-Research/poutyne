@@ -27,6 +27,7 @@ Let's import all the needed packages.
     import fasttext
     import fasttext.util
     import requests
+    import numpy as np
     import torch
     import torch.nn as nn
     import torch.optim as optim
