@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Model &mdash; Poutyne 1.9 documentation</title>
+  <title>Model &mdash; Poutyne 1.10 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -31,7 +31,7 @@
             <img src="_static/poutyne-light.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                1.9
+                1.10
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -107,29 +107,30 @@ entries are passed to the optimizer as keyword arguments.
 object name). The loss function must have the signature <code class="docutils literal notranslate"><span class="pre">loss_function(input,</span> <span class="pre">target)</span></code> where
 <code class="docutils literal notranslate"><span class="pre">input</span></code> is the prediction of the network and <code class="docutils literal notranslate"><span class="pre">target</span></code> is the ground truth.
 (Default value = None)</p></li>
-<li><p><strong>batch_metrics</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – List of functions with the same signature as the loss function. Each metric
-can be any PyTorch loss function. It can also be a string with the same name as a PyTorch
-loss function (either the functional or object name). Furthermore, see <a class="reference internal" href="metrics.html#batch-metrics"><span class="std std-ref">Batch Metrics</span></a>
-for supplementary available batch metrics. ‘accuracy’ (or just ‘acc’) is an often used metric.
-Each metric function is called on each batch of the optimization and on the validation batches
-at the end of the epoch.
-(Default value = None)</p></li>
-<li><p><strong>epoch_metrics</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – List of objects with the same signature as either <a class="reference internal" href="metrics.html#poutyne.EpochMetric" title="poutyne.EpochMetric"><code class="xref py py-class docutils literal notranslate"><span class="pre">EpochMetric</span></code></a> or
-<a class="reference external" href="https://torchmetrics.readthedocs.io/en/latest/pages/implement.html#torchmetrics.Metric" title="(in PyTorch-Metrics v0.8.0dev)"><code class="xref py py-class docutils literal notranslate"><span class="pre">torchmetrics.Metric</span></code></a>.
-See <a class="reference internal" href="metrics.html#epoch-metrics"><span class="std std-ref">Epoch Metrics</span></a> and the
-<a class="reference external" href="https://torchmetrics.readthedocs.io/en/latest/references/modules.html">TorchMetrics documentation</a> for
-available epoch metrics.
-(Default value = None)</p></li>
-<li><p><strong>torch_metrics</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – <p>List of <a class="reference external" href="https://torchmetrics.readthedocs.io/">TorchMetrics</a>  objects.
-List of objects with the same signature as <a class="reference external" href="https://torchmetrics.readthedocs.io/en/latest/pages/implement.html#torchmetrics.Metric" title="(in PyTorch-Metrics v0.8.0dev)"><code class="xref py py-class docutils literal notranslate"><span class="pre">torchmetrics.Metric</span></code></a>.
-See <a class="reference external" href="https://torchmetrics.readthedocs.io/en/latest/references/modules.html">TorchMetrics documentation</a>
-for available torch metrics. (Default value = None)</p>
+<li><p><strong>batch_metrics</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – <p>List of functions with the same signature as a loss function or objects with the same
+signature as either <a class="reference internal" href="metrics.html#poutyne.Metric" title="poutyne.Metric"><code class="xref py py-class docutils literal notranslate"><span class="pre">Metric</span></code></a> or <a class="reference external" href="https://torchmetrics.readthedocs.io/en/latest/pages/implement.html#torchmetrics.Metric" title="(in PyTorch-Metrics v0.8.0dev)"><code class="xref py py-class docutils literal notranslate"><span class="pre">torchmetrics.Metric</span></code></a>. It can
+also be a string with the same name as a PyTorch loss function (either the functional or object name).
+Some metrics, such as  ‘accuracy’ (or just ‘acc’), are also available as strings. See <a class="reference internal" href="metrics.html#metrics"><span class="std std-ref">Metrics</span></a> and
+the <a class="reference external" href="https://torchmetrics.readthedocs.io/en/latest/references/modules.html">TorchMetrics documentation</a>
+for available metrics.</p>
+<p>Batch metric are computed on computed for each batch.
+(Default value = None)</p>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
-<p>When using this argument, the torch metrics are computed at each batch. This
-can significantly slow down the compuations depending on the metrics used. In such case, we advise to
-use them as epoch metrics instead.</p>
+<p>When using this argument, the metrics are computed for each batch. This can significantly slow
+down the compuations depending on the metrics used. This mostly happens on non-decomposable metrics
+such as <code class="xref py py-class docutils literal notranslate"><span class="pre">torchmetrics.AUROC</span></code> where an ordering of the elements is necessary
+to compute the metric. In such case, we advise to use them as epoch metrics instead.</p>
 </div>
+</p></li>
+<li><p><strong>epoch_metrics</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – <p>List of functions with the same signature as a loss function or objects with the same
+signature as either <a class="reference internal" href="metrics.html#poutyne.Metric" title="poutyne.Metric"><code class="xref py py-class docutils literal notranslate"><span class="pre">Metric</span></code></a> or <a class="reference external" href="https://torchmetrics.readthedocs.io/en/latest/pages/implement.html#torchmetrics.Metric" title="(in PyTorch-Metrics v0.8.0dev)"><code class="xref py py-class docutils literal notranslate"><span class="pre">torchmetrics.Metric</span></code></a>. It can
+also be a string with the same name as a PyTorch loss function (either the functional or object name).
+Some metrics, such as  ‘accuracy’ (or just ‘acc’), are also available as strings. See <a class="reference internal" href="metrics.html#metrics"><span class="std std-ref">Metrics</span></a> and
+the <a class="reference external" href="https://torchmetrics.readthedocs.io/en/latest/references/modules.html">TorchMetrics documentation</a>
+for available metrics.</p>
+<p>Epoch metrics are computed only at the end of the epoch.
+(Default value = None)</p>
 </p></li>
 <li><p><strong>device</strong> (<em>Union</em><em>[</em><a class="reference external" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.torch.device" title="(in PyTorch v1.10.0)"><em>torch.torch.device</em></a><em>, </em><em>List</em><em>[</em><a class="reference external" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.torch.device" title="(in PyTorch v1.10.0)"><em>torch.torch.device</em></a><em>]</em><em>]</em>) – The device to which the network is
 sent or the list of device to which the network is sent. See <a class="reference internal" href="#poutyne.Model.to" title="poutyne.Model.to"><code class="xref py py-func docutils literal notranslate"><span class="pre">to()</span></code></a> for details.</p></li>
@@ -198,6 +199,7 @@ with the associated precision and recall). See <a class="reference internal" hre
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">poutyne</span> <span class="kn">import</span> <span class="n">Model</span>
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">torchmetrics</span>
 
 <span class="n">num_features</span> <span class="o">=</span> <span class="mi">20</span>
 <span class="n">num_classes</span> <span class="o">=</span> <span class="mi">5</span>
@@ -215,16 +217,21 @@ with the associated precision and recall). See <a class="reference internal" hre
 <span class="n">pytorch_network</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">num_features</span><span class="p">,</span> <span class="n">num_classes</span><span class="p">)</span> <span class="c1"># Our network</span>
 
 <span class="c1"># We create and optimize our model</span>
-<span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span><span class="n">pytorch_network</span><span class="p">,</span> <span class="s1">&#39;sgd&#39;</span><span class="p">,</span> <span class="s1">&#39;cross_entropy&#39;</span><span class="p">,</span> <span class="n">batch_metrics</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;accuracy&#39;</span><span class="p">])</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span><span class="n">pytorch_network</span><span class="p">,</span> <span class="s1">&#39;sgd&#39;</span><span class="p">,</span> <span class="s1">&#39;cross_entropy&#39;</span><span class="p">,</span>
+              <span class="n">batch_metrics</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;accuracy&#39;</span><span class="p">],</span>
+              <span class="n">epoch_metrics</span><span class="o">=</span><span class="p">[</span><span class="n">torchmetrics</span><span class="o">.</span><span class="n">AUROC</span><span class="p">(</span><span class="n">num_classes</span><span class="o">=</span><span class="n">num_classes</span><span class="p">)])</span>
 <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">train_x</span><span class="p">,</span> <span class="n">train_y</span><span class="p">,</span>
           <span class="n">validation_data</span><span class="o">=</span><span class="p">(</span><span class="n">valid_x</span><span class="p">,</span> <span class="n">valid_y</span><span class="p">),</span>
           <span class="n">epochs</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
           <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Epoch 1/5 0.02s Step 25/25: loss: 1.719885, acc: 19.375000, val_loss: 1.667446, val_acc: 22.000000
-Epoch 2/5 0.02s Step 25/25: loss: 1.705489, acc: 19.750000, val_loss: 1.660806, val_acc: 22.000000
-Epoch 3/5 0.01s Step 25/25: loss: 1.692345, acc: 19.625000, val_loss: 1.655008, val_acc: 22.500000
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Epoch: 1/5 Train steps: 25 Val steps: 7 0.51s loss: 1.757784 acc: 20.750000 auroc: 0.494891
+val_loss: 1.756639 val_acc: 18.500000 val_auroc: 0.499404
+Epoch: 2/5 Train steps: 25 Val steps: 7 0.03s loss: 1.749623 acc: 20.375000 auroc: 0.496878
+val_loss: 1.748795 val_acc: 19.000000 val_auroc: 0.499723
+Epoch: 3/5 Train steps: 25 Val steps: 7 0.03s loss: 1.742070 acc: 20.250000 auroc: 0.499461
+val_loss: 1.741379 val_acc: 19.000000 val_auroc: 0.498577
 ...
 </pre></div>
 </div>
@@ -232,6 +239,7 @@ Epoch 3/5 0.01s Step 25/25: loss: 1.692345, acc: 19.625000, val_loss: 1.655008, 
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="kn">import</span> <span class="n">DataLoader</span><span class="p">,</span> <span class="n">TensorDataset</span>
 <span class="kn">from</span> <span class="nn">poutyne</span> <span class="kn">import</span> <span class="n">Model</span>
+<span class="kn">import</span> <span class="nn">torchmetrics</span>
 
 <span class="n">num_features</span> <span class="o">=</span> <span class="mi">20</span>
 <span class="n">num_classes</span> <span class="o">=</span> <span class="mi">5</span>
@@ -250,17 +258,22 @@ Epoch 3/5 0.01s Step 25/25: loss: 1.692345, acc: 19.625000, val_loss: 1.655008, 
 <span class="n">valid_dataset</span> <span class="o">=</span> <span class="n">TensorDataset</span><span class="p">(</span><span class="n">valid_x</span><span class="p">,</span> <span class="n">valid_y</span><span class="p">)</span>
 <span class="n">valid_generator</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">valid_dataset</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">)</span>
 
-<span class="n">pytorch_network</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">num_features</span><span class="p">,</span> <span class="n">num_train_samples</span><span class="p">)</span>
+<span class="n">pytorch_network</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">num_features</span><span class="p">,</span> <span class="n">num_classes</span><span class="p">)</span>
 
-<span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span><span class="n">pytorch_network</span><span class="p">,</span> <span class="s1">&#39;sgd&#39;</span><span class="p">,</span> <span class="s1">&#39;cross_entropy&#39;</span><span class="p">,</span> <span class="n">batch_metrics</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;accuracy&#39;</span><span class="p">])</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span><span class="n">pytorch_network</span><span class="p">,</span> <span class="s1">&#39;sgd&#39;</span><span class="p">,</span> <span class="s1">&#39;cross_entropy&#39;</span><span class="p">,</span>
+              <span class="n">batch_metrics</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;accuracy&#39;</span><span class="p">],</span>
+              <span class="n">epoch_metrics</span><span class="o">=</span><span class="p">[</span><span class="n">torchmetrics</span><span class="o">.</span><span class="n">AUROC</span><span class="p">(</span><span class="n">num_classes</span><span class="o">=</span><span class="n">num_classes</span><span class="p">)])</span>
 <span class="n">model</span><span class="o">.</span><span class="n">fit_generator</span><span class="p">(</span><span class="n">train_generator</span><span class="p">,</span>
                     <span class="n">valid_generator</span><span class="p">,</span>
                     <span class="n">epochs</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Epoch 1/5 0.05s Step 25/25: loss: 6.752676, acc: 0.000000, val_loss: 6.575071, val_acc: 0.000000
-Epoch 2/5 0.03s Step 25/25: loss: 6.454859, acc: 0.125000, val_loss: 6.279577, val_acc: 0.000000
-Epoch 3/5 0.03s Step 25/25: loss: 6.158523, acc: 2.125000, val_loss: 5.985811, val_acc: 9.500000
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Epoch: 1/5 Train steps: 25 Val steps: 7 0.07s loss: 1.614473 acc: 20.500000 auroc: 0.516850
+val_loss: 1.617141 val_acc: 21.500000 val_auroc: 0.522068
+Epoch: 2/5 Train steps: 25 Val steps: 7 0.03s loss: 1.614454 acc: 20.125000 auroc: 0.517618
+val_loss: 1.615585 val_acc: 22.000000 val_auroc: 0.521051
+Epoch: 3/5 Train steps: 25 Val steps: 7 0.03s loss: 1.613709 acc: 20.125000 auroc: 0.518307
+val_loss: 1.614440 val_acc: 22.000000 val_auroc: 0.520762
 ...
 </pre></div>
 </div>
@@ -411,7 +424,7 @@ Used when using batched loading from a map-style dataset.</p></li>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>train_generator</strong> – <p>Generator-like object for the training dataset. The generator must
 yield a batch in the form of a tuple (x, y) where <code class="docutils literal notranslate"><span class="pre">x</span></code> is the input and <code class="docutils literal notranslate"><span class="pre">y</span></code> is the
-target. The batch size is inferred from <code class="docutils literal notranslate"><span class="pre">x</span></code> and <code class="docutils literal notranslate"><span class="pre">y</span></code>. See <a class="reference internal" href="#poutyne.Model.get_batch_size" title="poutyne.Model.get_batch_size"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_batch_size()</span></code></a> for
+target. The batch size is inferred from <code class="docutils literal notranslate"><span class="pre">x</span></code> and <code class="docutils literal notranslate"><span class="pre">y</span></code>. See <a class="reference internal" href="utils.html#poutyne.get_batch_size" title="poutyne.get_batch_size"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_batch_size()</span></code></a> for
 details on the inferring algorithm. The loss and the metrics are averaged using this
 batch size. If the batch size cannot be inferred then a warning is raised and the
 “batch size” defaults to 1.</p>
@@ -891,39 +904,6 @@ of each batch with tensors converted into Numpy arrays. It is otherwise omitted.
 <p>If <code class="docutils literal notranslate"><span class="pre">return_dict_format</span></code> is True, then <code class="docutils literal notranslate"><span class="pre">loss,</span> <span class="pre">metrics</span></code> are replaced by a
 dictionary.</p>
 </p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="poutyne.Model.get_batch_size">
-<span class="sig-name descname"><span class="pre">get_batch_size</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poutyne/framework/model.html#Model.get_batch_size"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.Model.get_batch_size" title="Permalink to this definition"></a></dt>
-<dd><p>This method infers the batch size of a batch. Here is the inferring algorithm used to compute the
-batch size. <code class="docutils literal notranslate"><span class="pre">x</span></code> and <code class="docutils literal notranslate"><span class="pre">y</span></code> are tested in this order at each step of the inferring algorithm. If one
-step succeed for one of <code class="docutils literal notranslate"><span class="pre">x</span></code> or <code class="docutils literal notranslate"><span class="pre">y</span></code>, the algorithm stops.</p>
-<ul class="simple">
-<li><p>Step 1: if <code class="docutils literal notranslate"><span class="pre">x</span></code> or <code class="docutils literal notranslate"><span class="pre">y</span></code> is a tensor or a Numpy array, then the <code class="docutils literal notranslate"><span class="pre">len()</span></code> is returned.</p></li>
-<li><p>Step 2: if <code class="docutils literal notranslate"><span class="pre">x</span></code> or <code class="docutils literal notranslate"><span class="pre">y</span></code> is a list or a tuple, then the <code class="docutils literal notranslate"><span class="pre">len()</span></code> of the first element is returned if it
-is a tensor or a Numpy array.</p></li>
-<li><p>Step 3: if <code class="docutils literal notranslate"><span class="pre">x</span></code> or <code class="docutils literal notranslate"><span class="pre">y</span></code> is a dict, then the value for the key <code class="docutils literal notranslate"><span class="pre">'batch_size'</span></code> is returned if it is of
-integral type.</p></li>
-<li><p>Step 4: if <code class="docutils literal notranslate"><span class="pre">x</span></code> or <code class="docutils literal notranslate"><span class="pre">y</span></code> is a dict, then the <code class="docutils literal notranslate"><span class="pre">len()</span></code> of the first element of <code class="docutils literal notranslate"><span class="pre">.values()</span></code> is returned
-if it is a tensor or a Numpy array.</p></li>
-</ul>
-<p>If inferring the batch size is not possible, the batch size is set to 1 and, thus, the computed
-loss and metrics at the end of each epoch is the mean of the batches’ losses and metrics. In which
-case, a warning is also raised. To disable this warning, set</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">poutyne</span> <span class="kn">import</span> <span class="n">warning_settings</span>
-
-<span class="n">warning_settings</span><span class="p">[</span><span class="s1">&#39;batch_size&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;ignore&#39;</span>
-</pre></div>
-</div>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>x</strong> – Input data as a batch.</p></li>
-<li><p><strong>y</strong> – Target data as a batch.</p></li>
-</ul>
 </dd>
 </dl>
 </dd></dl>

@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Metrics &mdash; Poutyne 1.9 documentation</title>
+  <title>Metrics &mdash; Poutyne 1.10 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -32,7 +32,7 @@
             <img src="_static/poutyne-light.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                1.9
+                1.10
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -47,17 +47,9 @@
 <li class="toctree-l1"><a class="reference internal" href="model.html">Model</a></li>
 <li class="toctree-l1"><a class="reference internal" href="experiment.html">Experiment and ModelBundle</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Metrics</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#batch-metrics">Batch Metrics</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#object-oriented-api">Object-Oriented API</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id2">Functional</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#epoch-metrics">Epoch Metrics</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#interface">Interface</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#predefined-epoch-metrics">Predefined Epoch Metrics</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#torchmetrics">TorchMetrics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#interface">Interface</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#object-oriented-api">Object-Oriented API</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id2">Functional</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#computing-multiple-metrics-at-once">Computing Multiple Metrics at Once</a></li>
 </ul>
 </li>
@@ -102,14 +94,22 @@
            <div itemprop="articleBody">
              
   <section id="metrics">
-<h1>Metrics<a class="headerlink" href="#metrics" title="Permalink to this headline"></a></h1>
-<p>Poutyne offers three kinds of metrics: batch metrics, epoch metrics and <a class="reference external" href="https://torchmetrics.readthedocs.io/">torch metrics</a>.
-The main difference between batch and epoch metrics is that <strong>batch metrics</strong> are computed at each batch and averaged at the end of an epoch whereas <strong>epoch metrics</strong> compute statistics for each batch and compute the metric at the end of the epoch.
-<strong>Torch metrics</strong> can be passed either as epoch metrics (only displayed at the end of the epoch) or using the specialized <a class="reference internal" href="model.html#poutyne.Model" title="poutyne.Model"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch_metrics</span> <span class="pre">argument</span></code></a> (displayed for each batch and at the end of the epoch).</p>
-<p>Epoch metrics offer a way to compute metrics that are not decomposable as an average.
-For instance, the predefined <a class="reference internal" href="#poutyne.F1" title="poutyne.F1"><code class="xref py py-class docutils literal notranslate"><span class="pre">F1</span></code></a> epoch metric implements the F1 score.
-One who knows what an F1-score may know that an average of multiple F1 scores is not the equivalent of the overall F1 score.</p>
-<p>Here is an example using the three kinds of metrics:</p>
+<span id="id1"></span><h1>Metrics<a class="headerlink" href="#metrics" title="Permalink to this headline"></a></h1>
+<p>Poutyne offers two kinds of metrics: batch and epoch metrics.
+The main difference between batch and epoch metrics is that <strong>batch metrics</strong> are computed at each batch, whereas <strong>epoch metrics</strong> compute statistics for each batch and compute the metric at the end of the epoch.
+Batch metrics are passed to <a class="reference internal" href="model.html#poutyne.Model" title="poutyne.Model"><code class="xref py py-class docutils literal notranslate"><span class="pre">Model</span></code></a> and <a class="reference internal" href="experiment.html#poutyne.ModelBundle.from_network" title="poutyne.ModelBundle.from_network"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ModelBundle.from_network()</span></code></a> using the <code class="docutils literal notranslate"><span class="pre">batch_metrics</span></code> argument.
+Epoch metrics are passed to <a class="reference internal" href="model.html#poutyne.Model" title="poutyne.Model"><code class="xref py py-class docutils literal notranslate"><span class="pre">Model</span></code></a> and <a class="reference internal" href="experiment.html#poutyne.ModelBundle.from_network" title="poutyne.ModelBundle.from_network"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ModelBundle.from_network()</span></code></a> using the <code class="docutils literal notranslate"><span class="pre">epoch_metrics</span></code> argument.</p>
+<p>In addition to the predefined metrics below, all PyTorch loss functions can be used by string name under their <a class="reference external" href="https://pytorch.org/docs/stable/nn.functional.html#loss-functions">functional</a> name.
+The key in <a class="reference internal" href="callbacks.html#poutyne.Callback" title="poutyne.Callback"><code class="xref py py-class docutils literal notranslate"><span class="pre">callback</span> <span class="pre">logs</span></code></a> associated with each is the same as its name but without the <code class="docutils literal notranslate"><span class="pre">_loss</span></code> suffix. For example, the loss function <a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.functional.mse_loss.html#torch.nn.functional.mse_loss" title="(in PyTorch v1.10.0)"><code class="xref py py-func docutils literal notranslate"><span class="pre">mse_loss()</span></code></a> can be passed as a metric with the name <code class="docutils literal notranslate"><span class="pre">'mse_loss'</span></code> or simply <code class="docutils literal notranslate"><span class="pre">'mse'</span></code>, and the keys will be <code class="docutils literal notranslate"><span class="pre">'mse'</span></code> and <code class="docutils literal notranslate"><span class="pre">'val_mse'</span></code> for the training and validation MSE, respectively.
+Note that you can also pass the PyTorch loss functions as a loss function in <a class="reference internal" href="model.html#poutyne.Model" title="poutyne.Model"><code class="xref py py-class docutils literal notranslate"><span class="pre">Model</span></code></a> in the same way.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>When using the <code class="docutils literal notranslate"><span class="pre">batch_metrics</span></code> argument, the metrics are computed for each batch.
+This can significantly slow down the computations depending on the metrics used.
+This mostly happens on non-decomposable metrics such as <code class="xref py py-class docutils literal notranslate"><span class="pre">torchmetrics.AUROC</span></code> where an ordering of the elements is necessary to compute the metric.
+In such a case, we advise using them as epoch metrics instead.</p>
+</div>
+<p>Here is an example using metrics:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">poutyne</span> <span class="kn">import</span> <span class="n">Model</span><span class="p">,</span> <span class="n">Accuracy</span><span class="p">,</span> <span class="n">F1</span>
 <span class="kn">import</span> <span class="nn">torchmetrics</span>
 
@@ -118,51 +118,87 @@ One who knows what an F1-score may know that an average of multiple F1 scores is
     <span class="s1">&#39;sgd&#39;</span><span class="p">,</span>
     <span class="s1">&#39;cross_entropy&#39;</span><span class="p">,</span>
 
-    <span class="n">batch_metrics</span><span class="o">=</span><span class="p">[</span><span class="n">Accuracy</span><span class="p">()],</span>
+    <span class="n">batch_metrics</span><span class="o">=</span><span class="p">[</span><span class="n">Accuracy</span><span class="p">(),</span> <span class="n">F1</span><span class="p">()],</span>
     <span class="c1"># Can also use a string in this case:</span>
-    <span class="c1"># batch_metrics=[&#39;accuracy&#39;],</span>
+    <span class="c1"># batch_metrics=[&#39;accuracy&#39;, &#39;f1&#39;],</span>
 
-    <span class="n">epoch_metrics</span><span class="o">=</span><span class="p">[</span><span class="n">F1</span><span class="p">(),</span> <span class="n">torchmetrics</span><span class="o">.</span><span class="n">AUROC</span><span class="p">(</span><span class="n">num_classes</span><span class="o">=</span><span class="mi">10</span><span class="p">)],</span>
-    <span class="c1"># Can also use a string in the case of F1-score:</span>
-    <span class="c1"># epoch_metrics=[&#39;f1&#39;, torchmetrics.AUROC(num_classes=10)],</span>
-
-    <span class="c1"># TorchMetrics can also bu put in the torch_metrics argument</span>
-    <span class="c1"># to show the metric for each batch but sometimes this significantly</span>
-    <span class="c1"># slow down the computations.</span>
-    <span class="n">torch_metrics</span><span class="o">=</span><span class="p">[</span><span class="n">torchmetrics</span><span class="o">.</span><span class="n">AUROC</span><span class="p">(</span><span class="n">num_classes</span><span class="o">=</span><span class="mi">10</span><span class="p">)],</span>
+    <span class="n">epoch_metrics</span><span class="o">=</span><span class="p">[</span><span class="n">torchmetrics</span><span class="o">.</span><span class="n">AUROC</span><span class="p">(</span><span class="n">num_classes</span><span class="o">=</span><span class="mi">10</span><span class="p">)],</span>
 <span class="p">)</span>
 <span class="n">model</span><span class="o">.</span><span class="n">fit_dataset</span><span class="p">(</span><span class="n">train_dataset</span><span class="p">,</span> <span class="n">valid_dataset</span><span class="p">)</span>
 </pre></div>
 </div>
-<section id="batch-metrics">
-<span id="id1"></span><h2>Batch Metrics<a class="headerlink" href="#batch-metrics" title="Permalink to this headline"></a></h2>
-<p>Batch metrics are computed at each batch and averaged at the end of an epoch.
-The interface is the same as PyTorch loss function, that is <code class="docutils literal notranslate"><span class="pre">metric(y_pred,</span> <span class="pre">y_true)</span></code>.
-They are passed to <a class="reference internal" href="model.html#poutyne.Model" title="poutyne.Model"><code class="xref py py-class docutils literal notranslate"><span class="pre">Model</span></code></a> and <a class="reference internal" href="experiment.html#poutyne.ModelBundle.from_network" title="poutyne.ModelBundle.from_network"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ModelBundle.from_network()</span></code></a> using the <code class="docutils literal notranslate"><span class="pre">batch_metrics</span></code> argument.</p>
-<p>In addition to the predefined batch metrics below, all PyTorch loss functions can be used by string name in the <a class="reference internal" href="model.html#poutyne.Model" title="poutyne.Model"><code class="xref py py-class docutils literal notranslate"><span class="pre">batch_metrics</span> <span class="pre">argument</span></code></a> under their <a class="reference external" href="https://pytorch.org/docs/stable/nn.functional.html">functional</a> name.
-The key in <a class="reference internal" href="callbacks.html#poutyne.Callback" title="poutyne.Callback"><code class="xref py py-class docutils literal notranslate"><span class="pre">callback</span> <span class="pre">logs</span></code></a> associated with each of them is the same as its name but without the <code class="docutils literal notranslate"><span class="pre">_loss</span></code> suffix. For example, the loss function <a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.functional.mse_loss.html#torch.nn.functional.mse_loss" title="(in PyTorch v1.10.0)"><code class="xref py py-func docutils literal notranslate"><span class="pre">mse_loss()</span></code></a> can be passed as a batch metric with the name <code class="docutils literal notranslate"><span class="pre">'mse_loss'</span></code> or simply <code class="docutils literal notranslate"><span class="pre">'mse'</span></code> and the keys are going to be <code class="docutils literal notranslate"><span class="pre">'mse'</span></code> and <code class="docutils literal notranslate"><span class="pre">'val_mse'</span></code> for the training and validation MSE, respectively.
-Note that you can also pass the PyTorch loss functions as a loss function in <a class="reference internal" href="model.html#poutyne.Model" title="poutyne.Model"><code class="xref py py-class docutils literal notranslate"><span class="pre">Model</span></code></a> in the same way.</p>
-<p>Here is an example using batch metrics:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">poutyne</span> <span class="kn">import</span> <span class="n">Model</span><span class="p">,</span> <span class="n">Accuracy</span>
+<section id="interface">
+<h2>Interface<a class="headerlink" href="#interface" title="Permalink to this headline"></a></h2>
+<p>There are two interfaces available for metrics.
+The first interface is the same as PyTorch loss functions: <code class="docutils literal notranslate"><span class="pre">metric(y_pred,</span> <span class="pre">y_true)</span></code>.
+When using that interface, the metric is assumed to be decomposable and is averaged for the whole epoch.
+The batch size is inferred with <a class="reference internal" href="utils.html#poutyne.get_batch_size" title="poutyne.get_batch_size"><code class="xref py py-func docutils literal notranslate"><span class="pre">poutyne.get_batch_size()</span></code></a> using <code class="docutils literal notranslate"><span class="pre">y_pred</span></code> and <code class="docutils literal notranslate"><span class="pre">y_true</span></code> as values.</p>
+<p>The second interface is defined by the <a class="reference internal" href="#poutyne.Metric" title="poutyne.Metric"><code class="xref py py-class docutils literal notranslate"><span class="pre">Metric</span></code></a> class.
+As documented in the class, it provides methods for updating and computing the metric.
+This interface is compatible with <a class="reference external" href="https://torchmetrics.readthedocs.io/">TorchMetrics</a>, a library implementing many known metrics in PyTorch.
+See the <a class="reference external" href="https://torchmetrics.readthedocs.io/en/latest/references/modules.html">TorchMetrics documentation</a> for available TorchMetrics metrics.</p>
+<p>Note that if one implements a metric intended as both a batch and epoch metric, the methods <a class="reference internal" href="#poutyne.Metric.forward" title="poutyne.Metric.forward"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Metric.forward()</span></code></a> and <a class="reference internal" href="#poutyne.Metric.update" title="poutyne.Metric.update"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Metric.update()</span></code></a> need to be implemented.
+To avoid implementing both methods, one can <a class="reference external" href="https://torchmetrics.readthedocs.io/en/latest/pages/implement.html">implement a TorchMetrics metric</a> at the potential cost of higher computational load as described in the <a class="reference external" href="https://torchmetrics.readthedocs.io/en/latest/pages/implement.html#internal-implementation-details">TorchMetrics documentation</a>.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="poutyne.Metric">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">poutyne.</span></span><span class="sig-name descname"><span class="pre">Metric</span></span><a class="reference internal" href="_modules/poutyne/framework/metrics/base.html#Metric"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.Metric" title="Permalink to this definition"></a></dt>
+<dd><p>The abstract class representing a metric which can be accumulated at each batch and calculated at the end
+of the epoch.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="poutyne.Metric.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y_pred</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_true</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poutyne/framework/metrics/base.html#Metric.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.Metric.forward" title="Permalink to this definition"></a></dt>
+<dd><p>Update the current state of the metric and return the metric for the current batch. This method has to
+be implemented if the metric is used as a <strong>batch metric</strong>. If used as an epoch metric, it does not need to be
+implemented.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>y_pred</strong> – The prediction of the model.</p></li>
+<li><p><strong>y_true</strong> – Target to evaluate the model.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The value of the metric for the current batch.</p>
+</dd>
+</dl>
+</dd></dl>
 
-<span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span>
-    <span class="n">network</span><span class="p">,</span>
-    <span class="s1">&#39;sgd&#39;</span><span class="p">,</span>
-    <span class="s1">&#39;cross_entropy&#39;</span><span class="p">,</span>
+<dl class="py method">
+<dt class="sig sig-object py" id="poutyne.Metric.update">
+<span class="sig-name descname"><span class="pre">update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y_pred</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_true</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a></span></span><a class="reference internal" href="_modules/poutyne/framework/metrics/base.html#Metric.update"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.Metric.update" title="Permalink to this definition"></a></dt>
+<dd><p>Update the current state of the metric. This method has to be implemented if the metric is used as an <strong>epoch
+metric</strong>. If used as a batch metric, it does not need to be implemented.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>y_pred</strong> – The prediction of the model.</p></li>
+<li><p><strong>y_true</strong> – Target to evaluate the model.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
 
-    <span class="n">batch_metrics</span><span class="o">=</span><span class="p">[</span><span class="n">Accuracy</span><span class="p">()],</span>
-    <span class="c1"># Can also use a string in this case:</span>
-    <span class="c1"># batch_metrics=[&#39;accuracy&#39;],</span>
-<span class="p">)</span>
-<span class="n">model</span><span class="o">.</span><span class="n">fit_dataset</span><span class="p">(</span><span class="n">train_dataset</span><span class="p">,</span> <span class="n">valid_dataset</span><span class="p">)</span>
-</pre></div>
-</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="poutyne.Metric.compute">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">compute</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/poutyne/framework/metrics/base.html#Metric.compute"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.Metric.compute" title="Permalink to this definition"></a></dt>
+<dd><p>Compute and return the metric. Should not modify the state of metric.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="poutyne.Metric.reset">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a></span></span><a class="reference internal" href="_modules/poutyne/framework/metrics/base.html#Metric.reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.Metric.reset" title="Permalink to this definition"></a></dt>
+<dd><p>The information kept for the computation of the metric is cleaned so that a new epoch can be done.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
 <section id="object-oriented-api">
-<span id="object-oriented-batch-metrics"></span><h3>Object-Oriented API<a class="headerlink" href="#object-oriented-api" title="Permalink to this headline"></a></h3>
-<p>Below are classes for predefined batch metrics available in Poutyne.</p>
+<span id="object-oriented-metrics"></span><h2>Object-Oriented API<a class="headerlink" href="#object-oriented-api" title="Permalink to this headline"></a></h2>
+<p>Below are classes for predefined metrics available in Poutyne.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="poutyne.Accuracy">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">poutyne.</span></span><span class="sig-name descname"><span class="pre">Accuracy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_index</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">-</span> <span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reduction</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'mean'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poutyne/framework/metrics/batch_metrics.html#Accuracy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.Accuracy" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">poutyne.</span></span><span class="sig-name descname"><span class="pre">Accuracy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_index</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">-</span> <span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reduction</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'mean'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poutyne/framework/metrics/predefined/accuracy.html#Accuracy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.Accuracy" title="Permalink to this definition"></a></dt>
 <dd><p>This metric computes the accuracy using a similar interface to
 <a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html#torch.nn.CrossEntropyLoss" title="(in PyTorch v1.10.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrossEntropyLoss</span></code></a>.</p>
 <dl class="field-list simple">
@@ -178,7 +214,7 @@ elements in the output, <code class="docutils literal notranslate"><span class="
 </dd>
 </dl>
 <dl class="simple">
-<dt>Possible string name in <a class="reference internal" href="model.html#poutyne.Model" title="poutyne.Model"><code class="xref py py-class docutils literal notranslate"><span class="pre">batch_metrics</span> <span class="pre">argument</span></code></a>:</dt><dd><ul class="simple">
+<dt>Possible string name:</dt><dd><ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">'acc'</span></code></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">'accuracy'</span></code></p></li>
 </ul>
@@ -203,7 +239,7 @@ K-dimensional accuracy.</p></li>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="poutyne.BinaryAccuracy">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">poutyne.</span></span><span class="sig-name descname"><span class="pre">BinaryAccuracy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reduction</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'mean'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poutyne/framework/metrics/batch_metrics.html#BinaryAccuracy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.BinaryAccuracy" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">poutyne.</span></span><span class="sig-name descname"><span class="pre">BinaryAccuracy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reduction</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'mean'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poutyne/framework/metrics/predefined/accuracy.html#BinaryAccuracy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.BinaryAccuracy" title="Permalink to this definition"></a></dt>
 <dd><p>This metric computes the accuracy using a similar interface to
 <a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.BCEWithLogitsLoss.html#torch.nn.BCEWithLogitsLoss" title="(in PyTorch v1.10.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">BCEWithLogitsLoss</span></code></a>.</p>
 <dl class="field-list simple">
@@ -219,7 +255,7 @@ elements in the output, <code class="docutils literal notranslate"><span class="
 </dd>
 </dl>
 <dl class="simple">
-<dt>Possible string name in <a class="reference internal" href="model.html#poutyne.Model" title="poutyne.Model"><code class="xref py py-class docutils literal notranslate"><span class="pre">batch_metrics</span> <span class="pre">argument</span></code></a>:</dt><dd><ul class="simple">
+<dt>Possible string name:</dt><dd><ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">'bin_acc'</span></code></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">'binary_acc'</span></code></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">'binary_accuracy'</span></code></p></li>
@@ -242,7 +278,7 @@ dimensions</p></li>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="poutyne.TopKAccuracy">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">poutyne.</span></span><span class="sig-name descname"><span class="pre">TopKAccuracy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">k</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_index</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">-</span> <span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reduction</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'mean'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poutyne/framework/metrics/batch_metrics.html#TopKAccuracy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.TopKAccuracy" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">poutyne.</span></span><span class="sig-name descname"><span class="pre">TopKAccuracy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">k</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_index</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">-</span> <span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reduction</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'mean'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poutyne/framework/metrics/predefined/accuracy.html#TopKAccuracy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.TopKAccuracy" title="Permalink to this definition"></a></dt>
 <dd><p>This metric computes the top-k accuracy using a similar interface to
 <a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html#torch.nn.CrossEntropyLoss" title="(in PyTorch v1.10.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrossEntropyLoss</span></code></a>.</p>
 <dl class="field-list simple">
@@ -259,7 +295,7 @@ elements in the output, <code class="docutils literal notranslate"><span class="
 </dd>
 </dl>
 <dl>
-<dt>Possible string name in <a class="reference internal" href="model.html#poutyne.Model" title="poutyne.Model"><code class="xref py py-class docutils literal notranslate"><span class="pre">batch_metrics</span> <span class="pre">argument</span></code></a>:</dt><dd><ul class="simple">
+<dt>Possible string name:</dt><dd><ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">'top{k}'</span></code></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">'top{k}_acc'</span></code></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">'top{k}_accuracy'</span></code></p></li>
@@ -285,101 +321,9 @@ K-dimensional top-k accuracy.</p></li>
 </dl>
 </dd></dl>
 
-</section>
-<section id="id2">
-<h3>Functional<a class="headerlink" href="#id2" title="Permalink to this headline"></a></h3>
-<p>Below is the functional version of the classes in the <a class="reference internal" href="#object-oriented-batch-metrics"><span class="std std-ref">Object-Oriented API</span></a> section.</p>
-<dl class="py function">
-<dt class="sig sig-object py" id="poutyne.acc">
-<span class="sig-prename descclassname"><span class="pre">poutyne.</span></span><span class="sig-name descname"><span class="pre">acc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y_pred</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_true</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reduction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mean'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poutyne/framework/metrics/batch_metrics.html#acc"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.acc" title="Permalink to this definition"></a></dt>
-<dd><p>Computes the accuracy.</p>
-<p>This is a functional version of <a class="reference internal" href="#poutyne.Accuracy" title="poutyne.Accuracy"><code class="xref py py-class docutils literal notranslate"><span class="pre">Accuracy</span></code></a>.</p>
-<p>See <a class="reference internal" href="#poutyne.Accuracy" title="poutyne.Accuracy"><code class="xref py py-class docutils literal notranslate"><span class="pre">Accuracy</span></code></a> for details.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="poutyne.bin_acc">
-<span class="sig-prename descclassname"><span class="pre">poutyne.</span></span><span class="sig-name descname"><span class="pre">bin_acc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y_pred</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_true</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reduction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mean'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poutyne/framework/metrics/batch_metrics.html#bin_acc"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.bin_acc" title="Permalink to this definition"></a></dt>
-<dd><p>Computes the binary accuracy.</p>
-<p>This is a functional version of <a class="reference internal" href="#poutyne.BinaryAccuracy" title="poutyne.BinaryAccuracy"><code class="xref py py-class docutils literal notranslate"><span class="pre">BinaryAccuracy</span></code></a>.</p>
-<p>See <a class="reference internal" href="#poutyne.BinaryAccuracy" title="poutyne.BinaryAccuracy"><code class="xref py py-class docutils literal notranslate"><span class="pre">BinaryAccuracy</span></code></a> for details.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="poutyne.topk">
-<span class="sig-prename descclassname"><span class="pre">poutyne.</span></span><span class="sig-name descname"><span class="pre">topk</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y_pred</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_true</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reduction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mean'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poutyne/framework/metrics/batch_metrics.html#topk"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.topk" title="Permalink to this definition"></a></dt>
-<dd><p>Computes the top-k accuracy.</p>
-<p>This is a functional version of <a class="reference internal" href="#poutyne.TopKAccuracy" title="poutyne.TopKAccuracy"><code class="xref py py-class docutils literal notranslate"><span class="pre">TopKAccuracy</span></code></a>.</p>
-<p>See <a class="reference internal" href="#poutyne.TopKAccuracy" title="poutyne.TopKAccuracy"><code class="xref py py-class docutils literal notranslate"><span class="pre">TopKAccuracy</span></code></a> for details.</p>
-</dd></dl>
-
-</section>
-</section>
-<section id="epoch-metrics">
-<span id="id3"></span><h2>Epoch Metrics<a class="headerlink" href="#epoch-metrics" title="Permalink to this headline"></a></h2>
-<p>Epoch metrics are metrics calculated <strong>only</strong> at the end of every epoch.
-They need to be implemented either inheriting the <a class="reference internal" href="#poutyne.EpochMetric" title="poutyne.EpochMetric"><code class="xref py py-class docutils literal notranslate"><span class="pre">EpochMetric</span></code></a> interface or using the <a class="reference external" href="https://torchmetrics.readthedocs.io/en/latest/pages/implement.html#torchmetrics.Metric" title="(in PyTorch-Metrics v0.8.0dev)"><code class="xref py py-class docutils literal notranslate"><span class="pre">torchmetrics.Metric</span></code></a> interface.
-They are passed to <a class="reference internal" href="model.html#poutyne.Model" title="poutyne.Model"><code class="xref py py-class docutils literal notranslate"><span class="pre">Model</span></code></a> and <a class="reference internal" href="experiment.html#poutyne.ModelBundle.from_network" title="poutyne.ModelBundle.from_network"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ModelBundle.from_network()</span></code></a> using the <code class="docutils literal notranslate"><span class="pre">epoch_metrics</span></code> argument.
-In addition to those available in <a class="reference external" href="https://torchmetrics.readthedocs.io/en/latest/references/modules.html">TorchMetrics</a>, we also provide a few predefined epoch metrics.</p>
-<p>Here is an example using epoch metrics:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">poutyne</span> <span class="kn">import</span> <span class="n">Model</span><span class="p">,</span> <span class="n">F1</span>
-<span class="kn">import</span> <span class="nn">torchmetrics</span>
-
-<span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span>
-    <span class="n">network</span><span class="p">,</span>
-    <span class="s1">&#39;sgd&#39;</span><span class="p">,</span>
-    <span class="s1">&#39;cross_entropy&#39;</span><span class="p">,</span>
-
-    <span class="n">epoch_metrics</span><span class="o">=</span><span class="p">[</span><span class="n">F1</span><span class="p">(),</span> <span class="n">torchmetrics</span><span class="o">.</span><span class="n">AUROC</span><span class="p">(</span><span class="n">num_classes</span><span class="o">=</span><span class="mi">10</span><span class="p">)],</span>
-    <span class="c1"># Can also use a string in the case of F1-score:</span>
-    <span class="c1"># epoch_metrics=[&#39;f1&#39;, torchmetrics.AUROC(num_classes=10)],</span>
-<span class="p">)</span>
-<span class="n">model</span><span class="o">.</span><span class="n">fit_dataset</span><span class="p">(</span><span class="n">train_dataset</span><span class="p">,</span> <span class="n">valid_dataset</span><span class="p">)</span>
-</pre></div>
-</div>
-<section id="interface">
-<h3>Interface<a class="headerlink" href="#interface" title="Permalink to this headline"></a></h3>
-<dl class="py class">
-<dt class="sig sig-object py" id="poutyne.EpochMetric">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">poutyne.</span></span><span class="sig-name descname"><span class="pre">EpochMetric</span></span><a class="reference internal" href="_modules/poutyne/framework/metrics/epoch_metrics/base.html#EpochMetric"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.EpochMetric" title="Permalink to this definition"></a></dt>
-<dd><p>The abstract class representing a epoch metric which can be accumulated at each batch and calculated at the end
-of the epoch.</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="poutyne.EpochMetric.forward">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y_pred</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_true</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a></span></span><a class="reference internal" href="_modules/poutyne/framework/metrics/epoch_metrics/base.html#EpochMetric.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.EpochMetric.forward" title="Permalink to this definition"></a></dt>
-<dd><p>To define the behavior of the metric when called.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>y_pred</strong> – The prediction of the model.</p></li>
-<li><p><strong>y_true</strong> – Target to evaluate the model.</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="poutyne.EpochMetric.get_metric">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_metric</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/poutyne/framework/metrics/epoch_metrics/base.html#EpochMetric.get_metric"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.EpochMetric.get_metric" title="Permalink to this definition"></a></dt>
-<dd><p>Compute and return the metric. Should not modify the state of
-the epoch metric.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="poutyne.EpochMetric.reset">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a></span></span><a class="reference internal" href="_modules/poutyne/framework/metrics/epoch_metrics/base.html#EpochMetric.reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.EpochMetric.reset" title="Permalink to this definition"></a></dt>
-<dd><p>The information kept for the computation of the metric is cleaned so
-that a new epoch can be done.</p>
-</dd></dl>
-
-</dd></dl>
-
-</section>
-<section id="predefined-epoch-metrics">
-<h3>Predefined Epoch Metrics<a class="headerlink" href="#predefined-epoch-metrics" title="Permalink to this headline"></a></h3>
 <dl class="py class">
 <dt class="sig sig-object py" id="poutyne.FBeta">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">poutyne.</span></span><span class="sig-name descname"><span class="pre">FBeta</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metric</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">average</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.10)"><span class="pre">Union</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'macro'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pos_label</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_index</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">-</span> <span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">names</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.10)"><span class="pre">Union</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.10)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poutyne/framework/metrics/epoch_metrics/fscores.html#FBeta"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.FBeta" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">poutyne.</span></span><span class="sig-name descname"><span class="pre">FBeta</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metric</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">average</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.10)"><span class="pre">Union</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'macro'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pos_label</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_index</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">-</span> <span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">names</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.10)"><span class="pre">Union</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.10)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poutyne/framework/metrics/predefined/fscores.html#FBeta"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.FBeta" title="Permalink to this definition"></a></dt>
 <dd><p>The source code of this class is under the Apache v2 License and was copied from
 the AllenNLP project and has been modified.</p>
 <p>Compute precision, recall, F-measure and support for each class.</p>
@@ -448,7 +392,29 @@ a single metric is requested. It is a list of 3 strings if all metrics are reque
 </dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="poutyne.FBeta.forward">
-<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y_pred</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v1.10.0)"><span class="pre">torch.Tensor</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_true</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.10)"><span class="pre">Union</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v1.10.0)"><span class="pre">torch.Tensor</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple" title="(in Python v3.10)"><span class="pre">Tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v1.10.0)"><span class="pre">torch.Tensor</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v1.10.0)"><span class="pre">torch.Tensor</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a></span></span><a class="reference internal" href="_modules/poutyne/framework/metrics/epoch_metrics/fscores.html#FBeta.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.FBeta.forward" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y_pred</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v1.10.0)"><span class="pre">torch.Tensor</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_true</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.10)"><span class="pre">Union</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v1.10.0)"><span class="pre">torch.Tensor</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple" title="(in Python v3.10)"><span class="pre">Tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v1.10.0)"><span class="pre">torch.Tensor</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v1.10.0)"><span class="pre">torch.Tensor</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.10)"><span class="pre">Union</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple" title="(in Python v3.10)"><span class="pre">Tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/poutyne/framework/metrics/predefined/fscores.html#FBeta.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.FBeta.forward" title="Permalink to this definition"></a></dt>
+<dd><p>Update the confusion matrix for calculating the F-score and compute the metrics for the current batch. See
+<a class="reference internal" href="#poutyne.FBeta.compute" title="poutyne.FBeta.compute"><code class="xref py py-meth docutils literal notranslate"><span class="pre">FBeta.compute()</span></code></a> for details on the return value.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>y_pred</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v1.10.0)"><em>torch.Tensor</em></a>) – A tensor of predictions of shape (batch_size, num_classes, …).</p></li>
+<li><p><strong>y_true</strong> (<em>Union</em><em>[</em><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v1.10.0)"><em>torch.Tensor</em></a><em>, </em><em>Tuple</em><em>[</em><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v1.10.0)"><em>torch.Tensor</em></a><em>, </em><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v1.10.0)"><em>torch.Tensor</em></a><em>]</em><em>]</em>) – Ground truths. A tensor of the integer class label of shape (batch_size, …). It must
+be the same shape as the <code class="docutils literal notranslate"><span class="pre">y_pred</span></code> tensor without the <code class="docutils literal notranslate"><span class="pre">num_classes</span></code> dimension.
+It can also be a tuple with two tensors of the same shape, the first being the
+ground truths and the second being a mask.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A float if a single metric is set in the <code class="docutils literal notranslate"><span class="pre">__init__</span></code> or a tuple of floats (f-score, precision, recall) if
+all metrics are requested.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="poutyne.FBeta.update">
+<span class="sig-name descname"><span class="pre">update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y_pred</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v1.10.0)"><span class="pre">torch.Tensor</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_true</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.10)"><span class="pre">Union</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v1.10.0)"><span class="pre">torch.Tensor</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple" title="(in Python v3.10)"><span class="pre">Tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v1.10.0)"><span class="pre">torch.Tensor</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v1.10.0)"><span class="pre">torch.Tensor</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a></span></span><a class="reference internal" href="_modules/poutyne/framework/metrics/predefined/fscores.html#FBeta.update"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.FBeta.update" title="Permalink to this definition"></a></dt>
 <dd><p>Update the confusion matrix for calculating the F-score.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -464,27 +430,26 @@ ground truths and the second being a mask.</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="poutyne.FBeta.get_metric">
-<span class="sig-name descname"><span class="pre">get_metric</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.10)"><span class="pre">Union</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.10)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/poutyne/framework/metrics/epoch_metrics/fscores.html#FBeta.get_metric"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.FBeta.get_metric" title="Permalink to this definition"></a></dt>
-<dd><p>Returns either a float if a single metric is set in the <code class="docutils literal notranslate"><span class="pre">__init__</span></code> or a list
-of floats [f-score, precision, recall] if all metrics are requested.</p>
+<dt class="sig sig-object py" id="poutyne.FBeta.compute">
+<span class="sig-name descname"><span class="pre">compute</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.10)"><span class="pre">Union</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple" title="(in Python v3.10)"><span class="pre">Tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/poutyne/framework/metrics/predefined/fscores.html#FBeta.compute"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.FBeta.compute" title="Permalink to this definition"></a></dt>
+<dd><p>Returns either a float if a single metric is set in the <code class="docutils literal notranslate"><span class="pre">__init__</span></code> or a tuple
+of floats (f-score, precision, recall) if all metrics are requested.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="poutyne.FBeta.reset">
-<span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a></span></span><a class="reference internal" href="_modules/poutyne/framework/metrics/epoch_metrics/fscores.html#FBeta.reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.FBeta.reset" title="Permalink to this definition"></a></dt>
-<dd><p>The information kept for the computation of the metric is cleaned so
-that a new epoch can be done.</p>
+<span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a></span></span><a class="reference internal" href="_modules/poutyne/framework/metrics/predefined/fscores.html#FBeta.reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.FBeta.reset" title="Permalink to this definition"></a></dt>
+<dd><p>The information kept for the computation of the metric is cleaned so that a new epoch can be done.</p>
 </dd></dl>
 
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="poutyne.F1">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">poutyne.</span></span><span class="sig-name descname"><span class="pre">F1</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">average</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'macro'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poutyne/framework/metrics/epoch_metrics/fscores.html#F1"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.F1" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">poutyne.</span></span><span class="sig-name descname"><span class="pre">F1</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poutyne/framework/metrics/predefined/fscores.html#F1"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.F1" title="Permalink to this definition"></a></dt>
 <dd><p>Alias class for <a class="reference internal" href="#poutyne.FBeta" title="poutyne.FBeta"><code class="xref py py-class docutils literal notranslate"><span class="pre">FBeta</span></code></a> where <code class="docutils literal notranslate"><span class="pre">metric</span> <span class="pre">==</span> <span class="pre">'fscore'</span></code> and <code class="docutils literal notranslate"><span class="pre">beta</span> <span class="pre">==</span> <span class="pre">1</span></code>.</p>
 <dl>
-<dt>Possible string name in <a class="reference internal" href="model.html#poutyne.Model" title="poutyne.Model"><code class="xref py py-class docutils literal notranslate"><span class="pre">epoch_metrics</span> <span class="pre">argument</span></code></a>:</dt><dd><ul class="simple">
+<dt>Possible string name:</dt><dd><ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">'f1'</span></code></p></li>
 </ul>
 </dd>
@@ -499,10 +464,10 @@ that a new epoch can be done.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="poutyne.Precision">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">poutyne.</span></span><span class="sig-name descname"><span class="pre">Precision</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">average</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'macro'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poutyne/framework/metrics/epoch_metrics/fscores.html#Precision"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.Precision" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">poutyne.</span></span><span class="sig-name descname"><span class="pre">Precision</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poutyne/framework/metrics/predefined/fscores.html#Precision"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.Precision" title="Permalink to this definition"></a></dt>
 <dd><p>Alias class for <a class="reference internal" href="#poutyne.FBeta" title="poutyne.FBeta"><code class="xref py py-class docutils literal notranslate"><span class="pre">FBeta</span></code></a> where <code class="docutils literal notranslate"><span class="pre">metric</span> <span class="pre">==</span> <span class="pre">'precision'</span></code>.</p>
 <dl>
-<dt>Possible string name in <a class="reference internal" href="model.html#poutyne.Model" title="poutyne.Model"><code class="xref py py-class docutils literal notranslate"><span class="pre">epoch_metrics</span> <span class="pre">argument</span></code></a>:</dt><dd><ul class="simple">
+<dt>Possible string name:</dt><dd><ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">'precision'</span></code></p></li>
 </ul>
 </dd>
@@ -517,10 +482,10 @@ that a new epoch can be done.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="poutyne.Recall">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">poutyne.</span></span><span class="sig-name descname"><span class="pre">Recall</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">average</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'macro'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poutyne/framework/metrics/epoch_metrics/fscores.html#Recall"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.Recall" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">poutyne.</span></span><span class="sig-name descname"><span class="pre">Recall</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poutyne/framework/metrics/predefined/fscores.html#Recall"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.Recall" title="Permalink to this definition"></a></dt>
 <dd><p>Alias class for <a class="reference internal" href="#poutyne.FBeta" title="poutyne.FBeta"><code class="xref py py-class docutils literal notranslate"><span class="pre">FBeta</span></code></a> where <code class="docutils literal notranslate"><span class="pre">metric</span> <span class="pre">==</span> <span class="pre">'recall'</span></code>.</p>
 <dl>
-<dt>Possible string name in <a class="reference internal" href="model.html#poutyne.Model" title="poutyne.Model"><code class="xref py py-class docutils literal notranslate"><span class="pre">epoch_metrics</span> <span class="pre">argument</span></code></a>:</dt><dd><ul class="simple">
+<dt>Possible string name:</dt><dd><ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">'recall'</span></code></p></li>
 </ul>
 </dd>
@@ -535,10 +500,10 @@ that a new epoch can be done.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="poutyne.BinaryF1">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">poutyne.</span></span><span class="sig-name descname"><span class="pre">BinaryF1</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poutyne/framework/metrics/epoch_metrics/fscores.html#BinaryF1"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.BinaryF1" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">poutyne.</span></span><span class="sig-name descname"><span class="pre">BinaryF1</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poutyne/framework/metrics/predefined/fscores.html#BinaryF1"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.BinaryF1" title="Permalink to this definition"></a></dt>
 <dd><p>Alias class for <a class="reference internal" href="#poutyne.FBeta" title="poutyne.FBeta"><code class="xref py py-class docutils literal notranslate"><span class="pre">FBeta</span></code></a> where <code class="docutils literal notranslate"><span class="pre">metric</span> <span class="pre">==</span> <span class="pre">'fscore'</span></code>, <code class="docutils literal notranslate"><span class="pre">average='binary'</span></code> and <code class="docutils literal notranslate"><span class="pre">beta</span> <span class="pre">==</span> <span class="pre">1</span></code>.</p>
 <dl class="simple">
-<dt>Possible string name in <a class="reference internal" href="model.html#poutyne.Model" title="poutyne.Model"><code class="xref py py-class docutils literal notranslate"><span class="pre">epoch_metrics</span> <span class="pre">argument</span></code></a>:</dt><dd><ul class="simple">
+<dt>Possible string name:</dt><dd><ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">'binary_f1'</span></code></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">'bin_f1'</span></code></p></li>
 </ul>
@@ -553,10 +518,10 @@ that a new epoch can be done.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="poutyne.BinaryPrecision">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">poutyne.</span></span><span class="sig-name descname"><span class="pre">BinaryPrecision</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poutyne/framework/metrics/epoch_metrics/fscores.html#BinaryPrecision"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.BinaryPrecision" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">poutyne.</span></span><span class="sig-name descname"><span class="pre">BinaryPrecision</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poutyne/framework/metrics/predefined/fscores.html#BinaryPrecision"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.BinaryPrecision" title="Permalink to this definition"></a></dt>
 <dd><p>Alias class for <a class="reference internal" href="#poutyne.FBeta" title="poutyne.FBeta"><code class="xref py py-class docutils literal notranslate"><span class="pre">FBeta</span></code></a> where <code class="docutils literal notranslate"><span class="pre">metric</span> <span class="pre">==</span> <span class="pre">'precision'</span></code> and <code class="docutils literal notranslate"><span class="pre">average='binary'</span></code>.</p>
 <dl class="simple">
-<dt>Possible string name in <a class="reference internal" href="model.html#poutyne.Model" title="poutyne.Model"><code class="xref py py-class docutils literal notranslate"><span class="pre">epoch_metrics</span> <span class="pre">argument</span></code></a>:</dt><dd><ul class="simple">
+<dt>Possible string name:</dt><dd><ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">'binary_precision'</span></code></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">'bin_precision'</span></code></p></li>
 </ul>
@@ -571,10 +536,10 @@ that a new epoch can be done.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="poutyne.BinaryRecall">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">poutyne.</span></span><span class="sig-name descname"><span class="pre">BinaryRecall</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poutyne/framework/metrics/epoch_metrics/fscores.html#BinaryRecall"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.BinaryRecall" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">poutyne.</span></span><span class="sig-name descname"><span class="pre">BinaryRecall</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poutyne/framework/metrics/predefined/fscores.html#BinaryRecall"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.BinaryRecall" title="Permalink to this definition"></a></dt>
 <dd><p>Alias class for <a class="reference internal" href="#poutyne.FBeta" title="poutyne.FBeta"><code class="xref py py-class docutils literal notranslate"><span class="pre">FBeta</span></code></a> where <code class="docutils literal notranslate"><span class="pre">metric</span> <span class="pre">==</span> <span class="pre">'recall'</span></code> and <code class="docutils literal notranslate"><span class="pre">average='binary'</span></code>.</p>
 <dl class="simple">
-<dt>Possible string name in <a class="reference internal" href="model.html#poutyne.Model" title="poutyne.Model"><code class="xref py py-class docutils literal notranslate"><span class="pre">epoch_metrics</span> <span class="pre">argument</span></code></a>:</dt><dd><ul class="simple">
+<dt>Possible string name:</dt><dd><ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">'binary_recall'</span></code></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">'bin_recall'</span></code></p></li>
 </ul>
@@ -589,7 +554,7 @@ that a new epoch can be done.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="poutyne.SKLearnMetrics">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">poutyne.</span></span><span class="sig-name descname"><span class="pre">SKLearnMetrics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">funcs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.10)"><span class="pre">Union</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.10)"><span class="pre">Callable</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.10)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.10)"><span class="pre">Callable</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.10)"><span class="pre">Union</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.10)"><span class="pre">dict</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.10)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.10)"><span class="pre">dict</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">names</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.10)"><span class="pre">Union</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.10)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poutyne/framework/metrics/epoch_metrics/sklearn_metrics.html#SKLearnMetrics"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.SKLearnMetrics" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">poutyne.</span></span><span class="sig-name descname"><span class="pre">SKLearnMetrics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">funcs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.10)"><span class="pre">Union</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.10)"><span class="pre">Callable</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.10)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.10)"><span class="pre">Callable</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.10)"><span class="pre">Union</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.10)"><span class="pre">dict</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.10)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.10)"><span class="pre">dict</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">names</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.10)"><span class="pre">Optional</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.10)"><span class="pre">Union</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.10)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poutyne/framework/metrics/predefined/sklearn_metrics.html#SKLearnMetrics"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.SKLearnMetrics" title="Permalink to this definition"></a></dt>
 <dd><p>Wrap metrics with Scikit-learn-like interface
 (<code class="docutils literal notranslate"><span class="pre">metric(y_true,</span> <span class="pre">y_pred,</span> <span class="pre">sample_weight=sample_weight,</span> <span class="pre">**kwargs)</span></code>).
 The <code class="docutils literal notranslate"><span class="pre">SKLearnMetrics</span></code> object has to keep in memory the ground truths and
@@ -615,7 +580,27 @@ the names given to the metrics. By default, the names are the names of the funct
 </dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="poutyne.SKLearnMetrics.forward">
-<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y_pred</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v1.10.0)"><span class="pre">torch.Tensor</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_true</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.10)"><span class="pre">Union</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v1.10.0)"><span class="pre">torch.Tensor</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple" title="(in Python v3.10)"><span class="pre">Tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v1.10.0)"><span class="pre">torch.Tensor</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v1.10.0)"><span class="pre">torch.Tensor</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a></span></span><a class="reference internal" href="_modules/poutyne/framework/metrics/epoch_metrics/sklearn_metrics.html#SKLearnMetrics.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.SKLearnMetrics.forward" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y_pred</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v1.10.0)"><span class="pre">torch.Tensor</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_true</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.10)"><span class="pre">Union</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v1.10.0)"><span class="pre">torch.Tensor</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple" title="(in Python v3.10)"><span class="pre">Tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v1.10.0)"><span class="pre">torch.Tensor</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v1.10.0)"><span class="pre">torch.Tensor</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a></span></span><a class="reference internal" href="_modules/poutyne/framework/metrics/predefined/sklearn_metrics.html#SKLearnMetrics.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.SKLearnMetrics.forward" title="Permalink to this definition"></a></dt>
+<dd><p>Accumulate the predictions, ground truths and sample weights if any, and compute the metric for the current
+batch.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>y_pred</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v1.10.0)"><em>torch.Tensor</em></a>) – A tensor of predictions of the shape expected by
+the metric functions passed to the class.</p></li>
+<li><p><strong>y_true</strong> (<em>Union</em><em>[</em><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v1.10.0)"><em>torch.Tensor</em></a><em>, </em><em>Tuple</em><em>[</em><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v1.10.0)"><em>torch.Tensor</em></a><em>, </em><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v1.10.0)"><em>torch.Tensor</em></a><em>]</em><em>]</em>) – Ground truths. A tensor of ground truths of the shape expected by
+the metric functions passed to the class.
+It can also be a tuple with two tensors, the first being the
+ground truths and the second corresponding the <code class="docutils literal notranslate"><span class="pre">sample_weight</span></code>
+argument passed to the metric functions in Scikit-Learn.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="poutyne.SKLearnMetrics.update">
+<span class="sig-name descname"><span class="pre">update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y_pred</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v1.10.0)"><span class="pre">torch.Tensor</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_true</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.10)"><span class="pre">Union</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v1.10.0)"><span class="pre">torch.Tensor</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple" title="(in Python v3.10)"><span class="pre">Tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v1.10.0)"><span class="pre">torch.Tensor</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v1.10.0)"><span class="pre">torch.Tensor</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a></span></span><a class="reference internal" href="_modules/poutyne/framework/metrics/predefined/sklearn_metrics.html#SKLearnMetrics.update"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.SKLearnMetrics.update" title="Permalink to this definition"></a></dt>
 <dd><p>Accumulate the predictions, ground truths and sample weights if any.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -633,128 +618,135 @@ argument passed to the metric functions in Scikit-Learn.</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="poutyne.SKLearnMetrics.get_metric">
-<span class="sig-name descname"><span class="pre">get_metric</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.10)"><span class="pre">Dict</span></a></span></span><a class="reference internal" href="_modules/poutyne/framework/metrics/epoch_metrics/sklearn_metrics.html#SKLearnMetrics.get_metric"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.SKLearnMetrics.get_metric" title="Permalink to this definition"></a></dt>
+<dt class="sig sig-object py" id="poutyne.SKLearnMetrics.compute">
+<span class="sig-name descname"><span class="pre">compute</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.10)"><span class="pre">Dict</span></a></span></span><a class="reference internal" href="_modules/poutyne/framework/metrics/predefined/sklearn_metrics.html#SKLearnMetrics.compute"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.SKLearnMetrics.compute" title="Permalink to this definition"></a></dt>
 <dd><p>Returns the metrics as a dictionary with the names as keys.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="poutyne.SKLearnMetrics.reset">
-<span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a></span></span><a class="reference internal" href="_modules/poutyne/framework/metrics/epoch_metrics/sklearn_metrics.html#SKLearnMetrics.reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.SKLearnMetrics.reset" title="Permalink to this definition"></a></dt>
-<dd><p>The information kept for the computation of the metric is cleaned so
-that a new epoch can be done.</p>
+<span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a></span></span><a class="reference internal" href="_modules/poutyne/framework/metrics/predefined/sklearn_metrics.html#SKLearnMetrics.reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.SKLearnMetrics.reset" title="Permalink to this definition"></a></dt>
+<dd><p>The information kept for the computation of the metric is cleaned so that a new epoch can be done.</p>
 </dd></dl>
 
 </dd></dl>
 
 </section>
-</section>
-<section id="torchmetrics">
-<h2>TorchMetrics<a class="headerlink" href="#torchmetrics" title="Permalink to this headline"></a></h2>
-<p><a class="reference external" href="https://torchmetrics.readthedocs.io/">TorchMetrics</a> is a library implementing a lot of known metrics in PyTorch.
-They are passed to <a class="reference internal" href="model.html#poutyne.Model" title="poutyne.Model"><code class="xref py py-class docutils literal notranslate"><span class="pre">Model</span></code></a> and <a class="reference internal" href="experiment.html#poutyne.ModelBundle.from_network" title="poutyne.ModelBundle.from_network"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ModelBundle.from_network()</span></code></a> using either the  <code class="docutils literal notranslate"><span class="pre">epoch_metrics</span></code> argument or the <code class="docutils literal notranslate"><span class="pre">torch_metrics</span></code> argument.
-When passed as epoch metrics, they are only displayed at the end of the epoch.
-When passed using the specialized <code class="docutils literal notranslate"><span class="pre">torch_metrics</span></code> argument, they are displayed for each batch and at the end of the epoch.
-See <a class="reference external" href="https://torchmetrics.readthedocs.io/en/latest/references/modules.html">TorchMetrics documentation</a> for available torch metrics.</p>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>When using the <code class="docutils literal notranslate"><span class="pre">torch_metrics</span></code> argument, the torch metrics are computed at each batch.
-This can significantly slow down the computations depending on the metrics used.
-In such cases, we advise using them as epoch metrics instead.</p>
-</div>
-<p>Here is an example using TorchMetrics:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">poutyne</span> <span class="kn">import</span> <span class="n">Model</span>
-<span class="kn">import</span> <span class="nn">torchmetrics</span>
+<section id="id2">
+<h2>Functional<a class="headerlink" href="#id2" title="Permalink to this headline"></a></h2>
+<p>Below is a functional version of some of the classes in the <a class="reference internal" href="#object-oriented-metrics"><span class="std std-ref">Object-Oriented API</span></a> section.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="poutyne.acc">
+<span class="sig-prename descclassname"><span class="pre">poutyne.</span></span><span class="sig-name descname"><span class="pre">acc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y_pred</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_true</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reduction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mean'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poutyne/framework/metrics/predefined/accuracy.html#acc"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.acc" title="Permalink to this definition"></a></dt>
+<dd><p>Computes the accuracy.</p>
+<p>This is a functional version of <a class="reference internal" href="#poutyne.Accuracy" title="poutyne.Accuracy"><code class="xref py py-class docutils literal notranslate"><span class="pre">Accuracy</span></code></a>.</p>
+<p>See <a class="reference internal" href="#poutyne.Accuracy" title="poutyne.Accuracy"><code class="xref py py-class docutils literal notranslate"><span class="pre">Accuracy</span></code></a> for details.</p>
+</dd></dl>
 
-<span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span>
-    <span class="n">network</span><span class="p">,</span>
-    <span class="s1">&#39;sgd&#39;</span><span class="p">,</span>
-    <span class="s1">&#39;cross_entropy&#39;</span><span class="p">,</span>
-    <span class="n">torch_metrics</span><span class="o">=</span><span class="p">[</span><span class="n">torchmetrics</span><span class="o">.</span><span class="n">F1</span><span class="p">(</span><span class="n">num_classes</span><span class="o">=</span><span class="mi">10</span><span class="p">)],</span>
-<span class="p">)</span>
-<span class="n">model</span><span class="o">.</span><span class="n">fit_dataset</span><span class="p">(</span><span class="n">train_dataset</span><span class="p">,</span> <span class="n">valid_dataset</span><span class="p">)</span>
-</pre></div>
-</div>
+<dl class="py function">
+<dt class="sig sig-object py" id="poutyne.bin_acc">
+<span class="sig-prename descclassname"><span class="pre">poutyne.</span></span><span class="sig-name descname"><span class="pre">bin_acc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y_pred</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_true</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reduction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mean'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poutyne/framework/metrics/predefined/accuracy.html#bin_acc"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.bin_acc" title="Permalink to this definition"></a></dt>
+<dd><p>Computes the binary accuracy.</p>
+<p>This is a functional version of <a class="reference internal" href="#poutyne.BinaryAccuracy" title="poutyne.BinaryAccuracy"><code class="xref py py-class docutils literal notranslate"><span class="pre">BinaryAccuracy</span></code></a>.</p>
+<p>See <a class="reference internal" href="#poutyne.BinaryAccuracy" title="poutyne.BinaryAccuracy"><code class="xref py py-class docutils literal notranslate"><span class="pre">BinaryAccuracy</span></code></a> for details.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="poutyne.topk">
+<span class="sig-prename descclassname"><span class="pre">poutyne.</span></span><span class="sig-name descname"><span class="pre">topk</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y_pred</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_true</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reduction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mean'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poutyne/framework/metrics/predefined/accuracy.html#topk"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.topk" title="Permalink to this definition"></a></dt>
+<dd><p>Computes the top-k accuracy.</p>
+<p>This is a functional version of <a class="reference internal" href="#poutyne.TopKAccuracy" title="poutyne.TopKAccuracy"><code class="xref py py-class docutils literal notranslate"><span class="pre">TopKAccuracy</span></code></a>.</p>
+<p>See <a class="reference internal" href="#poutyne.TopKAccuracy" title="poutyne.TopKAccuracy"><code class="xref py py-class docutils literal notranslate"><span class="pre">TopKAccuracy</span></code></a> for details.</p>
+</dd></dl>
+
 </section>
 <section id="computing-multiple-metrics-at-once">
 <span id="multiple-metrics-at-once"></span><h2>Computing Multiple Metrics at Once<a class="headerlink" href="#computing-multiple-metrics-at-once" title="Permalink to this headline"></a></h2>
-<p>When passing the metrics to <a class="reference internal" href="model.html#poutyne.Model" title="poutyne.Model"><code class="xref py py-class docutils literal notranslate"><span class="pre">Model</span></code></a> and <a class="reference internal" href="experiment.html#poutyne.ModelBundle.from_network" title="poutyne.ModelBundle.from_network"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ModelBundle.from_network()</span></code></a>, the name of each batch and epoch metric can be change by passing a tuple <code class="docutils literal notranslate"><span class="pre">(name,</span> <span class="pre">metric)</span></code> instead of simply the metric function or object, where <code class="docutils literal notranslate"><span class="pre">name</span></code> is the alternative name of the metric.</p>
-<p>Batch and epoch metrics can return multiple metrics (e.g. an epoch metric could return an F1-score with the associated precision and recall).
+<p>When passing the metrics to <a class="reference internal" href="model.html#poutyne.Model" title="poutyne.Model"><code class="xref py py-class docutils literal notranslate"><span class="pre">Model</span></code></a> and <a class="reference internal" href="experiment.html#poutyne.ModelBundle.from_network" title="poutyne.ModelBundle.from_network"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ModelBundle.from_network()</span></code></a>, each metric name can be changed by passing a tuple <code class="docutils literal notranslate"><span class="pre">(name,</span> <span class="pre">metric)</span></code> instead of simply the metric function or object, where <code class="docutils literal notranslate"><span class="pre">name</span></code> is the alternative name of the metric.</p>
+<p>Metrics can return multiple metrics (e.g. a metric could return an F1-score with the associated precision and recall).
 The metrics can be returned via an iterable (tuple, list, Numpy arrays, tensors, etc.) or via a mapping (e.g. a dict).
 However, in this case, the names of the different metric has to be passed in some way.</p>
 <p>There are two ways to do so.
 The easiest one is to pass the metric as a tuple <code class="docutils literal notranslate"><span class="pre">(names,</span> <span class="pre">metric)</span></code> where <code class="docutils literal notranslate"><span class="pre">names</span></code> is a tuple containing a name for each metric returned.
 Another way is to override the attribute <code class="docutils literal notranslate"><span class="pre">__name__</span></code> of the function or object so that it returns a tuple containing a name for all metrics returned.
 Note that, when the metric returns a mapping, the names of the different metrics must be keys in the mapping.</p>
-<p>Example with batch metrics:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Example with custom batch metrics</span>
-<span class="n">my_custom_metric</span> <span class="o">=</span> <span class="k">lambda</span> <span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="mf">42.</span>
-<span class="n">my_custom_metric2</span> <span class="o">=</span> <span class="k">lambda</span> <span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mf">42.</span><span class="p">,</span> <span class="mf">43.</span><span class="p">])</span>
-<span class="n">my_custom_metric3</span> <span class="o">=</span> <span class="k">lambda</span> <span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="mf">42.</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="mf">43.</span><span class="p">}</span>
-<span class="n">batch_metrics</span> <span class="o">=</span> <span class="p">[</span>
+<p>Examples:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">poutyne</span> <span class="kn">import</span> <span class="n">Metric</span>
+<span class="kn">from</span> <span class="nn">torchmetrics</span> <span class="kn">import</span> <span class="n">F1Score</span><span class="p">,</span> <span class="n">Precision</span><span class="p">,</span> <span class="n">Recall</span><span class="p">,</span> <span class="n">MetricCollection</span>
+
+
+<span class="n">my_custom_metric</span> <span class="o">=</span> <span class="k">lambda</span> <span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="mf">42.0</span>
+<span class="n">my_custom_metric2</span> <span class="o">=</span> <span class="k">lambda</span> <span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mf">42.0</span><span class="p">,</span> <span class="mf">43.0</span><span class="p">])</span>
+<span class="n">my_custom_metric3</span> <span class="o">=</span> <span class="k">lambda</span> <span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="mf">42.0</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="mf">43.0</span><span class="p">}</span>
+
+
+<span class="k">class</span> <span class="nc">CustomMetric</span><span class="p">(</span><span class="n">Metric</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">y_true</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">y_true</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="k">def</span> <span class="nf">compute</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mf">42.0</span><span class="p">,</span> <span class="mf">43.0</span><span class="p">])</span>
+
+    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+
+<span class="k">class</span> <span class="nc">CustomMetric2</span><span class="p">(</span><span class="n">Metric</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">y_true</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">y_true</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="k">def</span> <span class="nf">compute</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;c&#39;</span><span class="p">:</span> <span class="mf">42.0</span><span class="p">,</span> <span class="s1">&#39;d&#39;</span><span class="p">:</span> <span class="mf">43.0</span><span class="p">}</span>
+
+    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+
+<span class="k">class</span> <span class="nc">CustomMetric3</span><span class="p">(</span><span class="n">Metric</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;e&#39;</span><span class="p">,</span> <span class="s1">&#39;f&#39;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">y_true</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">y_true</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="k">def</span> <span class="nf">compute</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mf">42.0</span><span class="p">,</span> <span class="mf">43.0</span><span class="p">])</span>
+
+    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+
+<span class="n">metric_collection</span> <span class="o">=</span> <span class="n">MetricCollection</span><span class="p">(</span>
+    <span class="p">[</span>
+        <span class="n">F1Score</span><span class="p">(</span><span class="n">num_classes</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">average</span><span class="o">=</span><span class="s1">&#39;macro&#39;</span><span class="p">),</span>
+        <span class="n">Precision</span><span class="p">(</span><span class="n">num_classes</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">average</span><span class="o">=</span><span class="s1">&#39;macro&#39;</span><span class="p">),</span>
+        <span class="n">Recall</span><span class="p">(</span><span class="n">num_classes</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">average</span><span class="o">=</span><span class="s1">&#39;macro&#39;</span><span class="p">),</span>
+    <span class="p">]</span>
+<span class="p">)</span>
+
+<span class="n">metrics</span> <span class="o">=</span> <span class="p">[</span>
     <span class="p">(</span><span class="s1">&#39;custom_name&#39;</span><span class="p">,</span> <span class="n">my_custom_metric</span><span class="p">),</span>
     <span class="p">((</span><span class="s1">&#39;metric_1&#39;</span><span class="p">,</span> <span class="s1">&#39;metric_2&#39;</span><span class="p">),</span> <span class="n">my_custom_metric2</span><span class="p">),</span>
     <span class="p">((</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">),</span> <span class="n">my_custom_metric3</span><span class="p">),</span>
-<span class="p">]</span>
-</pre></div>
-</div>
-<p>Example with epoch metrics:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">poutyne</span> <span class="kn">import</span> <span class="n">EpochMetric</span>
+    <span class="p">((</span><span class="s1">&#39;metric_3&#39;</span><span class="p">,</span> <span class="s1">&#39;metric_4&#39;</span><span class="p">),</span> <span class="n">CustomMetric</span><span class="p">()),</span>
+    <span class="p">((</span><span class="s1">&#39;c&#39;</span><span class="p">,</span> <span class="s1">&#39;d&#39;</span><span class="p">),</span> <span class="n">CustomMetric2</span><span class="p">()),</span>
 
-<span class="k">class</span> <span class="nc">CustomEpochMetric</span><span class="p">(</span><span class="n">EpochMetric</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">y_true</span><span class="p">):</span>
-        <span class="k">pass</span>
+    <span class="c1"># No need to pass the names since the class sets the attribute __name__.</span>
+    <span class="n">CustomMetric3</span><span class="p">(),</span>
 
-    <span class="k">def</span> <span class="nf">get_metric</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mf">42.</span><span class="p">,</span> <span class="mf">43.</span><span class="p">])</span>
-
-    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">pass</span>
-
-<span class="k">class</span> <span class="nc">CustomEpochMetric2</span><span class="p">(</span><span class="n">EpochMetric</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">y_true</span><span class="p">):</span>
-        <span class="k">pass</span>
-
-    <span class="k">def</span> <span class="nf">get_metric</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="mf">42.</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="mf">43.</span><span class="p">}</span>
-
-    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">pass</span>
-
-
-<span class="k">class</span> <span class="nc">CustomEpochMetric3</span><span class="p">(</span><span class="n">EpochMetric</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;c&#39;</span><span class="p">,</span> <span class="s1">&#39;d&#39;</span><span class="p">]</span>
-
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">y_true</span><span class="p">):</span>
-        <span class="k">pass</span>
-
-    <span class="k">def</span> <span class="nf">get_metric</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mf">42.</span><span class="p">,</span> <span class="mf">43.</span><span class="p">])</span>
-
-    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">pass</span>
-
-<span class="n">epoch_metrics</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="p">((</span><span class="s1">&#39;metric_1&#39;</span><span class="p">,</span> <span class="s1">&#39;metric_2&#39;</span><span class="p">),</span> <span class="n">CustomEpochMetric</span><span class="p">()),</span>
-    <span class="p">((</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">),</span> <span class="n">CustomEpochMetric2</span><span class="p">()),</span>
-    <span class="n">CustomEpochMetric3</span><span class="p">(),</span>  <span class="c1"># No need to pass the names since the class sets the attribute __name__.</span>
-<span class="p">]</span>
-</pre></div>
-</div>
-<p>Example with TorchMetrics:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torchmetrics</span> <span class="kn">import</span> <span class="n">F1</span><span class="p">,</span> <span class="n">Precision</span><span class="p">,</span> <span class="n">Recall</span><span class="p">,</span> <span class="n">MetricCollection</span>
-
-<span class="n">metric_collection</span> <span class="o">=</span> <span class="n">MetricCollection</span><span class="p">([</span>
-    <span class="n">F1</span><span class="p">(</span><span class="n">num_classes</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">average</span><span class="o">=</span><span class="s1">&#39;macro&#39;</span><span class="p">),</span>
-    <span class="n">Precision</span><span class="p">(</span><span class="n">num_classes</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">average</span><span class="o">=</span><span class="s1">&#39;macro&#39;</span><span class="p">),</span>
-    <span class="n">Recall</span><span class="p">(</span><span class="n">num_classes</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">average</span><span class="o">=</span><span class="s1">&#39;macro&#39;</span><span class="p">)</span>
-<span class="p">])</span>
-
-<span class="c1"># The names are the keys returned by MetricCollection.</span>
-<span class="n">torch_metrics</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="p">((</span><span class="s1">&#39;F1&#39;</span><span class="p">,</span> <span class="s1">&#39;Precision&#39;</span><span class="p">,</span> <span class="s1">&#39;Recall&#39;</span><span class="p">),</span> <span class="n">metric_collection</span><span class="p">),</span>
+    <span class="c1"># The names are the keys returned by MetricCollection.</span>
+    <span class="p">((</span><span class="s1">&#39;F1Score&#39;</span><span class="p">,</span> <span class="s1">&#39;Precision&#39;</span><span class="p">,</span> <span class="s1">&#39;Recall&#39;</span><span class="p">),</span> <span class="n">metric_collection</span><span class="p">),</span>
 <span class="p">]</span>
 </pre></div>
 </div>

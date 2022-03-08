@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Utils &mdash; Poutyne 1.9 documentation</title>
+  <title>Utils &mdash; Poutyne 1.10 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -31,7 +31,7 @@
             <img src="_static/poutyne-light.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                1.9
+                1.10
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -51,6 +51,7 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Utils</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#basic-torch-utils">Basic Torch Utils</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#plotting">Plotting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#miscellaneous">Miscellaneous</a></li>
 </ul>
 </li>
 </ul>
@@ -256,6 +257,38 @@ CSV output by the <a class="reference internal" href="callbacks.html#poutyne.CSV
 <li><p><strong>ax</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://matplotlib.org/stable/api/axes_api.html#matplotlib.axes.Axes" title="(in Matplotlib v3.5.1)"><em>matplotlib.axes.Axes</em></a><em>]</em><em>, </em><em>optional</em>) – A matplotlib <a class="reference external" href="https://matplotlib.org/stable/api/axes_api.html#matplotlib.axes.Axes" title="(in Matplotlib v3.5.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Axes</span></code></a> to use. By default,
 the current axe is used.</p></li>
 </ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="miscellaneous">
+<h2>Miscellaneous<a class="headerlink" href="#miscellaneous" title="Permalink to this headline"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="poutyne.get_batch_size">
+<span class="sig-prename descclassname"><span class="pre">poutyne.</span></span><span class="sig-name descname"><span class="pre">get_batch_size</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">values</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/poutyne/utils.html#get_batch_size"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#poutyne.get_batch_size" title="Permalink to this definition"></a></dt>
+<dd><p>This method infers the batch size of a batch. Here is the inferring algorithm used to compute the
+batch size. The values are tested in order at each step of the inferring algorithm. If one
+step succeed for one of the values, the algorithm stops.</p>
+<ul class="simple">
+<li><p>Step 1: if a value is a tensor or a Numpy array, then the <code class="docutils literal notranslate"><span class="pre">len()</span></code> is returned.</p></li>
+<li><p>Step 2: if a value is a list or a tuple, then the <code class="docutils literal notranslate"><span class="pre">len()</span></code> of the first element is returned
+if it is a tensor or a Numpy array.</p></li>
+<li><p>Step 3: if a value is a dict, then the value for the key <code class="docutils literal notranslate"><span class="pre">'batch_size'</span></code> is returned if it
+is of integral type.</p></li>
+<li><p>Step 4: if a value is a dict, then the <code class="docutils literal notranslate"><span class="pre">len()</span></code> of the first element of <code class="docutils literal notranslate"><span class="pre">.values()</span></code> is
+returned if it is a tensor or a Numpy array.</p></li>
+</ul>
+<p>If inferring the batch size is not possible, the batch size is set to 1 and a warning is raised.
+To disable this warning, set</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">poutyne</span> <span class="kn">import</span> <span class="n">warning_settings</span>
+
+<span class="n">warning_settings</span><span class="p">[</span><span class="s1">&#39;batch_size&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;ignore&#39;</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>values</strong> – The values used for inferring the batch size.</p>
 </dd>
 </dl>
 </dd></dl>

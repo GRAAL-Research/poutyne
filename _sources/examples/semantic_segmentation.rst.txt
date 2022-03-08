@@ -21,26 +21,83 @@ U-Net is a convolutional neural network similar to convolutional autoencoders. H
 
 .. code-block:: python
 
-    %pip install segmentation-models-pytorch 
-    
-Let’s import all the needed packages.
+    %pip install segmentation-models-pytorch
+
+Let’s import all the needed packages and define some useful functions.
 
 .. code-block:: python
 
     import os
+    import math
     import matplotlib.pyplot as plt
     import numpy as np
     import torch
     import torch.nn as nn
     import torch.optim as optim
-    import torchvision.models as models
-    import torchvision.transforms as tfms
+    import torchvision.transforms as transforms
     import torchvision.datasets as datasets
+    from torchvision.transforms.functional import InterpolationMode
     import segmentation_models_pytorch as smp
+    import torchmetrics
     from poutyne import Model, ModelCheckpoint, CSVLogger, set_seeds
     from torch.utils.data import DataLoader
-    from torchvision.utils import  make_grid
-    
+    from PIL import Image
+
+
+    def replace_tensor_value_(tensor, a, b):
+        tensor[tensor == a] = b
+        return tensor
+
+
+    def plot_images(images, num_per_row=8, title=None):
+        num_rows = int(math.ceil(len(images) / num_per_row))
+
+        fig, axes = plt.subplots(num_rows, num_per_row, dpi=150)
+        fig.subplots_adjust(wspace=0, hspace=0)
+
+        for image, ax in zip(images, axes.flat):
+            ax.imshow(image)
+            ax.axis('off')
+
+        return fig
+
+
+    # Color palette for segmentation masks
+    PALETTE = np.array(
+        [
+            [0, 0, 0],
+            [128, 0, 0],
+            [0, 128, 0],
+            [128, 128, 0],
+            [0, 0, 128],
+            [128, 0, 128],
+            [0, 128, 128],
+            [128, 128, 128],
+            [64, 0, 0],
+            [192, 0, 0],
+            [64, 128, 0],
+            [192, 128, 0],
+            [64, 0, 128],
+            [192, 0, 128],
+            [64, 128, 128],
+            [192, 128, 128],
+            [0, 64, 0],
+            [128, 64, 0],
+            [0, 192, 0],
+            [128, 192, 0],
+            [0, 64, 128],
+        ]
+        + [[0, 0, 0] for i in range(256 - 22)]
+        + [[255, 255, 255]],
+        dtype=np.uint8,
+    )
+
+
+    def array1d_to_pil_image(array):
+        pil_out = Image.fromarray(array.astype(np.uint8), mode='P')
+        pil_out.putpalette(PALETTE)
+        return pil_out
+
 Training constants
 ==================
 
@@ -50,37 +107,67 @@ Training constants
     batch_size = 32
     image_size = 224
     num_epochs = 70
-    imagenet_mean = [0.485, 0.456, 0.406]  # mean of the imagenet dataset for normalizing 
-    imagenet_std = [0.229, 0.224, 0.225]  # std of the imagenet dataset for normalizing 
+    imagenet_mean = [0.485, 0.456, 0.406]  # mean of the imagenet dataset for normalizing
+    imagenet_std = [0.229, 0.224, 0.225]  # std of the imagenet dataset for normalizing
     set_seeds(42)
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print('The current processor is ...', device)
 
-Loading the VOCSegmentation dataset    
+Loading the VOCSegmentation dataset
 ===================================
 
 The VOCSegmentation dataset can be easily downloaded from ``torchvision.datasets``. This dataset allows you to apply the needed transformations on the ground-truth directly and define the proper transformations for the input images. To do so, we use the ``target_transfrom`` argument and set it to your transformation function of interest.
 
 .. code-block:: python
 
-    input_transform = tfms.Compose([
-        tfms.Resize((image_size, image_size)),  
-        tfms.ToTensor(),        
-        tfms.Normalize(imagenet_mean, imagenet_std)
-    ])
-    
-    target_transform = tfms.Compose([
-        tfms.Resize((image_size, image_size)),  
-        tfms.ToTensor(),        
-    ])
-    
+    input_resize = transforms.Resize((224, 224))
+    input_transform = transforms.Compose(
+        [
+            input_resize,
+            transforms.ToTensor(),
+            transforms.Normalize(imagenet_mean, imagenet_std),
+        ]
+    )
+
+    target_resize = transforms.Resize((224, 224), interpolation=InterpolationMode.NEAREST)
+    target_transform = transforms.Compose(
+        [
+            target_resize,
+            transforms.PILToTensor(),
+            transforms.Lambda(lambda x: replace_tensor_value_(x.squeeze(0).long(), 255, 21)),
+        ]
+    )
+
     # Creating the dataset
-    train_dataset = datasets.VOCSegmentation('./datasets/', year='2007', download=True, image_set='train', transform=input_transform, target_transform=target_transform)
-    valid_dataset = datasets.VOCSegmentation('./datasets/', year='2007', download=True, image_set='val', transform=input_transform, target_transform=target_transform)
-    
+    train_dataset = datasets.VOCSegmentation(
+        './datasets/',
+        year='2007',
+        download=True,
+        image_set='train',
+        transform=input_transform,
+        target_transform=target_transform,
+    )
+    valid_dataset = datasets.VOCSegmentation(
+        './datasets/',
+        year='2007',
+        download=True,
+        image_set='val',
+        transform=input_transform,
+        target_transform=target_transform,
+    )
+    test_dataset = datasets.VOCSegmentation(
+        './data/VOC/',
+        year='2007',
+        download=True,
+        image_set='test',
+        transform=input_transform,
+        target_transform=target_transform,
+    )
+
     # Creating the dataloader
-    train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-    valid_dataloader = DataLoader(valid_dataset, batch_size=batch_size, shuffle=False)
+    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=2)
+    valid_loader = DataLoader(valid_dataset, batch_size=batch_size, shuffle=False, num_workers=2)
+    test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False, num_workers=2)
 
 A random batch of the VODSegmentation dataset images
 ====================================================
@@ -89,47 +176,41 @@ Let's see some of the input samples inside the training dataset.
 
 .. code-block:: python
 
-    samples = next(iter(valid_dataloader))
-    inputs = samples[0]
-    input_grid = make_grid(inputs)
-    
-    fig = plt.figure(figsize=(10, 10))
-    input_grid = input_grid.numpy()
-    input_grid = input_grid.transpose((1, 2, 0)) * imagenet_std + imagenet_mean
-    inp = np.clip(input_grid, 0, 1)
-    plt.imshow(inp)
-    plt.axis('off')
-    plt.show()
-    
-.. image:: /_static/img/semantic_segmentation/voc_segment_batch.png 
+    # Creating a VOC dataset without normalization for visualization.
+    train_dataset_viz = datasets.VOCSegmentation(
+        './datasets/',
+        year='2007',
+        image_set='train',
+        transform=input_resize,
+        target_transform=target_resize,
+    )
+    inputs, ground_truths = map(list, zip(*[train_dataset_viz[i] for i in range(batch_size)]))
+
+    _ = plot_images(inputs)
+
+.. image:: /_static/img/semantic_segmentation/voc_segment_batch.png
 
 The ground-truth (segmentation map) for the image grid shown above is as below.
 
 .. code-block:: python
 
-    ground_truth = samples[1]
-    input_grid = make_grid(ground_truth)
-    inp = input_grid.numpy()[0]
-    
-    fig = plt.figure(figsize=(10, 10))
-    plt.imshow(inp)
-    plt.axis('off')
-    plt.show()
-    
-.. image:: /_static/img/semantic_segmentation/voc_segment_batch_gt.png 
+    _ = plot_images(ground_truths)
 
-It is worth mentioning that, as we have approached the segmentation task as an image translation problem, we take advantage of MSELoss for the training. Moreover, we believe that using the U-Net with a pre-trained encoder would help the network converge sooner and better. As this convolutional encoder is previously trained on the ImageNet, it is able to recognize low-level features (such as edge, color, etc.) and high-level features at its first and final layers, respectively.
+
+.. image:: /_static/img/semantic_segmentation/voc_segment_batch_gt.png
+
+It is worth mentioning that, as we have approached the segmentation task as an image translation problem, we use the cross-entropy loss for the training. Moreover, we believe that using the U-Net with a pre-trained encoder would help the network converge sooner and better. As this convolutional encoder is previously trained on the ImageNet, it is able to recognize low-level features (such as edge, color, etc.) and high-level features at its first and final layers, respectively.
 
 .. code-block:: python
 
     # specifying loss function
-    criterion = nn.MSELoss()
-    
+    criterion = nn.CrossEntropyLoss()
+
     # specifying the network
-    network = smp.Unet('resnet34', encoder_weights='imagenet')
-    
+    network = smp.Unet('resnet34', encoder_weights='imagenet', classes=22)
+
     # specifying optimizer
-    optimizer = optim.Adam (network.parameters(), lr=learning_rate)  
+    optimizer = optim.Adam(network.parameters(), lr=learning_rate)
 
 As noticed in the section above, the ResNet-34-U-Net network is imported from the segmentation-models-pytorch library which contains many other architectures as well. You can import and use other available networks to try to increase the accuracy.
 
@@ -140,20 +221,20 @@ As you would notice in the following sections, by the use of `callbacks <https:/
 .. code-block:: python
 
     #callbacks
-    
-    save_path = 'saves'
-    
-    # Creating saving directory 
+
+    save_path = 'saves/unet-voc'
+
+    # Creating saving directory
     os.makedirs(save_path, exist_ok=True)
-    
+
     callbacks = [
         # Save the latest weights to be able to continue the optimization at the end for more epochs.
         ModelCheckpoint(os.path.join(save_path, 'last_weights.ckpt')),
-    
+
         # Save the weights in a new file when the current model is better than all previous models.
         ModelCheckpoint(os.path.join(save_path, 'best_weight.ckpt'),
                         save_best_only=True, restore_best=True, verbose=True),
-    
+
         # Save the losses for each epoch in a TSV.
         CSVLogger(os.path.join(save_path, 'log.tsv'), separator='\t'),
     ]
@@ -161,63 +242,60 @@ As you would notice in the following sections, by the use of `callbacks <https:/
 Training
 ========
 
+For training, we use the Jaccard index metric in addition to the accuracy and F1-score. The Jaccard index is also kwown as IoU is a classical metric for semantic segmentation.
+
 .. code-block:: python
 
     # Poutyne Model on GPU
-    model = Model(network, optimizer, criterion, device=device)
-    
+    model = Model(
+        network,
+        optimizer,
+        criterion,
+        batch_metrics=['accuracy'],
+        epoch_metrics=['f1', torchmetrics.JaccardIndex(num_classes=22)],
+        device=device,
+    )
+
     # Train
-    model.fit_generator(train_dataloader, valid_dataloader, epochs=num_epochs, callbacks=callbacks)
+    _ = model.fit_generator(train_loader, valid_loader, epochs=num_epochs, callbacks=callbacks)
 
 Calculation of the scores and visualization of results
 ======================================================
 
-There is one more helpful feature in Poutyne, which makes the evaluation task more easy and straight forward. Usually, computer vision researchers try to evaluate their trained networks on validation/test datasets by obtaining the scores (accuracy or loss usually), ground truths, and computed results simultaneously. The ``evaluate`` methods in Poutyne provides you with the scores but also have made the other two items ready for further analysis and visualization. In the next few blocks of code, you will see some examples.
+There is one more helpful feature in Poutyne, which makes the evaluation task more easy and straight forward. Usually, computer vision researchers try to evaluate their trained networks on validation/test datasets by obtaining the scores (accuracy or loss usually). The ``evaluate`` methods in Poutyne provides you the loss and the metrics. In the next few blocks of code, you will see some examples.
 
 .. code-block:: python
 
-    loss, predictions, ground_truth = model.evaluate_generator(valid_dataloader, return_pred=True, return_ground_truth=True)
+    loss, (acc, f1, jaccard) = model.evaluate_generator(test_loader)
 
-We show some of the segmentation results in the image below (grayscale):
-
-.. code-block:: python
-
-    outputs = torch.tensor(model.predict_on_batch(inputs))
-    output_grid = make_grid(outputs)
-    out = output_grid.numpy().transpose((1, 2, 0))
-    out = np.clip(out, 0, 1)
-    
-    fig = plt.figure(figsize=(10, 10))
-    plt.imshow((out))
-    plt.show()
-
-.. image:: /_static/img/semantic_segmentation/segment_out.png 
-
-Here, we show one of the input samples along with its segmentation ground truth and the produced output.
+We show some of the segmentation results in the image below:
 
 .. code-block:: python
 
-    sample_number = 14
-    
-    input_sample = inputs[sample_number].numpy().transpose((1, 2, 0)) * imagenet_std + imagenet_mean
-    ground_truth_sample = ground_truth[sample_number][0]
-    output_sample = outputs[sample_number][0].numpy()
-    
-    fig, (ax1, ax2, ax3) = plt.subplots(1,3)
-    ax1.imshow(input_sample)
-    ax1.axis('off')
-    ax1.set_title('input')
-    
-    ax2.imshow(ground_truth_sample)
-    ax2.axis('off')
-    ax2.set_title('GT')
-    
-    ax3.imshow(output_sample)
-    ax3.axis('off')
-    ax3.set_title('output')
-    plt.show()
+    inputs, ground_truths = next(iter(test_loader))
+    outputs = model.predict_on_batch(inputs)
+    outputs = outputs.argmax(1)
 
-.. image:: /_static/img/semantic_segmentation/segment_compare.png 
+    outputs = replace_tensor_value_(outputs, 21, 255)
+    ground_truths = replace_tensor_value_(ground_truths, 21, 255)
+
+    plt_inputs = np.clip(inputs.numpy().transpose((0, 2, 3, 1)) * imagenet_std + imagenet_mean, 0, 1)
+    fig = plot_images(plt_inputs)
+    fig.suptitle("Images")
+
+    pil_outputs = [array1d_to_pil_image(out) for out in outputs]
+    fig = plot_images(pil_outputs)
+    fig.suptitle("Predictions")
+
+    pil_ground_truths = [array1d_to_pil_image(gt) for gt in ground_truths.numpy()]
+    fig = plot_images(pil_ground_truths)
+    _ = fig.suptitle("Ground truths")
+
+.. image:: /_static/img/semantic_segmentation/voc_segment_test_batch.png
+
+.. image:: /_static/img/semantic_segmentation/voc_segment_test_out.png
+
+.. image:: /_static/img/semantic_segmentation/voc_segment_test_gt.png
 
 Last note
 =========

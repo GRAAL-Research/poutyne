@@ -8,7 +8,7 @@
 <meta content="https://poutyne.org/_static/logos/poutyne-notext.png" property="og:image" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Here is Poutyne &mdash; Poutyne 1.9 documentation</title>
+  <title>Here is Poutyne &mdash; Poutyne 1.10 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -34,7 +34,7 @@
             <img src="_static/poutyne-light.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                1.9
+                1.10
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -179,7 +179,7 @@
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">predictions</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">test_x</span><span class="p">)</span>
 </pre></div>
 </div>
-<p><a class="reference external" href="https://github.com/GRAAL-Research/poutyne/blob/master/examples/basic_random_classification.py">See the complete code here.</a> Also, <a class="reference external" href="https://github.com/GRAAL-Research/poutyne/blob/master/examples/basic_random_regression.py">see this</a> for an example for regression that also uses <a class="reference internal" href="metrics.html#epoch-metrics"><span class="std std-ref">epoch metrics</span></a>.</p>
+<p><a class="reference external" href="https://github.com/GRAAL-Research/poutyne/blob/master/examples/basic_random_classification.py">See the complete code here.</a> Also, <a class="reference external" href="https://github.com/GRAAL-Research/poutyne/blob/master/examples/basic_random_regression.py">see this</a> for an example for regression.</p>
 <p>One of the strengths Poutyne are <a class="reference internal" href="callbacks.html#callbacks"><span class="std std-ref">callbacks</span></a>. They allow you to save checkpoints, log training statistics and more. See this <a class="reference external" href="https://github.com/GRAAL-Research/poutyne/blob/master/examples/introduction_pytorch_poutyne.ipynb">notebook</a> for an introduction to callbacks. In that vein, Poutyne also offers an <a class="reference internal" href="experiment.html#poutyne.ModelBundle" title="poutyne.ModelBundle"><code class="xref py py-class docutils literal notranslate"><span class="pre">ModelBundle</span></code></a> class that offers automatic checkpointing, logging and more using callbacks under the hood. Here is an example of usage.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">poutyne</span> <span class="kn">import</span> <span class="n">ModelBundle</span>
 
@@ -193,7 +193,7 @@
 <span class="n">model_bundle</span><span class="o">.</span><span class="n">test_data</span><span class="p">(</span><span class="n">test_x</span><span class="p">,</span> <span class="n">test_y</span><span class="p">)</span>
 </pre></div>
 </div>
-<p><a class="reference external" href="https://github.com/GRAAL-Research/poutyne/blob/master/examples/basic_random_classification_with_model_bundle.py">See the complete code here.</a> Also, <a class="reference external" href="https://github.com/GRAAL-Research/poutyne/blob/master/examples/basic_random_regression_with_model_bundle.py">see this</a> for an example for regression that again also uses <a class="reference internal" href="metrics.html#epoch-metrics"><span class="std std-ref">epoch metrics</span></a>.</p>
+<p><a class="reference external" href="https://github.com/GRAAL-Research/poutyne/blob/master/examples/basic_random_classification_with_model_bundle.py">See the complete code here.</a> Also, <a class="reference external" href="https://github.com/GRAAL-Research/poutyne/blob/master/examples/basic_random_regression_with_model_bundle.py">see this</a> for an example for regression.</p>
 </section>
 <section id="installation">
 <h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline"></a></h1>

@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>poutyne.framework.callbacks.wandb_logger &mdash; Poutyne 1.10 documentation</title>
+      <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../../index.html">
+            <img src="../../../../_static/poutyne-light.png" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                1.10
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../model.html">Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../experiment.html">Experiment and ModelBundle</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../metrics.html">Metrics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../callbacks.html">Callbacks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../layers.html">Layers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../utils.html">Utils</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Examples</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../examples/introduction.html">Introduction to PyTorch and Poutyne</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../examples/tips_and_tricks.html">Tips and Tricks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../examples/sequence_tagging.html">Sequence Tagging With an RNN</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../examples/policy_interface.html">Interface of <code class="docutils literal notranslate"><span class="pre">policy</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../examples/transfer_learning.html">Transfer learning example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../examples/image_reconstruction.html">Image Reconstruction Using Poutyne</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../examples/classification_and_regression.html">Gender Classification and Eyes Location Detection: A Two Task Problem</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../examples/semantic_segmentation.html">Semantic segmentation using Poutyne</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">Poutyne</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+      <li>poutyne.framework.callbacks.wandb_logger</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for poutyne.framework.callbacks.wandb_logger</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">List</span>
+
+<span class="kn">import</span> <span class="nn">torch</span>
+
+
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">Logger</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">wandb</span>
+
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="n">wandb</span> <span class="o">=</span> <span class="kc">None</span>
+
+
+<div class="viewcode-block" id="WandBLogger"><a class="viewcode-back" href="../../../../callbacks.html#poutyne.WandBLogger">[docs]</a><span class="k">class</span> <span class="nc">WandBLogger</span><span class="p">(</span><span class="n">Logger</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    WandB logger to manage logging of experiments</span>
+<span class="sd">    parameters, metrics update, models log, gradient</span>
+<span class="sd">    values and other information. The logger will log</span>
+<span class="sd">    all run into the same experiment.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        name(str): Display name for the run.</span>
+<span class="sd">        group (Optional[str]): Specify a group to organize individual runs into a larger experiment</span>
+<span class="sd">        config (Optional[Dict]): A dictionary summarizing the configuration</span>
+<span class="sd">            related to the current run.</span>
+<span class="sd">        save_dir(str): Path where data is saved (wandb dir by default).</span>
+<span class="sd">        offline(bool): Run logger offline to later stream data to a remote server.</span>
+<span class="sd">        id(str): Sets the version, mainly used to resume a previous run.</span>
+<span class="sd">        version(str): Same as id.</span>
+<span class="sd">        anonymous(bool): Enables or explicitly disables anonymous logging.</span>
+<span class="sd">        project(str): The project&#39;s name to which this run will belong.</span>
+<span class="sd">        experiment: WandB run to use instead of creating a new one. The other WandB&#39;s configuration</span>
+<span class="sd">            parameters will be ignored.</span>
+<span class="sd">        batch_granularity(bool): Whether to also output the result of each batch in addition to the epochs.</span>
+<span class="sd">            (Default value = False).</span>
+<span class="sd">        checkpoints_path (Optional[str]): A path leading to the checkpoint saving directory.</span>
+<span class="sd">            You need to specify this argument to log the model checkpoints at the end of the training phase.</span>
+<span class="sd">        initial_artifacts_paths (Optional[List[str]]): a list of paths leading to artifacts</span>
+<span class="sd">            to be logged before the start of the training.</span>
+<span class="sd">        log_gradient_frequency(int): log gradients and parameters every N batches (Default value = None).</span>
+<span class="sd">        training_batch_shape(tuples): Shape of a training batch. Used for logging architecture on wandb.</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            wandb_logger = pt.WandBLogger(name=&quot;A run&quot;, project=&quot;A project&quot;)</span>
+<span class="sd">            config_dict = {&quot;Optimizer&quot;: &quot;sgd&quot;, &quot;Loss&quot;: &quot;Cross-Entropy&quot;, &quot;lr&quot;: 0.01}</span>
+<span class="sd">            wandb_logger.log_config_params(config_params=config_dict)  # logging the config dictionary</span>
+<span class="sd">            # our Poutyne experiment</span>
+<span class="sd">            experiment = pt.Experiment(</span>
+<span class="sd">                directory=&quot;a/path&quot;,</span>
+<span class="sd">                network=network,</span>
+<span class="sd">                device=&quot;cpu&quot;,</span>
+<span class="sd">                optimizer=&quot;sgd&quot;,</span>
+<span class="sd">                loss_function=&quot;cross_entropy&quot;,</span>
+<span class="sd">                batch_metrics=[&quot;accuracy&quot;],</span>
+<span class="sd">            )</span>
+<span class="sd">            # Using the WandB logger callback during training</span>
+<span class="sd">            experiment.train(</span>
+<span class="sd">                train_generator=train_loader, valid_generator=valid_loader, epochs=2, seed=42, callbacks=[wandb_logger]</span>
+<span class="sd">            )</span>
+<span class="sd">            # You can access the wandb run via the attribute .run if you want to use other wandb features</span>
+<span class="sd">            image = wandb.Image(&#39;a/image.png&#39;, caption=&quot;a caption&quot;)</span>
+<span class="sd">            wandb_logger.run.log({&quot;My image&quot;: image})</span>
+
+<span class="sd">            wandb.finish()  # Call once your finished with your experiment.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">group</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">config</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">save_dir</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">offline</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">run_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">anonymous</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">version</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">project</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">experiment</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">batch_granularity</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">checkpoints_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">initial_artifacts_paths</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">log_gradient_frequency</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">training_batch_shape</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">tuple</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># pylint: disable-msg=too-many-locals</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">batch_granularity</span><span class="o">=</span><span class="n">batch_granularity</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">wandb</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span><span class="s2">&quot;WandB needs to be installed to use this callback.&quot;</span><span class="p">)</span>
+
+        <span class="n">anonymous_lut</span> <span class="o">=</span> <span class="p">{</span><span class="kc">True</span><span class="p">:</span> <span class="s2">&quot;allow&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">:</span> <span class="kc">None</span><span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_wandb_init</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+            <span class="n">group</span><span class="o">=</span><span class="n">group</span><span class="p">,</span>
+            <span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">,</span>
+            <span class="n">project</span><span class="o">=</span><span class="n">project</span><span class="p">,</span>
+            <span class="nb">id</span><span class="o">=</span><span class="n">version</span> <span class="ow">or</span> <span class="n">run_id</span><span class="p">,</span>
+            <span class="nb">dir</span><span class="o">=</span><span class="n">save_dir</span><span class="p">,</span>
+            <span class="n">resume</span><span class="o">=</span><span class="s2">&quot;allow&quot;</span><span class="p">,</span>
+            <span class="n">anonymous</span><span class="o">=</span><span class="n">anonymous_lut</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">anonymous</span><span class="p">),</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">experiment</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+
+            <span class="k">if</span> <span class="n">offline</span><span class="p">:</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;WANDB_MODE&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;dryrun&quot;</span>
+
+            <span class="k">if</span> <span class="n">wandb</span><span class="o">.</span><span class="n">run</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">run</span> <span class="o">=</span> <span class="n">wandb</span><span class="o">.</span><span class="n">init</span><span class="p">(</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">_wandb_init</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                    <span class="s2">&quot;There is already a wandb running experiment. This callback will reuse this run. If you want&quot;</span>
+                    <span class="s2">&quot;to start a new one, stop this process and call `wandb.finish()` before starting again.&quot;</span>
+                <span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">run</span> <span class="o">=</span> <span class="n">wandb</span><span class="o">.</span><span class="n">run</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">run</span> <span class="o">=</span> <span class="n">experiment</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">run</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;run_id&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">run</span><span class="o">.</span><span class="n">id</span><span class="p">})</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log_gradient_frequency</span> <span class="o">=</span> <span class="n">log_gradient_frequency</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">training_batch_shape</span> <span class="o">=</span> <span class="n">training_batch_shape</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">checkpoints_path</span> <span class="o">=</span> <span class="n">checkpoints_path</span>
+        <span class="k">if</span> <span class="n">initial_artifacts_paths</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_log_artifacts</span><span class="p">(</span><span class="n">initial_artifacts_paths</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Initial-artifacts&quot;</span><span class="p">,</span> <span class="n">artifact_type</span><span class="o">=</span><span class="s2">&quot;Miscellaneous&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_watch_gradient</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Activate wandb gradient watching.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">run</span><span class="o">.</span><span class="n">watch</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">network</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="s2">&quot;all&quot;</span><span class="p">,</span> <span class="n">log_freq</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">log_gradient_frequency</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_save_architecture</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Save architecture.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">device</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">device</span>
+        <span class="n">dummies_batch</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">training_batch_shape</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+        <span class="n">save_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">run</span><span class="o">.</span><span class="n">dir</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">run</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s2">&quot;_model.onnx&quot;</span>
+        <span class="n">torch</span><span class="o">.</span><span class="n">onnx</span><span class="o">.</span><span class="n">export</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">network</span><span class="p">,</span> <span class="n">dummies_batch</span><span class="p">,</span> <span class="n">save_path</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">run</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">save_path</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">on_train_begin</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">on_train_begin</span><span class="p">(</span><span class="n">logs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_gradient_frequency</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_watch_gradient</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">training_batch_shape</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_save_architecture</span><span class="p">()</span>
+
+<div class="viewcode-block" id="WandBLogger.log_config_params"><a class="viewcode-back" href="../../../../callbacks.html#poutyne.WandBLogger.log_config_params">[docs]</a>    <span class="k">def</span> <span class="nf">log_config_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config_params</span><span class="p">:</span> <span class="n">Dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            config_params Dict:</span>
+<span class="sd">                Dictionary of config parameters of the training to log, such as number of epoch, loss function,</span>
+<span class="sd">                optimizer etc.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">run</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">config_params</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_on_train_batch_end_write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch_number</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">logs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Log the batch metric.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">batch_granularity</span><span class="p">:</span>
+            <span class="n">train_metrics</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;training&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;batch&quot;</span><span class="p">:</span> <span class="n">logs</span><span class="p">}}</span>
+            <span class="n">step</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_log_metrics</span><span class="p">(</span><span class="n">train_metrics</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="n">step</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_on_epoch_end_write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">epoch_number</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">logs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Log the epoch metric.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">train_metrics</span> <span class="o">=</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="n">value</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">logs</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">key</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;val_&quot;</span><span class="p">)}</span>
+        <span class="n">val_metrics</span> <span class="o">=</span> <span class="p">{</span><span class="n">key</span><span class="p">[</span><span class="mi">4</span><span class="p">:]:</span> <span class="n">value</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">logs</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">key</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;val_&quot;</span><span class="p">)}</span>
+        <span class="n">learning_rate</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_current_learning_rates</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">batch_granularity</span><span class="p">:</span>
+            <span class="n">train_metrics</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;training&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;epoch&quot;</span><span class="p">:</span> <span class="n">train_metrics</span><span class="p">}}</span>
+            <span class="n">val_metrics</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;validation&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;epoch&quot;</span><span class="p">:</span> <span class="n">val_metrics</span><span class="p">}}</span>
+            <span class="n">step</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">train_metrics</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;training&quot;</span><span class="p">:</span> <span class="n">train_metrics</span><span class="p">}</span>
+            <span class="n">val_metrics</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;validation&quot;</span><span class="p">:</span> <span class="n">val_metrics</span><span class="p">}</span>
+            <span class="n">step</span> <span class="o">=</span> <span class="n">epoch_number</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log_metrics</span><span class="p">(</span><span class="n">train_metrics</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="n">step</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log_metrics</span><span class="p">(</span><span class="n">val_metrics</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="n">step</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log_params</span><span class="p">(</span><span class="n">learning_rate</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="n">step</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_on_train_end_write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">checkpoints_path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_log_artifacts</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">checkpoints_path</span><span class="p">],</span> <span class="s2">&quot;Checkpoints&quot;</span><span class="p">,</span> <span class="n">artifact_type</span><span class="o">=</span><span class="s2">&quot;Model-weights&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_log_metrics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">metrics</span><span class="p">:</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">step</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Log metrics for a specific step.</span>
+<span class="sd">        Args:</span>
+<span class="sd">            metrics (Dict): The metrics to log in the form of a dictionary.</span>
+<span class="sd">            step (int): The corresponding step.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">batch_granularity</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">run</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">metrics</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">run</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">metrics</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="n">step</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_log_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">params</span><span class="p">:</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">step</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Log parameters for a specific step.</span>
+<span class="sd">        This functions logs parameters as metrics since wandb doesn&#39;t support</span>
+<span class="sd">        parameter logging. However, the logged parameters are appended by the keyword</span>
+<span class="sd">        `parameter` to easily identify them.</span>
+<span class="sd">        Args:</span>
+<span class="sd">            params (Dict): The parameters to log in the form of a dictionary.</span>
+<span class="sd">            step (int): The corresponding step.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">batch_granularity</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">run</span><span class="o">.</span><span class="n">log</span><span class="p">({</span><span class="s2">&quot;params&quot;</span><span class="p">:</span> <span class="n">params</span><span class="p">})</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">run</span><span class="o">.</span><span class="n">log</span><span class="p">({</span><span class="s2">&quot;params&quot;</span><span class="p">:</span> <span class="n">params</span><span class="p">},</span> <span class="n">step</span><span class="o">=</span><span class="n">step</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_log_artifacts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">paths</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">artifact_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Log artifacts for a specific step.</span>
+<span class="sd">        This function logs multiple artifacts under the same artifact group. if</span>
+<span class="sd">        you wish to log multiple artifacts alone (i.e. under different artifact</span>
+<span class="sd">        groups), you should make multiple calls to this function.</span>
+<span class="sd">        Args:</span>
+<span class="sd">            paths (List[str]): A list of paths leading to the directories or files</span>
+<span class="sd">                that are to be logged.</span>
+<span class="sd">            name (str): The artifact group name.</span>
+<span class="sd">            artifact_type (str): The artifact group type.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">artifact</span> <span class="o">=</span> <span class="n">wandb</span><span class="o">.</span><span class="n">Artifact</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="n">artifact_type</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">paths</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The path </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2"> is not a file nor a directory&quot;</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+                <span class="n">artifact</span><span class="o">.</span><span class="n">add_dir</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+                <span class="n">artifact</span><span class="o">.</span><span class="n">add_file</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">run</span><span class="o">.</span><span class="n">log_artifact</span><span class="p">(</span><span class="n">artifact</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_on_test_end_write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">):</span>
+        <span class="c1"># The test metrics are logged a step further than the training&#39;s</span>
+        <span class="c1"># last step</span>
+        <span class="n">logs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;testing&quot;</span><span class="p">:</span> <span class="p">{</span><span class="n">key</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;test_&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">):</span> <span class="n">value</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">logs</span><span class="o">.</span><span class="n">items</span><span class="p">()}}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log_metrics</span><span class="p">(</span><span class="n">logs</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">run</span><span class="o">.</span><span class="n">step</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">on_test_end</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_on_test_end_write</span><span class="p">(</span><span class="n">logs</span><span class="p">)</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2018-2022, Frédérik Paradis.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+ 
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-177874682-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-177874682-1');
+</script>
+
+
+</body>
+</html>

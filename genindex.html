@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Index &mdash; Poutyne 1.9 documentation</title>
+  <title>Index &mdash; Poutyne 1.10 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -28,7 +28,7 @@
             <img src="_static/poutyne-light.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                1.9
+                1.10
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -102,6 +102,8 @@
  | <a href="#R"><strong>R</strong></a>
  | <a href="#S"><strong>S</strong></a>
  | <a href="#T"><strong>T</strong></a>
+ | <a href="#U"><strong>U</strong></a>
+ | <a href="#W"><strong>W</strong></a>
  
 </div>
 <h2 id="A">A</h2>
@@ -149,12 +151,20 @@
 </li>
       <li><a href="callbacks.html#poutyne.ClipValue">ClipValue (class in poutyne)</a>
 </li>
-      <li><a href="callbacks.html#poutyne.ConstantLR">ConstantLR (class in poutyne)</a>
+      <li><a href="metrics.html#poutyne.FBeta.compute">compute() (poutyne.FBeta method)</a>
+
+      <ul>
+        <li><a href="metrics.html#poutyne.Metric.compute">(poutyne.Metric method)</a>
 </li>
-      <li><a href="callbacks.html#poutyne.CosineAnnealingLR">CosineAnnealingLR (class in poutyne)</a>
+        <li><a href="metrics.html#poutyne.SKLearnMetrics.compute">(poutyne.SKLearnMetrics method)</a>
+</li>
+      </ul></li>
+      <li><a href="callbacks.html#poutyne.ConstantLR">ConstantLR (class in poutyne)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="callbacks.html#poutyne.CosineAnnealingLR">CosineAnnealingLR (class in poutyne)</a>
+</li>
       <li><a href="callbacks.html#poutyne.CosineAnnealingWarmRestarts">CosineAnnealingWarmRestarts (class in poutyne)</a>
 </li>
       <li><a href="callbacks.html#poutyne.cosinespace">cosinespace() (in module poutyne)</a>
@@ -185,14 +195,12 @@
 </li>
       <li><a href="model.html#poutyne.Model.epoch_metrics">epoch_metrics (poutyne.Model attribute)</a>
 </li>
-      <li><a href="metrics.html#poutyne.EpochMetric">EpochMetric (class in poutyne)</a>
-</li>
       <li><a href="model.html#poutyne.Model.evaluate">evaluate() (poutyne.Model method)</a>
+</li>
+      <li><a href="model.html#poutyne.Model.evaluate_dataset">evaluate_dataset() (poutyne.Model method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="model.html#poutyne.Model.evaluate_dataset">evaluate_dataset() (poutyne.Model method)</a>
-</li>
       <li><a href="model.html#poutyne.Model.evaluate_generator">evaluate_generator() (poutyne.Model method)</a>
 </li>
       <li><a href="model.html#poutyne.Model.evaluate_on_batch">evaluate_on_batch() (poutyne.Model method)</a>
@@ -219,10 +227,10 @@
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="metrics.html#poutyne.EpochMetric.forward">forward() (poutyne.EpochMetric method)</a>
+      <li><a href="metrics.html#poutyne.FBeta.forward">forward() (poutyne.FBeta method)</a>
 
       <ul>
-        <li><a href="metrics.html#poutyne.FBeta.forward">(poutyne.FBeta method)</a>
+        <li><a href="metrics.html#poutyne.Metric.forward">(poutyne.Metric method)</a>
 </li>
         <li><a href="metrics.html#poutyne.SKLearnMetrics.forward">(poutyne.SKLearnMetrics method)</a>
 </li>
@@ -237,22 +245,14 @@
 <h2 id="G">G</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="model.html#poutyne.Model.get_batch_size">get_batch_size() (poutyne.Model method)</a>
+      <li><a href="utils.html#poutyne.get_batch_size">get_batch_size() (in module poutyne)</a>
 </li>
       <li><a href="experiment.html#poutyne.ModelBundle.get_best_epoch_stats">get_best_epoch_stats() (poutyne.ModelBundle method)</a>
 </li>
-      <li><a href="metrics.html#poutyne.EpochMetric.get_metric">get_metric() (poutyne.EpochMetric method)</a>
-
-      <ul>
-        <li><a href="metrics.html#poutyne.FBeta.get_metric">(poutyne.FBeta method)</a>
-</li>
-        <li><a href="metrics.html#poutyne.SKLearnMetrics.get_metric">(poutyne.SKLearnMetrics method)</a>
-</li>
-      </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="experiment.html#poutyne.ModelBundle.get_path">get_path() (poutyne.ModelBundle method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="experiment.html#poutyne.ModelBundle.get_saved_epochs">get_saved_epochs() (poutyne.ModelBundle method)</a>
 </li>
       <li><a href="model.html#poutyne.Model.get_weight_copies">get_weight_copies() (poutyne.Model method)</a>
@@ -293,14 +293,18 @@
 </li>
       <li><a href="experiment.html#poutyne.ModelBundle.load_checkpoint">load_checkpoint() (poutyne.ModelBundle method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="model.html#poutyne.Model.load_optimizer_state">load_optimizer_state() (poutyne.Model method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="model.html#poutyne.Model.load_weights">load_weights() (poutyne.Model method)</a>
 </li>
       <li><a href="callbacks.html#poutyne.MLFlowLogger.log_config_params">log_config_params() (poutyne.MLFlowLogger method)</a>
+
+      <ul>
+        <li><a href="callbacks.html#poutyne.WandBLogger.log_config_params">(poutyne.WandBLogger method)</a>
 </li>
+      </ul></li>
       <li><a href="callbacks.html#poutyne.MLFlowLogger.log_metric">log_metric() (poutyne.MLFlowLogger method)</a>
 </li>
       <li><a href="callbacks.html#poutyne.MLFlowLogger.log_param">log_param() (poutyne.MLFlowLogger method)</a>
@@ -315,6 +319,8 @@
 <h2 id="M">M</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="metrics.html#poutyne.Metric">Metric (class in poutyne)</a>
+</li>
       <li><a href="callbacks.html#poutyne.MLFlowLogger">MLFlowLogger (class in poutyne)</a>
 </li>
       <li><a href="model.html#poutyne.Model">Model (class in poutyne)</a>
@@ -445,10 +451,10 @@
 </li>
       <li><a href="callbacks.html#poutyne.ReduceLROnPlateau">ReduceLROnPlateau (class in poutyne)</a>
 </li>
-      <li><a href="metrics.html#poutyne.EpochMetric.reset">reset() (poutyne.EpochMetric method)</a>
+      <li><a href="metrics.html#poutyne.FBeta.reset">reset() (poutyne.FBeta method)</a>
 
       <ul>
-        <li><a href="metrics.html#poutyne.FBeta.reset">(poutyne.FBeta method)</a>
+        <li><a href="metrics.html#poutyne.Metric.reset">(poutyne.Metric method)</a>
 </li>
         <li><a href="metrics.html#poutyne.SKLearnMetrics.reset">(poutyne.SKLearnMetrics method)</a>
 </li>
@@ -520,6 +526,28 @@
       <li><a href="experiment.html#poutyne.ModelBundle.train_dataset">train_dataset() (poutyne.ModelBundle method)</a>
 </li>
       <li><a href="model.html#poutyne.Model.train_on_batch">train_on_batch() (poutyne.Model method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="U">U</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="metrics.html#poutyne.FBeta.update">update() (poutyne.FBeta method)</a>
+
+      <ul>
+        <li><a href="metrics.html#poutyne.Metric.update">(poutyne.Metric method)</a>
+</li>
+        <li><a href="metrics.html#poutyne.SKLearnMetrics.update">(poutyne.SKLearnMetrics method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="W">W</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="callbacks.html#poutyne.WandBLogger">WandBLogger (class in poutyne)</a>
 </li>
   </ul></td>
 </tr></table>

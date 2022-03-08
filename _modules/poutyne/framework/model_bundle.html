@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>poutyne.framework.model_bundle &mdash; Poutyne 1.9 documentation</title>
+  <title>poutyne.framework.model_bundle &mdash; Poutyne 1.10 documentation</title>
       <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -28,7 +28,7 @@
             <img src="../../../_static/poutyne-light.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                1.9
+                1.10
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
@@ -233,27 +233,29 @@
 <span class="sd">                is the ground truth. If ``None``, will default to, in priority order, either the model&#39;s own</span>
 <span class="sd">                loss function or the default loss function associated with the ``task``.</span>
 <span class="sd">                (Default value = None)</span>
-<span class="sd">            batch_metrics (list): List of functions with the same signature as the loss function. Each metric</span>
-<span class="sd">                can be any PyTorch loss function. It can also be a string with the same name as a PyTorch</span>
-<span class="sd">                loss function (either the functional or object name). Furthermore, see :ref:`batch metrics`</span>
-<span class="sd">                for supplementary available batch metrics. &#39;accuracy&#39; (or just &#39;acc&#39;) is an often used metric.</span>
-<span class="sd">                Each metric function is called on each batch of the optimization and on the validation batches</span>
-<span class="sd">                at the end of the epoch.</span>
-<span class="sd">                (Default value = None)</span>
-<span class="sd">            epoch_metrics (list): List of objects with the same signature as either :class:`~poutyne.EpochMetric` or</span>
-<span class="sd">                :class:`torchmetrics.Metric &lt;torchmetrics.Metric&gt;`.</span>
-<span class="sd">                See :ref:`epoch metrics` and the</span>
-<span class="sd">                `TorchMetrics documentation &lt;https://torchmetrics.readthedocs.io/en/latest/references/modules.html&gt;`__</span>
-<span class="sd">                for available epoch metrics. (Default value = None)</span>
-<span class="sd">            torch_metrics (list): List of `TorchMetrics &lt;https://torchmetrics.readthedocs.io/&gt;`__  objects.</span>
-<span class="sd">                List of objects with the same signature as :class:`torchmetrics.Metric &lt;torchmetrics.Metric&gt;`.</span>
-<span class="sd">                See</span>
-<span class="sd">                `TorchMetrics documentation &lt;https://torchmetrics.readthedocs.io/en/latest/references/modules.html&gt;`__</span>
-<span class="sd">                for available torch metrics. (Default value = None)</span>
+<span class="sd">            batch_metrics (list): List of functions with the same signature as a loss function or objects with the same</span>
+<span class="sd">                signature as either :class:`~poutyne.Metric` or :class:`torchmetrics.Metric &lt;torchmetrics.Metric&gt;`. It can</span>
+<span class="sd">                also be a string with the same name as a PyTorch loss function (either the functional or object name).</span>
+<span class="sd">                Some metrics, such as  &#39;accuracy&#39; (or just &#39;acc&#39;), are also available as strings. See :ref:`metrics` and</span>
+<span class="sd">                the `TorchMetrics documentation &lt;https://torchmetrics.readthedocs.io/en/latest/references/modules.html&gt;`__</span>
+<span class="sd">                for available metrics.</span>
 
-<span class="sd">                .. warning:: When using this argument, the torch metrics are computed at each batch. This</span>
-<span class="sd">                    can significantly slow down the compuations depending on the metrics used. In such case, we advise</span>
-<span class="sd">                    to use them as epoch metrics instead.</span>
+<span class="sd">                Batch metric are computed on computed for each batch.</span>
+<span class="sd">                (Default value = None)</span>
+
+<span class="sd">                .. warning:: When using this argument, the metrics are computed for each batch. This can significantly slow</span>
+<span class="sd">                    down the compuations depending on the metrics used. This mostly happens on non-decomposable metrics</span>
+<span class="sd">                    such as :class:`torchmetrics.AUROC &lt;torchmetrics.AUROC&gt;` where an ordering of the elements is necessary</span>
+<span class="sd">                    to compute the metric. In such case, we advise to use them as epoch metrics instead.</span>
+<span class="sd">            epoch_metrics (list): List of functions with the same signature as a loss function or objects with the same</span>
+<span class="sd">                signature as either :class:`~poutyne.Metric` or :class:`torchmetrics.Metric &lt;torchmetrics.Metric&gt;`. It can</span>
+<span class="sd">                also be a string with the same name as a PyTorch loss function (either the functional or object name).</span>
+<span class="sd">                Some metrics, such as  &#39;accuracy&#39; (or just &#39;acc&#39;), are also available as strings. See :ref:`metrics` and</span>
+<span class="sd">                the `TorchMetrics documentation &lt;https://torchmetrics.readthedocs.io/en/latest/references/modules.html&gt;`__</span>
+<span class="sd">                for available metrics.</span>
+
+<span class="sd">                Epoch metrics are computed only at the end of the epoch.</span>
+<span class="sd">                (Default value = None)</span>
 <span class="sd">            monitoring (bool): Whether or not to monitor the training. If True will track the best epoch.</span>
 <span class="sd">                If False, ``monitor_metric`` and ``monitor_mode`` are not used, and when testing, the last epoch is used</span>
 <span class="sd">                to test the model instead of the best epoch.</span>

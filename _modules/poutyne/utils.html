@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>poutyne.utils &mdash; Poutyne 1.9 documentation</title>
+  <title>poutyne.utils &mdash; Poutyne 1.10 documentation</title>
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -28,7 +28,7 @@
             <img src="../../_static/poutyne-light.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                1.9
+                1.10
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -105,11 +105,15 @@
 
 <span class="c1"># -*- coding: utf-8 -*-</span>
 <span class="kn">import</span> <span class="nn">random</span>
+<span class="kn">import</span> <span class="nn">numbers</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">from</span> <span class="nn">torch.nn.utils.rnn</span> <span class="kn">import</span> <span class="n">PackedSequence</span>
 <span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="kn">import</span> <span class="n">Dataset</span>
+
+<span class="kn">from</span> <span class="nn">.warning_manager</span> <span class="kn">import</span> <span class="n">warning_settings</span>
 
 
 <div class="viewcode-block" id="torch_to_numpy"><a class="viewcode-back" href="../../utils.html#poutyne.torch_to_numpy">[docs]</a><span class="k">def</span> <span class="nf">torch_to_numpy</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
@@ -292,6 +296,78 @@
         <span class="n">jupyter</span> <span class="o">=</span> <span class="kc">False</span>
 
     <span class="k">return</span> <span class="n">jupyter</span>
+
+
+<div class="viewcode-block" id="get_batch_size"><a class="viewcode-back" href="../../utils.html#poutyne.get_batch_size">[docs]</a><span class="k">def</span> <span class="nf">get_batch_size</span><span class="p">(</span><span class="o">*</span><span class="n">values</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This method infers the batch size of a batch. Here is the inferring algorithm used to compute the</span>
+<span class="sd">    batch size. The values are tested in order at each step of the inferring algorithm. If one</span>
+<span class="sd">    step succeed for one of the values, the algorithm stops.</span>
+
+<span class="sd">    - Step 1: if a value is a tensor or a Numpy array, then the ``len()`` is returned.</span>
+<span class="sd">    - Step 2: if a value is a list or a tuple, then the ``len()`` of the first element is returned</span>
+<span class="sd">      if it is a tensor or a Numpy array.</span>
+<span class="sd">    - Step 3: if a value is a dict, then the value for the key ``&#39;batch_size&#39;`` is returned if it</span>
+<span class="sd">      is of integral type.</span>
+<span class="sd">    - Step 4: if a value is a dict, then the ``len()`` of the first element of ``.values()`` is</span>
+<span class="sd">      returned if it is a tensor or a Numpy array.</span>
+
+<span class="sd">    If inferring the batch size is not possible, the batch size is set to 1 and a warning is raised.</span>
+<span class="sd">    To disable this warning, set</span>
+
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        from poutyne import warning_settings\n</span>
+<span class="sd">        warning_settings[&#39;batch_size&#39;] = &#39;ignore&#39;\n\n</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        values: The values used for inferring the batch size.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">is_torch_or_numpy</span><span class="p">(</span><span class="n">v</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">is_tensor</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">values</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">is_torch_or_numpy</span><span class="p">(</span><span class="n">v</span><span class="p">):</span>
+            <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">values</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="p">(</span><span class="nb">tuple</span><span class="p">,</span> <span class="nb">list</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="n">is_torch_or_numpy</span><span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+                <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">values</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="k">if</span> <span class="s1">&#39;batch_size&#39;</span> <span class="ow">in</span> <span class="n">v</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="s1">&#39;batch_size&#39;</span><span class="p">],</span> <span class="n">numbers</span><span class="o">.</span><span class="n">Integral</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">v</span><span class="p">[</span><span class="s1">&#39;batch_size&#39;</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">values</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">first_value</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">values</span><span class="p">())[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">is_torch_or_numpy</span><span class="p">(</span><span class="n">first_value</span><span class="p">):</span>
+                <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">first_value</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">warning_settings</span><span class="p">[</span><span class="s1">&#39;batch_size&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;warn&#39;</span><span class="p">:</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+            <span class="s2">&quot;Inferring the batch size is not possible. Hence, the batch size is set to 1. To disable this warning, &quot;</span>
+            <span class="s2">&quot;set</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="s2">&quot;from poutyne import warning_settings</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="s2">&quot;warning_settings[&#39;batch_size&#39;] = &#39;ignore&#39;</span><span class="se">\n\n</span><span class="s2">&quot;</span>
+            <span class="c1">#</span>
+            <span class="c1">#</span>
+            <span class="s2">&quot;Here is the inferring algorithm used to compute the batch size. The values are tested in order at each &quot;</span>
+            <span class="s2">&quot;step of the inferring algorithm. If one step succeed for one of the values, the algorithm stops.</span><span class="se">\n\n</span><span class="s2">&quot;</span>
+            <span class="c1">#</span>
+            <span class="c1">#</span>
+            <span class="s2">&quot;Step 1: if a value is a tensor or a Numpy array, then the &#39;len()&#39; is returned.</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="c1">#</span>
+            <span class="s2">&quot;Step 2: if a value is a list or a tuple, then the &#39;len()&#39; of the first element is returned if it is a &quot;</span>
+            <span class="s2">&quot;tensor or a Numpy array.</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="c1">#</span>
+            <span class="s2">&quot;Step 3: if a value is a dict, then the value for the key &#39;batch_size&#39; is returned if it is of integral &quot;</span>
+            <span class="s2">&quot;type.</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="c1">#</span>
+            <span class="s2">&quot;Step 4: if a value is a dict, then the &#39;len()&#39; of the first element of &#39;.values()&#39; is returned if it is a &quot;</span>
+            <span class="s2">&quot;tensor or a Numpy array.</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="mi">1</span></div>
 </pre></div>
 
            </div>
