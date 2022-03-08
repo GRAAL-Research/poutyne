@@ -142,7 +142,7 @@ The VOCSegmentation dataset can be easily downloaded from ``torchvision.datasets
     train_dataset = datasets.VOCSegmentation(
         './datasets/',
         year='2007',
-        # download=True,
+        download=True,
         image_set='train',
         transform=input_transform,
         target_transform=target_transform,
@@ -150,7 +150,7 @@ The VOCSegmentation dataset can be easily downloaded from ``torchvision.datasets
     valid_dataset = datasets.VOCSegmentation(
         './datasets/',
         year='2007',
-        # download=True,
+        download=True,
         image_set='val',
         transform=input_transform,
         target_transform=target_transform,
@@ -158,7 +158,7 @@ The VOCSegmentation dataset can be easily downloaded from ``torchvision.datasets
     test_dataset = datasets.VOCSegmentation(
         './data/VOC/',
         year='2007',
-        # download=True,
+        download=True,
         image_set='test',
         transform=input_transform,
         target_transform=target_transform,
