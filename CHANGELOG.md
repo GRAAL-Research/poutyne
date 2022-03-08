@@ -1,5 +1,9 @@
 # v1.x.x
 
+*
+
+# v1.10
+
 * Add a [WandB logger](https://poutyne.org/callbacks.html#poutyne.WandBLogger).
 * [Epoch and batch metrics are now unified.](https://poutyne.org/metrics.html) Their only difference is whether the
   metric for the batch is computed. The main interface is now the
