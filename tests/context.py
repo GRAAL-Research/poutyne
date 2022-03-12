@@ -25,4 +25,4 @@ import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 # pylint: disable=unused-import,wrong-import-position
-import poutyne
+import poutyne  # noqa: F401,E402

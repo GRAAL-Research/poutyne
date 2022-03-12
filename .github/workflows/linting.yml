@@ -29,9 +29,12 @@ jobs:
           pip install -r styling_requirements.txt
           pip install -r tests/requirements.txt
           pip install -e .
-      - name: Linting
+      - name: PyLint
         run: |
           pylint poutyne/ tests/
+      - name: Flake8
+        run: |
+          flake8 poutyne/ tests/
 
   windowslinting:
     runs-on: windows-latest
@@ -52,7 +55,11 @@ jobs:
           Invoke-NativeCommand pip install -r styling_requirements.txt
           Invoke-NativeCommand pip install -r tests/requirements.txt
           Invoke-NativeCommand pip install -e .
-      - name: Linting
+      - name: PyLint
         run: |
           .  ./InvokeFunc.ps1
           Invoke-NativeCommand pylint poutyne/ tests/
+      - name: Flake8
+        run: |
+          .  ./InvokeFunc.ps1
+          Invoke-NativeCommand flake8 poutyne/ tests/
