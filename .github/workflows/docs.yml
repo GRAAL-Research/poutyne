@@ -4,57 +4,56 @@ on: [push, pull_request]
 
 jobs:
   docs:
-
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        python-version: ['3.6', '3.7', '3.8', '3.9']
+        python-version: ["3.6", "3.7", "3.8", "3.9"]
         os: [ubuntu-latest, macos-latest]
         exclude:
-          - python-version: '3.6'
+          - python-version: "3.6"
             os: macos-latest
-          - python-version: '3.7'
+          - python-version: "3.7"
             os: macos-latest
-          - python-version: '3.8'
+          - python-version: "3.8"
             os: macos-latest
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v2
-      with:
-        python-version: ${{ matrix.python-version }}
-    - name: Install dependencies
-      run: |
-        pip install -r requirements.txt
-        pip install -r docs/requirements.txt
-        pip install -e .
-    - name: Building doc
-      run: |
-        cd docs
-        ./rebuild_html_doc.sh
-        cd ..
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install -r docs/requirements.txt
+          pip install -e .
+      - name: Building doc
+        run: |
+          cd docs
+          ./rebuild_html_doc.sh
+          cd ..
 
   windowsdocs:
     runs-on: windows-latest
     strategy:
       matrix:
-        python-version: ['3.9']
+        python-version: ["3.9"]
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v2
-      with:
-        python-version: ${{ matrix.python-version }}
-    - name: Install dependencies
-      run: |
-        .  ./InvokeFunc.ps1
-        Invoke-NativeCommand pip install -r requirements.txt
-        Invoke-NativeCommand pip install -r docs/requirements.txt
-        Invoke-NativeCommand pip install -e .
-    - name: Building doc
-      run: |
-        cd docs
-        ./rebuild_html_doc.ps1
-        cd ..
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          .  ./InvokeFunc.ps1
+          Invoke-NativeCommand pip install -r requirements.txt
+          Invoke-NativeCommand pip install -r docs/requirements.txt
+          Invoke-NativeCommand pip install -e .
+      - name: Building doc
+        run: |
+          cd docs
+          ./rebuild_html_doc.ps1
+          cd ..
