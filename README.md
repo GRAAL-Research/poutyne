@@ -154,7 +154,7 @@ pip install -U git+https://github.com/GRAAL-Research/poutyne.git@dev
 - **Install and develop on top of the provided Docker Image**
 
 ```sh
-docker pull ghcr.io/GRAAL-Research/poutyne/poutyne:latest
+docker pull ghcr.io/graal-research/poutyne/poutyne:latest
 ```
 
 ------------------

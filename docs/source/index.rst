@@ -165,7 +165,7 @@ Before installing Poutyne, you must have the latest version of `PyTorch <https:/
 
   .. code-block:: sh
 
-    docker pull ghcr.io/GRAAL-Research/poutyne/poutyne:latest
+    docker pull ghcr.io/graal-research/poutyne/poutyne:latest
 
 
 Learning Material
