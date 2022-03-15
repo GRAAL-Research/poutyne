@@ -2,6 +2,11 @@
 
 *
 
+# v1.10.1
+
+* Major bug fix: the state of the loss function was not reset after each epoch/evaluate calls so the values returned
+  were averages for the whole lifecycle of the Model class.
+
 # v1.10
 
 * Add a [WandB logger](https://poutyne.org/callbacks.html#poutyne.WandBLogger).

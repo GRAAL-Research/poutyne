@@ -1503,7 +1503,9 @@ class Model:
         return self._compute_metric_array(batch_metrics, self.original_batch_metrics_names)
 
     def _get_loss(self):
-        return self.loss_function.compute().item()
+        loss = self.loss_function.compute().item()
+        self.loss_function.reset()
+        return loss
 
     def _get_batch_metrics(self):
         metrics = [batch_metric.compute() for batch_metric in self.batch_metrics]
