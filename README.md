@@ -205,6 +205,12 @@ We welcome user input, whether it is regarding bugs found in the library or feat
 
 ------------------
 
+## Sponsors
+
+This project supported by [Frédérik Paradis](https://github.com/freud14/) and [David Beauchemin](https://github.com/davebulaval). [Join the sponsors - show your ❤️ and support, and appear on the list](https://github.com/sponsors/freud14)!
+
+------------------
+
 ## License
 
 Poutyne is LGPLv3 licensed, as found in the [LICENSE file](https://github.com/GRAAL-Research/poutyne/blob/master/LICENSE).

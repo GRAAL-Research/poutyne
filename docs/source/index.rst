@@ -212,6 +212,12 @@ Contributing to Poutyne
 We welcome user input, whether it is regarding bugs found in the library or feature propositions ! Make sure to have a look at our `contributing guidelines <https://github.com/GRAAL-Research/poutyne/blob/master/CONTRIBUTING.md>`_ for more details on this matter.
 
 
+Sponsors
+========
+
+This project supported by `Frédérik Paradis <https://github.com/freud14/>`__ and `David Beauchemin <https://github.com/davebulaval/>`__. `Join the sponsors - show your ❤️ and support, and appear on the list <https://github.com/sponsors/freud14>`__!
+
+
 License
 =======
 
