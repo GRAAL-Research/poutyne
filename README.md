@@ -1,8 +1,12 @@
 ![Poutyne Logo](https://raw.githubusercontent.com/GRAAL-Research/poutyne/master/docs/source/_static/logos/poutyne-dark.png)
 
+[![poutyne version - PyPI](https://img.shields.io/pypi/v/poutyne)](https://pypi.org/project/poutyne/)
+![PyPI status](https://img.shields.io/pypi/status/poutyne.svg)
 [![License: LGPL v3](https://img.shields.io/badge/License-LGPL%20v3-blue.svg)](http://www.gnu.org/licenses/lgpl-3.0)
+![Python version - PyPI](https://img.shields.io/pypi/pyversions/poutyne.svg)
 [![Tests](https://github.com/GRAAL-Research/poutyne/actions/workflows/tests.yml/badge.svg)](https://github.com/GRAAL-Research/poutyne/actions/workflows/tests.yml)
 [![codecov](https://codecov.io/gh/GRAAL-Research/poutyne/branch/master/graph/badge.svg?token=H8D1nZ1wTR)](https://codecov.io/gh/GRAAL-Research/poutyne)
+[![Downloads](https://pepy.tech/badge/poutyne)](https://pepy.tech/project/poutyne)
 
 ## Here is Poutyne.
 
