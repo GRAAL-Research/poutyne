@@ -1,4 +1,4 @@
-from typing import Dict, Optional
+from typing import Dict, MutableSequence, Optional
 
 from .callbacks import Callback, CallbackList
 
@@ -21,7 +21,7 @@ class DelayCallback(Callback):
         super().__init__()
         if isinstance(callbacks, CallbackList):
             self.callbacks = callbacks
-        elif isinstance(callbacks, list):
+        elif isinstance(callbacks, MutableSequence):
             self.callbacks = CallbackList(callbacks)
         else:
             self.callbacks = CallbackList([callbacks])
