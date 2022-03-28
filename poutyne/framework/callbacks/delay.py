@@ -28,7 +28,7 @@ class DelayCallback(Callback):
     ``epoch_delay`` and ``batch_delay`` are provided, the biggest has precedence.
 
     Args:
-        callbacks (Callback, List[Callback]): A callback or a list of callbacks to delay.
+        callbacks (Callback, Sequence[Callback]): A callback or a sequence of callbacks to delay.
         epoch_delay (int, optional): Number of epochs to delay.
         batch_delay (int, optional): Number of batches to delay. The number of batches can span many
             epochs. When the batch delay expires (i.e. there are more than `batch_delay` done), the
