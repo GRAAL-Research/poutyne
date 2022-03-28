@@ -60,7 +60,7 @@ OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
-from typing import Dict, List, MutableSequence
+from typing import Dict, Sequence
 
 
 class Callback:
@@ -342,7 +342,7 @@ class Callback:
 
 class CallbackList:
     # pylint: disable=too-many-public-methods
-    def __init__(self, callbacks: MutableSequence[Callback]):
+    def __init__(self, callbacks: Sequence[Callback]):
         callbacks = callbacks or []
         self.callbacks = list(callbacks)
 

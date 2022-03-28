@@ -17,7 +17,7 @@ You should have received a copy of the GNU Lesser General Public License along w
 <https://www.gnu.org/licenses/>.
 """
 
-from typing import Dict, MutableSequence, Optional, List, Union
+from typing import Dict, Sequence, Optional, Union
 
 from .callbacks import Callback, CallbackList
 
@@ -38,13 +38,13 @@ class DelayCallback(Callback):
 
     def __init__(
         self,
-        callbacks: Union[Callback, MutableSequence],
+        callbacks: Union[Callback, Sequence],
         *,
         epoch_delay: Optional[int] = None,
         batch_delay: Optional[int] = None
     ):
         super().__init__()
-        if isinstance(callbacks, MutableSequence):
+        if isinstance(callbacks, Sequence):
             self.callbacks = CallbackList(callbacks)
         else:
             self.callbacks = CallbackList([callbacks])
