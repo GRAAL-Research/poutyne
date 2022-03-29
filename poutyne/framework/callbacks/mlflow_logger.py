@@ -242,7 +242,7 @@ def _get_git_commit(path):
     """
     if git is None:
         warnings.warn(
-            "Failed to import Git (the Git executable is probably not on your PATH)," " so Git SHA is not available."
+            "Failed to import Git (the Git executable is probably not on your PATH), so Git SHA is not available."
         )
         return None
 

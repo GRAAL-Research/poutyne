@@ -51,7 +51,7 @@ def _none_to_iterator(value, repeat=None):
 def _assert_list_length_with_num_metrics(list_, metrics, name):
     if list_ is not None and len(list_) != len(metrics):
         raise ValueError(
-            f"A {name} was not provided for each metric. " f"Got {len(list_)} {name}s for {len(metrics)} metrics."
+            f"A {name} was not provided for each metric. Got {len(list_)} {name}s for {len(metrics)} metrics."
         )
 
 

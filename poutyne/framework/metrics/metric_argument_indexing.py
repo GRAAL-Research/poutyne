@@ -37,7 +37,7 @@ class IndexedArgumentMetric(Metric):
 
         if index is not None and (pred_index is not None or true_index is not None):
             raise ValueError(
-                "'pred_index' and 'true_index' arguments should should not be used " "with the 'index argument."
+                "'pred_index' and 'true_index' arguments should should not be used with the 'index argument."
             )
         if index is not None:
             self.pred_index = index
