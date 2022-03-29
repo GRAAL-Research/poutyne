@@ -1,4 +1,4 @@
-black==22.1.0
-black[jupyter]==22.1.0
+black~=22.3
+black[jupyter]
 pylint==2.12.1
 flake8==4.0.1
