@@ -1,8 +1,12 @@
 ![Poutyne Logo](https://raw.githubusercontent.com/GRAAL-Research/poutyne/master/docs/source/_static/logos/poutyne-dark.png)
 
+[![poutyne version - PyPI](https://img.shields.io/pypi/v/poutyne)](https://pypi.org/project/poutyne/)
+![PyPI status](https://img.shields.io/pypi/status/poutyne.svg)
 [![License: LGPL v3](https://img.shields.io/badge/License-LGPL%20v3-blue.svg)](http://www.gnu.org/licenses/lgpl-3.0)
-[![Continuous Integration](https://github.com/GRAAL-Research/poutyne/workflows/Continuous%20Integration/badge.svg)](https://github.com/GRAAL-Research/poutyne/actions?query=workflow%3A%22Continuous+Integration%22+branch%3Amaster)
+![Python version - PyPI](https://img.shields.io/pypi/pyversions/poutyne.svg)
+[![Tests](https://github.com/GRAAL-Research/poutyne/actions/workflows/tests.yml/badge.svg)](https://github.com/GRAAL-Research/poutyne/actions/workflows/tests.yml)
 [![codecov](https://codecov.io/gh/GRAAL-Research/poutyne/branch/master/graph/badge.svg?token=H8D1nZ1wTR)](https://codecov.io/gh/GRAAL-Research/poutyne)
+[![Downloads](https://pepy.tech/badge/poutyne)](https://pepy.tech/project/poutyne)
 
 ## Here is Poutyne.
 
@@ -14,7 +18,7 @@ Use Poutyne to:
 
 Read the documentation at [Poutyne.org](https://poutyne.org).
 
-Poutyne is compatible with  the __latest version of PyTorch__ and  __Python >= 3.6__.
+Poutyne is compatible with  the __latest version of PyTorch__ and  __Python >= 3.7__.
 
 ### Cite
 ```
@@ -151,6 +155,11 @@ pip install poutyne
 pip install -U git+https://github.com/GRAAL-Research/poutyne.git@dev
 ```
 
+- **Install and develop on top of the provided Docker Image**
+
+```sh
+docker pull ghcr.io/graal-research/poutyne:latest
+```
 
 ------------------
 
@@ -193,6 +202,12 @@ or in ``Google Colab``:
 ## Contributing to Poutyne
 
 We welcome user input, whether it is regarding bugs found in the library or feature propositions ! Make sure to have a look at our [contributing guidelines](https://github.com/GRAAL-Research/poutyne/blob/master/CONTRIBUTING.md) for more details on this matter.
+
+------------------
+
+## Sponsors
+
+This project supported by [Frédérik Paradis](https://github.com/freud14/) and [David Beauchemin](https://github.com/davebulaval). [Join the sponsors - show your ❤️ and support, and appear on the list](https://github.com/sponsors/freud14)!
 
 ------------------
 

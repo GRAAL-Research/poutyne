@@ -21,7 +21,7 @@ Use Poutyne to:
 - Train models easily.
 - Use callbacks to save your best model, perform early stopping and much more.
 
-Poutyne is compatible with the **latest version of PyTorch** and  **Python >= 3.6**.
+Poutyne is compatible with the **latest version of PyTorch** and  **Python >= 3.7**.
 
 Cite
 ----
@@ -161,6 +161,12 @@ Before installing Poutyne, you must have the latest version of `PyTorch <https:/
 
     pip install -U git+https://github.com/GRAAL-Research/poutyne.git@dev
 
+- **Install and develop on top of the provided Docker Image**
+
+  .. code-block:: sh
+
+    docker pull ghcr.io/graal-research/poutyne:latest
+
 
 Learning Material
 =================
@@ -204,6 +210,12 @@ Contributing to Poutyne
 =======================
 
 We welcome user input, whether it is regarding bugs found in the library or feature propositions ! Make sure to have a look at our `contributing guidelines <https://github.com/GRAAL-Research/poutyne/blob/master/CONTRIBUTING.md>`_ for more details on this matter.
+
+
+Sponsors
+========
+
+This project supported by `Frédérik Paradis <https://github.com/freud14/>`__ and `David Beauchemin <https://github.com/davebulaval/>`__. `Join the sponsors - show your ❤️ and support, and appear on the list <https://github.com/sponsors/freud14>`__!
 
 
 License

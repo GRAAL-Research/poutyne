@@ -17,7 +17,7 @@ You should have received a copy of the GNU Lesser General Public License along w
 <https://www.gnu.org/licenses/>.
 """
 
-from typing import Dict, Optional, List, Union
+from typing import Dict, Sequence, Optional, Union
 
 from .callbacks import Callback, CallbackList
 
@@ -28,7 +28,7 @@ class DelayCallback(Callback):
     ``epoch_delay`` and ``batch_delay`` are provided, the biggest has precedence.
 
     Args:
-        callbacks (Callback, List[Callback]): A callback or a list of callbacks to delay.
+        callbacks (Callback, Sequence[Callback]): A callback or a sequence of callbacks to delay.
         epoch_delay (int, optional): Number of epochs to delay.
         batch_delay (int, optional): Number of batches to delay. The number of batches can span many
             epochs. When the batch delay expires (i.e. there are more than `batch_delay` done), the
@@ -37,10 +37,14 @@ class DelayCallback(Callback):
     """
 
     def __init__(
-        self, callbacks: Union[Callback, List], *, epoch_delay: Optional[int] = None, batch_delay: Optional[int] = None
+        self,
+        callbacks: Union[Callback, Sequence],
+        *,
+        epoch_delay: Optional[int] = None,
+        batch_delay: Optional[int] = None
     ):
         super().__init__()
-        if isinstance(callbacks, list):
+        if isinstance(callbacks, Sequence):
             self.callbacks = CallbackList(callbacks)
         else:
             self.callbacks = CallbackList([callbacks])

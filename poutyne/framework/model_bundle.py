@@ -29,11 +29,11 @@ except ImportError:
 
 try:
     # pylint: disable=unused-import
-    import matplotlib.pyplot
+    import matplotlib.pyplot  # noqa: F401
 
-    matplotlib = True
+    is_matplotlib_available = True
 except ImportError:
-    matplotlib = False
+    is_matplotlib_available = False
 
 import torch
 
@@ -679,7 +679,7 @@ class ModelBundle:
         return callbacks
 
     def _save_history(self):
-        if matplotlib:
+        if is_matplotlib_available:
             history = self.get_stats()
             plot_history(
                 history,
