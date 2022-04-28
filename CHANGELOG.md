@@ -2,6 +2,11 @@
 
 *
 
+# v1.11
+
+* Remove support for Python 3.6 as PyTorch.
+* Add Dockerfile
+
 # v1.10.1
 
 * Major bug fix: the state of the loss function was not reset after each epoch/evaluate calls so the values returned
