@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>poutyne.framework.model_bundle &mdash; Poutyne 1.10.1 documentation</title>
+  <title>poutyne.framework.model_bundle &mdash; Poutyne 1.11 documentation</title>
       <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -28,7 +28,7 @@
             <img src="../../../_static/poutyne-light.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                1.10.1
+                1.11
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
@@ -115,11 +115,11 @@
 
 <span class="k">try</span><span class="p">:</span>
     <span class="c1"># pylint: disable=unused-import</span>
-    <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span>
+    <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span>  <span class="c1"># noqa: F401</span>
 
-    <span class="n">matplotlib</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">is_matplotlib_available</span> <span class="o">=</span> <span class="kc">True</span>
 <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
-    <span class="n">matplotlib</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">is_matplotlib_available</span> <span class="o">=</span> <span class="kc">False</span>
 
 <span class="kn">import</span> <span class="nn">torch</span>
 
@@ -765,7 +765,7 @@
         <span class="k">return</span> <span class="n">callbacks</span>
 
     <span class="k">def</span> <span class="nf">_save_history</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">matplotlib</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">is_matplotlib_available</span><span class="p">:</span>
             <span class="n">history</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_stats</span><span class="p">()</span>
             <span class="n">plot_history</span><span class="p">(</span>
                 <span class="n">history</span><span class="p">,</span>
