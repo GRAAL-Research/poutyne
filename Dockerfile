@@ -8,7 +8,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 RUN pip3 install --no-cache-dir --upgrade pip
-RUN pip3 install --no-cache-dir poutyne
+RUN CFLAGS="-g0 -Os -DNDEBUG -Wl,--strip-all -I/usr/include:/usr/local/include -L/usr/lib:/usr/local/lib" \
+    POUTYNE_RELEASE_BUILD=1 \
+    pip3 install --no-cache-dir \
+    --compile \
+    --global-option=build_ext \
+    --global-option="-j 4" \
+    --no-deps -U git+https://github.com/GRAAL-Research/poutyne.git@stable
 
 RUN find /opt/conda/lib/ -follow -type f -name '*.a' -delete \
     && find /opt/conda/lib/ -follow -type f -name '*.pyc' -delete \
