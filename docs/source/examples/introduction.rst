@@ -77,16 +77,14 @@ The following loads the MNIST dataset and creates the PyTorch DataLoaders that s
     test_dataset = MNIST('./datasets/', train=False, download=True, transform=transforms.ToTensor())
 
     num_data = len(full_train_dataset)
-    indices = list(range(num_data))
-    np.random.shuffle(indices)
-
-    split = math.floor(train_split_percent * num_data)
-
-    train_indices = indices[:split]
-    train_dataset = Subset(full_train_dataset, train_indices)
-
-    valid_indices = indices[split:]
-    valid_dataset = Subset(full_train_dataset, valid_indices)
+    train_length = int(math.floor(train_split_percent * num_data))
+    valid_length = num_data - train_length
+    
+    train_dataset, valid_dataset = random_split(
+        full_train_dataset,
+        [train_length, valid_length],
+        generator=torch.Generator().manual_seed(42),
+    )
 
     train_loader = DataLoader(train_dataset, batch_size=batch_size, num_workers=2, shuffle=True)
     valid_loader = DataLoader(valid_dataset, batch_size=batch_size, num_workers=2)
