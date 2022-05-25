@@ -48,12 +48,14 @@ from ..plotting import plot_history
 from .callbacks import (
     ModelCheckpoint,
     OptimizerCheckpoint,
+    RandomStatesCheckpoint,
     LRSchedulerCheckpoint,
     PeriodicSaveLambda,
     AtomicCSVLogger,
     TensorBoardLogger,
     BestModelRestore,
 )
+from ..utils import load_random_states
 
 
 class ModelBundle:
@@ -69,6 +71,7 @@ class ModelBundle:
     BEST_CHECKPOINT_FILENAME = 'checkpoint_epoch_{epoch}.ckpt'
     MODEL_CHECKPOINT_FILENAME = 'checkpoint.ckpt'
     OPTIMIZER_CHECKPOINT_FILENAME = 'checkpoint.optim'
+    RANDOM_STATE_CHECKPOINT_FILENAME = 'checkpoint.randomstate'
     LOG_FILENAME = 'log.tsv'
     TENSORBOARD_DIRECTORY = 'tensorboard'
     EPOCH_FILENAME = 'last.epoch'
@@ -457,6 +460,7 @@ class ModelBundle:
         self.best_checkpoint_filename = self.get_path(ModelBundle.BEST_CHECKPOINT_FILENAME)
         self.model_checkpoint_filename = self.get_path(ModelBundle.MODEL_CHECKPOINT_FILENAME)
         self.optimizer_checkpoint_filename = self.get_path(ModelBundle.OPTIMIZER_CHECKPOINT_FILENAME)
+        self.random_state_checkpoint_filename = self.get_path(ModelBundle.RANDOM_STATE_CHECKPOINT_FILENAME)
         self.log_filename = self.get_path(ModelBundle.LOG_FILENAME)
         self.tensorboard_directory = self.get_path(ModelBundle.TENSORBOARD_DIRECTORY)
         self.epoch_filename = self.get_path(ModelBundle.EPOCH_FILENAME)
@@ -606,6 +610,15 @@ class ModelBundle:
                 self.model.load_optimizer_state(self.optimizer_checkpoint_filename)
             else:
                 self._warn_missing_file(self.optimizer_checkpoint_filename)
+
+            if os.path.isfile(self.random_state_checkpoint_filename):
+                print(
+                    f"Loading random states from {self.random_state_checkpoint_filename} and "
+                    f"starting at epoch {initial_epoch:d}."
+                )
+                load_random_states(self.random_state_checkpoint_filename)
+            else:
+                self._warn_missing_file(self.random_state_checkpoint_filename)
 
             for i, lr_scheduler in enumerate(lr_schedulers):
                 filename = self.lr_scheduler_filename % i
@@ -871,6 +884,7 @@ class ModelBundle:
 
             expt_callbacks += [ModelCheckpoint(self.model_checkpoint_filename, verbose=False)]
             expt_callbacks += [OptimizerCheckpoint(self.optimizer_checkpoint_filename, verbose=False)]
+            expt_callbacks += [RandomStatesCheckpoint(self.random_state_checkpoint_filename, verbose=False)]
 
             # We save the last epoch number after the end of the epoch so that the
             # _load_epoch_state() knows which epoch to restart the optimization.

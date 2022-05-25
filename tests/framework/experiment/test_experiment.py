@@ -67,6 +67,7 @@ class BaseExperimentTest:
         ]
         self.ckpt_last_path = os.path.join(self.test_checkpoints_path, "checkpoint.ckpt")
         self.optim_ckpt_path = os.path.join(self.test_checkpoints_path, "checkpoint.optim")
+        self.rng_ckpt_path = os.path.join(self.test_checkpoints_path, "checkpoint.randomstate")
         self.first_lr_scheduler_ckpt_path = os.path.join(self.test_checkpoints_path, "lr_sched_0.lrsched")
         self.second_lr_scheduler_ckpt_path = os.path.join(self.test_checkpoints_path, "lr_sched_1.lrsched")
         self.tsv_log_path = os.path.join(self.test_checkpoints_path, "log.tsv")
@@ -189,6 +190,7 @@ class BaseExperimentTest:
             self.assertFalse(os.path.isfile(path))
         self.assertFalse(os.path.isfile(self.ckpt_last_path))
         self.assertFalse(os.path.isfile(self.optim_ckpt_path))
+        self.assertFalse(os.path.isfile(self.rng_ckpt_path))
         self.assertFalse(os.path.isfile(self.tsv_log_path))
         self.assertFalse(os.path.isfile(self.epoch_file_path))
         self.assertFalse(os.path.isfile(self.tsv_test_log_path))
@@ -218,6 +220,7 @@ class BaseExperimentTest:
             self.assertFalse(os.path.isfile(path))
         self.assertTrue(os.path.isfile(self.ckpt_last_path))
         self.assertTrue(os.path.isfile(self.optim_ckpt_path))
+        self.assertTrue(os.path.isfile(self.rng_ckpt_path))
         self.assertTrue(os.path.isfile(self.tsv_log_path))
         self.assertTrue(os.path.isfile(self.epoch_file_path))
         self.assertTrue(os.path.isfile(self.time_metric_plot_png_file_path))

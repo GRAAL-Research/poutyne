@@ -18,8 +18,10 @@ You should have received a copy of the GNU Lesser General Public License along w
 """
 
 # -*- coding: utf-8 -*-
+import os
 import random
 import numbers
+from typing import IO, Any, BinaryIO, Union
 import warnings
 
 import numpy as np
@@ -197,6 +199,40 @@ def set_seeds(seed):
         random.seed(seed)
         np.random.seed(seed)
         torch.manual_seed(seed)
+
+
+def save_random_states(f: Union[str, os.PathLike, BinaryIO, IO[bytes]]):
+    """
+    Save Python, Numpy and Pytorch's (both CPU and GPU) random states.
+
+    Args:
+        f (Union[str, os.PathLike, BinaryIO, IO[bytes]]): a file-like object (has to implement write and flush) or
+            a string or os.PathLike object containing a file name.
+    """
+    torch.save(
+        dict(
+            cpu=torch.get_rng_state(),
+            cuda=torch.cuda.get_rng_state_all(),
+            numpy=np.random.get_state(),
+            python=random.getstate(),
+        ),
+        f,
+    )
+
+
+def load_random_states(f: Any):
+    """
+    Load Python, Numpy and Pytorch's (both CPU and GPU) random states as saved by :func:`~poutyne.save_random_states()`.
+
+    Args:
+        f: a file-like object (has to implement :meth:`read`, :meth:`readline`, :meth:`tell`, and :meth:`seek`),
+            or a string or os.PathLike object containing a file name
+    """
+    states = torch.load(f)
+    torch.set_rng_state(states["cpu"])
+    torch.cuda.set_rng_state_all(states["cuda"])
+    np.random.set_state(states["numpy"])
+    random.setstate(states["python"])
 
 
 def is_in_jupyter_notebook():

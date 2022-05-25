@@ -1,6 +1,10 @@
 # v1.x.x
 
-*
+* Add utilitary functions for saving ([`save_random_states`](https://poutyne.org/utils.html#poutyne.save_random_states))
+  and loading ([`load_random_states`](https://poutyne.org/utils.html#poutyne.load_random_states)) Python, Numpy and Pytorch's
+  (both CPU and GPU) random states. Furthermore, we also add the
+  [`RandomStatesCheckpoint`](https://poutyne.org/callbacks.html#poutyne.RandomStatesCheckpoint) callback. This callback
+  is now used in ModelBundle.
 
 # v1.11
 

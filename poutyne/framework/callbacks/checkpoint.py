@@ -23,6 +23,7 @@ import torch
 
 from .lr_scheduler import _PyTorchLRSchedulerWrapper, ReduceLROnPlateau
 from .periodic import PeriodicSaveCallback
+from ...utils import load_random_states, save_random_states
 
 
 class ModelCheckpoint(PeriodicSaveCallback):
@@ -157,3 +158,20 @@ class StateCheckpoint(PeriodicSaveCallback):
         for name, state in states.items():
             if name in self.name_to_stateful:
                 self.name_to_stateful[name].load_state_dict(state)
+
+
+class RandomStatesCheckpoint(PeriodicSaveCallback):
+    """
+    Save Python, Numpy and Pytorch's (both CPU and GPU) random states after every epoch. The random states
+    can be reloaded using :func:`~poutyne.load_random_states()`.
+
+    See :class:`~poutyne.PeriodicSaveCallback` for the arguments' descriptions.
+
+    See:
+        :class:`~poutyne.PeriodicSaveCallback`
+    """
+    def save_file(self, fd: IO, epoch_number: int, logs: Dict):
+        save_random_states(fd)
+
+    def restore(self, fd: IO):
+        load_random_states(fd)
