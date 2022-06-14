@@ -170,6 +170,7 @@ class RandomStatesCheckpoint(PeriodicSaveCallback):
     See:
         :class:`~poutyne.PeriodicSaveCallback`
     """
+
     def save_file(self, fd: IO, epoch_number: int, logs: Dict):
         save_random_states(fd)
 
