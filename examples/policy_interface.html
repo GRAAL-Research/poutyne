@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Interface of policy &mdash; Poutyne 1.11 documentation</title>
+  <title>Interface of policy &mdash; Poutyne 1.12 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -14,6 +14,7 @@
         <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../_static/doctools.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
@@ -31,7 +32,7 @@
             <img src="../_static/poutyne-light.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                1.11
+                1.12
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
@@ -107,7 +108,7 @@
            <div itemprop="articleBody">
              
   <section id="interface-of-policy">
-<h1>Interface of <code class="docutils literal notranslate"><span class="pre">policy</span></code><a class="headerlink" href="#interface-of-policy" title="Permalink to this headline"></a></h1>
+<h1>Interface of <code class="docutils literal notranslate"><span class="pre">policy</span></code><a class="headerlink" href="#interface-of-policy" title="Permalink to this heading"></a></h1>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <ul class="simple">
@@ -129,11 +130,11 @@ For the first section discussing the <code class="docutils literal notranslate">
 </pre></div>
 </div>
 <section id="about-policy">
-<h2>About <code class="docutils literal notranslate"><span class="pre">policy</span></code><a class="headerlink" href="#about-policy" title="Permalink to this headline"></a></h2>
+<h2>About <code class="docutils literal notranslate"><span class="pre">policy</span></code><a class="headerlink" href="#about-policy" title="Permalink to this heading"></a></h2>
 <p>Policies give you fine-grained control over the training process.
 This example demonstrates how policies work and how you can create your own policies.</p>
 <section id="parameter-spaces-and-phases">
-<h3>Parameter Spaces and Phases<a class="headerlink" href="#parameter-spaces-and-phases" title="Permalink to this headline"></a></h3>
+<h3>Parameter Spaces and Phases<a class="headerlink" href="#parameter-spaces-and-phases" title="Permalink to this heading"></a></h3>
 <p>Parameter spaces like <a class="reference internal" href="../callbacks.html#poutyne.linspace" title="poutyne.linspace"><code class="xref py py-class docutils literal notranslate"><span class="pre">linspace</span></code></a> and <code class="xref py py-class docutils literal notranslate"><span class="pre">cosinespace</span></code> are the basic building blocks.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">poutyne</span> <span class="kn">import</span> <span class="n">linspace</span><span class="p">,</span> <span class="n">cosinespace</span>
 </pre></div>
@@ -182,7 +183,7 @@ This example demonstrates how policies work and how you can create your own poli
 <img alt="../_images/phase_multiple_viz_cos.png" src="../_images/phase_multiple_viz_cos.png" />
 </section>
 <section id="visualize-different-phases">
-<h3>Visualize Different Phases<a class="headerlink" href="#visualize-different-phases" title="Permalink to this headline"></a></h3>
+<h3>Visualize Different Phases<a class="headerlink" href="#visualize-different-phases" title="Permalink to this heading"></a></h3>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">steps</span> <span class="o">=</span> <span class="mi">100</span>
 
 <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
@@ -197,7 +198,7 @@ This example demonstrates how policies work and how you can create your own poli
 <img alt="../_images/phase_multiple_phase.png" src="../_images/phase_multiple_phase.png" />
 </section>
 <section id="visualize-multiple-parameters-in-one-phase">
-<h3>Visualize Multiple Parameters in One Phase<a class="headerlink" href="#visualize-multiple-parameters-in-one-phase" title="Permalink to this headline"></a></h3>
+<h3>Visualize Multiple Parameters in One Phase<a class="headerlink" href="#visualize-multiple-parameters-in-one-phase" title="Permalink to this heading"></a></h3>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">steps</span> <span class="o">=</span> <span class="mi">100</span>
 <span class="n">phase</span> <span class="o">=</span> <span class="n">Phase</span><span class="p">(</span><span class="n">lr</span><span class="o">=</span><span class="n">linspace</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">steps</span><span class="p">),</span> <span class="n">momentum</span><span class="o">=</span><span class="n">cosinespace</span><span class="p">(</span><span class="mf">.8</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">steps</span><span class="p">))</span>
 
@@ -210,7 +211,7 @@ This example demonstrates how policies work and how you can create your own poli
 </section>
 </section>
 <section id="build-complex-policies-from-basic-phases">
-<h2>Build Complex Policies From Basic Phases<a class="headerlink" href="#build-complex-policies-from-basic-phases" title="Permalink to this headline"></a></h2>
+<h2>Build Complex Policies From Basic Phases<a class="headerlink" href="#build-complex-policies-from-basic-phases" title="Permalink to this heading"></a></h2>
 <p>You can build complex optimizer policies by chaining phases together:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">poutyne</span> <span class="kn">import</span> <span class="n">OptimizerPolicy</span>
 
@@ -226,7 +227,7 @@ This example demonstrates how policies work and how you can create your own poli
 </div>
 <img alt="../_images/phase_chaining.png" src="../_images/phase_chaining.png" />
 <section id="use-already-defined-complex-policies">
-<h3>Use Already Defined Complex Policies<a class="headerlink" href="#use-already-defined-complex-policies" title="Permalink to this headline"></a></h3>
+<h3>Use Already Defined Complex Policies<a class="headerlink" href="#use-already-defined-complex-policies" title="Permalink to this heading"></a></h3>
 <p>It’s easy to build your own policies, but Poutyne contains some pre-defined phases.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">poutyne</span> <span class="kn">import</span> <span class="n">sgdr_phases</span>
 
@@ -262,9 +263,9 @@ This example demonstrates how policies work and how you can create your own poli
 </section>
 </section>
 <section id="train-cifar-with-the-policy-module">
-<h2>Train CIFAR With the <code class="docutils literal notranslate"><span class="pre">policy</span></code> Module<a class="headerlink" href="#train-cifar-with-the-policy-module" title="Permalink to this headline"></a></h2>
+<h2>Train CIFAR With the <code class="docutils literal notranslate"><span class="pre">policy</span></code> Module<a class="headerlink" href="#train-cifar-with-the-policy-module" title="Permalink to this heading"></a></h2>
 <section id="training-constants">
-<h3>Training Constants<a class="headerlink" href="#training-constants" title="Permalink to this headline"></a></h3>
+<h3>Training Constants<a class="headerlink" href="#training-constants" title="Permalink to this heading"></a></h3>
 <p>But first, let’s set the training constants, the CUDA device used for training if one is present, we set the batch size (i.e. the number of elements to see before updating the model) and the number of epochs (i.e. the number of times we see the full dataset).</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">cuda_device</span> <span class="o">=</span> <span class="mi">0</span>
 <span class="n">device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">&quot;cuda:</span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">cuda_device</span> <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span> <span class="k">else</span> <span class="s2">&quot;cpu&quot;</span><span class="p">)</span>
@@ -275,7 +276,7 @@ This example demonstrates how policies work and how you can create your own poli
 </div>
 </section>
 <section id="load-the-data">
-<h3>Load the Data<a class="headerlink" href="#load-the-data" title="Permalink to this headline"></a></h3>
+<h3>Load the Data<a class="headerlink" href="#load-the-data" title="Permalink to this heading"></a></h3>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">imagenet_mean</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.485</span><span class="p">,</span> <span class="mf">0.456</span><span class="p">,</span> <span class="mf">0.406</span><span class="p">]</span>
 <span class="n">imagenet_std</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.229</span><span class="p">,</span> <span class="mf">0.224</span><span class="p">,</span> <span class="mf">0.225</span><span class="p">]</span>
 
@@ -312,7 +313,7 @@ This example demonstrates how policies work and how you can create your own poli
 </div>
 </section>
 <section id="the-model">
-<h3>The Model<a class="headerlink" href="#the-model" title="Permalink to this headline"></a></h3>
+<h3>The Model<a class="headerlink" href="#the-model" title="Permalink to this heading"></a></h3>
 <p>We’ll train a simple <code class="docutils literal notranslate"><span class="pre">ResNet-18</span></code> network.
 This takes a while without GPU but is pretty quick with GPU.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">get_network</span><span class="p">():</span>
@@ -324,7 +325,7 @@ This takes a while without GPU but is pretty quick with GPU.</p>
 </div>
 </section>
 <section id="training-without-the-policies-module">
-<h3>Training Without the <code class="docutils literal notranslate"><span class="pre">policies</span></code> Module<a class="headerlink" href="#training-without-the-policies-module" title="Permalink to this headline"></a></h3>
+<h3>Training Without the <code class="docutils literal notranslate"><span class="pre">policies</span></code> Module<a class="headerlink" href="#training-without-the-policies-module" title="Permalink to this heading"></a></h3>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">network</span> <span class="o">=</span> <span class="n">get_network</span><span class="p">()</span>
 <span class="n">criterion</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">CrossEntropyLoss</span><span class="p">()</span>
 <span class="n">optimizer</span> <span class="o">=</span> <span class="n">optim</span><span class="o">.</span><span class="n">SGD</span><span class="p">(</span><span class="n">network</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.01</span><span class="p">)</span>
@@ -346,7 +347,7 @@ This takes a while without GPU but is pretty quick with GPU.</p>
 </div>
 </section>
 <section id="training-with-the-policies-module">
-<h3>Training With the <code class="docutils literal notranslate"><span class="pre">policies</span></code> Module<a class="headerlink" href="#training-with-the-policies-module" title="Permalink to this headline"></a></h3>
+<h3>Training With the <code class="docutils literal notranslate"><span class="pre">policies</span></code> Module<a class="headerlink" href="#training-with-the-policies-module" title="Permalink to this heading"></a></h3>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">steps_per_epoch</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">train_loader</span><span class="p">)</span>
 <span class="n">steps_per_epoch</span>
 </pre></div>

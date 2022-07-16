@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Gender Classification and Eyes Location Detection: A Two Task Problem &mdash; Poutyne 1.11 documentation</title>
+  <title>Gender Classification and Eyes Location Detection: A Two Task Problem &mdash; Poutyne 1.12 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -14,6 +14,7 @@
         <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../_static/doctools.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
@@ -31,7 +32,7 @@
             <img src="../_static/poutyne-light.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                1.11
+                1.12
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
@@ -96,7 +97,7 @@
            <div itemprop="articleBody">
              
   <section id="gender-classification-and-eyes-location-detection-a-two-task-problem">
-<h1>Gender Classification and Eyes Location Detection: A Two Task Problem<a class="headerlink" href="#gender-classification-and-eyes-location-detection-a-two-task-problem" title="Permalink to this headline"></a></h1>
+<h1>Gender Classification and Eyes Location Detection: A Two Task Problem<a class="headerlink" href="#gender-classification-and-eyes-location-detection-a-two-task-problem" title="Permalink to this heading"></a></h1>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <ul class="simple">
@@ -132,7 +133,7 @@
 </pre></div>
 </div>
 <section id="training-constants">
-<h2>Training Constants<a class="headerlink" href="#training-constants" title="Permalink to this headline"></a></h2>
+<h2>Training Constants<a class="headerlink" href="#training-constants" title="Permalink to this heading"></a></h2>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">num_epochs</span> <span class="o">=</span> <span class="mi">5</span>
 <span class="n">learning_rate</span> <span class="o">=</span> <span class="mf">0.01</span>
 <span class="n">batch_size</span> <span class="o">=</span> <span class="mi">16</span>
@@ -149,11 +150,11 @@
 </div>
 </section>
 <section id="celeba-dataset">
-<h2>CelebA Dataset<a class="headerlink" href="#celeba-dataset" title="Permalink to this headline"></a></h2>
+<h2>CelebA Dataset<a class="headerlink" href="#celeba-dataset" title="Permalink to this heading"></a></h2>
 <p>We are going to use the CelebA dataset for this experiment. The CelebA dataset is a large-scale face attributes dataset which can be employed as the training and test sets for the following computer vision tasks: face attribute recognition, face detection, landmark (or facial part) localization, and face editing &amp; synthesis.</p>
 </section>
 <section id="fetching-data">
-<h2>Fetching data<a class="headerlink" href="#fetching-data" title="Permalink to this headline"></a></h2>
+<h2>Fetching data<a class="headerlink" href="#fetching-data" title="Permalink to this heading"></a></h2>
 <p>The section below consists of a few lines of codes that help us download the CelebA dataset from a public web source and unzip it. Downloading the CelebA dataset can be also done directly using <cite>torch.datasets.CelebA(data_root, download=True)</cite>. However, due to the high traffic on the dataset’s Google Drive (the main source of the dataset), it usually fails to function. Hence we decided to download it from another public source but use it with <cite>torch.datasets.CelebA()</cite>.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">data_root</span> <span class="o">=</span> <span class="s2">&quot;datasets&quot;</span>
 
@@ -238,7 +239,7 @@
 <img alt="../_images/dataset_sample.png" src="../_images/dataset_sample.png" />
 </section>
 <section id="network">
-<h2>Network<a class="headerlink" href="#network" title="Permalink to this headline"></a></h2>
+<h2>Network<a class="headerlink" href="#network" title="Permalink to this heading"></a></h2>
 <p>Below, we define a new class, named <cite>ClassifierLocalizer</cite>, which accepts a pre-trained CNN and changes its last fully connected layer to be proper for the two task problem. The new fully connected layer contains 6 neurons, 2 for the classification task (male or female) and 4 for the localization task (x and y for the left and right eyes). Moreover, to put the location results on the same scale as the class scores, we apply the sigmoid function to the neurons assigned for the localization task.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">ClassifierLocalizer</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_name</span><span class="p">,</span> <span class="n">num_classes</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
@@ -265,7 +266,7 @@
 </div>
 </section>
 <section id="loss-function">
-<h2>Loss function<a class="headerlink" href="#loss-function" title="Permalink to this headline"></a></h2>
+<h2>Loss function<a class="headerlink" href="#loss-function" title="Permalink to this heading"></a></h2>
 <p>As we discussed before, we have two different tasks in this example. These tasks need different loss functions; Cross-Entropy loss for the classification and Mean Square Error loss for the regression. Below, we define a new loss function class that sums both losses to considers them simultaneously. However, as the regression is relatively a simpler task here (due to similarity of coordinates in the images), we apply a lower weight to MSEloss.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">ClassificationRegressionLoss</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">W</span><span class="p">):</span>
@@ -286,7 +287,7 @@
 </div>
 </section>
 <section id="training">
-<h2>Training<a class="headerlink" href="#training" title="Permalink to this headline"></a></h2>
+<h2>Training<a class="headerlink" href="#training" title="Permalink to this heading"></a></h2>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">optimizer</span> <span class="o">=</span> <span class="n">optim</span><span class="o">.</span><span class="n">SGD</span><span class="p">(</span><span class="n">network</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="n">learning_rate</span><span class="p">,</span> <span class="n">weight_decay</span><span class="o">=</span><span class="mf">0.001</span><span class="p">)</span>
 <span class="n">loss_function</span> <span class="o">=</span> <span class="n">ClassificationRegressionLoss</span><span class="p">(</span><span class="n">W</span><span class="p">)</span>
 <span class="n">exp</span> <span class="o">=</span> <span class="n">Experiment</span><span class="p">(</span>
@@ -301,7 +302,7 @@
 </div>
 </section>
 <section id="evaluation">
-<h2>Evaluation<a class="headerlink" href="#evaluation" title="Permalink to this headline"></a></h2>
+<h2>Evaluation<a class="headerlink" href="#evaluation" title="Permalink to this heading"></a></h2>
 <p>As you have also noticed from the training logs, in this try we achieved the best performance (considering the validation loss) at the 15th epoch. The weights of the network for the corresponding epoch have been automatically saved by the <cite>Experiment</cite> function and we use these parameters to evaluate our algorithm visually. For this purpose, we utilize the <cite>load_checkpoint</cite> method and set its argument to <cite>best</cite> to load the best weights of the model automatically. Finally,  we take advantage of the <cite>evaluate</cite> function of Poutyne, and apply it to the validation dataset. It provides us the predictions as well as the ground-truth for comparison, in case of need.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">exp</span><span class="o">.</span><span class="n">load_checkpoint</span><span class="p">(</span><span class="s2">&quot;best&quot;</span><span class="p">)</span>
 <span class="n">model</span> <span class="o">=</span> <span class="n">exp</span><span class="o">.</span><span class="n">model</span>

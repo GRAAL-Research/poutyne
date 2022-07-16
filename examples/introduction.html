@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Introduction to PyTorch and Poutyne &mdash; Poutyne 1.11 documentation</title>
+  <title>Introduction to PyTorch and Poutyne &mdash; Poutyne 1.12 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -14,6 +14,7 @@
         <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../_static/doctools.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
@@ -31,7 +32,7 @@
             <img src="../_static/poutyne-light.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                1.11
+                1.12
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
@@ -104,7 +105,7 @@
            <div itemprop="articleBody">
              
   <section id="introduction-to-pytorch-and-poutyne">
-<span id="intro"></span><h1>Introduction to PyTorch and Poutyne<a class="headerlink" href="#introduction-to-pytorch-and-poutyne" title="Permalink to this headline"></a></h1>
+<span id="intro"></span><h1>Introduction to PyTorch and Poutyne<a class="headerlink" href="#introduction-to-pytorch-and-poutyne" title="Permalink to this heading"></a></h1>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <ul class="simple">
@@ -134,12 +135,12 @@
 </pre></div>
 </div>
 <section id="basis-of-training-a-neural-network">
-<h2>Basis of Training a Neural Network<a class="headerlink" href="#basis-of-training-a-neural-network" title="Permalink to this headline"></a></h2>
+<h2>Basis of Training a Neural Network<a class="headerlink" href="#basis-of-training-a-neural-network" title="Permalink to this heading"></a></h2>
 <p>In <strong>stochastic gradient descent</strong>, a <strong>batch</strong> of <code class="docutils literal notranslate"><span class="pre">m</span></code> examples are drawn from the train dataset. In the so-called forward pass, these examples are passed through the neural network and an average of their loss values is done. In the backward pass, the average loss is backpropagated through the network to compute the gradient of each parameter. In practice, the <code class="docutils literal notranslate"><span class="pre">m</span></code> examples of a batch are drawn without replacement. Thus, we define one <strong>epoch</strong> of training being the number of batches needed to loop through the entire training dataset.</p>
 <p>In addition to the training dataset, a <strong>validation dataset</strong> is used to evaluate the neural network at the end of each epoch. This validation dataset can be used to select the best model during training and thus avoiding overfitting the training set. It also can have other uses such as selecting hyperparameters</p>
 <p>Finally, a <strong>test dataset</strong> is used at the end to evaluate the final model.</p>
 <section id="training-constants">
-<h3>Training constants<a class="headerlink" href="#training-constants" title="Permalink to this headline"></a></h3>
+<h3>Training constants<a class="headerlink" href="#training-constants" title="Permalink to this heading"></a></h3>
 <p>Now, let’s set our training constants. We first have the CUDA device used for training if one is present. Second, we set the train_split to 0.8 (80%) to use 80% of the dataset for training and 20% for validation. Third, we set the number of classes (i.e. one for each number). Finally, we set the batch size (i.e. the number of elements to see before updating the model), the learning rate for the optimizer, and the number of epochs (i.e. the number of times we see the full dataset).</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">cuda_device</span> <span class="o">=</span> <span class="mi">0</span>
 <span class="n">device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">&quot;cuda:</span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">cuda_device</span> <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span> <span class="k">else</span> <span class="s2">&quot;cpu&quot;</span><span class="p">)</span>
@@ -155,7 +156,7 @@
 </div>
 </section>
 <section id="loading-the-mnist-dataset">
-<h3>Loading the MNIST dataset<a class="headerlink" href="#loading-the-mnist-dataset" title="Permalink to this headline"></a></h3>
+<h3>Loading the MNIST dataset<a class="headerlink" href="#loading-the-mnist-dataset" title="Permalink to this heading"></a></h3>
 <p>The following loads the MNIST dataset and creates the PyTorch DataLoaders that split our datasets into batches. The train DataLoader shuffles the examples of the train dataset to draw the examples without replacement.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">full_train_dataset</span> <span class="o">=</span> <span class="n">MNIST</span><span class="p">(</span><span class="s1">&#39;./datasets/&#39;</span><span class="p">,</span> <span class="n">train</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">download</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">transforms</span><span class="o">.</span><span class="n">ToTensor</span><span class="p">())</span>
 <span class="n">test_dataset</span> <span class="o">=</span> <span class="n">MNIST</span><span class="p">(</span><span class="s1">&#39;./datasets/&#39;</span><span class="p">,</span> <span class="n">train</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">download</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">transforms</span><span class="o">.</span><span class="n">ToTensor</span><span class="p">())</span>
@@ -191,10 +192,10 @@
 <img alt="../_images/mnist_data_sneak_peak.png" src="../_images/mnist_data_sneak_peak.png" />
 </section>
 <section id="neural-network-architectures">
-<h3>Neural Network Architectures<a class="headerlink" href="#neural-network-architectures" title="Permalink to this headline"></a></h3>
+<h3>Neural Network Architectures<a class="headerlink" href="#neural-network-architectures" title="Permalink to this heading"></a></h3>
 <p>We train a fully-connected neural network and a convolutional neural network with approximately the same number of parameters.</p>
 <section id="fully-connected-network">
-<h4>Fully-connected Network<a class="headerlink" href="#fully-connected-network" title="Permalink to this headline"></a></h4>
+<h4>Fully-connected Network<a class="headerlink" href="#fully-connected-network" title="Permalink to this heading"></a></h4>
 <p>In short, the fully-connected network follows this architecture: <code class="docutils literal notranslate"><span class="pre">Input</span> <span class="pre">-&gt;</span> <span class="pre">[Linear</span> <span class="pre">-&gt;</span> <span class="pre">ReLU]*3</span> <span class="pre">-&gt;</span> <span class="pre">Linear</span></code>. The following table shows it in details:</p>
 <table class="docutils align-default">
 <colgroup>
@@ -250,7 +251,7 @@
 <p>Total # of parameters of the fully-connected network: 242,762</p>
 </section>
 <section id="convolutional-network">
-<h4>Convolutional Network<a class="headerlink" href="#convolutional-network" title="Permalink to this headline"></a></h4>
+<h4>Convolutional Network<a class="headerlink" href="#convolutional-network" title="Permalink to this heading"></a></h4>
 <p>The convolutional neural network architecture starts with some convolution and max-pooling layers. These are then followed by fully-connected layers. We calculate the total number of parameters that the network needs. In short, the convolutional network follows this architecture: <code class="docutils literal notranslate"><span class="pre">Input</span> <span class="pre">-&gt;</span> <span class="pre">[Conv</span> <span class="pre">-&gt;</span> <span class="pre">ReLU</span> <span class="pre">-&gt;</span> <span class="pre">MaxPool]*2</span> <span class="pre">-&gt;</span> <span class="pre">Dropout</span> <span class="pre">-&gt;</span> <span class="pre">Linear</span> <span class="pre">-&gt;</span> <span class="pre">ReLU</span> <span class="pre">-&gt;</span> <span class="pre">Dropout</span> <span class="pre">-&gt;</span> <span class="pre">Linear</span></code>. The following table shows it in details:</p>
 <table class="docutils align-default">
 <colgroup>
@@ -359,7 +360,7 @@
 </section>
 </section>
 <section id="training-the-pytorch-way">
-<h2>Training the PyTorch way<a class="headerlink" href="#training-the-pytorch-way" title="Permalink to this headline"></a></h2>
+<h2>Training the PyTorch way<a class="headerlink" href="#training-the-pytorch-way" title="Permalink to this heading"></a></h2>
 <p>That is, doing your own training loop.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">pytorch_accuracy</span><span class="p">(</span><span class="n">y_pred</span><span class="p">,</span> <span class="n">y_true</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -517,7 +518,7 @@
 </div>
 </section>
 <section id="training-the-poutyne-way">
-<h2>Training the Poutyne way<a class="headerlink" href="#training-the-poutyne-way" title="Permalink to this headline"></a></h2>
+<h2>Training the Poutyne way<a class="headerlink" href="#training-the-poutyne-way" title="Permalink to this heading"></a></h2>
 <p>That is, only 8 lines of code with a better output.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">poutyne_train</span><span class="p">(</span><span class="n">network</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -556,7 +557,7 @@
 </div>
 </section>
 <section id="poutyne-callbacks">
-<h2>Poutyne Callbacks<a class="headerlink" href="#poutyne-callbacks" title="Permalink to this headline"></a></h2>
+<h2>Poutyne Callbacks<a class="headerlink" href="#poutyne-callbacks" title="Permalink to this heading"></a></h2>
 <p>One nice feature of Poutyne is <a class="reference internal" href="../callbacks.html#poutyne.Callback" title="poutyne.Callback"><code class="xref py py-class docutils literal notranslate"><span class="pre">callbacks</span></code></a>. Callbacks allow doing actions during the training of the neural network. In the following example, we use three callbacks. One that saves the latest weights in a file to be able to continue the optimization at the end of training if more epochs are needed. Another one that saves the best weights according to the performance on the validation dataset. Finally, another one that saves the displayed logs into a TSV file.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">train_with_callbacks</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">network</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -608,11 +609,11 @@
 </div>
 </section>
 <section id="making-your-own-callback">
-<h2>Making Your Own Callback<a class="headerlink" href="#making-your-own-callback" title="Permalink to this headline"></a></h2>
+<h2>Making Your Own Callback<a class="headerlink" href="#making-your-own-callback" title="Permalink to this heading"></a></h2>
 <p>While Poutyne provides a great number of <a class="reference internal" href="../callbacks.html#callbacks"><span class="std std-ref">predefined callbacks</span></a>, it is sometimes useful to make your own callback. In addition to the documentation of the <a class="reference internal" href="../callbacks.html#poutyne.Callback" title="poutyne.Callback"><code class="xref py py-class docutils literal notranslate"><span class="pre">Callback</span></code></a> class, see the <a class="reference internal" href="tips_and_tricks.html#making-your-own-callback"><span class="std std-ref">Making Your Own Callback section</span></a> in the <a class="reference internal" href="tips_and_tricks.html#tips-and-tricks"><span class="std std-ref">Tips and Tricks page</span></a> for an example.</p>
 </section>
 <section id="poutyne-modelbundle">
-<h2>Poutyne ModelBundle<a class="headerlink" href="#poutyne-modelbundle" title="Permalink to this headline"></a></h2>
+<h2>Poutyne ModelBundle<a class="headerlink" href="#poutyne-modelbundle" title="Permalink to this heading"></a></h2>
 <p>Most of the time when using Poutyne (or even Pytorch in general), we will find ourselves in an iterative model hyperparameters finetuning loop. For efficient model search, we will usually wish to save our best performing models, their training and testing statistics and even sometimes wish to retrain an already trained model for further tuning. All of the above can be easily implemented with the flexibility of Poutyne Callbacks, but having to define and initialize each and every Callback object we wish for our model quickly feels cumbersome.</p>
 <p>This is why Poutyne provides a <a class="reference internal" href="../experiment.html#poutyne.ModelBundle" title="poutyne.ModelBundle"><code class="xref py py-class docutils literal notranslate"><span class="pre">ModelBundle</span></code></a> class, which aims specifically at enabling quick model iteration search, while not sacrifying on the quality of a single experiment - statistics logging, best models saving, etc. ModelBundle is actually a simple wrapper between a PyTorch network and Poutyne’s core Callback objects for logging and saving. Given a working directory where to output the various logging files and a PyTorch network, the ModelBundle class reduces the whole training loop to a single line.</p>
 <p>The following code uses Poutyne’s <a class="reference internal" href="../experiment.html#poutyne.ModelBundle" title="poutyne.ModelBundle"><code class="xref py py-class docutils literal notranslate"><span class="pre">ModelBundle</span></code></a> class to train a network for 5 epochs. The code is quite simpler than the code in the Poutyne Callbacks section while doing more (only 3 lines). Once trained for 5 epochs, it is then possible to resume the optimization at the 5th epoch for 5 more epochs until the 10th epoch using the same function.</p>

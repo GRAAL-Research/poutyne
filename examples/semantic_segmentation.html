@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Semantic segmentation using Poutyne &mdash; Poutyne 1.11 documentation</title>
+  <title>Semantic segmentation using Poutyne &mdash; Poutyne 1.12 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -14,6 +14,7 @@
         <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../_static/doctools.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
@@ -30,7 +31,7 @@
             <img src="../_static/poutyne-light.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                1.11
+                1.12
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
@@ -94,7 +95,7 @@
            <div itemprop="articleBody">
              
   <section id="semantic-segmentation-using-poutyne">
-<h1>Semantic segmentation using Poutyne<a class="headerlink" href="#semantic-segmentation-using-poutyne" title="Permalink to this headline"></a></h1>
+<h1>Semantic segmentation using Poutyne<a class="headerlink" href="#semantic-segmentation-using-poutyne" title="Permalink to this heading"></a></h1>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <ul class="simple">
@@ -184,7 +185,7 @@
 </pre></div>
 </div>
 <section id="training-constants">
-<h2>Training constants<a class="headerlink" href="#training-constants" title="Permalink to this headline"></a></h2>
+<h2>Training constants<a class="headerlink" href="#training-constants" title="Permalink to this heading"></a></h2>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">learning_rate</span> <span class="o">=</span> <span class="mf">0.0005</span>
 <span class="n">batch_size</span> <span class="o">=</span> <span class="mi">32</span>
 <span class="n">image_size</span> <span class="o">=</span> <span class="mi">224</span>
@@ -198,7 +199,7 @@
 </div>
 </section>
 <section id="loading-the-vocsegmentation-dataset">
-<h2>Loading the VOCSegmentation dataset<a class="headerlink" href="#loading-the-vocsegmentation-dataset" title="Permalink to this headline"></a></h2>
+<h2>Loading the VOCSegmentation dataset<a class="headerlink" href="#loading-the-vocsegmentation-dataset" title="Permalink to this heading"></a></h2>
 <p>The VOCSegmentation dataset can be easily downloaded from <code class="docutils literal notranslate"><span class="pre">torchvision.datasets</span></code>. This dataset allows you to apply the needed transformations on the ground-truth directly and define the proper transformations for the input images. To do so, we use the <code class="docutils literal notranslate"><span class="pre">target_transfrom</span></code> argument and set it to your transformation function of interest.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">input_resize</span> <span class="o">=</span> <span class="n">transforms</span><span class="o">.</span><span class="n">Resize</span><span class="p">((</span><span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">))</span>
 <span class="n">input_transform</span> <span class="o">=</span> <span class="n">transforms</span><span class="o">.</span><span class="n">Compose</span><span class="p">(</span>
@@ -252,7 +253,7 @@
 </div>
 </section>
 <section id="a-random-batch-of-the-vodsegmentation-dataset-images">
-<h2>A random batch of the VODSegmentation dataset images<a class="headerlink" href="#a-random-batch-of-the-vodsegmentation-dataset-images" title="Permalink to this headline"></a></h2>
+<h2>A random batch of the VODSegmentation dataset images<a class="headerlink" href="#a-random-batch-of-the-vodsegmentation-dataset-images" title="Permalink to this heading"></a></h2>
 <p>Let’s see some of the input samples inside the training dataset.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Creating a VOC dataset without normalization for visualization.</span>
 <span class="n">train_dataset_viz</span> <span class="o">=</span> <span class="n">datasets</span><span class="o">.</span><span class="n">VOCSegmentation</span><span class="p">(</span>
@@ -309,7 +310,7 @@
 </div>
 </section>
 <section id="training">
-<h2>Training<a class="headerlink" href="#training" title="Permalink to this headline"></a></h2>
+<h2>Training<a class="headerlink" href="#training" title="Permalink to this heading"></a></h2>
 <p>For training, we use the Jaccard index metric in addition to the accuracy and F1-score. The Jaccard index is also kwown as IoU is a classical metric for semantic segmentation.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Poutyne Model on GPU</span>
 <span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span>
@@ -327,7 +328,7 @@
 </div>
 </section>
 <section id="calculation-of-the-scores-and-visualization-of-results">
-<h2>Calculation of the scores and visualization of results<a class="headerlink" href="#calculation-of-the-scores-and-visualization-of-results" title="Permalink to this headline"></a></h2>
+<h2>Calculation of the scores and visualization of results<a class="headerlink" href="#calculation-of-the-scores-and-visualization-of-results" title="Permalink to this heading"></a></h2>
 <p>There is one more helpful feature in Poutyne, which makes the evaluation task more easy and straight forward. Usually, computer vision researchers try to evaluate their trained networks on validation/test datasets by obtaining the scores (accuracy or loss usually). The <code class="docutils literal notranslate"><span class="pre">evaluate</span></code> methods in Poutyne provides you the loss and the metrics. In the next few blocks of code, you will see some examples.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">loss</span><span class="p">,</span> <span class="p">(</span><span class="n">acc</span><span class="p">,</span> <span class="n">f1</span><span class="p">,</span> <span class="n">jaccard</span><span class="p">)</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">evaluate_generator</span><span class="p">(</span><span class="n">test_loader</span><span class="p">)</span>
 </pre></div>
@@ -358,7 +359,7 @@
 <img alt="../_images/voc_segment_test_gt.png" src="../_images/voc_segment_test_gt.png" />
 </section>
 <section id="last-note">
-<h2>Last note<a class="headerlink" href="#last-note" title="Permalink to this headline"></a></h2>
+<h2>Last note<a class="headerlink" href="#last-note" title="Permalink to this heading"></a></h2>
 <p>This example shows you how to design and train your own segmentation network simply. However, to get better results, you can play with the hyperparameters and do further finetuning to increase the accuracy.</p>
 </section>
 </section>

@@ -8,7 +8,7 @@
 <meta content="https://poutyne.org/_static/logos/poutyne-notext.png" property="og:image" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Here is Poutyne &mdash; Poutyne 1.11 documentation</title>
+  <title>Here is Poutyne &mdash; Poutyne 1.12 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -18,6 +18,7 @@
         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
@@ -34,7 +35,7 @@
             <img src="_static/poutyne-light.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                1.11
+                1.12
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -91,7 +92,7 @@
            <div itemprop="articleBody">
              
   <section id="here-is-poutyne">
-<h1>Here is Poutyne<a class="headerlink" href="#here-is-poutyne" title="Permalink to this headline"></a></h1>
+<h1>Here is Poutyne<a class="headerlink" href="#here-is-poutyne" title="Permalink to this heading"></a></h1>
 <p>Poutyne is a simplified framework for <a class="reference external" href="https://pytorch.org/">PyTorch</a> and handles much of the boilerplating code needed to train neural networks.</p>
 <p>Use Poutyne to:</p>
 <ul class="simple">
@@ -100,7 +101,7 @@
 </ul>
 <p>Poutyne is compatible with the <strong>latest version of PyTorch</strong> and  <strong>Python &gt;= 3.7</strong>.</p>
 <section id="cite">
-<h2>Cite<a class="headerlink" href="#cite" title="Permalink to this headline"></a></h2>
+<h2>Cite<a class="headerlink" href="#cite" title="Permalink to this heading"></a></h2>
 <div class="highlight-bib notranslate"><div class="highlight"><pre><span></span><span class="nc">@misc</span><span class="p">{</span><span class="nl">Paradis_Poutyne_A_Simplified_2020</span><span class="p">,</span><span class="w"></span>
 <span class="w">    </span><span class="na">author</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{Paradis, Frédérik and Beauchemin, David and Godbout, Mathieu and Alain, Mathieu and Garneau, Nicolas and Otte, Stefan and Tremblay, Alexis and Bélanger, Marc-Antoine and Laviolette, François}</span><span class="p">,</span><span class="w"></span>
 <span class="w">    </span><span class="na">title</span><span class="w">  </span><span class="p">=</span><span class="w"> </span><span class="s">{{Poutyne: A Simplified Framework for Deep Learning}}</span><span class="p">,</span><span class="w"></span>
@@ -112,7 +113,7 @@
 </section>
 </section>
 <section id="getting-started-few-seconds-to-poutyne">
-<h1>Getting started: few seconds to Poutyne<a class="headerlink" href="#getting-started-few-seconds-to-poutyne" title="Permalink to this headline"></a></h1>
+<h1>Getting started: few seconds to Poutyne<a class="headerlink" href="#getting-started-few-seconds-to-poutyne" title="Permalink to this heading"></a></h1>
 <p>The core data structure of Poutyne is a <a class="reference internal" href="model.html#poutyne.Model" title="poutyne.Model"><code class="xref py py-class docutils literal notranslate"><span class="pre">Model</span></code></a>, a way to train your own <a class="reference external" href="https://pytorch.org/docs/master/nn.html">PyTorch</a> neural networks.</p>
 <p>How Poutyne works is that you create your <a class="reference external" href="https://pytorch.org/docs/master/nn.html">PyTorch</a> module (neural network) as usual but when comes the time to train it you feed it into the Poutyne Model, which handles all the steps, stats and callbacks, similar to what <a class="reference external" href="https://keras.io/">Keras</a> does.</p>
 <p>Here is a simple example:</p>
@@ -196,7 +197,7 @@
 <p><a class="reference external" href="https://github.com/GRAAL-Research/poutyne/blob/master/examples/basic_random_classification_with_model_bundle.py">See the complete code here.</a> Also, <a class="reference external" href="https://github.com/GRAAL-Research/poutyne/blob/master/examples/basic_random_regression_with_model_bundle.py">see this</a> for an example for regression.</p>
 </section>
 <section id="installation">
-<h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline"></a></h1>
+<h1>Installation<a class="headerlink" href="#installation" title="Permalink to this heading"></a></h1>
 <p>Before installing Poutyne, you must have the latest version of <a class="reference external" href="https://pytorch.org/">PyTorch</a> in your environment.</p>
 <ul>
 <li><p><strong>Install the stable version of Poutyne:</strong></p>
@@ -217,15 +218,15 @@
 </ul>
 </section>
 <section id="learning-material">
-<h1>Learning Material<a class="headerlink" href="#learning-material" title="Permalink to this headline"></a></h1>
+<h1>Learning Material<a class="headerlink" href="#learning-material" title="Permalink to this heading"></a></h1>
 <section id="blog-posts">
-<h2>Blog posts<a class="headerlink" href="#blog-posts" title="Permalink to this headline"></a></h2>
+<h2>Blog posts<a class="headerlink" href="#blog-posts" title="Permalink to this heading"></a></h2>
 <ul class="simple">
 <li><p><a class="reference external" href="https://medium.com/pytorch/poutyne-a-simplified-framework-for-deep-learning-in-pytorch-74b1fc1d5a8b">Medium PyTorch post</a> - Presentation of the basics of Poutyne and how it can help you be more efficient when developing neural networks with PyTorch.</p></li>
 </ul>
 </section>
 <section id="examples">
-<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline"></a></h2>
+<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this heading"></a></h2>
 <p>Look at notebook files with full working <a class="reference external" href="https://github.com/GRAAL-Research/poutyne/blob/master/examples/">examples</a>:</p>
 <ul class="simple">
 <li><p><a class="reference external" href="https://github.com/GRAAL-Research/poutyne/blob/master/examples/introduction.ipynb">introduction.ipynb</a>  (<a class="reference external" href="https://github.com/GRAAL-Research/poutyne/blob/master/tutorials/introduction_pytorch_poutyne_tutorial.ipynb">tutorial version</a>) - comparison of Poutyne with bare PyTorch and usage examples of Poutyne callbacks and the ModelBundle class.</p></li>
@@ -250,26 +251,26 @@
 </ul>
 </section>
 <section id="videos">
-<h2>Videos<a class="headerlink" href="#videos" title="Permalink to this headline"></a></h2>
+<h2>Videos<a class="headerlink" href="#videos" title="Permalink to this heading"></a></h2>
 <ul class="simple">
 <li><p><a class="reference external" href="https://youtu.be/gQ3SW5r7HSs">Presentation on Poutyne</a> given at one of the weekly presentations of the Institute Intelligence and Data (IID) of Université Laval. <a class="reference external" href="https://github.com/GRAAL-Research/poutyne/blob/master/slides/poutyne.pdf">Slides</a> and the <a class="reference external" href="https://github.com/GRAAL-Research/poutyne/blob/master/slides/src/">associated Latex source code</a> are also available.</p></li>
 </ul>
 </section>
 </section>
 <section id="contributing-to-poutyne">
-<h1>Contributing to Poutyne<a class="headerlink" href="#contributing-to-poutyne" title="Permalink to this headline"></a></h1>
+<h1>Contributing to Poutyne<a class="headerlink" href="#contributing-to-poutyne" title="Permalink to this heading"></a></h1>
 <p>We welcome user input, whether it is regarding bugs found in the library or feature propositions ! Make sure to have a look at our <a class="reference external" href="https://github.com/GRAAL-Research/poutyne/blob/master/CONTRIBUTING.md">contributing guidelines</a> for more details on this matter.</p>
 </section>
 <section id="sponsors">
-<h1>Sponsors<a class="headerlink" href="#sponsors" title="Permalink to this headline"></a></h1>
+<h1>Sponsors<a class="headerlink" href="#sponsors" title="Permalink to this heading"></a></h1>
 <p>This project supported by <a class="reference external" href="https://github.com/freud14/">Frédérik Paradis</a> and <a class="reference external" href="https://github.com/davebulaval/">David Beauchemin</a>. <a class="reference external" href="https://github.com/sponsors/freud14">Join the sponsors - show your ❤️ and support, and appear on the list</a>!</p>
 </section>
 <section id="license">
-<h1>License<a class="headerlink" href="#license" title="Permalink to this headline"></a></h1>
+<h1>License<a class="headerlink" href="#license" title="Permalink to this heading"></a></h1>
 <p>Poutyne is LGPLv3 licensed, as found in the <a class="reference external" href="https://github.com/GRAAL-Research/poutyne/blob/master/LICENSE">LICENSE file</a>.</p>
 </section>
 <section id="why-this-name-poutyne">
-<h1>Why this name, Poutyne?<a class="headerlink" href="#why-this-name-poutyne" title="Permalink to this headline"></a></h1>
+<h1>Why this name, Poutyne?<a class="headerlink" href="#why-this-name-poutyne" title="Permalink to this heading"></a></h1>
 <p>Poutyne’s name comes from <a class="reference external" href="https://en.wikipedia.org/wiki/Poutine">poutine</a>, the well-known dish from Quebec. It is usually composed of French fries, squeaky cheese curds and brown gravy. However, in Quebec, it also has the meaning of something that is an <a class="reference external" href="https://fr.wiktionary.org/wiki/poutine">“ordinary or common subject or activity”</a>. Thus, Poutyne will get rid of the ordinary boilerplate code that plain <a class="reference external" href="https://pytorch.org/">PyTorch</a> training usually entails.</p>
 <figure class="align-default" id="id5">
 <img alt="Poutine" src="https://upload.wikimedia.org/wikipedia/commons/4/4e/La_Banquise_Poutine_%28cropped%29.jpg" />
@@ -279,7 +280,7 @@
 </figure>
 </section>
 <section id="api-reference">
-<h1>API Reference<a class="headerlink" href="#api-reference" title="Permalink to this headline"></a></h1>
+<h1>API Reference<a class="headerlink" href="#api-reference" title="Permalink to this heading"></a></h1>
 <div class="toctree-wrapper compound">
 <p class="caption" role="heading"><span class="caption-text">API</span></p>
 <ul>
@@ -306,7 +307,7 @@
 </div>
 </section>
 <section id="indices-and-tables">
-<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline"></a></h1>
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this heading"></a></h1>
 <ul class="simple">
 <li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
 <li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>

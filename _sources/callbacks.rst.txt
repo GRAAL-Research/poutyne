@@ -91,6 +91,8 @@ purpose.
 
 .. autoclass:: OptimizerCheckpoint
 
+.. autoclass:: RandomStatesCheckpoint
+
 .. autoclass:: LRSchedulerCheckpoint
 
 .. autoclass:: PeriodicSaveLambda

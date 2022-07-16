@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>poutyne.framework.callbacks.checkpoint &mdash; Poutyne 1.11 documentation</title>
+  <title>poutyne.framework.callbacks.checkpoint &mdash; Poutyne 1.12 documentation</title>
       <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -13,6 +13,7 @@
         <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
         <script src="../../../../_static/jquery.js"></script>
         <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../../../../_static/doctools.js"></script>
     <script src="../../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../../genindex.html" />
@@ -28,7 +29,7 @@
             <img src="../../../../_static/poutyne-light.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                1.11
+                1.12
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
@@ -109,6 +110,7 @@
 
 <span class="kn">from</span> <span class="nn">.lr_scheduler</span> <span class="kn">import</span> <span class="n">_PyTorchLRSchedulerWrapper</span><span class="p">,</span> <span class="n">ReduceLROnPlateau</span>
 <span class="kn">from</span> <span class="nn">.periodic</span> <span class="kn">import</span> <span class="n">PeriodicSaveCallback</span>
+<span class="kn">from</span> <span class="nn">...utils</span> <span class="kn">import</span> <span class="n">load_random_states</span><span class="p">,</span> <span class="n">save_random_states</span>
 
 
 <div class="viewcode-block" id="ModelCheckpoint"><a class="viewcode-back" href="../../../../callbacks.html#poutyne.ModelCheckpoint">[docs]</a><span class="k">class</span> <span class="nc">ModelCheckpoint</span><span class="p">(</span><span class="n">PeriodicSaveCallback</span><span class="p">):</span>
@@ -243,6 +245,24 @@
         <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">state</span> <span class="ow">in</span> <span class="n">states</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">name_to_stateful</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">name_to_stateful</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="RandomStatesCheckpoint"><a class="viewcode-back" href="../../../../callbacks.html#poutyne.RandomStatesCheckpoint">[docs]</a><span class="k">class</span> <span class="nc">RandomStatesCheckpoint</span><span class="p">(</span><span class="n">PeriodicSaveCallback</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Save Python, Numpy and Pytorch&#39;s (both CPU and GPU) random states after every epoch. The random states</span>
+<span class="sd">    can be reloaded using :func:`~poutyne.load_random_states()`.</span>
+
+<span class="sd">    See :class:`~poutyne.PeriodicSaveCallback` for the arguments&#39; descriptions.</span>
+
+<span class="sd">    See:</span>
+<span class="sd">        :class:`~poutyne.PeriodicSaveCallback`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">save_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fd</span><span class="p">:</span> <span class="n">IO</span><span class="p">,</span> <span class="n">epoch_number</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">logs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">):</span>
+        <span class="n">save_random_states</span><span class="p">(</span><span class="n">fd</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">restore</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fd</span><span class="p">:</span> <span class="n">IO</span><span class="p">):</span>
+        <span class="n">load_random_states</span><span class="p">(</span><span class="n">fd</span><span class="p">)</span></div>
 </pre></div>
 
            </div>

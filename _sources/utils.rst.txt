@@ -17,6 +17,8 @@ list and dict.
 .. autofunction:: numpy_to_torch
 .. autofunction:: torch_apply
 .. autofunction:: set_seeds
+.. autofunction:: save_random_states
+.. autofunction:: load_random_states
 
 Plotting
 --------

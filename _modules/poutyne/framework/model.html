@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>poutyne.framework.model &mdash; Poutyne 1.11 documentation</title>
+  <title>poutyne.framework.model &mdash; Poutyne 1.12 documentation</title>
       <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -13,6 +13,7 @@
         <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
         <script src="../../../_static/jquery.js"></script>
         <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../../../_static/doctools.js"></script>
     <script src="../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
@@ -28,7 +29,7 @@
             <img src="../../../_static/poutyne-light.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                1.11
+                1.12
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
@@ -1684,8 +1685,12 @@
         <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">param_groups</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">group</span><span class="p">[</span><span class="s1">&#39;params&#39;</span><span class="p">]:</span>
                 <span class="k">if</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">state</span><span class="p">:</span>
-                    <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="n">p</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                        <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">is_tensor</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="ow">and</span> <span class="n">p</span><span class="o">.</span><span class="n">device</span> <span class="o">!=</span> <span class="n">v</span><span class="o">.</span><span class="n">device</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="n">p</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                        <span class="k">if</span> <span class="p">(</span>
+                            <span class="p">(</span><span class="s1">&#39;capturable&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">group</span> <span class="ow">or</span> <span class="n">group</span><span class="p">[</span><span class="s2">&quot;capturable&quot;</span><span class="p">]</span> <span class="ow">or</span> <span class="n">n</span> <span class="o">!=</span> <span class="s1">&#39;step&#39;</span><span class="p">)</span>
+                            <span class="ow">and</span> <span class="n">torch</span><span class="o">.</span><span class="n">is_tensor</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+                            <span class="ow">and</span> <span class="n">p</span><span class="o">.</span><span class="n">device</span> <span class="o">!=</span> <span class="n">v</span><span class="o">.</span><span class="n">device</span>
+                        <span class="p">):</span>
                             <span class="n">v</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">v</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_get_named_optimizer_attrs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -1721,6 +1726,7 @@
             <span class="k">yield</span>
         <span class="k">finally</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_set_named_optimizer_attrs</span><span class="p">(</span><span class="n">param_name_groups</span><span class="p">,</span> <span class="n">named_state</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_transfer_optimizer_state_to_right_device</span><span class="p">()</span>
 
 <div class="viewcode-block" id="Model.get_weights"><a class="viewcode-back" href="../../../model.html#poutyne.Model.get_weights">[docs]</a>    <span class="k">def</span> <span class="nf">get_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
