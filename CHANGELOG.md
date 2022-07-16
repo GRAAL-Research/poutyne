@@ -1,10 +1,17 @@
 # v1.x.x
 
+*
+
+# v1.12
+
+* Fix a bug when transfering the optimizer on another device caused by a new feature in PyTorch 1.12, i.e. the "capturable"
+  parameter in Adam and AdamW.
 * Add utilitary functions for saving ([`save_random_states`](https://poutyne.org/utils.html#poutyne.save_random_states))
   and loading ([`load_random_states`](https://poutyne.org/utils.html#poutyne.load_random_states)) Python, Numpy and Pytorch's
   (both CPU and GPU) random states. Furthermore, we also add the
   [`RandomStatesCheckpoint`](https://poutyne.org/callbacks.html#poutyne.RandomStatesCheckpoint) callback. This callback
   is now used in ModelBundle.
+
 
 # v1.11
 
