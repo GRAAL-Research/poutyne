@@ -1599,9 +1599,12 @@ class Model:
             for p in group['params']:
                 if p in self.optimizer.state:
                     for n, v in self.optimizer.state[p].items():
-                        if 'capturable' not in group or group["capturable"] or n != 'step':
-                            if torch.is_tensor(v) and p.device != v.device:
-                                v.data = v.data.to(p.device)
+                        if (
+                            ('capturable' not in group or group["capturable"] or n != 'step')
+                            and torch.is_tensor(v)
+                            and p.device != v.device
+                        ):
+                            v.data = v.data.to(p.device)
 
     def _get_named_optimizer_attrs(self):
         param_to_name = {param: name for name, param in self.network.named_parameters()}
