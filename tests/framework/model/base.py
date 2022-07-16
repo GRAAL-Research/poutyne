@@ -166,14 +166,19 @@ class ModelFittingTestCase(CaptureOutputBase):
         for p in self.pytorch_network.parameters():
             self.assertEqual(p.device, device)
 
-        for v in self.optimizer.state.values():
-            if torch.is_tensor(v):
-                self.assertEqual(v.device, device)
+        for p in self.optimizer.state.keys():
+            if torch.is_tensor(p):
+                self.assertEqual(p.device, device)
 
         for param_group in self.optimizer.param_groups:
             for param in param_group['params']:
                 if torch.is_tensor(param):
                     self.assertEqual(param.device, device)
+
+                for n, v in self.optimizer.state[param].items():
+                    if 'capturable' not in param_group or param_group["capturable"] or n != 'step':
+                        if torch.is_tensor(v):
+                            self.assertEqual(v.device, device, n)
 
 
 class MultiIOModel(nn.Module):

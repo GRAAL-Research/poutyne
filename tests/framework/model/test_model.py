@@ -921,8 +921,6 @@ class ModelTest(ModelFittingTestCase):
         train_generator = some_data_tensor_generator(ModelTest.batch_size)
         valid_generator = some_data_tensor_generator(ModelTest.batch_size)
 
-        self._capture_output()
-
         with torch.cuda.device(ModelTest.cuda_device):
             self.model.cuda()
             self.model.fit_generator(
@@ -972,6 +970,58 @@ class ModelTest(ModelFittingTestCase):
 
             self.model.to(torch.device('cpu'))
             self._test_device(torch.device('cpu'))
+            self.model.fit_generator(
+                train_generator,
+                valid_generator,
+                epochs=ModelTest.epochs,
+                steps_per_epoch=ModelTest.steps_per_epoch,
+                validation_steps=ModelTest.steps_per_epoch,
+                callbacks=[self.mock_callback],
+            )
+
+    @skipIf(not torch.cuda.is_available(), "no gpu available")
+    def test_capturable_true_optimizer_with_cuda(self):
+        self.optimizer = torch.optim.Adam(self.pytorch_network.parameters(), lr=1e-3, capturable=True)
+        self.model = Model(
+            self.pytorch_network,
+            self.optimizer,
+            self.loss_function,
+            batch_metrics=self.batch_metrics,
+            epoch_metrics=self.epoch_metrics,
+        )
+
+        train_generator = some_data_tensor_generator(ModelTest.batch_size)
+        valid_generator = some_data_tensor_generator(ModelTest.batch_size)
+
+        with torch.cuda.device(ModelTest.cuda_device):
+            self.model.cuda(ModelTest.cuda_device)
+            self._test_device(torch.device('cuda:' + str(ModelTest.cuda_device)))
+            self.model.fit_generator(
+                train_generator,
+                valid_generator,
+                epochs=ModelTest.epochs,
+                steps_per_epoch=ModelTest.steps_per_epoch,
+                validation_steps=ModelTest.steps_per_epoch,
+                callbacks=[self.mock_callback],
+            )
+
+    @skipIf(not torch.cuda.is_available(), "no gpu available")
+    def test_capturable_false_optimizer_with_cuda(self):
+        self.optimizer = torch.optim.Adam(self.pytorch_network.parameters(), lr=1e-3, capturable=False)
+        self.model = Model(
+            self.pytorch_network,
+            self.optimizer,
+            self.loss_function,
+            batch_metrics=self.batch_metrics,
+            epoch_metrics=self.epoch_metrics,
+        )
+
+        train_generator = some_data_tensor_generator(ModelTest.batch_size)
+        valid_generator = some_data_tensor_generator(ModelTest.batch_size)
+
+        with torch.cuda.device(ModelTest.cuda_device):
+            self.model.cuda(ModelTest.cuda_device)
+            self._test_device(torch.device('cuda:' + str(ModelTest.cuda_device)))
             self.model.fit_generator(
                 train_generator,
                 valid_generator,

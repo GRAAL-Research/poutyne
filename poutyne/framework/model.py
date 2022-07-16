@@ -1598,9 +1598,10 @@ class Model:
         for group in self.optimizer.param_groups:
             for p in group['params']:
                 if p in self.optimizer.state:
-                    for _, v in self.optimizer.state[p].items():
-                        if torch.is_tensor(v) and p.device != v.device:
-                            v.data = v.data.to(p.device)
+                    for n, v in self.optimizer.state[p].items():
+                        if 'capturable' not in group or group["capturable"] or n != 'step':
+                            if torch.is_tensor(v) and p.device != v.device:
+                                v.data = v.data.to(p.device)
 
     def _get_named_optimizer_attrs(self):
         param_to_name = {param: name for name, param in self.network.named_parameters()}
@@ -1635,6 +1636,7 @@ class Model:
             yield
         finally:
             self._set_named_optimizer_attrs(param_name_groups, named_state)
+            self._transfer_optimizer_state_to_right_device()
 
     def get_weights(self):
         """
