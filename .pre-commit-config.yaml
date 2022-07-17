@@ -20,4 +20,4 @@ repos:
         language: system
         types: [python]
         args:
-          ["src", "-rn"]
+          ["poutyne", "tests", "-rn"]
