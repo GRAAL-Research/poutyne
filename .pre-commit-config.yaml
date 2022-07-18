@@ -8,10 +8,14 @@ repos:
     -   id: check-merge-conflict
     -   id: check-json
     -   id: requirements-txt-fixer
--   repo: https://github.com/psf/black
-    rev: 22.3.0
+-   repo: local
     hooks:
-    -   id: black
+    - id: black
+      name: black
+      entry: black
+      language: python
+      types_or: [python, pyi]
+      additional_dependencies: [black~=22.3, "black[jupyter]"]
 -   repo: local
     hooks:
       - id: pylint
