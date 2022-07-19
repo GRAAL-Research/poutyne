@@ -1,0 +1,27 @@
+repos:
+-   repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v2.3.0
+    hooks:
+    -   id: end-of-file-fixer
+    -   id: trailing-whitespace
+    -   id: check-yaml
+    -   id: check-merge-conflict
+    -   id: check-json
+    -   id: requirements-txt-fixer
+-   repo: local
+    hooks:
+    - id: black
+      name: black
+      entry: black
+      language: python
+      types_or: [python, pyi]
+      additional_dependencies: [black~=22.3, "black[jupyter]"]
+-   repo: local
+    hooks:
+      - id: pylint
+        name: pylint
+        entry: pylint
+        language: system
+        types: [python]
+        args:
+          ["poutyne", "tests", "-rn"]
