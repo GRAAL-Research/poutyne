@@ -31,6 +31,7 @@ from torch.nn.utils.rnn import PackedSequence
 from torch.utils.data import DataLoader, Dataset
 
 from poutyne import Model, TensorDataset
+from poutyne.framework.optimizers import all_optimizers_dict
 from tests.framework.tools import (
     some_data_tensor_generator,
     SomeDataGeneratorUsingStopIteration,
@@ -929,7 +930,6 @@ class ModelTest(ModelFittingTestCase):
                 epochs=ModelTest.epochs,
                 steps_per_epoch=ModelTest.steps_per_epoch,
                 validation_steps=ModelTest.steps_per_epoch,
-                callbacks=[self.mock_callback],
             )
 
         # The context manager is also used here because of this bug:
@@ -943,7 +943,6 @@ class ModelTest(ModelFittingTestCase):
                 epochs=ModelTest.epochs,
                 steps_per_epoch=ModelTest.steps_per_epoch,
                 validation_steps=ModelTest.steps_per_epoch,
-                callbacks=[self.mock_callback],
             )
 
             self.model.cpu()
@@ -954,7 +953,6 @@ class ModelTest(ModelFittingTestCase):
                 epochs=ModelTest.epochs,
                 steps_per_epoch=ModelTest.steps_per_epoch,
                 validation_steps=ModelTest.steps_per_epoch,
-                callbacks=[self.mock_callback],
             )
 
             self.model.to(torch.device('cuda:' + str(ModelTest.cuda_device)))
@@ -965,7 +963,6 @@ class ModelTest(ModelFittingTestCase):
                 epochs=ModelTest.epochs,
                 steps_per_epoch=ModelTest.steps_per_epoch,
                 validation_steps=ModelTest.steps_per_epoch,
-                callbacks=[self.mock_callback],
             )
 
             self.model.to(torch.device('cpu'))
@@ -976,7 +973,6 @@ class ModelTest(ModelFittingTestCase):
                 epochs=ModelTest.epochs,
                 steps_per_epoch=ModelTest.steps_per_epoch,
                 validation_steps=ModelTest.steps_per_epoch,
-                callbacks=[self.mock_callback],
             )
 
     @skipIf(not torch.cuda.is_available(), "no gpu available")
@@ -1002,7 +998,6 @@ class ModelTest(ModelFittingTestCase):
                 epochs=ModelTest.epochs,
                 steps_per_epoch=ModelTest.steps_per_epoch,
                 validation_steps=ModelTest.steps_per_epoch,
-                callbacks=[self.mock_callback],
             )
 
     @skipIf(not torch.cuda.is_available(), "no gpu available")
@@ -1028,8 +1023,67 @@ class ModelTest(ModelFittingTestCase):
                 epochs=ModelTest.epochs,
                 steps_per_epoch=ModelTest.steps_per_epoch,
                 validation_steps=ModelTest.steps_per_epoch,
-                callbacks=[self.mock_callback],
             )
+
+    @skipIf(not torch.cuda.is_available(), "no gpu available")
+    def test_back_and_forth_cuda_cpu_with_different_optimizers(self):
+        train_generator = some_data_tensor_generator(ModelTest.batch_size)
+        valid_generator = some_data_tensor_generator(ModelTest.batch_size)
+
+        for optimizer in all_optimizers_dict:
+            if optimizer in ['sparseadam', 'lbfgs']:
+                continue
+
+            with self.subTest(optimizer=optimizer):
+                self.model = Model(
+                    self.pytorch_network,
+                    optimizer,
+                    self.loss_function,
+                    batch_metrics=self.batch_metrics,
+                    epoch_metrics=self.epoch_metrics,
+                )
+                # The context manager is also used here because of this bug:
+                # https://github.com/pytorch/pytorch/issues/7320
+                with torch.cuda.device(ModelTest.cuda_device):
+                    self.model.cuda(ModelTest.cuda_device)
+                    self._test_device(torch.device('cuda:' + str(ModelTest.cuda_device)))
+                    self.model.fit_generator(
+                        train_generator,
+                        valid_generator,
+                        epochs=ModelTest.epochs,
+                        steps_per_epoch=ModelTest.steps_per_epoch,
+                        validation_steps=ModelTest.steps_per_epoch,
+                    )
+
+                    self.model.cpu()
+                    self._test_device(torch.device('cpu'))
+                    self.model.fit_generator(
+                        train_generator,
+                        valid_generator,
+                        epochs=ModelTest.epochs,
+                        steps_per_epoch=ModelTest.steps_per_epoch,
+                        validation_steps=ModelTest.steps_per_epoch,
+                    )
+
+                    self.model.to(torch.device('cuda:' + str(ModelTest.cuda_device)))
+                    self._test_device(torch.device('cuda:' + str(ModelTest.cuda_device)))
+                    self.model.fit_generator(
+                        train_generator,
+                        valid_generator,
+                        epochs=ModelTest.epochs,
+                        steps_per_epoch=ModelTest.steps_per_epoch,
+                        validation_steps=ModelTest.steps_per_epoch,
+                    )
+
+                    self.model.to(torch.device('cpu'))
+                    self._test_device(torch.device('cpu'))
+                    self.model.fit_generator(
+                        train_generator,
+                        valid_generator,
+                        epochs=ModelTest.epochs,
+                        steps_per_epoch=ModelTest.steps_per_epoch,
+                        validation_steps=ModelTest.steps_per_epoch,
+                    )
 
 
 class SomeDataset(Dataset):

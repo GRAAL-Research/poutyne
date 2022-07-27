@@ -108,7 +108,6 @@ class ModelTestMultiGPU(ModelFittingTestCase):
                 epochs=ModelTestMultiGPU.epochs,
                 steps_per_epoch=ModelTestMultiGPU.steps_per_epoch,
                 validation_steps=ModelTestMultiGPU.steps_per_epoch,
-                callbacks=[self.mock_callback],
             )
             self._test_device(torch.device('cuda:' + str(self.default_main_device)))
             self._test_multiple_gpu_mode(devices=devices)
@@ -120,7 +119,6 @@ class ModelTestMultiGPU(ModelFittingTestCase):
                 epochs=ModelTestMultiGPU.epochs,
                 steps_per_epoch=ModelTestMultiGPU.steps_per_epoch,
                 validation_steps=ModelTestMultiGPU.steps_per_epoch,
-                callbacks=[self.mock_callback],
             )
             self._test_device(torch.device('cpu'))
             self._test_single_gpu_mode()
@@ -132,7 +130,6 @@ class ModelTestMultiGPU(ModelFittingTestCase):
                 epochs=ModelTestMultiGPU.epochs,
                 steps_per_epoch=ModelTestMultiGPU.steps_per_epoch,
                 validation_steps=ModelTestMultiGPU.steps_per_epoch,
-                callbacks=[self.mock_callback],
             )
             self._test_device(torch.device('cuda:' + str(ModelTestMultiGPU.cuda_device)))
             self._test_multiple_gpu_mode(devices=devices)
@@ -144,7 +141,6 @@ class ModelTestMultiGPU(ModelFittingTestCase):
                 epochs=ModelTestMultiGPU.epochs,
                 steps_per_epoch=ModelTestMultiGPU.steps_per_epoch,
                 validation_steps=ModelTestMultiGPU.steps_per_epoch,
-                callbacks=[self.mock_callback],
             )
             self._test_device(torch.device('cpu'))
             self._test_single_gpu_mode()
@@ -161,7 +157,6 @@ class ModelTestMultiGPU(ModelFittingTestCase):
             epochs=ModelTestMultiGPU.epochs,
             steps_per_epoch=ModelTestMultiGPU.steps_per_epoch,
             validation_steps=ModelTestMultiGPU.steps_per_epoch,
-            callbacks=[self.mock_callback],
         )
 
         with torch.cuda.device(self.default_main_device):
@@ -172,7 +167,6 @@ class ModelTestMultiGPU(ModelFittingTestCase):
                 epochs=ModelTestMultiGPU.epochs,
                 steps_per_epoch=ModelTestMultiGPU.steps_per_epoch,
                 validation_steps=ModelTestMultiGPU.steps_per_epoch,
-                callbacks=[self.mock_callback],
             )
             self._test_device(torch.device('cuda:' + str(self.default_main_device)))
             self._test_single_gpu_mode()
@@ -184,7 +178,6 @@ class ModelTestMultiGPU(ModelFittingTestCase):
                 epochs=ModelTestMultiGPU.epochs,
                 steps_per_epoch=ModelTestMultiGPU.steps_per_epoch,
                 validation_steps=ModelTestMultiGPU.steps_per_epoch,
-                callbacks=[self.mock_callback],
             )
             self._test_device(torch.device('cpu'))
             self._test_single_gpu_mode()
@@ -196,7 +189,6 @@ class ModelTestMultiGPU(ModelFittingTestCase):
                 epochs=ModelTestMultiGPU.epochs,
                 steps_per_epoch=ModelTestMultiGPU.steps_per_epoch,
                 validation_steps=ModelTestMultiGPU.steps_per_epoch,
-                callbacks=[self.mock_callback],
             )
             self._test_device(torch.device('cuda:' + str(ModelTestMultiGPU.cuda_device)))
             self._test_multiple_gpu_mode(devices=devices)
@@ -208,7 +200,6 @@ class ModelTestMultiGPU(ModelFittingTestCase):
                 epochs=ModelTestMultiGPU.epochs,
                 steps_per_epoch=ModelTestMultiGPU.steps_per_epoch,
                 validation_steps=ModelTestMultiGPU.steps_per_epoch,
-                callbacks=[self.mock_callback],
             )
             self._test_device(torch.device('cuda:' + str(self.default_main_device)))
             self._test_single_gpu_mode()
@@ -220,7 +211,6 @@ class ModelTestMultiGPU(ModelFittingTestCase):
                 epochs=ModelTestMultiGPU.epochs,
                 steps_per_epoch=ModelTestMultiGPU.steps_per_epoch,
                 validation_steps=ModelTestMultiGPU.steps_per_epoch,
-                callbacks=[self.mock_callback],
             )
             self._test_device(torch.device('cpu'))
             self._test_single_gpu_mode()
@@ -237,7 +227,6 @@ class ModelTestMultiGPU(ModelFittingTestCase):
             epochs=ModelTestMultiGPU.epochs,
             steps_per_epoch=ModelTestMultiGPU.steps_per_epoch,
             validation_steps=ModelTestMultiGPU.steps_per_epoch,
-            callbacks=[self.mock_callback],
         )
         self._test_multiple_gpu_mode(devices=devices)
 
@@ -249,7 +238,6 @@ class ModelTestMultiGPU(ModelFittingTestCase):
             epochs=ModelTestMultiGPU.epochs,
             steps_per_epoch=ModelTestMultiGPU.steps_per_epoch,
             validation_steps=ModelTestMultiGPU.steps_per_epoch,
-            callbacks=[self.mock_callback],
         )
         self._test_multiple_gpu_mode(devices=devices)
 
@@ -261,7 +249,6 @@ class ModelTestMultiGPU(ModelFittingTestCase):
             epochs=ModelTestMultiGPU.epochs,
             steps_per_epoch=ModelTestMultiGPU.steps_per_epoch,
             validation_steps=ModelTestMultiGPU.steps_per_epoch,
-            callbacks=[self.mock_callback],
         )
         self._test_multiple_gpu_mode(devices=devices)
 
@@ -274,7 +261,6 @@ class ModelTestMultiGPU(ModelFittingTestCase):
             epochs=ModelTestMultiGPU.epochs,
             steps_per_epoch=ModelTestMultiGPU.steps_per_epoch,
             validation_steps=ModelTestMultiGPU.steps_per_epoch,
-            callbacks=[self.mock_callback],
         )
         self._test_device(torch.device('cuda:1'))
         self._test_single_gpu_mode()
