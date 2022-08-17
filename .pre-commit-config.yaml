@@ -21,10 +21,10 @@ repos:
       - id: pylint
         name: pylint
         entry: pylint
-        language: python
+        language: system
         types: [python]
         args: ["poutyne", "tests", "-rn"]
-        additional_dependencies: [pylint==2.12.1]
+        # additional_dependencies: [pylint==2.12.1]
   - repo: local
     hooks:
       - id: flake8
