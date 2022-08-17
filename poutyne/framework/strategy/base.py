@@ -68,13 +68,15 @@ class Strategy:
         return self.step_output(loss, metrics=batch_metrics, y_pred=y_pred, y_true=y)
 
     def optimizer_zero_grad(self, **kwargs: Any) -> None:  # pylint: disable=unused-argument
-        self.model.optimizer.zero_grad()
+        for opt in self.model.optimizer:
+            opt.zero_grad()
 
     def backward(self, loss: torch.Tensor, **kwargs: Any) -> None:  # pylint: disable=unused-argument
         loss.backward()
 
     def optimizer_step(self, **kwargs: Any) -> None:  # pylint: disable=unused-argument
-        self.model.optimizer.step()
+        for opt in self.model.optimizer:
+            opt.step()
 
     def train_step(
         self,
@@ -146,7 +148,7 @@ class GradientAccumulationStrategy(Strategy):
     def on_epoch_end(self, epoch_number: int, logs: Dict) -> None:
         if not self.do_optimizer_step:
             self._adjust_step_size()
-            self.model.optimizer.step()
+            super().optimizer_step()
 
     def train_step(
         self, data: NetworkIOType, *, callback: Optional[Callback] = None, step: Optional[int] = None, **kwargs
@@ -163,7 +165,7 @@ class GradientAccumulationStrategy(Strategy):
 
     def optimizer_zero_grad(self, **kwargs: Any) -> None:  # pylint: disable=unused-argument
         if self.zero_all_gradients:
-            self.model.optimizer.zero_grad()
+            super().optimizer_zero_grad()
 
     def backward(self, loss: torch.Tensor, **kwargs: Any) -> None:  # pylint: disable=unused-argument
         loss = loss * self.current_step_size
@@ -172,7 +174,7 @@ class GradientAccumulationStrategy(Strategy):
     def optimizer_step(self, **kwargs: Any) -> None:  # pylint: disable=unused-argument
         if self.do_optimizer_step:
             self._adjust_step_size()
-            self.model.optimizer.step()
+            super().optimizer_step()
 
     def _adjust_step_size(self) -> None:
         for param in self.model.network.parameters():

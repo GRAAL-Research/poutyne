@@ -91,7 +91,7 @@ class OptimizerCheckpointTest(TestCase):
             checkpointer.on_epoch_end(epoch, {'epoch': epoch, 'loss': loss, 'val_loss': 1})
             filename = self.checkpoint_filename.format(epoch=epoch)
             self.assertTrue(os.path.isfile(filename))
-            scheduler_states[epoch] = torch_to_numpy(lr_scheduler.scheduler.state_dict(), copy=True)
+            scheduler_states[epoch] = torch_to_numpy(lr_scheduler.schedulers[0].state_dict(), copy=True)
         checkpointer.on_train_end({})
 
         self._test_checkpoint(scheduler_states, lr_scheduler)
@@ -112,7 +112,7 @@ class OptimizerCheckpointTest(TestCase):
         for epoch, epoch_scheduler_state in scheduler_states.items():
             filename = self.checkpoint_filename.format(epoch=epoch)
             lr_scheduler.load_state(filename)
-            saved_scheduler_state = torch_to_numpy(lr_scheduler.scheduler.state_dict())
+            saved_scheduler_state = torch_to_numpy(lr_scheduler.schedulers[0].state_dict())
 
             self.assertEqual(epoch_scheduler_state, saved_scheduler_state)
 

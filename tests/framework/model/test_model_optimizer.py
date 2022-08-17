@@ -33,38 +33,44 @@ class ModelOptimizerInstanciationTest(unittest.TestCase):
 
     def test_with_optimizer_none(self):
         model = Model(self.pytorch_network, None, self.loss_function)
-        self.assertEqual(model.optimizer, None)
+        self.assertEqual(len(model.optimizer), 0)
 
     def test_with_optimizer_object(self):
         optimizer = optim.SGD(self.pytorch_network.parameters(), lr=0.1)
         model = Model(self.pytorch_network, optimizer, self.loss_function)
-        self.assertOptimizerEquality(model.optimizer, optimizer)
+        self.assertEqual(len(model.optimizer), 1)
+        self.assertOptimizerEquality(model.optimizer[0], optimizer)
 
     def test_with_string_optimizer(self):
         model = Model(self.pytorch_network, 'sgd', self.loss_function)
         expected = optim.SGD(self.pytorch_network.parameters(), lr=1e-2)
-        self.assertOptimizerEquality(model.optimizer, expected)
+        self.assertEqual(len(model.optimizer), 1)
+        self.assertOptimizerEquality(model.optimizer[0], expected)
 
     def test_with_dict_optimizer(self):
         model = Model(self.pytorch_network, dict(optim='sgd', lr=1e-3), self.loss_function)
         expected = optim.SGD(self.pytorch_network.parameters(), lr=1e-3)
-        self.assertOptimizerEquality(model.optimizer, expected)
+        self.assertEqual(len(model.optimizer), 1)
+        self.assertOptimizerEquality(model.optimizer[0], expected)
 
     def test_with_other_string_than_sgd(self):
         model = Model(self.pytorch_network, 'adam', self.loss_function)
         expected = optim.Adam(self.pytorch_network.parameters())
-        self.assertOptimizerEquality(model.optimizer, expected)
+        self.assertEqual(len(model.optimizer), 1)
+        self.assertOptimizerEquality(model.optimizer[0], expected)
 
     def test_with_other_dict_than_sgd(self):
         model = Model(self.pytorch_network, dict(optim='adam', lr=0.1), self.loss_function)
         expected = optim.Adam(self.pytorch_network.parameters(), lr=0.1)
-        self.assertOptimizerEquality(model.optimizer, expected)
+        self.assertEqual(len(model.optimizer), 1)
+        self.assertOptimizerEquality(model.optimizer[0], expected)
 
     def test_with_string_optimizer_with_parameters_that_requires_no_grad(self):
         self.pytorch_network.bias.requires_grad = False
         model = Model(self.pytorch_network, 'sgd', self.loss_function)
         expected = optim.SGD([self.pytorch_network.weight], lr=1e-2)
-        self.assertOptimizerEquality(model.optimizer, expected)
+        self.assertEqual(len(model.optimizer), 1)
+        self.assertOptimizerEquality(model.optimizer[0], expected)
 
     def assertOptimizerEquality(self, first, second):
         self.assertEqual(first.state_dict()['param_groups'], second.state_dict()['param_groups'])

@@ -214,7 +214,11 @@ class Model:
             )
 
         self.network = network
-        self.optimizer = get_optimizer(optimizer, self.network)
+        if optimizer is None:
+            optimizer = []
+        elif not isinstance(optimizer, (list, tuple)):
+            optimizer = [optimizer]
+        self.optimizer = [get_optimizer(opt, self.network) for opt in optimizer]
 
         self.loss_function = get_metric(loss_function)
         if isinstance(self.loss_function, tuple):
@@ -249,9 +253,9 @@ class Model:
         return strategy
 
     def _check_network_optimizer_parameters_match(self):
-        if self.optimizer is not None:
-            param_set = set(self.network.parameters())
-            for param_group in self.optimizer.param_groups:
+        param_set = set(self.network.parameters())
+        for opt in self.optimizer:
+            for param_group in opt.param_groups:
                 for param in param_group['params']:
                     if param not in param_set:
                         raise ValueError(
@@ -609,8 +613,8 @@ class Model:
 
         """
 
-        if self.optimizer is None:
-            raise ValueError("Impossible to fit when optimizer is None.")
+        if len(self.optimizer) == 0:
+            raise ValueError("Impossible to fit when no optimizer is provided.")
 
         strategy = self.get_strategy(strategy, batches_per_step=batches_per_step)
 
@@ -712,8 +716,8 @@ class Model:
             If ``return_dict_format`` is True, then ``loss, metrics`` are replaced by a
             dictionary.
         """
-        if self.optimizer is None:
-            raise ValueError("Impossible to fit when optimizer is None.")
+        if len(self.optimizer) == 0:
+            raise ValueError("Impossible to fit when no optimizer is provided.")
 
         strategy = self.get_strategy(strategy)
 
@@ -1572,7 +1576,9 @@ class Model:
             f: File-like object (has to implement fileno that returns a file descriptor) or string
                 containing a file name.
         """
-        self.optimizer.load_state_dict(torch.load(f, map_location='cpu'))
+        opt_state_dicts = torch.load(f, map_location='cpu')
+        for opt, opt_state_dict in zip(self.optimizer, opt_state_dicts):
+            opt.load_state_dict(opt_state_dict)
 
     def save_optimizer_state(self, f):
         """
@@ -1582,60 +1588,60 @@ class Model:
             f: File-like object (has to implement fileno that returns a file descriptor) or string
                 containing a file name.
         """
-        torch.save(self.optimizer.state_dict(), f)
+        torch.save([opt.state_dict() for opt in self.optimizer], f)
 
     def _transfer_optimizer_state_to_right_device(self):
-        if self.optimizer is None:
-            return
+        # pylint: disable=too-many-nested-blocks
+        for opt in self.optimizer:
+            # Since the optimizer state is loaded on CPU, it will crash when the optimizer will receive
+            # gradient for parameters not on CPU. Thus, for each parameter, we transfer its state in the
+            # optimizer on the same device as the parameter itself just before starting the
+            # optimization.
+            for group in opt.param_groups:
+                for p in group['params']:
+                    if p in opt.state:
+                        for n, v in opt.state[p].items():
+                            if (
+                                ('capturable' not in group or group["capturable"] or n != 'step')
+                                and torch.is_tensor(v)
+                                and p.device != v.device
+                            ):
+                                v.data = v.data.to(p.device)
 
-        # Since the optimizer state is loaded on CPU, it will crash when the optimizer will receive
-        # gradient for parameters not on CPU. Thus, for each parameter, we transfer its state in the
-        # optimizer on the same device as the parameter itself just before starting the
-        # optimization.
-        for group in self.optimizer.param_groups:
-            for p in group['params']:
-                if p in self.optimizer.state:
-                    for n, v in self.optimizer.state[p].items():
-                        if (
-                            ('capturable' not in group or group["capturable"] or n != 'step')
-                            and torch.is_tensor(v)
-                            and p.device != v.device
-                        ):
-                            v.data = v.data.to(p.device)
-
-    def _get_named_optimizer_attrs(self):
+    def _get_named_optimizer_attrs(self, optimizer):
         param_to_name = {param: name for name, param in self.network.named_parameters()}
 
         param_name_groups = []
-        for group in self.optimizer.param_groups:
+        for group in optimizer.param_groups:
             param_name_groups.append([param_to_name[param] for param in group['params']])
 
-        named_state = {param_to_name[param]: state for param, state in self.optimizer.state.items()}
+        named_state = {param_to_name[param]: state for param, state in optimizer.state.items()}
 
         return param_name_groups, named_state
 
-    def _set_named_optimizer_attrs(self, param_name_groups, named_state):
+    def _set_named_optimizer_attrs(self, optimizer, param_name_groups, named_state):
         name_to_param = dict(self.network.named_parameters())
 
-        for param_name_group, optim_group in zip(param_name_groups, self.optimizer.param_groups):
+        for param_name_group, optim_group in zip(param_name_groups, optimizer.param_groups):
             optim_group['params'] = [
                 name_to_param[param_name] if optim_param is not name_to_param[param_name] else optim_param
                 for param_name, optim_param in zip(param_name_group, optim_group['params'])
             ]
 
-        self.optimizer.state = defaultdict(dict, {name_to_param[name]: state for name, state in named_state.items()})
+        optimizer.state = defaultdict(dict, {name_to_param[name]: state for name, state in named_state.items()})
 
     @contextlib.contextmanager
     def _update_optim_device(self):
-        if self.optimizer is None:
+        if len(self.optimizer) == 0:
             yield
             return
 
-        param_name_groups, named_state = self._get_named_optimizer_attrs()
+        optimizers_states = [self._get_named_optimizer_attrs(opt) for opt in self.optimizer]
         try:
             yield
         finally:
-            self._set_named_optimizer_attrs(param_name_groups, named_state)
+            for opt, (param_name_groups, named_state) in zip(self.optimizer, optimizers_states):
+                self._set_named_optimizer_attrs(opt, param_name_groups, named_state)
             self._transfer_optimizer_state_to_right_device()
 
     def get_weights(self):

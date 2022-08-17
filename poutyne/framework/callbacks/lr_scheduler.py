@@ -34,7 +34,7 @@ class _PyTorchLRSchedulerWrapper(Callback):
     loading and saving as well as for the epoch end handling.
     """
 
-    def __init__(self, torch_lr_scheduler, *args, **kwargs):
+    def __init__(self, torch_lr_scheduler, *args, optimizers=None, **kwargs):
         super().__init__()
         if len(args) > 0 and isinstance(args[0], Optimizer):
             raise ValueError(
@@ -44,15 +44,23 @@ class _PyTorchLRSchedulerWrapper(Callback):
             )
         self.args = args
         self.kwargs = kwargs
-        self.scheduler = None
+        self.schedulers = None
         self.state_to_load = None
         self.torch_lr_scheduler = torch_lr_scheduler
+        if optimizers is not None and not isinstance(optimizers, (list, tuple)):
+            optimizers = [optimizers]
+        self.optimizers = optimizers
 
     def on_epoch_end(self, epoch_number: int, logs: Dict):
-        self.scheduler.step()
+        for scheduler in self.schedulers:
+            scheduler.step()
 
     def on_train_begin(self, logs: Dict):
-        self.scheduler = self.torch_lr_scheduler(self.model.optimizer, *self.args, **self.kwargs)
+        optimizers = self.optimizers
+        if self.optimizers is None:
+            optimizers = self.model.optimizer
+
+        self.schedulers = [self.torch_lr_scheduler(optimizer, *self.args, **self.kwargs) for optimizer in optimizers]
 
         # Load state if the scheduler was not initialized when the user asked
         # to load its state
@@ -61,13 +69,14 @@ class _PyTorchLRSchedulerWrapper(Callback):
             self.state_to_load = None
 
     def load_state_dict(self, state_dict):
-        if self.scheduler is not None:
-            self.scheduler.load_state_dict(state_dict)
+        if self.schedulers is not None:
+            for scheduler, scheduler_state_dict in zip(self.schedulers, state_dict):
+                scheduler.load_state_dict(scheduler_state_dict)
         else:
             self.state_to_load = state_dict
 
     def state_dict(self):
-        return self.scheduler.state_dict()
+        return [scheduler.state_dict() for scheduler in self.schedulers]
 
     def load_state(self, f: BinaryIO):
         self.load_state_dict(torch.load(f, map_location='cpu'))
@@ -112,4 +121,5 @@ class ReduceLROnPlateau(_PyTorchLRSchedulerWrapper):
         self.monitor = monitor
 
     def on_epoch_end(self, epoch_number: int, logs: Dict):
-        self.scheduler.step(logs[self.monitor])
+        for scheduler in self.schedulers:
+            scheduler.step(logs[self.monitor])

@@ -38,11 +38,12 @@ class Logger(Callback):
             self.fieldnames = ['epoch', 'batch', 'size', 'time']
         else:
             self.fieldnames = ['epoch', 'time']
-        if getattr(self.model, 'optimizer', None) is not None:
-            if len(self.model.optimizer.param_groups) > 1:
-                self.fieldnames += [f'lr_group_{i}' for i in range(len(self.model.optimizer.param_groups))]
+        for opt_idx, opt in enumerate(self.model.optimizer):
+            prefix = f'opt{opt_idx}_' if len(self.model.optimizer) > 1 else ''
+            if len(opt.param_groups) > 1:
+                self.fieldnames += [prefix + f'lr_group_{i}' for i in range(len(opt.param_groups))]
             else:
-                self.fieldnames += ['lr']
+                self.fieldnames += [prefix + 'lr']
         self.fieldnames += metrics
         self.fieldnames += ['val_' + metric for metric in metrics]
         self._on_train_begin_write(logs)
@@ -83,14 +84,14 @@ class Logger(Callback):
 
     def _get_current_learning_rates(self):
         learning_rates = {}
-        if getattr(self.model, 'optimizer', None) is not None:
-            if len(self.model.optimizer.param_groups) > 1:
-                learning_rates = {
-                    f'lr_group_{i}': param_group['lr']
-                    for i, param_group in enumerate(self.model.optimizer.param_groups)
-                }
+        for opt_idx, opt in enumerate(self.model.optimizer):
+            prefix = f'opt{opt_idx}_' if len(self.model.optimizer) > 1 else ''
+            if len(opt.param_groups) > 1:
+                learning_rates.update(
+                    {prefix + f'lr_group_{i}': param_group['lr'] for i, param_group in enumerate(opt.param_groups)}
+                )
             else:
-                learning_rates = {'lr': self.model.optimizer.param_groups[0]['lr']}
+                learning_rates.update({prefix + 'lr': opt.param_groups[0]['lr']})
         return learning_rates
 
 
