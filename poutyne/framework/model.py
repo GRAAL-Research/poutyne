@@ -22,16 +22,16 @@ import contextlib
 import timeit
 import warnings
 from collections import defaultdict
-from typing import Iterable, Mapping, List, Union, Any, Tuple
+from typing import Iterable, Mapping, List, Optional, Union, Any, Tuple
 
 import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from torch.nn.utils.rnn import PackedSequence
 from torch.utils.data import DataLoader
 
 from poutyne import torch_to_numpy, numpy_to_torch, torch_to
+from poutyne.framework.strategy.base import GradientAccumulationStrategy, Strategy
 from .callbacks import CallbackList, ProgressionCallback, Callback
 from .iterators import EpochIterator, _get_step_iterator, StepIterator
 from .metrics import get_metric
@@ -196,6 +196,7 @@ class Model:
         epoch_metrics=None,
         torch_metrics=None,
         device=None,
+        strategy=None,
     ):
         if not isinstance(network, nn.Module):
             raise ValueError(f"network should be of type derived from nn.Module, received {type(network)}.")
@@ -228,6 +229,11 @@ class Model:
 
         if device is not None:
             self.to(device)
+
+        self.set_strategy(strategy)
+
+    def set_strategy(self, strategy: Optional[Strategy]) -> None:
+        self.strategy = strategy
 
     def _check_network_optimizer_parameters_match(self):
         if self.optimizer is not None:
@@ -513,7 +519,7 @@ class Model:
         progress_options: Union[dict, None] = None,
         callbacks=None,
     ):
-        # pylint: disable=line-too-long
+        # pylint: disable=line-too-long,too-many-locals
         """
         Trains the network on a dataset using a generator.
 
@@ -584,8 +590,17 @@ class Model:
                 ...
 
         """
+
         if self.optimizer is None:
             raise ValueError("Impossible to fit when optimizer is None.")
+
+        if self.strategy is None:
+            if batches_per_step == 1:
+                self.strategy = Strategy()
+            else:
+                self.strategy = GradientAccumulationStrategy(batches_per_step)
+
+        self.strategy.set_model(self)
 
         self._transfer_optimizer_state_to_right_device()
 
@@ -611,103 +626,21 @@ class Model:
             batch_metrics_names=self.batch_metrics_names,
             epoch_metrics_names=self.epoch_metrics_names,
         )
+        for train_step_iterator, valid_step_iterator in epoch_iterator:
+            with self._set_training_mode(True):
+                for step, data in train_step_iterator:
+                    step.loss, step.batch_metrics, _, true_y, x = self._train_step(
+                        data, callback=callback_list, step=step.number, process_ground_truth=False, process_pred=False
+                    )
+                    step.size = get_batch_size(x, true_y)
 
-        if batches_per_step > 1:
-            self._fit_generator_n_batches_per_step(epoch_iterator, callback_list, batches_per_step)
-        else:
-            self._fit_generator_one_batch_per_step(epoch_iterator, callback_list)
+            train_step_iterator.loss = self.compute_and_reset_loss()
+            train_step_iterator.batch_metrics = self._flattened_compute_and_reset_batch_metrics()
+            train_step_iterator.epoch_metrics = self._flattened_compute_and_reset_epoch_metrics()
+
+            self._run_validation(valid_step_iterator, callback_list)
 
         return epoch_iterator.epoch_logs
-
-    def _fit_generator_n_batches_per_step(self, epoch_iterator, callback_list, batches_per_step):
-        for train_step_iterator, valid_step_iterator in epoch_iterator:
-            examples_in_step = 0
-
-            with self._set_training_mode(True):
-                for step, (x, y) in train_step_iterator:
-                    step.size = get_batch_size(x, y)
-
-                    examples_in_step += step.size
-
-                    (step.loss, step.batch_metrics, did_backprop, _,) = self._fit_batch_n_batches_per_step(
-                        x, y, batches_per_step, examples_in_step, callback=callback_list, step=step
-                    )
-
-                    if did_backprop:
-                        examples_in_step = 0
-
-            if not did_backprop:
-                # Did not step after last batch
-                self._adjust_step_size(examples_in_step)
-                self.optimizer.step()
-
-            train_step_iterator.loss = self._get_loss()
-            train_step_iterator.batch_metrics = self._get_batch_metrics()
-            train_step_iterator.epoch_metrics = self._get_epoch_metrics()
-
-            self._run_validation(valid_step_iterator, callback_list)
-
-    def _fit_batch_n_batches_per_step(
-        self,
-        x,
-        y,
-        batches_per_step,
-        examples_in_step,
-        *,
-        callback=Callback(),
-        step=None,
-        return_pred=False,
-        convert_to_numpy=True,
-    ):
-        # pylint: disable=too-many-locals
-        zero_all_gradients = (step.number - 1) % batches_per_step == 0
-        do_backprop = step.number % batches_per_step == 0
-
-        if zero_all_gradients:
-            self.optimizer.zero_grad()
-
-        loss_tensor, batch_metrics, pred_y = self._compute_loss_and_metrics(
-            x, y, return_loss_tensor=True, return_pred=return_pred, convert_to_numpy=convert_to_numpy
-        )
-
-        adjusted_loss_tensor = loss_tensor * step.size
-        adjusted_loss_tensor.backward()
-
-        callback.on_backward_end(step)
-
-        if do_backprop:
-            self._adjust_step_size(examples_in_step)
-            self.optimizer.step()
-
-        loss = float(loss_tensor)
-        return loss, batch_metrics, do_backprop, pred_y
-
-    def _fit_generator_one_batch_per_step(self, epoch_iterator, callback_list):
-        for train_step_iterator, valid_step_iterator in epoch_iterator:
-            with self._set_training_mode(True):
-                for step, (x, y) in train_step_iterator:
-                    step.loss, step.batch_metrics, _ = self._fit_batch(x, y, callback=callback_list, step=step.number)
-                    step.size = get_batch_size(x, y)
-
-            train_step_iterator.loss = self._get_loss()
-            train_step_iterator.batch_metrics = self._get_batch_metrics()
-            train_step_iterator.epoch_metrics = self._get_epoch_metrics()
-
-            self._run_validation(valid_step_iterator, callback_list)
-
-    def _fit_batch(self, x, y, *, callback=Callback(), step=None, return_pred=False, convert_to_numpy=True):
-        self.optimizer.zero_grad()
-
-        loss_tensor, batch_metrics, pred_y = self._compute_loss_and_metrics(
-            x, y, return_loss_tensor=True, return_pred=return_pred, convert_to_numpy=convert_to_numpy
-        )
-
-        loss_tensor.backward()
-        callback.on_backward_end(step)
-        self.optimizer.step()
-
-        loss = float(loss_tensor)
-        return loss, batch_metrics, pred_y
 
     def _run_validation(self, valid_step_iterator, callback_list):
         if valid_step_iterator is not None:
@@ -716,9 +649,9 @@ class Model:
             callback_list.on_valid_begin({})
             self._validate(valid_step_iterator)
 
-            valid_step_iterator.loss = self._get_loss()
-            valid_step_iterator.batch_metrics = self._get_batch_metrics()
-            valid_step_iterator.epoch_metrics = self._get_epoch_metrics()
+            valid_step_iterator.loss = self.compute_and_reset_loss()
+            valid_step_iterator.batch_metrics = self._flattened_compute_and_reset_batch_metrics()
+            valid_step_iterator.epoch_metrics = self._flattened_compute_and_reset_epoch_metrics()
 
             valid_total_time = timeit.default_timer() - valid_begin_time
 
@@ -726,31 +659,6 @@ class Model:
             valid_metrics_log.update(valid_step_iterator.metrics_logs)
 
             callback_list.on_valid_end(valid_metrics_log)
-
-    def _adjust_step_size(self, examples_in_step):
-        for param in self.network.parameters():
-            if param.grad is not None:
-                param.grad /= examples_in_step
-
-    def _process_input(self, *args):
-        args = numpy_to_torch(args)
-        if self.device is not None:
-            args = torch_to(args, self.device)
-        return args[0] if len(args) == 1 else args
-
-    def preprocess_input(self, x, y=None):
-        if y is not None:
-            x, y = self._process_input(x, y)
-        else:
-            x = self._process_input(x)
-
-        x = x if isinstance(x, (tuple, list)) else (x,)
-
-        # We return PackedSequence in a tuple since it is a namedtuple, thus an iterator object and
-        # would break later when we call self.network(*x) since it will iterate over the PackedSequence named attribute.
-        x = (x,) if isinstance(x, PackedSequence) else x
-
-        return (x, y) if y is not None else x
 
     def train_on_batch(self, x, y, *, return_pred=False, return_dict_format=False, convert_to_numpy=True):
         """
@@ -787,8 +695,8 @@ class Model:
 
         with self._set_training_mode(True):
             self._transfer_optimizer_state_to_right_device()
-            loss, batch_metrics, pred_y = self._fit_batch(
-                x, y, return_pred=return_pred, convert_to_numpy=convert_to_numpy
+            loss, batch_metrics, pred_y, _, _ = self._train_step(
+                (x, y), convert_to_numpy=convert_to_numpy, process_ground_truth=False, process_pred=return_pred
             )
 
         if return_dict_format:
@@ -1002,9 +910,9 @@ class Model:
 
         if steps is None and hasattr(generator, '__len__'):
             steps = len(generator)
-        pred_y = []
+        y_pred_out = []
         if return_ground_truth:
-            true_y = []
+            y_true_out = []
 
         callbacks = [] if callbacks is None else callbacks
 
@@ -1023,14 +931,14 @@ class Model:
                 callback_list.on_predict_batch_begin(step, {})
 
                 if has_ground_truth:
-                    x, y = self.preprocess_input(*batch)
+                    x, y = batch
                 else:
-                    x = self.preprocess_input(batch)
+                    x = batch
 
-                batch_pred = self.network(*x)
-                pred_y.append(torch_to_numpy(batch_pred) if convert_to_numpy else batch_pred)
+                y_pred = self._predict_step(x, convert_to_numpy=convert_to_numpy)
+                y_pred_out.append(y_pred)
                 if return_ground_truth:
-                    true_y.append(torch_to_numpy(y) if convert_to_numpy else y)
+                    y_true_out.append(torch_to_numpy(y) if convert_to_numpy else y)
 
                 batch_end_time = timeit.default_timer()
                 batch_total_time = batch_end_time - time_since_last_batch
@@ -1039,15 +947,15 @@ class Model:
                 callback_list.on_predict_batch_end(step, {'batch': step, 'time': batch_total_time})
 
         if concatenate_returns:
-            pred_y = _concat(pred_y)
+            y_pred_out = _concat(y_pred_out)
             if return_ground_truth:
-                true_y = _concat(true_y)
+                y_true_out = _concat(y_true_out)
 
         callback_list.on_predict_end({'time': timeit.default_timer() - predict_begin_time})
 
         if return_ground_truth:
-            return pred_y, true_y
-        return pred_y
+            return y_pred_out, y_true_out
+        return y_pred_out
 
     def predict_on_batch(self, x, *, convert_to_numpy=True) -> Any:
         """
@@ -1063,9 +971,7 @@ class Model:
             Return the predictions in the format outputted by the model.
         """
         with self._set_training_mode(False):
-            x = self.preprocess_input(x)
-            y_pred = self.network(*x)
-            return torch_to_numpy(y_pred) if convert_to_numpy else y_pred
+            return self._predict_step(x, convert_to_numpy=convert_to_numpy)
 
     def evaluate(
         self,
@@ -1383,22 +1289,22 @@ class Model:
         )
 
         test_begin_time = timeit.default_timer()
-        pred_y, true_y = self._validate(
+        y_pred_out, y_true_out = self._validate(
             step_iterator,
             return_pred=return_pred,
             return_ground_truth=return_ground_truth,
             convert_to_numpy=convert_to_numpy,
         )
 
-        step_iterator.loss = self._get_loss()
-        step_iterator.batch_metrics = self._get_batch_metrics()
-        step_iterator.epoch_metrics = self._get_epoch_metrics()
+        step_iterator.loss = self.compute_and_reset_loss()
+        step_iterator.batch_metrics = self._flattened_compute_and_reset_batch_metrics()
+        step_iterator.epoch_metrics = self._flattened_compute_and_reset_epoch_metrics()
         test_total_time = timeit.default_timer() - test_begin_time
 
         if return_pred and concatenate_returns:
-            pred_y = _concat(pred_y)
+            y_pred_out = _concat(y_pred_out)
         if return_ground_truth and concatenate_returns:
-            true_y = _concat(true_y)
+            y_true_out = _concat(y_true_out)
 
         test_metrics_log = {'time': test_total_time}
         test_metrics_log.update(step_iterator.metrics_logs)
@@ -1406,11 +1312,13 @@ class Model:
         callback_list.on_test_end(test_metrics_log)
 
         if return_dict_format:
-            return self._format_truth_pred_return((test_metrics_log,), pred_y, return_pred, true_y, return_ground_truth)
+            return self._format_truth_pred_return(
+                (test_metrics_log,), y_pred_out, return_pred, y_true_out, return_ground_truth
+            )
 
         metrics = np.concatenate((step_iterator.batch_metrics, step_iterator.epoch_metrics))
         return self._format_loss_metrics_return(
-            step_iterator.loss, metrics, pred_y, return_pred, true_y, return_ground_truth
+            step_iterator.loss, metrics, y_pred_out, return_pred, y_true_out, return_ground_truth
         )
 
     def evaluate_on_batch(self, x, y, *, return_pred=False, return_dict_format=False, convert_to_numpy=True) -> Tuple:
@@ -1443,83 +1351,72 @@ class Model:
             dictionary.
         """
         with self._set_training_mode(False):
-            loss, batch_metrics, pred_y = self._compute_loss_and_metrics(
-                x, y, return_pred=return_pred, convert_to_numpy=convert_to_numpy
+            loss, batch_metrics, y_pred, _, _ = self._test_step(
+                (x, y),
+                convert_to_numpy=convert_to_numpy,
+                process_ground_truth=False,
+                process_pred=return_pred,
             )
-
         if return_dict_format:
             logs = dict(loss=loss)
             logs.update(zip(self.batch_metrics_names, batch_metrics))
 
-            return self._format_truth_pred_return((logs,), pred_y, return_pred)
+            return self._format_truth_pred_return((logs,), y_pred, return_pred)
 
-        return self._format_loss_metrics_return(loss, batch_metrics, pred_y, return_pred)
+        return self._format_loss_metrics_return(loss, batch_metrics, y_pred, return_pred)
 
     def _validate(self, step_iterator, return_pred=False, return_ground_truth=False, convert_to_numpy=True):
-        pred_list = None
-        true_list = None
+        y_pred_list = None
+        y_true_list = None
         if return_pred:
-            pred_list = []
+            y_pred_list = []
         if return_ground_truth:
-            true_list = []
+            y_true_list = []
 
         with self._set_training_mode(False):
-            for step, (x, y) in step_iterator:
-                step.loss, step.batch_metrics, pred_y = self._compute_loss_and_metrics(
-                    x, y, return_pred=return_pred, convert_to_numpy=convert_to_numpy
+            for step, data in step_iterator:
+                step.loss, step.batch_metrics, y_pred, y, x = self._test_step(
+                    data,
+                    convert_to_numpy=convert_to_numpy,
+                    process_ground_truth=return_ground_truth,
+                    process_pred=return_pred,
                 )
+
                 if return_pred:
-                    pred_list.append(pred_y)
+                    y_pred_list.append(y_pred)
                 if return_ground_truth:
-                    true_list.append(torch_to_numpy(y) if convert_to_numpy else y)
+                    y_true_list.append(y)
 
                 step.size = get_batch_size(x, y)
 
-        return pred_list, true_list
+        return y_pred_list, y_true_list
 
-    def _compute_loss_and_metrics(self, x, y, *, return_loss_tensor=False, return_pred=False, convert_to_numpy=True):
-        x, y = self.preprocess_input(x, y)
-        if self.other_device is not None:
-            pred_y = torch.nn.parallel.data_parallel(self.network, x, [self.device] + self.other_device)
-        else:
-            pred_y = self.network(*x)
-        loss = self.loss_function(pred_y, y)
-        if not return_loss_tensor:
-            loss = float(loss)
-        with torch.no_grad():
-            batch_metrics = self._compute_batch_metrics(pred_y, y)
-            for epoch_metric in self.epoch_metrics:
-                epoch_metric.update(pred_y, y)
+    def compute_and_reset_batch_metrics(self):
+        metrics = [batch_metric.compute() for batch_metric in self.batch_metrics]
+        for batch_metric in self.batch_metrics:
+            batch_metric.reset()
+        return metrics
 
-        if return_pred:
-            pred_y = torch_to_numpy(pred_y) if convert_to_numpy else pred_y
-        else:
-            pred_y = None
+    def compute_and_reset_epoch_metrics(self):
+        metrics = [epoch_metric.compute() for epoch_metric in self.epoch_metrics]
+        for epoch_metric in self.epoch_metrics:
+            epoch_metric.reset()
+        return metrics
 
-        return loss, batch_metrics, pred_y
+    def _flattened_compute_and_reset_batch_metrics(self):
+        metrics = self.compute_and_reset_batch_metrics()
+        return self._flatten_metrics_output(metrics, self.batch_metrics_names)
 
-    def _compute_batch_metrics(self, pred_y, y):
-        batch_metrics = [metric(pred_y, y) for metric in self.batch_metrics]
-        return self._compute_metric_array(batch_metrics, self.original_batch_metrics_names)
+    def _flattened_compute_and_reset_epoch_metrics(self):
+        metrics = self.compute_and_reset_epoch_metrics()
+        return self._flatten_metrics_output(metrics, self.epoch_metrics_names)
 
-    def _get_loss(self):
+    def compute_and_reset_loss(self):
         loss = self.loss_function.compute().item()
         self.loss_function.reset()
         return loss
 
-    def _get_batch_metrics(self):
-        metrics = [batch_metric.compute() for batch_metric in self.batch_metrics]
-        for batch_metric in self.batch_metrics:
-            batch_metric.reset()
-        return self._compute_metric_array(metrics, self.original_batch_metrics_names)
-
-    def _get_epoch_metrics(self):
-        metrics = [epoch_metric.compute() for epoch_metric in self.epoch_metrics]
-        for epoch_metric in self.epoch_metrics:
-            epoch_metric.reset()
-        return self._compute_metric_array(metrics, self.original_epoch_metrics_names)
-
-    def _compute_metric_array(self, metrics_list, names_list):
+    def _flatten_metrics_output(self, metrics_list, names_list):
         def _get_metric(names, metrics):
             names = [names] if isinstance(names, str) else names
             values = None
@@ -1536,6 +1433,61 @@ class Model:
         return np.array(
             [metric for names, metrics in zip(names_list, metrics_list) for metric in _get_metric(names, metrics)]
         )
+
+    def _preprocess_input(self, data):
+        data = numpy_to_torch(data)
+        if self.device is not None:
+            data = torch_to(data, self.device)
+        return data
+
+    def _process_batch_output(self, output, *, convert_to_numpy=True, process_ground_truth=True, process_pred=True):
+        metrics = self._flatten_metrics_output(output.metrics, self.original_batch_metrics_names)
+        output = output._replace(metrics=metrics)
+
+        y_pred = output.y_true
+        if process_ground_truth:
+            y_true = torch_to_numpy(output.y_true) if convert_to_numpy else output.y_true
+            output = output._replace(y_true=y_true)
+
+        if process_pred:
+            y_pred = torch_to_numpy(output.y_pred) if convert_to_numpy else output.y_pred
+            output = output._replace(y_pred=y_pred)
+
+        return output
+
+    def _train_step(
+        self,
+        data,
+        *,
+        callback: Optional[Callback] = None,
+        step: Optional[int] = None,
+        convert_to_numpy=True,
+        process_ground_truth=True,
+        process_pred=True,
+    ):
+        data = self._preprocess_input(data)
+        output = self.strategy.train_step(data, callback=callback, step=step)
+        return self._process_batch_output(
+            output,
+            convert_to_numpy=convert_to_numpy,
+            process_ground_truth=process_ground_truth,
+            process_pred=process_pred,
+        )
+
+    def _test_step(self, data, *, convert_to_numpy=True, process_ground_truth=True, process_pred=True, **kwargs):
+        data = self._preprocess_input(data)
+        output = self.strategy.test_step(data, **kwargs)
+        return self._process_batch_output(
+            output,
+            convert_to_numpy=convert_to_numpy,
+            process_ground_truth=process_ground_truth,
+            process_pred=process_pred,
+        )
+
+    def _predict_step(self, data, *, convert_to_numpy=True):
+        data = self._preprocess_input(data)
+        y_pred = self.strategy.predict_step(data)
+        return torch_to_numpy(y_pred) if convert_to_numpy else y_pred
 
     def load_weights(self, f, strict=True):
         """
