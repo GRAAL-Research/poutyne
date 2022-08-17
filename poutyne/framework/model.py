@@ -235,6 +235,19 @@ class Model:
     def set_strategy(self, strategy: Optional[Strategy]) -> None:
         self.strategy = strategy
 
+    def get_strategy(self, strategy: Optional[Strategy], *, batches_per_step: int = 1):
+        if strategy is None:
+            if self.strategy is not None:
+                strategy = self.strategy
+            if batches_per_step == 1:
+                strategy = Strategy()
+            else:
+                strategy = GradientAccumulationStrategy(batches_per_step)
+
+        strategy.set_model(self)
+
+        return strategy
+
     def _check_network_optimizer_parameters_match(self):
         if self.optimizer is not None:
             param_set = set(self.network.parameters())
@@ -299,6 +312,7 @@ class Model:
         progress_options: Union[dict, None] = None,
         callbacks=None,
         dataloader_kwargs=None,
+        strategy=None,
     ):
         # pylint: disable=line-too-long,too-many-locals
         """
@@ -387,6 +401,7 @@ class Model:
             progress_options=progress_options,
             callbacks=callbacks,
             dataloader_kwargs=dataloader_kwargs,
+            strategy=strategy,
         )
 
     def _dataset_from_data(self, args):
@@ -410,6 +425,7 @@ class Model:
         num_workers=0,
         collate_fn=None,
         dataloader_kwargs=None,
+        strategy=None,
     ):
         # pylint: disable=line-too-long,too-many-locals
         """
@@ -503,6 +519,7 @@ class Model:
             verbose=verbose,
             progress_options=progress_options,
             callbacks=callbacks,
+            strategy=strategy,
         )
 
     def fit_generator(
@@ -518,6 +535,7 @@ class Model:
         verbose=True,
         progress_options: Union[dict, None] = None,
         callbacks=None,
+        strategy=None,
     ):
         # pylint: disable=line-too-long,too-many-locals
         """
@@ -594,13 +612,7 @@ class Model:
         if self.optimizer is None:
             raise ValueError("Impossible to fit when optimizer is None.")
 
-        if self.strategy is None:
-            if batches_per_step == 1:
-                self.strategy = Strategy()
-            else:
-                self.strategy = GradientAccumulationStrategy(batches_per_step)
-
-        self.strategy.set_model(self)
+        strategy = self.get_strategy(strategy, batches_per_step=batches_per_step)
 
         self._transfer_optimizer_state_to_right_device()
 
@@ -623,6 +635,7 @@ class Model:
             validation_steps=validation_steps,
             initial_epoch=initial_epoch,
             callback=callback_list,
+            strategy=strategy,
             batch_metrics_names=self.batch_metrics_names,
             epoch_metrics_names=self.epoch_metrics_names,
         )
@@ -630,37 +643,46 @@ class Model:
             with self._set_training_mode(True):
                 for step, data in train_step_iterator:
                     step.loss, step.batch_metrics, _, true_y, x = self._train_step(
-                        data, callback=callback_list, step=step.number, process_ground_truth=False, process_pred=False
+                        strategy,
+                        data,
+                        callback=callback_list,
+                        step=step.number,
+                        process_ground_truth=False,
+                        process_pred=False,
                     )
                     step.size = get_batch_size(x, true_y)
 
-            train_step_iterator.loss = self.compute_and_reset_loss()
-            train_step_iterator.batch_metrics = self._flattened_compute_and_reset_batch_metrics()
-            train_step_iterator.epoch_metrics = self._flattened_compute_and_reset_epoch_metrics()
+            train_step_iterator.loss = self._compute_and_reset_loss()
+            train_step_iterator.batch_metrics = self._compute_and_reset_batch_metrics()
+            train_step_iterator.epoch_metrics = self._compute_and_reset_epoch_metrics()
 
-            self._run_validation(valid_step_iterator, callback_list)
+            self._run_validation(strategy, valid_step_iterator, callback_list)
 
         return epoch_iterator.epoch_logs
 
-    def _run_validation(self, valid_step_iterator, callback_list):
+    def _run_validation(self, strategy, valid_step_iterator, callback_list):
         if valid_step_iterator is not None:
             valid_begin_time = timeit.default_timer()
 
             callback_list.on_valid_begin({})
-            self._validate(valid_step_iterator)
+            strategy.on_valid_begin({})
+            self._validate(strategy, valid_step_iterator)
 
-            valid_step_iterator.loss = self.compute_and_reset_loss()
-            valid_step_iterator.batch_metrics = self._flattened_compute_and_reset_batch_metrics()
-            valid_step_iterator.epoch_metrics = self._flattened_compute_and_reset_epoch_metrics()
+            valid_step_iterator.loss = self._compute_and_reset_loss()
+            valid_step_iterator.batch_metrics = self._compute_and_reset_batch_metrics()
+            valid_step_iterator.epoch_metrics = self._compute_and_reset_epoch_metrics()
 
             valid_total_time = timeit.default_timer() - valid_begin_time
 
             valid_metrics_log = {'time': valid_total_time}
             valid_metrics_log.update(valid_step_iterator.metrics_logs)
 
+            strategy.on_valid_end(valid_metrics_log)
             callback_list.on_valid_end(valid_metrics_log)
 
-    def train_on_batch(self, x, y, *, return_pred=False, return_dict_format=False, convert_to_numpy=True):
+    def train_on_batch(
+        self, x, y, *, return_pred=False, return_dict_format=False, convert_to_numpy=True, strategy=None
+    ):
         """
         Trains the network for the batch ``(x, y)`` and computes the loss and the metrics, and
         optionally returns the predictions.
@@ -693,10 +715,16 @@ class Model:
         if self.optimizer is None:
             raise ValueError("Impossible to fit when optimizer is None.")
 
+        strategy = self.get_strategy(strategy)
+
         with self._set_training_mode(True):
             self._transfer_optimizer_state_to_right_device()
             loss, batch_metrics, pred_y, _, _ = self._train_step(
-                (x, y), convert_to_numpy=convert_to_numpy, process_ground_truth=False, process_pred=return_pred
+                strategy,
+                (x, y),
+                convert_to_numpy=convert_to_numpy,
+                process_ground_truth=False,
+                process_pred=return_pred,
             )
 
         if return_dict_format:
@@ -870,6 +898,7 @@ class Model:
         verbose=True,
         progress_options: Union[dict, None] = None,
         callbacks=None,
+        strategy=None,
     ) -> Any:
         """
         Returns the predictions of the network given batches of samples ``x``, where the tensors are
@@ -906,6 +935,8 @@ class Model:
             for the batches is returned with tensors converted into Numpy arrays.
         """
         # pylint: disable=too-many-locals
+        strategy = self.get_strategy(strategy)
+
         has_ground_truth = has_ground_truth or return_ground_truth
 
         if steps is None and hasattr(generator, '__len__'):
@@ -922,10 +953,12 @@ class Model:
         callback_list = CallbackList(callbacks)
         callback_list.set_model(self)
         callback_list.set_params({'steps': steps})
+        strategy.set_params({'steps': steps})
 
         predict_begin_time = timeit.default_timer()
         with self._set_training_mode(False):
             callback_list.on_predict_begin({})
+            strategy.on_predict_begin({})
             time_since_last_batch = timeit.default_timer()
             for step, batch in _get_step_iterator(steps, generator):
                 callback_list.on_predict_batch_begin(step, {})
@@ -935,7 +968,7 @@ class Model:
                 else:
                     x = batch
 
-                y_pred = self._predict_step(x, convert_to_numpy=convert_to_numpy)
+                y_pred = self._predict_step(strategy, x, convert_to_numpy=convert_to_numpy)
                 y_pred_out.append(y_pred)
                 if return_ground_truth:
                     y_true_out.append(torch_to_numpy(y) if convert_to_numpy else y)
@@ -951,13 +984,15 @@ class Model:
             if return_ground_truth:
                 y_true_out = _concat(y_true_out)
 
-        callback_list.on_predict_end({'time': timeit.default_timer() - predict_begin_time})
+        predict_time = timeit.default_timer() - predict_begin_time
+        strategy.on_predict_end({'time': predict_time})
+        callback_list.on_predict_end({'time': predict_time})
 
         if return_ground_truth:
             return y_pred_out, y_true_out
         return y_pred_out
 
-    def predict_on_batch(self, x, *, convert_to_numpy=True) -> Any:
+    def predict_on_batch(self, x, *, convert_to_numpy=True, strategy=None) -> Any:
         """
         Returns the predictions of the network given a batch ``x``, where the tensors are converted
         into Numpy arrays.
@@ -970,8 +1005,9 @@ class Model:
         Returns:
             Return the predictions in the format outputted by the model.
         """
+        strategy = self.get_strategy(strategy)
         with self._set_training_mode(False):
-            return self._predict_step(x, convert_to_numpy=convert_to_numpy)
+            return self._predict_step(strategy, x, convert_to_numpy=convert_to_numpy)
 
     def evaluate(
         self,
@@ -1159,6 +1195,7 @@ class Model:
         verbose=True,
         progress_options: Union[dict, None] = None,
         callbacks=None,
+        strategy=None,
     ) -> Tuple:
         # pylint: disable=too-many-locals
         """
@@ -1269,6 +1306,8 @@ class Model:
                               batch_metrics=[my_metric_fn])
                 logs = model.evaluate_generator(test_generator, return_dict_format=True)
         """
+        strategy = self.get_strategy(strategy)
+
         callbacks = [] if callbacks is None else callbacks
 
         if verbose:
@@ -1283,6 +1322,8 @@ class Model:
 
         callback_list.set_params({'steps': steps})
         callback_list.on_test_begin({})
+        strategy.set_params({'steps': steps})
+        strategy.on_test_begin({})
 
         step_iterator = StepIterator(
             generator, steps, self.batch_metrics_names, self.epoch_metrics_names, callback_list, mode="test"
@@ -1290,15 +1331,16 @@ class Model:
 
         test_begin_time = timeit.default_timer()
         y_pred_out, y_true_out = self._validate(
+            strategy,
             step_iterator,
             return_pred=return_pred,
             return_ground_truth=return_ground_truth,
             convert_to_numpy=convert_to_numpy,
         )
 
-        step_iterator.loss = self.compute_and_reset_loss()
-        step_iterator.batch_metrics = self._flattened_compute_and_reset_batch_metrics()
-        step_iterator.epoch_metrics = self._flattened_compute_and_reset_epoch_metrics()
+        step_iterator.loss = self._compute_and_reset_loss()
+        step_iterator.batch_metrics = self._compute_and_reset_batch_metrics()
+        step_iterator.epoch_metrics = self._compute_and_reset_epoch_metrics()
         test_total_time = timeit.default_timer() - test_begin_time
 
         if return_pred and concatenate_returns:
@@ -1309,6 +1351,7 @@ class Model:
         test_metrics_log = {'time': test_total_time}
         test_metrics_log.update(step_iterator.metrics_logs)
 
+        strategy.on_test_end(test_metrics_log)
         callback_list.on_test_end(test_metrics_log)
 
         if return_dict_format:
@@ -1321,7 +1364,9 @@ class Model:
             step_iterator.loss, metrics, y_pred_out, return_pred, y_true_out, return_ground_truth
         )
 
-    def evaluate_on_batch(self, x, y, *, return_pred=False, return_dict_format=False, convert_to_numpy=True) -> Tuple:
+    def evaluate_on_batch(
+        self, x, y, *, return_pred=False, return_dict_format=False, convert_to_numpy=True, strategy=None
+    ) -> Tuple:
         """
         Computes the loss and the metrics of the network on a single batch of samples and optionally
         returns the predictions.
@@ -1350,8 +1395,10 @@ class Model:
             If ``return_dict_format`` is True, then ``loss, metrics`` are replaced by a
             dictionary.
         """
+        strategy = self.get_strategy(strategy)
         with self._set_training_mode(False):
             loss, batch_metrics, y_pred, _, _ = self._test_step(
+                strategy,
                 (x, y),
                 convert_to_numpy=convert_to_numpy,
                 process_ground_truth=False,
@@ -1365,7 +1412,9 @@ class Model:
 
         return self._format_loss_metrics_return(loss, batch_metrics, y_pred, return_pred)
 
-    def _validate(self, step_iterator, return_pred=False, return_ground_truth=False, convert_to_numpy=True):
+    def _validate(
+        self, strategy, step_iterator, *, return_pred=False, return_ground_truth=False, convert_to_numpy=True
+    ):
         y_pred_list = None
         y_true_list = None
         if return_pred:
@@ -1376,6 +1425,7 @@ class Model:
         with self._set_training_mode(False):
             for step, data in step_iterator:
                 step.loss, step.batch_metrics, y_pred, y, x = self._test_step(
+                    strategy,
                     data,
                     convert_to_numpy=convert_to_numpy,
                     process_ground_truth=return_ground_truth,
@@ -1390,31 +1440,6 @@ class Model:
                 step.size = get_batch_size(x, y)
 
         return y_pred_list, y_true_list
-
-    def compute_and_reset_batch_metrics(self):
-        metrics = [batch_metric.compute() for batch_metric in self.batch_metrics]
-        for batch_metric in self.batch_metrics:
-            batch_metric.reset()
-        return metrics
-
-    def compute_and_reset_epoch_metrics(self):
-        metrics = [epoch_metric.compute() for epoch_metric in self.epoch_metrics]
-        for epoch_metric in self.epoch_metrics:
-            epoch_metric.reset()
-        return metrics
-
-    def _flattened_compute_and_reset_batch_metrics(self):
-        metrics = self.compute_and_reset_batch_metrics()
-        return self._flatten_metrics_output(metrics, self.batch_metrics_names)
-
-    def _flattened_compute_and_reset_epoch_metrics(self):
-        metrics = self.compute_and_reset_epoch_metrics()
-        return self._flatten_metrics_output(metrics, self.epoch_metrics_names)
-
-    def compute_and_reset_loss(self):
-        loss = self.loss_function.compute().item()
-        self.loss_function.reset()
-        return loss
 
     def _flatten_metrics_output(self, metrics_list, names_list):
         def _get_metric(names, metrics):
@@ -1433,6 +1458,23 @@ class Model:
         return np.array(
             [metric for names, metrics in zip(names_list, metrics_list) for metric in _get_metric(names, metrics)]
         )
+
+    def _compute_and_reset_metrics(self, metrics, unflatten_names):
+        metric_values = [metric.compute() for metric in metrics]
+        for metric in metrics:
+            metric.reset()
+        return self._flatten_metrics_output(metric_values, unflatten_names)
+
+    def _compute_and_reset_batch_metrics(self):
+        return self._compute_and_reset_metrics(self.batch_metrics, self.unflatten_batch_metrics_names)
+
+    def _compute_and_reset_epoch_metrics(self):
+        return self._compute_and_reset_metrics(self.epoch_metrics, self.unflatten_epoch_metrics_names)
+
+    def _compute_and_reset_loss(self):
+        loss = self.loss_function.compute().item()
+        self.loss_function.reset()
+        return loss
 
     def _preprocess_input(self, data):
         data = numpy_to_torch(data)
@@ -1457,6 +1499,7 @@ class Model:
 
     def _train_step(
         self,
+        strategy,
         data,
         *,
         callback: Optional[Callback] = None,
@@ -1466,7 +1509,7 @@ class Model:
         process_pred=True,
     ):
         data = self._preprocess_input(data)
-        output = self.strategy.train_step(data, callback=callback, step=step)
+        output = strategy.train_step(data, callback=callback, step=step)
         return self._process_batch_output(
             output,
             convert_to_numpy=convert_to_numpy,
@@ -1474,9 +1517,11 @@ class Model:
             process_pred=process_pred,
         )
 
-    def _test_step(self, data, *, convert_to_numpy=True, process_ground_truth=True, process_pred=True, **kwargs):
+    def _test_step(
+        self, strategy: Strategy, data, *, convert_to_numpy=True, process_ground_truth=True, process_pred=True, **kwargs
+    ):
         data = self._preprocess_input(data)
-        output = self.strategy.test_step(data, **kwargs)
+        output = strategy.test_step(data, **kwargs)
         return self._process_batch_output(
             output,
             convert_to_numpy=convert_to_numpy,
@@ -1484,9 +1529,9 @@ class Model:
             process_pred=process_pred,
         )
 
-    def _predict_step(self, data, *, convert_to_numpy=True):
+    def _predict_step(self, strategy, data, *, convert_to_numpy=True):
         data = self._preprocess_input(data)
-        y_pred = self.strategy.predict_step(data)
+        y_pred = strategy.predict_step(data)
         return torch_to_numpy(y_pred) if convert_to_numpy else y_pred
 
     def load_weights(self, f, strict=True):

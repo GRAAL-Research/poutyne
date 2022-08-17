@@ -89,7 +89,8 @@ class Strategy:
 
         self.optimizer_zero_grad()
         self.backward(loss_tensor)
-        callback.on_backward_end(step)
+        if callback is not None:
+            callback.on_backward_end(step)
         self.optimizer_step()
 
         loss = float(loss_tensor)

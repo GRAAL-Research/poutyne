@@ -34,6 +34,8 @@ from poutyne import Model, EpochMetric, rename_doubles, do_register_metric_class
 
 
 class MyConstTorchMetric(torchmetrics.Metric):
+    full_state_update: bool = False
+
     def __init__(self, value=0):
         super().__init__()
         self.value = value
@@ -51,7 +53,7 @@ class ConstEpochMetric(EpochMetric):
         self.value = value
 
     def forward(self, y_pred, y_true):
-        pass
+        return self.value
 
     def get_metric(self):
         return self.value
@@ -135,9 +137,17 @@ class MetricsModelIntegrationTest(unittest.TestCase):
         )
         self._test_history(model, expected_names, [1, 2])
 
-    def test_batch_metrics_with_multiple_names_returned_by_dict(self):
+    def test_batch_metric_function_with_multiple_names_returned_by_dict(self):
         d = dict(zip(self.metric_names, self.metric_values))
         batch_metric = get_const_batch_metric(d)
+        model = Model(
+            self.pytorch_network, self.optimizer, self.loss_function, batch_metrics=[(self.metric_names, batch_metric)]
+        )
+        self._test_history(model, d.keys(), d.values())
+
+    def test_batch_metrics_with_multiple_names_returned_by_dict(self):
+        d = dict(zip(self.metric_names, self.metric_values))
+        batch_metric = ConstEpochMetric(d)
         model = Model(
             self.pytorch_network, self.optimizer, self.loss_function, batch_metrics=[(self.metric_names, batch_metric)]
         )

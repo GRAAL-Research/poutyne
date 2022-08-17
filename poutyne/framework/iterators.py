@@ -124,6 +124,7 @@ class EpochIterator:
         validation_steps,
         initial_epoch=1,
         callback,
+        strategy,
         batch_metrics_names,
         epoch_metrics_names,
     ):
@@ -135,6 +136,7 @@ class EpochIterator:
 
         self.initial_epoch = initial_epoch
         self.callback = callback
+        self.strategy = strategy
         self.batch_metrics_names = batch_metrics_names
         self.epoch_metrics_names = epoch_metrics_names
         self.epoch_logs = []
@@ -144,6 +146,7 @@ class EpochIterator:
             params.update({'valid_steps': self.validation_steps})
 
         self.callback.set_params(params)
+        self.strategy.set_params(params)
 
     def _init_steps(self, train_generator, valid_generator, steps_per_epoch, validation_steps):
         self.steps_per_epoch = steps_per_epoch
@@ -162,6 +165,7 @@ class EpochIterator:
         self.callback.on_train_begin({})
         for epoch in range(self.initial_epoch, self.epochs + 1):
             self.callback.on_epoch_begin(epoch, {})
+            self.strategy.on_epoch_begin(epoch, {})
             epoch_begin_time = timeit.default_timer()
 
             train_step_iterator = StepIterator(
@@ -195,6 +199,7 @@ class EpochIterator:
                 **train_step_iterator.metrics_logs,
                 **val_metrics_log,
             }
+            self.strategy.on_epoch_end(epoch, epoch_log)
             self.callback.on_epoch_end(epoch, epoch_log)
 
             self.epoch_logs.append(epoch_log)
