@@ -19,7 +19,7 @@ train_dataset, valid_dataset = random_split(
 
 # Select CUDA device if available
 cuda_device = 0
-device = torch.device('cuda:%d' % cuda_device if torch.cuda.is_available() else 'cpu')
+device = torch.device(f'cuda:{cuda_device}' if torch.cuda.is_available() else 'cpu')
 
 # Define the network
 network = nn.Sequential(

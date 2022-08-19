@@ -4,12 +4,12 @@ python basic_random_classification_with_experiment.py
 
 Look in ./saves/my_classification_network for the checkpoints and logging.
 """
-
-# Import the Poutyne Model
-from poutyne import ModelBundle
 import torch
 import torch.nn as nn
 import numpy as np
+
+# Import the Poutyne Model
+from poutyne import ModelBundle
 
 # Define a random toy dataset
 num_features = 20
@@ -29,7 +29,7 @@ test_x = np.random.randn(num_test_samples, num_features).astype('float32')
 test_y = np.random.randint(num_classes, size=num_test_samples).astype('int64')
 
 cuda_device = 0
-device = torch.device("cuda:%d" % cuda_device if torch.cuda.is_available() else "cpu")
+device = torch.device(f'cuda:{cuda_device}' if torch.cuda.is_available() else 'cpu')
 
 # Define the network
 network = nn.Sequential(
