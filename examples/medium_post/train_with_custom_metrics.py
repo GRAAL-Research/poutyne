@@ -3,7 +3,7 @@ import torch.nn as nn
 from torch.utils.data import random_split
 from torchvision.datasets import MNIST
 from torchvision.transforms import ToTensor
-from poutyne import Model, EpochMetric
+from poutyne import Model, Metric
 
 # Instanciate the MNIST dataset
 train_valid_dataset = MNIST('./datasets', train=True, download=True, transform=ToTensor())
@@ -34,18 +34,18 @@ def my_accuracy(y_pred, y_true):
 
 
 # Creating an epoch metric for the accuracy
-class MyEpochMetricAccuracy(EpochMetric):
+class MyAccuracy(Metric):
     def __init__(self):
         super().__init__()
         self.reset()
 
-    def forward(self, y_pred, y_true) -> None:
+    def update(self, y_pred, y_true) -> None:
         # Increment the number of true positives and the total number of elemnts
         y_pred = y_pred.argmax(1)
         self.num_true_positives += (y_pred == y_true).long().sum().item()
         self.total_exemples += y_true.numel()
 
-    def get_metric(self):
+    def compute(self):
         # Compute the epoch metric with the numbers computed in forward
         return self.num_true_positives / self.total_exemples * 100
 
@@ -61,7 +61,7 @@ model = Model(
     'sgd',
     'cross_entropy',
     batch_metrics=[my_accuracy],
-    epoch_metrics=[MyEpochMetricAccuracy()],
+    epoch_metrics=[MyAccuracy()],
     device=device,
 )
 model.fit_dataset(train_dataset, valid_dataset, epochs=epochs)

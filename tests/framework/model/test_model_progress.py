@@ -25,14 +25,14 @@ from torch.utils.data import DataLoader
 
 from poutyne import Model, TensorDataset
 from tests.framework.tools import (
-    SomeConstantEpochMetric,
+    SomeConstantMetric,
     some_batch_metric_1,
     some_batch_metric_2,
     repeat_batch_metric,
     some_metric_1_value,
     some_metric_2_value,
     repeat_batch_metric_value,
-    some_constant_epoch_metric_value,
+    some_constant_metric_value,
     some_data_tensor_generator,
     SomeDataGeneratorUsingStopIteration,
 )
@@ -76,9 +76,9 @@ class ModelFittingTestCaseProgress(ModelFittingTestCase):
             repeat_batch_metric_value,
             repeat_batch_metric_value,
         ]
-        self.epoch_metrics = [SomeConstantEpochMetric()]
-        self.epoch_metrics_names = ['some_constant_epoch_metric']
-        self.epoch_metrics_values = [some_constant_epoch_metric_value]
+        self.epoch_metrics = [SomeConstantMetric()]
+        self.epoch_metrics_names = ['some_constant_metric']
+        self.epoch_metrics_values = [some_constant_metric_value]
 
         self.model = Model(
             self.pytorch_network,

@@ -30,7 +30,7 @@ import torch
 import torch.nn as nn
 import torchmetrics
 
-from poutyne import Model, EpochMetric, rename_doubles, do_register_metric_class, unregister_metric_class
+from poutyne import Model, Metric, rename_doubles, do_register_metric_class, unregister_metric_class
 
 
 class MyConstTorchMetric(torchmetrics.Metric):
@@ -45,15 +45,15 @@ class MyConstTorchMetric(torchmetrics.Metric):
         return self.value
 
 
-class ConstEpochMetric(EpochMetric):
+class ConstMetric(Metric):
     def __init__(self, value=0):
         super().__init__()
         self.value = value
 
-    def forward(self, y_pred, y_true):
+    def update(self, y_pred: torch.Tensor, y_true: torch.Tensor):
         pass
 
-    def get_metric(self):
+    def compute(self):
         return self.value
 
     def reset(self):
@@ -67,8 +67,8 @@ def get_batch_metric(value):
     return some_metric_name
 
 
-class SomeMetricName(ConstEpochMetric):
-    def get_metric(self):
+class SomeMetricName(ConstMetric):
+    def compute(self):
         return torch.FloatTensor([self.value])
 
     def reset(self):
@@ -145,7 +145,7 @@ class MetricsModelIntegrationTest(unittest.TestCase):
 
     def test_epoch_metrics_with_multiple_names_returned_by_dict(self):
         d = dict(zip(self.metric_names, self.metric_values))
-        epoch_metric = ConstEpochMetric(d)
+        epoch_metric = ConstMetric(d)
         model = Model(
             self.pytorch_network, self.optimizer, self.loss_function, epoch_metrics=[(self.metric_names, epoch_metric)]
         )
@@ -159,17 +159,17 @@ class MetricsModelIntegrationTest(unittest.TestCase):
         self._test_history(model, self.metric_names, self.metric_values)
 
     def test_epoch_metrics_with_multiple_names_returned_by_tensor(self):
-        epoch_metric = ConstEpochMetric(torch.tensor(self.metric_values))
+        epoch_metric = ConstMetric(torch.tensor(self.metric_values))
         model = Model(
             self.pytorch_network, self.optimizer, self.loss_function, epoch_metrics=[(self.metric_names, epoch_metric)]
         )
         self._test_history(model, self.metric_names, self.metric_values)
 
     def test_epoch_metrics_with_name_with_multiple_names_returned_by_tensor(self):
-        class EpochMetricWithName(ConstEpochMetric):
+        class MetricWithName(ConstMetric):
             __name__ = self.metric_names
 
-        epoch_metric = EpochMetricWithName(torch.tensor(self.metric_values))
+        epoch_metric = MetricWithName(torch.tensor(self.metric_values))
         model = Model(self.pytorch_network, self.optimizer, self.loss_function, epoch_metrics=[epoch_metric])
         self._test_history(model, self.metric_names, self.metric_values)
 
@@ -189,7 +189,7 @@ class MetricsModelIntegrationTest(unittest.TestCase):
     @skipIf(not torch.cuda.is_available(), "no gpu available")
     def test_epoch_metrics_with_multiple_names_returned_by_tensor_on_gpu(self):
         with torch.cuda.device(MetricsModelIntegrationTest.cuda_device):
-            epoch_metric = ConstEpochMetric(torch.tensor(self.metric_values).cuda())
+            epoch_metric = ConstMetric(torch.tensor(self.metric_values).cuda())
             model = Model(
                 self.pytorch_network,
                 self.optimizer,
@@ -207,7 +207,7 @@ class MetricsModelIntegrationTest(unittest.TestCase):
         self._test_history(model, self.metric_names, self.metric_values)
 
     def test_epoch_metrics_with_multiple_names_returned_by_ndarray(self):
-        epoch_metric = ConstEpochMetric(np.array(self.metric_values))
+        epoch_metric = ConstMetric(np.array(self.metric_values))
         model = Model(
             self.pytorch_network, self.optimizer, self.loss_function, epoch_metrics=[(self.metric_names, epoch_metric)]
         )
@@ -221,7 +221,7 @@ class MetricsModelIntegrationTest(unittest.TestCase):
         self._test_history(model, self.metric_names, self.metric_values)
 
     def test_epoch_metrics_with_multiple_names_returned_by_list(self):
-        epoch_metric = ConstEpochMetric(list(self.metric_values))
+        epoch_metric = ConstMetric(list(self.metric_values))
         model = Model(
             self.pytorch_network, self.optimizer, self.loss_function, epoch_metrics=[(self.metric_names, epoch_metric)]
         )
@@ -235,7 +235,7 @@ class MetricsModelIntegrationTest(unittest.TestCase):
         self._test_history(model, self.metric_names, self.metric_values)
 
     def test_epoch_metrics_with_multiple_names_returned_by_tuple(self):
-        epoch_metric = ConstEpochMetric(tuple(self.metric_values))
+        epoch_metric = ConstMetric(tuple(self.metric_values))
         model = Model(
             self.pytorch_network, self.optimizer, self.loss_function, epoch_metrics=[(self.metric_names, epoch_metric)]
         )

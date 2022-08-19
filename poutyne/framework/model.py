@@ -1324,7 +1324,7 @@ class Model:
             .. code-block:: python
 
                 model = Model(pytorch_network, optimizer, loss_function,
-                              batch_metrics=[my_metric_fn], epoch_metrics=[MyEpochMetricClass()])
+                              batch_metrics=[my_metric_fn], epoch_metrics=[MyMetricClass()])
                 loss, (my_batch_metric, my__epoch_metric) = model.evaluate_generator(test_generator)
 
             With batch metrics and ``return_pred`` flag:
