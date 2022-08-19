@@ -1,6 +1,8 @@
 # v1.x.x
 
-*
+Breaking changes:
+
+* The deprecated `torch_metrics` keyword argument has been removed.
 
 # v1.12
 

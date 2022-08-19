@@ -118,7 +118,6 @@ class ModelBundle:
         loss_function: Union[Callable, str] = None,
         batch_metrics: Union[List, None] = None,
         epoch_metrics: Union[List, None] = None,
-        torch_metrics: Union[List, None] = None,
         monitoring: bool = True,
         monitor_metric: Union[str, None] = None,
         monitor_mode: Union[str, None] = None,
@@ -311,7 +310,6 @@ class ModelBundle:
             loss_function,
             batch_metrics=batch_metrics,
             epoch_metrics=epoch_metrics,
-            torch_metrics=torch_metrics,
             device=device,
         )
 

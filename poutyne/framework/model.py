@@ -20,7 +20,6 @@ You should have received a copy of the GNU Lesser General Public License along w
 # pylint: disable=too-many-lines,too-many-public-methods
 import contextlib
 import timeit
-import warnings
 from collections import defaultdict
 from typing import Iterable, Mapping, List, Union, Any, Tuple
 
@@ -194,7 +193,6 @@ class Model:
         *,
         batch_metrics=None,
         epoch_metrics=None,
-        torch_metrics=None,
         device=None,
     ):
         if not isinstance(network, nn.Module):
@@ -205,12 +203,6 @@ class Model:
 
         batch_metrics = [] if batch_metrics is None else batch_metrics
         epoch_metrics = [] if epoch_metrics is None else epoch_metrics
-        if torch_metrics is not None:
-            batch_metrics += torch_metrics
-            warnings.warn(
-                "The torch_metrics keyword is deprecated as of v.1.11. Use batch_metrics instead. "
-                "It will be remove in the next version."
-            )
 
         self.network = network
         self.optimizer = get_optimizer(optimizer, self.network)
