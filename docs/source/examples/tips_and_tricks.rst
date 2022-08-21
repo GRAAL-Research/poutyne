@@ -30,7 +30,17 @@ Let's import all the needed packages.
     from torchvision import transforms, utils
     from torchvision.datasets.mnist import MNIST
 
-    from poutyne import set_seeds, Model, ModelCheckpoint, CSVLogger, Callback, ModelBundle, SKLearnMetrics, plot_history
+    from poutyne import (
+        set_seeds,
+        Model,
+        ModelCheckpoint,
+        CSVLogger,
+        Callback,
+        ModelBundle,
+        Metric,
+        SKLearnMetrics,
+        plot_history,
+    )
 
 
 Hyperparameters, Dataset and Network
