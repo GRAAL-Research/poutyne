@@ -22,6 +22,7 @@ import contextlib
 import timeit
 from collections import defaultdict
 from typing import Iterable, Mapping, List, Optional, Union, Any, Tuple
+import warnings
 
 import numpy as np
 import torch
@@ -48,7 +49,8 @@ class Model:
 
     Args:
         network (torch.nn.Module): A PyTorch network.
-        optimizer (Union[torch.optim.Optimizer, str, dict]): If torch.optim.Optimier, an initialized PyTorch.
+        optimizers (Union[Union[torch.optim.Optimizer, str, dict], List[Union[torch.optim.Optimizer, str, dict]]]):
+            If torch.optim.Optimier, an initialized PyTorch.
             If str, should be the name of the optimizer in Pytorch (i.e. 'Adam' for torch.optim.Adam).
             If dict, should contain a key ``'optim'`` with the value be the name of the optimizer; other
             entries are passed to the optimizer as keyword arguments.
@@ -188,7 +190,7 @@ class Model:
     def __init__(
         self,
         network,
-        optimizer,
+        optimizers,
         loss_function,
         *,
         batch_metrics=None,
@@ -199,18 +201,19 @@ class Model:
         if not isinstance(network, nn.Module):
             raise ValueError(f"network should be of type derived from nn.Module, received {type(network)}.")
 
-        if optimizer is not None and not isinstance(optimizer, (optim.Optimizer, str, dict)):
-            raise ValueError(f"optimizer should be of type derived from optim.Optimizer, received {type(optimizer)}.")
+        if optimizers is None:
+            optimizers = []
+        elif not isinstance(optimizers, (list, tuple)):
+            optimizers = [optimizers]
+        for opt in optimizers:
+            if opt is not None and not isinstance(opt, (optim.Optimizer, str, dict)):
+                raise ValueError(f"optimizers should be of type derived from optim.Optimizer, received {type(opt)}.")
 
         batch_metrics = [] if batch_metrics is None else batch_metrics
         epoch_metrics = [] if epoch_metrics is None else epoch_metrics
 
         self.network = network
-        if optimizer is None:
-            optimizer = []
-        elif not isinstance(optimizer, (list, tuple)):
-            optimizer = [optimizer]
-        self.optimizer = [get_optimizer(opt, self.network) for opt in optimizer]
+        self.optimizers = [get_optimizer(opt, self.network) for opt in optimizers]
 
         self.loss_function = get_metric(loss_function)
         if isinstance(self.loss_function, tuple):
@@ -227,6 +230,14 @@ class Model:
             self.to(device)
 
         self.set_strategy(strategy)
+
+    @property
+    def optimizer(self):
+        warnings.warn(
+            "Using the Model.optimizer attribute is deprecated. Use the Model.optimizers attribute instead. Note that "
+            "this attribute is not a list of optimizers instead of a single optimizer."
+        )
+        return self.optimizers  # [0] if len(self.optimizers) > 0 else None
 
     def set_strategy(self, strategy: Optional[Strategy]) -> None:
         self.strategy = strategy
@@ -246,7 +257,7 @@ class Model:
 
     def _check_network_optimizer_parameters_match(self):
         param_set = set(self.network.parameters())
-        for opt in self.optimizer:
+        for opt in self.optimizers:
             for param_group in opt.param_groups:
                 for param in param_group['params']:
                     if param not in param_set:
@@ -605,7 +616,7 @@ class Model:
 
         """
 
-        if len(self.optimizer) == 0:
+        if len(self.optimizers) == 0:
             raise ValueError("Impossible to fit when no optimizer is provided.")
 
         strategy = self.get_strategy(strategy, batches_per_step=batches_per_step)
@@ -708,7 +719,7 @@ class Model:
             If ``return_dict_format`` is True, then ``loss, metrics`` are replaced by a
             dictionary.
         """
-        if len(self.optimizer) == 0:
+        if len(self.optimizers) == 0:
             raise ValueError("Impossible to fit when no optimizer is provided.")
 
         strategy = self.get_strategy(strategy)
@@ -1569,7 +1580,7 @@ class Model:
                 containing a file name.
         """
         opt_state_dicts = torch.load(f, map_location='cpu')
-        for opt, opt_state_dict in zip(self.optimizer, opt_state_dicts):
+        for opt, opt_state_dict in zip(self.optimizers, opt_state_dicts):
             opt.load_state_dict(opt_state_dict)
 
     def save_optimizer_state(self, f):
@@ -1580,11 +1591,11 @@ class Model:
             f: File-like object (has to implement fileno that returns a file descriptor) or string
                 containing a file name.
         """
-        torch.save([opt.state_dict() for opt in self.optimizer], f)
+        torch.save([opt.state_dict() for opt in self.optimizers], f)
 
     def _transfer_optimizer_state_to_right_device(self):
         # pylint: disable=too-many-nested-blocks
-        for opt in self.optimizer:
+        for opt in self.optimizers:
             # Since the optimizer state is loaded on CPU, it will crash when the optimizer will receive
             # gradient for parameters not on CPU. Thus, for each parameter, we transfer its state in the
             # optimizer on the same device as the parameter itself just before starting the
@@ -1624,15 +1635,15 @@ class Model:
 
     @contextlib.contextmanager
     def _update_optim_device(self):
-        if len(self.optimizer) == 0:
+        if len(self.optimizers) == 0:
             yield
             return
 
-        optimizers_states = [self._get_named_optimizer_attrs(opt) for opt in self.optimizer]
+        optimizers_states = [self._get_named_optimizer_attrs(opt) for opt in self.optimizers]
         try:
             yield
         finally:
-            for opt, (param_name_groups, named_state) in zip(self.optimizer, optimizers_states):
+            for opt, (param_name_groups, named_state) in zip(self.optimizers, optimizers_states):
                 self._set_named_optimizer_attrs(opt, param_name_groups, named_state)
             self._transfer_optimizer_state_to_right_device()
 

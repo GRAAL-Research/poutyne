@@ -58,7 +58,7 @@ class _PyTorchLRSchedulerWrapper(Callback):
     def on_train_begin(self, logs: Dict):
         optimizers = self.optimizers
         if self.optimizers is None:
-            optimizers = self.model.optimizer
+            optimizers = self.model.optimizers
 
         self.schedulers = [self.torch_lr_scheduler(optimizer, *self.args, **self.kwargs) for optimizer in optimizers]
 

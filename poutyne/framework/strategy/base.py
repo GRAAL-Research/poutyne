@@ -68,14 +68,14 @@ class Strategy:
         return self.step_output(loss, metrics=batch_metrics, y_pred=y_pred, y_true=y)
 
     def optimizer_zero_grad(self, **kwargs: Any) -> None:  # pylint: disable=unused-argument
-        for opt in self.model.optimizer:
+        for opt in self.model.optimizers:
             opt.zero_grad()
 
     def backward(self, loss: torch.Tensor, **kwargs: Any) -> None:  # pylint: disable=unused-argument
         loss.backward()
 
     def optimizer_step(self, **kwargs: Any) -> None:  # pylint: disable=unused-argument
-        for opt in self.model.optimizer:
+        for opt in self.model.optimizers:
             opt.step()
 
     def train_step(

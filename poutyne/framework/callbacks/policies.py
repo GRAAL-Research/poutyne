@@ -28,6 +28,8 @@ try:
 except ImportError:
     plt = None
 
+from torch.optim import Optimizer
+
 from .callbacks import Callback
 
 
@@ -241,11 +243,18 @@ class OptimizerPolicy(Callback):
         initial_step (int): The step to start the policy in. Used for restarting.
     """
 
-    def __init__(self, phases: List, *, initial_step: int = 0):
+    def __init__(self, phases: List[Phase], *, initial_step: int = 0, optimizers: Optional[List[Optimizer]] = None):
         super().__init__()
         self.phases = phases
         self.current_step = initial_step
         self.phases_iter = iter(self)
+        if optimizers is not None and not isinstance(optimizers, (list, tuple)):
+            optimizers = [optimizers]
+        self.optimizers = optimizers
+
+    def on_train_begin(self, logs: Dict):
+        if self.optimizers is None:
+            self.optimizers = self.model.optimizers
 
     def on_train_batch_begin(self, batch_number: int, logs: Dict):
         # Don't do anything when we run out of phases.
@@ -275,8 +284,9 @@ class OptimizerPolicy(Callback):
 
     def _update_optimizer(self, param_dict: Dict):
         for param_name, param_value in param_dict.items():
-            for group in self.model.optimizer.param_groups:
-                group[param_name] = param_value
+            for optim in self.optimizers:
+                for group in optim.param_groups:
+                    group[param_name] = param_value
 
     def plot(self, param_name: str = "lr", ax=None):
         """

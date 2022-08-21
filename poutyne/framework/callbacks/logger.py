@@ -38,8 +38,8 @@ class Logger(Callback):
             self.fieldnames = ['epoch', 'batch', 'size', 'time']
         else:
             self.fieldnames = ['epoch', 'time']
-        for opt_idx, opt in enumerate(self.model.optimizer):
-            prefix = f'opt{opt_idx}_' if len(self.model.optimizer) > 1 else ''
+        for opt_idx, opt in enumerate(self.model.optimizers):
+            prefix = f'opt{opt_idx}_' if len(self.model.optimizers) > 1 else ''
             if len(opt.param_groups) > 1:
                 self.fieldnames += [prefix + f'lr_group_{i}' for i in range(len(opt.param_groups))]
             else:
@@ -84,8 +84,8 @@ class Logger(Callback):
 
     def _get_current_learning_rates(self):
         learning_rates = {}
-        for opt_idx, opt in enumerate(self.model.optimizer):
-            prefix = f'opt{opt_idx}_' if len(self.model.optimizer) > 1 else ''
+        for opt_idx, opt in enumerate(self.model.optimizers):
+            prefix = f'opt{opt_idx}_' if len(self.model.optimizers) > 1 else ''
             if len(opt.param_groups) > 1:
                 learning_rates.update(
                     {prefix + f'lr_group_{i}': param_group['lr'] for i, param_group in enumerate(opt.param_groups)}
