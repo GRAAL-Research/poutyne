@@ -1,8 +1,9 @@
-# Import the Poutyne Model
-from poutyne import Model
 import torch
 import torch.nn as nn
 import numpy as np
+
+# Import the Poutyne Model
+from poutyne import Model
 
 # Define a random toy dataset
 num_features = 20
@@ -22,7 +23,7 @@ test_y = np.random.randint(2, size=(num_test_samples, 1)).astype('float32')
 
 # Adds cuda if available
 cuda_device = 0
-device = torch.device("cuda:%d" % cuda_device if torch.cuda.is_available() else "cpu")
+device = torch.device(f'cuda:{cuda_device}' if torch.cuda.is_available() else 'cpu')
 
 # Define the network
 network = nn.Sequential(

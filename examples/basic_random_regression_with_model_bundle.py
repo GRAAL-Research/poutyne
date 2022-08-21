@@ -4,13 +4,13 @@ python basic_random_regression_with_experiment.py
 
 Look in ./saves/my_regression_network for the checkpoints and logging.
 """
-
-# Import the Poutyne Model
-from poutyne import ModelBundle, SKLearnMetrics
 import torch
 import torch.nn as nn
 import numpy as np
 from sklearn.metrics import r2_score
+
+# Import the Poutyne Model
+from poutyne import ModelBundle, SKLearnMetrics
 
 # Define a random toy dataset
 num_features = 20
@@ -29,7 +29,7 @@ test_x = np.random.randn(num_test_samples, num_features).astype('float32')
 test_y = np.random.randn(num_test_samples, 1).astype('float32')
 
 cuda_device = 0
-device = torch.device("cuda:%d" % cuda_device if torch.cuda.is_available() else "cpu")
+device = torch.device(f'cuda:{cuda_device}' if torch.cuda.is_available() else 'cpu')
 
 # Define the network
 network = nn.Sequential(

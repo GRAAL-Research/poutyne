@@ -36,15 +36,15 @@ from tests.framework.tools import (
     some_data_tensor_generator,
     SomeDataGeneratorUsingStopIteration,
     SomeDataGeneratorWithLen,
-    SomeConstantEpochMetric,
+    SomeConstantMetric,
     some_batch_metric_1,
     some_batch_metric_2,
     repeat_batch_metric,
     some_metric_1_value,
     some_metric_2_value,
     repeat_batch_metric_value,
-    some_constant_epoch_metric_value,
-    SomeEpochMetric,
+    some_constant_metric_value,
+    SomeMetric,
 )
 
 # from tests.utils import populate_packed_sequence
@@ -105,9 +105,9 @@ class ModelTest(ModelFittingTestCase):
             repeat_batch_metric_value,
             repeat_batch_metric_value,
         ]
-        self.epoch_metrics = [SomeConstantEpochMetric()]
-        self.epoch_metrics_names = ['some_constant_epoch_metric']
-        self.epoch_metrics_values = [some_constant_epoch_metric_value]
+        self.epoch_metrics = [SomeConstantMetric()]
+        self.epoch_metrics_names = ['some_constant_metric']
+        self.epoch_metrics_values = [some_constant_metric_value]
 
         self.model = Model(
             self.pytorch_network,
@@ -744,7 +744,7 @@ class ModelTest(ModelFittingTestCase):
         self.assertEqual(type(mse), float)
 
     def test_epoch_metrics_integration(self):
-        model = Model(self.pytorch_network, self.optimizer, self.loss_function, epoch_metrics=[SomeEpochMetric()])
+        model = Model(self.pytorch_network, self.optimizer, self.loss_function, epoch_metrics=[SomeMetric()])
         train_generator = some_data_tensor_generator(ModelTest.batch_size)
         valid_generator = some_data_tensor_generator(ModelTest.batch_size)
         logs = model.fit_generator(
@@ -754,8 +754,8 @@ class ModelTest(ModelFittingTestCase):
             steps_per_epoch=ModelTest.steps_per_epoch,
             validation_steps=ModelTest.steps_per_epoch,
         )
-        actual_value = logs[-1]['some_epoch_metric']
-        val_actual_value = logs[-1]['val_some_epoch_metric']
+        actual_value = logs[-1]['some_metric']
+        val_actual_value = logs[-1]['val_some_metric']
         expected_value = 5
         self.assertEqual(val_actual_value, expected_value)
         self.assertEqual(actual_value, expected_value)

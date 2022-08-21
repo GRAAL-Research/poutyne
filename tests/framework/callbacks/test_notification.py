@@ -34,8 +34,8 @@ from tests.framework.tools import (
     repeat_batch_metric_value,
     some_metric_2_value,
     some_metric_1_value,
-    SomeConstantEpochMetric,
-    some_constant_epoch_metric_value,
+    SomeConstantMetric,
+    some_constant_metric_value,
 )
 
 
@@ -79,9 +79,9 @@ class NotificationCallbackTest(TestCase):
             repeat_batch_metric_value,
             repeat_batch_metric_value,
         ]
-        self.epoch_metrics = [SomeConstantEpochMetric()]
-        self.epoch_metrics_names = ['some_constant_epoch_metric']
-        self.epoch_metrics_values = [some_constant_epoch_metric_value]
+        self.epoch_metrics = [SomeConstantMetric()]
+        self.epoch_metrics_names = ['some_constant_metric']
+        self.epoch_metrics_values = [some_constant_metric_value]
 
         self.model = Model(
             self.pytorch_network,

@@ -1,11 +1,12 @@
-# Import the Poutyne Model
-from poutyne import Model
 import torch
 import torch.nn as nn
 from torch.utils.data import random_split
 from torchvision.datasets import MNIST
 from torchvision.transforms import ToTensor
 import torchmetrics
+
+# Import the Poutyne Model
+from poutyne import Model
 
 # Instanciate the MNIST dataset
 train_valid_dataset = MNIST('./datasets', train=True, download=True, transform=ToTensor())
@@ -17,7 +18,7 @@ train_dataset, valid_dataset = random_split(
 )
 # Select CUDA device if available
 cuda_device = 0
-device = torch.device("cuda:%d" % cuda_device if torch.cuda.is_available() else "cpu")
+device = torch.device(f'cuda:{cuda_device}' if torch.cuda.is_available() else 'cpu')
 
 # Define the network
 network = nn.Sequential(

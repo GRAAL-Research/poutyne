@@ -20,7 +20,6 @@ You should have received a copy of the GNU Lesser General Public License along w
 # pylint: disable=too-many-lines,too-many-public-methods
 import contextlib
 import timeit
-import warnings
 from collections import defaultdict
 from typing import Iterable, Mapping, List, Optional, Union, Any, Tuple
 
@@ -194,7 +193,6 @@ class Model:
         *,
         batch_metrics=None,
         epoch_metrics=None,
-        torch_metrics=None,
         device=None,
         strategy=None,
     ):
@@ -206,12 +204,6 @@ class Model:
 
         batch_metrics = [] if batch_metrics is None else batch_metrics
         epoch_metrics = [] if epoch_metrics is None else epoch_metrics
-        if torch_metrics is not None:
-            batch_metrics += torch_metrics
-            warnings.warn(
-                "The torch_metrics keyword is deprecated as of v.1.11. Use batch_metrics instead. "
-                "It will be remove in the next version."
-            )
 
         self.network = network
         if optimizer is None:
@@ -1279,7 +1271,7 @@ class Model:
             .. code-block:: python
 
                 model = Model(pytorch_network, optimizer, loss_function,
-                              batch_metrics=[my_metric_fn], epoch_metrics=[MyEpochMetricClass()])
+                              batch_metrics=[my_metric_fn], epoch_metrics=[MyMetricClass()])
                 loss, (my_batch_metric, my__epoch_metric) = model.evaluate_generator(test_generator)
 
             With batch metrics and ``return_pred`` flag:

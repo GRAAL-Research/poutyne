@@ -1,6 +1,11 @@
 # v1.x.x
 
-*
+Breaking changes:
+
+* The deprecated `torch_metrics` keyword argument has been removed. Users should use the `batch_metrics` or `epoch_metrics`
+  keyword argument for torchmetrics' metrics.
+* The deprecated `EpochMetric` class has been removed. Users should implement the
+  [`Metric` class](https://poutyne.org/metrics.html#poutyne.Metric) instead.
 
 # v1.12
 

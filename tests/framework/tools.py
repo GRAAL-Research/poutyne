@@ -22,13 +22,13 @@ You should have received a copy of the GNU Lesser General Public License along w
 import numpy as np
 import torch
 
-from poutyne import EpochMetric
+from poutyne import Metric
 
 some_metric_1_value = 1.0
 some_metric_2_value = 2.0
 repeat_batch_metric_value = 3.0
 
-some_constant_epoch_metric_value = 3
+some_constant_metric_value = 3
 
 
 def some_data_tensor_generator(batch_size):
@@ -97,26 +97,26 @@ def repeat_batch_metric(y_pred, y_true):
     return torch.FloatTensor([repeat_batch_metric_value])
 
 
-class SomeConstantEpochMetric(EpochMetric):
-    def forward(self, y_pred, y_true):
+class SomeConstantMetric(Metric):
+    def update(self, y_pred, y_true):
         pass
 
-    def get_metric(self):
-        return torch.FloatTensor([some_constant_epoch_metric_value])
+    def compute(self):
+        return torch.FloatTensor([some_constant_metric_value])
 
     def reset(self):
         pass
 
 
-class SomeEpochMetric(EpochMetric):
+class SomeMetric(Metric):
     def __init__(self):
         super().__init__()
         self.increment = 0.0
 
-    def forward(self, y_pred, y_true):
+    def update(self, y_pred, y_true):
         self.increment += 1
 
-    def get_metric(self):
+    def compute(self):
         increment_value = self.increment
         self.increment = 0
         return increment_value
