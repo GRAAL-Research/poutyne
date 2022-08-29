@@ -207,10 +207,12 @@ class Model:
         self.network = network
         self.optimizer = get_optimizer(optimizer, self.network)
 
-        self.loss_function = get_metric(loss_function)
-        if isinstance(self.loss_function, tuple):
-            self.loss_function = self.loss_function[1]
-        self.loss_function = convert_decomposable_metric_to_object(self.loss_function, 'loss')
+        self.loss_function = loss_function
+        if self.loss_function is not None:
+            self.loss_function = get_metric(loss_function)
+            if isinstance(self.loss_function, tuple):
+                self.loss_function = self.loss_function[1]
+            self.loss_function = convert_decomposable_metric_to_object(self.loss_function, 'loss')
 
         self._check_network_optimizer_parameters_match()
         self._set_metrics_attributes(batch_metrics, epoch_metrics)
