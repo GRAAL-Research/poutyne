@@ -295,19 +295,20 @@ class FBetaTest(TestCase):
             'fscore_macro',
             'precision_macro',
             'recall_macro',
-            'bin_fscore1',
-            'bin_fscore2',
-            'bin_precision1',
-            'bin_precision2',
-            'bin_recall1',
-            'bin_recall2',
+            'bin_fscore',
+            'bin_fscore',
+            'bin_precision',
+            'bin_precision',
+            'bin_recall',
+            'bin_recall',
         ]
         model = Model(nn.Linear(10, 2), 'sgd', 'cross_entropy', epoch_metrics=epoch_metrics)
         actual_fmetric = [epoch_metric._metric for epoch_metric in model.epoch_metrics]
         actual_average = [epoch_metric._average for epoch_metric in model.epoch_metrics]
+        actual_name = [epoch_metric.__name__ for epoch_metric in model.epoch_metrics]
         self.assertEqual(fmetric, actual_fmetric)
         self.assertEqual(average, actual_average)
-        self.assertEqual(names, model.epoch_metrics_names)
+        self.assertEqual(names, actual_name)
 
 
 class FBetaBinaryTest(TestCase):

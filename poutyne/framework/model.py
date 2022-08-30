@@ -31,12 +31,10 @@ import torch.optim as optim
 from torch.utils.data import DataLoader
 
 from poutyne import torch_to_numpy, numpy_to_torch, torch_to
-from poutyne.framework.strategy.base import GradientAccumulationStrategy, Strategy
+from poutyne.framework.strategy.base import GradientAccumulationStrategy, BaseStrategy, DefaultStrategy
 from .callbacks import CallbackList, ProgressionCallback, Callback
 from .iterators import EpochIterator, _get_step_iterator, StepIterator
-from .metrics import get_metric
-from .metrics import get_callables_and_names, rename_doubles, flatten_metric_names
-from .metrics.decomposable import convert_decomposable_metric_to_object
+from .metrics import get_metric, rename_doubles, flatten_metric_names
 from .optimizers import get_optimizer
 from ..utils import TensorDataset, _concat, get_batch_size
 
@@ -220,10 +218,10 @@ class Model:
             self.loss_function = get_metric(loss_function)
             if isinstance(self.loss_function, tuple):
                 self.loss_function = self.loss_function[1]
-            self.loss_function = convert_decomposable_metric_to_object(self.loss_function, 'loss')
 
         self._check_network_optimizer_parameters_match()
-        self._set_metrics_attributes(batch_metrics, epoch_metrics)
+        self.batch_metrics = list(map(get_metric, batch_metrics))
+        self.epoch_metrics = list(map(get_metric, epoch_metrics))
 
         self.device = None
         self.other_device = None
@@ -239,23 +237,34 @@ class Model:
             "Using the Model.optimizer attribute is deprecated. Use the Model.optimizers attribute instead. Note that "
             "this attribute is not a list of optimizers instead of a single optimizer."
         )
-        return self.optimizers  # [0] if len(self.optimizers) > 0 else None
+        return self.optimizers[0] if len(self.optimizers) > 0 else None
 
-    def set_strategy(self, strategy: Optional[Strategy]) -> None:
+    def set_strategy(self, strategy: Optional[BaseStrategy]) -> None:
         self.strategy = strategy
 
-    def get_strategy(self, strategy: Optional[Strategy], *, batches_per_step: int = 1):
+    def init_strategy(self, strategy: Optional[BaseStrategy], *, batches_per_step: int = 1):
         if strategy is None:
             if self.strategy is not None:
                 strategy = self.strategy
             if batches_per_step == 1:
-                strategy = Strategy()
+                strategy = DefaultStrategy()
             else:
                 strategy = GradientAccumulationStrategy(batches_per_step)
 
         strategy.set_model(self)
 
+        self._set_metrics_attributes(strategy.get_batch_metric_names(), strategy.get_epoch_metric_names())
+
         return strategy
+
+    def _set_metrics_attributes(self, batch_metrics_names, epoch_metrics_names):
+        self.original_batch_metrics_names = batch_metrics_names
+        self.original_epoch_metrics_names = epoch_metrics_names
+
+        batch_metrics_names, epoch_metrics_names = rename_doubles(batch_metrics_names, epoch_metrics_names)
+        self.batch_metrics_names = flatten_metric_names(batch_metrics_names)
+        self.epoch_metrics_names = flatten_metric_names(epoch_metrics_names)
+        self.metrics_names = self.batch_metrics_names + self.epoch_metrics_names
 
     def _check_network_optimizer_parameters_match(self):
         param_set = set(self.network.parameters())
@@ -268,34 +277,6 @@ class Model:
                             "This is so to insure that weights checkpointing and the likes "
                             "actually consider all parameters."
                         )
-
-    def _set_metrics_attributes(self, batch_metrics, epoch_metrics):
-        batch_metrics = list(map(get_metric, batch_metrics))
-        batch_metrics, batch_metrics_names = get_callables_and_names(batch_metrics)
-        self.batch_metrics = [
-            convert_decomposable_metric_to_object(metric, names)
-            for metric, names in zip(batch_metrics, batch_metrics_names)
-        ]
-
-        epoch_metrics = list(map(get_metric, epoch_metrics))
-        epoch_metrics, epoch_metrics_names = get_callables_and_names(epoch_metrics)
-        self.epoch_metrics = [
-            convert_decomposable_metric_to_object(metric, names, is_epoch_metric=True)
-            for metric, names in zip(epoch_metrics, epoch_metrics_names)
-        ]
-
-        self.original_batch_metrics_names, self.original_epoch_metrics_names = (
-            batch_metrics_names,
-            epoch_metrics_names,
-        )
-        batch_metrics_names, epoch_metrics_names = rename_doubles(batch_metrics_names, epoch_metrics_names)
-
-        self.unflatten_batch_metrics_names = batch_metrics_names
-        self.unflatten_epoch_metrics_names = epoch_metrics_names
-
-        self.batch_metrics_names = flatten_metric_names(batch_metrics_names)
-        self.epoch_metrics_names = flatten_metric_names(epoch_metrics_names)
-        self.metrics_names = self.batch_metrics_names + self.epoch_metrics_names
 
     @contextlib.contextmanager
     def _set_training_mode(self, training):
@@ -621,7 +602,7 @@ class Model:
         if len(self.optimizers) == 0:
             raise ValueError("Impossible to fit when no optimizer is provided.")
 
-        strategy = self.get_strategy(strategy, batches_per_step=batches_per_step)
+        strategy = self.init_strategy(strategy, batches_per_step=batches_per_step)
 
         self._transfer_optimizer_state_to_right_device()
 
@@ -661,9 +642,9 @@ class Model:
                     )
                     step.size = get_batch_size(x, true_y)
 
-            train_step_iterator.loss = self._compute_and_reset_loss()
-            train_step_iterator.batch_metrics = self._compute_and_reset_batch_metrics()
-            train_step_iterator.epoch_metrics = self._compute_and_reset_epoch_metrics()
+            train_step_iterator.loss = self._compute_and_reset_loss(strategy)
+            train_step_iterator.batch_metrics = self._compute_and_reset_batch_metrics(strategy)
+            train_step_iterator.epoch_metrics = self._compute_and_reset_epoch_metrics(strategy)
 
             self._run_validation(strategy, valid_step_iterator, callback_list)
 
@@ -677,9 +658,9 @@ class Model:
             strategy.on_valid_begin({})
             self._validate(strategy, valid_step_iterator)
 
-            valid_step_iterator.loss = self._compute_and_reset_loss()
-            valid_step_iterator.batch_metrics = self._compute_and_reset_batch_metrics()
-            valid_step_iterator.epoch_metrics = self._compute_and_reset_epoch_metrics()
+            valid_step_iterator.loss = self._compute_and_reset_loss(strategy)
+            valid_step_iterator.batch_metrics = self._compute_and_reset_batch_metrics(strategy)
+            valid_step_iterator.epoch_metrics = self._compute_and_reset_epoch_metrics(strategy)
 
             valid_total_time = timeit.default_timer() - valid_begin_time
 
@@ -724,7 +705,7 @@ class Model:
         if len(self.optimizers) == 0:
             raise ValueError("Impossible to fit when no optimizer is provided.")
 
-        strategy = self.get_strategy(strategy)
+        strategy = self.init_strategy(strategy)
 
         with self._set_training_mode(True):
             self._transfer_optimizer_state_to_right_device()
@@ -944,7 +925,7 @@ class Model:
             for the batches is returned with tensors converted into Numpy arrays.
         """
         # pylint: disable=too-many-locals
-        strategy = self.get_strategy(strategy)
+        strategy = self.init_strategy(strategy)
 
         has_ground_truth = has_ground_truth or return_ground_truth
 
@@ -1014,7 +995,7 @@ class Model:
         Returns:
             Return the predictions in the format outputted by the model.
         """
-        strategy = self.get_strategy(strategy)
+        strategy = self.init_strategy(strategy)
         with self._set_training_mode(False):
             return self._predict_step(strategy, x, convert_to_numpy=convert_to_numpy)
 
@@ -1315,7 +1296,7 @@ class Model:
                               batch_metrics=[my_metric_fn])
                 logs = model.evaluate_generator(test_generator, return_dict_format=True)
         """
-        strategy = self.get_strategy(strategy)
+        strategy = self.init_strategy(strategy)
 
         callbacks = [] if callbacks is None else callbacks
 
@@ -1347,9 +1328,9 @@ class Model:
             convert_to_numpy=convert_to_numpy,
         )
 
-        step_iterator.loss = self._compute_and_reset_loss()
-        step_iterator.batch_metrics = self._compute_and_reset_batch_metrics()
-        step_iterator.epoch_metrics = self._compute_and_reset_epoch_metrics()
+        step_iterator.loss = self._compute_and_reset_loss(strategy)
+        step_iterator.batch_metrics = self._compute_and_reset_batch_metrics(strategy)
+        step_iterator.epoch_metrics = self._compute_and_reset_epoch_metrics(strategy)
         test_total_time = timeit.default_timer() - test_begin_time
 
         if return_pred and concatenate_returns:
@@ -1404,7 +1385,7 @@ class Model:
             If ``return_dict_format`` is True, then ``loss, metrics`` are replaced by a
             dictionary.
         """
-        strategy = self.get_strategy(strategy)
+        strategy = self.init_strategy(strategy)
         with self._set_training_mode(False):
             loss, batch_metrics, y_pred, _, _ = self._test_step(
                 strategy,
@@ -1468,21 +1449,19 @@ class Model:
             [metric for names, metrics in zip(names_list, metrics_list) for metric in _get_metric(names, metrics)]
         )
 
-    def _compute_and_reset_metrics(self, metrics, unflatten_names):
-        metric_values = [metric.compute() for metric in metrics]
-        for metric in metrics:
-            metric.reset()
-        return self._flatten_metrics_output(metric_values, unflatten_names)
+    def _compute_and_reset_batch_metrics(self, strategy):
+        metric_values = strategy.compute_batch_metrics()
+        strategy.reset_batch_metrics()
+        return self._flatten_metrics_output(metric_values, self.original_batch_metrics_names)
 
-    def _compute_and_reset_batch_metrics(self):
-        return self._compute_and_reset_metrics(self.batch_metrics, self.unflatten_batch_metrics_names)
+    def _compute_and_reset_epoch_metrics(self, strategy):
+        metric_values = strategy.compute_epoch_metrics()
+        strategy.reset_epoch_metrics()
+        return self._flatten_metrics_output(metric_values, self.original_epoch_metrics_names)
 
-    def _compute_and_reset_epoch_metrics(self):
-        return self._compute_and_reset_metrics(self.epoch_metrics, self.unflatten_epoch_metrics_names)
-
-    def _compute_and_reset_loss(self):
-        loss = self.loss_function.compute().item()
-        self.loss_function.reset()
+    def _compute_and_reset_loss(self, strategy):
+        loss = strategy.compute_loss()
+        strategy.reset_loss()
         return loss
 
     def _preprocess_input(self, data):
@@ -1492,8 +1471,8 @@ class Model:
         return data
 
     def _process_batch_output(self, output, *, convert_to_numpy=True, process_ground_truth=True, process_pred=True):
-        metrics = self._flatten_metrics_output(output.metrics, self.original_batch_metrics_names)
-        output = output._replace(metrics=metrics)
+        batch_metrics = self._flatten_metrics_output(output.batch_metrics, self.original_batch_metrics_names)
+        output = output._replace(batch_metrics=batch_metrics)
 
         y_pred = output.y_true
         if process_ground_truth:
@@ -1527,7 +1506,14 @@ class Model:
         )
 
     def _test_step(
-        self, strategy: Strategy, data, *, convert_to_numpy=True, process_ground_truth=True, process_pred=True, **kwargs
+        self,
+        strategy: BaseStrategy,
+        data,
+        *,
+        convert_to_numpy=True,
+        process_ground_truth=True,
+        process_pred=True,
+        **kwargs,
     ):
         data = self._preprocess_input(data)
         output = strategy.test_step(data, **kwargs)
@@ -1791,6 +1777,8 @@ class Model:
             self.loss_function.to(self.device)
 
         for metric in self.batch_metrics + self.epoch_metrics:
+            if isinstance(metric, tuple):
+                _, metric = metric
             if isinstance(metric, torch.nn.Module):
                 metric.to(self.device)
 
