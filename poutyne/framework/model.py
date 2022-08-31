@@ -246,7 +246,7 @@ class Model:
         if strategy is None:
             if self.strategy is not None:
                 strategy = self.strategy
-            if batches_per_step == 1:
+            elif batches_per_step == 1:
                 strategy = DefaultStrategy()
             else:
                 strategy = GradientAccumulationStrategy(batches_per_step)
