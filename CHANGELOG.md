@@ -2,6 +2,10 @@
 
 *
 
+# v1.12.1
+
+* Fix memory leak when using recursive structure as data in the `Model.fit()` or the `ModelBundle.train_data()` methods.
+
 # v1.12
 
 * Fix a bug when transfering the optimizer on another device caused by a new feature in PyTorch 1.12, i.e. the "capturable"
