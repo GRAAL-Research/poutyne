@@ -163,6 +163,7 @@ class EpochIterator:
 
     def __iter__(self):
         self.callback.on_train_begin({})
+        self.strategy.on_train_begin({})
         for epoch in range(self.initial_epoch, self.epochs + 1):
             self.callback.on_epoch_begin(epoch, {})
             self.strategy.on_epoch_begin(epoch, {})
@@ -207,4 +208,5 @@ class EpochIterator:
             if self.model.stop_training:
                 break
 
+        self.strategy.on_train_end({})
         self.callback.on_train_end({})
