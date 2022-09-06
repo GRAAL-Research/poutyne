@@ -108,7 +108,6 @@ class WandBLogger(Logger):
         )
 
         if experiment is None:
-
             if offline:
                 os.environ["WANDB_MODE"] = "dryrun"
 

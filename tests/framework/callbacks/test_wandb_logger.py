@@ -103,7 +103,6 @@ class WandBLoggerTest(TestCase):
             self.assertIsInstance(wandb_logger.run, wandb.sdk.wandb_run.Run)
 
     def test_log_config(self):
-
         with patch("poutyne.framework.wandb_logger.wandb") as wandb_patch:
             wandb_patch.init = self.initialize_experiment
             wandb_patch.run = None
@@ -132,7 +131,6 @@ class WandBLoggerTest(TestCase):
             logger.run.log_artifact.assert_called_once_with(self.artifact_mock)
 
     def test_watch_gradient_false(self):
-
         with patch("poutyne.framework.wandb_logger.wandb") as wandb_patch:
             train_gen = some_data_generator(20)
             valid_gen = some_data_generator(20)
@@ -147,7 +145,6 @@ class WandBLoggerTest(TestCase):
             logger.run.watch.assert_not_called()
 
     def test_watch_gradient_true(self):
-
         with patch("poutyne.framework.wandb_logger.wandb") as wandb_patch:
             train_gen = some_data_generator(20)
             valid_gen = some_data_generator(20)
@@ -161,7 +158,6 @@ class WandBLoggerTest(TestCase):
             logger.run.watch.assert_called_once_with(self.pytorch_network, log="all", log_freq=1)
 
     def test_log_epoch(self):
-
         with patch("poutyne.framework.wandb_logger.wandb") as wandb_patch:
             train_gen = some_data_generator(20)
             valid_gen = some_data_generator(20)
@@ -187,7 +183,6 @@ class WandBLoggerTest(TestCase):
             logger.run.log.assert_has_calls(experiment_call, any_order=False)
 
     def test_log_epoch_and_batch(self):
-
         with patch("poutyne.framework.wandb_logger.wandb") as wandb_patch:
             train_gen = some_data_generator(20)
             valid_gen = some_data_generator(20)
@@ -202,7 +197,6 @@ class WandBLoggerTest(TestCase):
             experiment_call = []
             for is_epoch, log in history.history:
                 if is_epoch:
-
                     train_metrics = {key: value for (key, value) in log.items() if not key.startswith("val_")}
                     train_metrics = {"training": {"epoch": train_metrics}}
 
@@ -221,7 +215,6 @@ class WandBLoggerTest(TestCase):
             logger.run.log.assert_has_calls(experiment_call, any_order=False)
 
     def test_log_testgenerator(self):
-
         with patch("poutyne.framework.wandb_logger.wandb") as wandb_patch:
             x = torch.rand(10, 1)
             y = torch.rand(10, 1)
@@ -232,7 +225,6 @@ class WandBLoggerTest(TestCase):
             logger.run.log.called_once()
 
     def test_log_checkpoints(self):
-
         with patch("poutyne.framework.wandb_logger.wandb") as wandb_patch:
             train_gen = some_data_generator(20)
             valid_gen = some_data_generator(20)
@@ -257,7 +249,6 @@ class WandBLoggerTest(TestCase):
             logger.run.log_artifact.assert_called_once_with(self.artifact_mock)
 
     def test_save_architecture(self):
-
         with patch("poutyne.framework.wandb_logger.wandb") as wandb_patch:
             with patch("poutyne.framework.torch.onnx") as torch_onx_patch:
                 with patch("poutyne.framework.torch.randn") as torch_randn_patch:

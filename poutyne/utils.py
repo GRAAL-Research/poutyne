@@ -152,6 +152,21 @@ def numpy_to_torch(obj):
     return _apply(obj, fn)
 
 
+def _assert_and_get_length_recursively(obj):
+    if isinstance(obj, (list, tuple)):
+        lengths = [_assert_and_get_length_recursively(o) for o in obj]
+        for length in lengths[1:]:
+            assert length == lengths[0]
+        return lengths[0]
+    return len(obj)
+
+
+def _get_index_recursively(obj, idx):
+    if isinstance(obj, (list, tuple)):
+        return type(obj)(_get_index_recursively(o, idx) for o in obj)
+    return obj[idx]
+
+
 class TensorDataset(Dataset):
     """Dataset wrapping tensors.
 
@@ -164,24 +179,10 @@ class TensorDataset(Dataset):
     def __init__(self, *tensors):
         super().__init__()
         self.tensors = tensors
-
-        def _rabbit_hole(obj):
-            if isinstance(obj, (list, tuple)):
-                lengths = [_rabbit_hole(o) for o in obj]
-                for length in lengths[1:]:
-                    assert length == lengths[0]
-                return lengths[0]
-            return len(obj)
-
-        self._len = _rabbit_hole(self.tensors)
+        self._len = _assert_and_get_length_recursively(self.tensors)
 
     def __getitem__(self, index):
-        def _rabbit_hole(obj, idx):
-            if isinstance(obj, (list, tuple)):
-                return type(obj)(_rabbit_hole(o, idx) for o in obj)
-            return obj[idx]
-
-        return _rabbit_hole(self.tensors, index)
+        return _get_index_recursively(self.tensors, index)
 
     def __len__(self):
         return self._len
