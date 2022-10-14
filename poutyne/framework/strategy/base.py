@@ -1,5 +1,4 @@
 # pylint: disable=too-many-public-methods
-from abc import ABC, abstractmethod
 from typing import Any, List, Optional, Dict, Tuple, Union, NamedTuple
 import numpy as np
 import torch
@@ -23,18 +22,16 @@ class StepOutput(NamedTuple):
     x: Optional[NetworkIOType] = None
 
 
-class BaseStrategy(ABC):
+class BaseStrategy:
     def set_params(self, params: Dict[str, Any]) -> None:
         self.params = params
 
     def set_model(self, model: 'poutyne.Model') -> None:
         self.model = model
 
-    @abstractmethod
     def compute_loss(self) -> float:
         pass
 
-    @abstractmethod
     def reset_loss(self) -> None:
         pass
 
@@ -56,7 +53,6 @@ class BaseStrategy(ABC):
     def reset_epoch_metrics(self) -> None:
         pass
 
-    @abstractmethod
     def train_step(
         self, data: NetworkIOType, *, callback: Optional[Callback] = None, step: Optional[int] = None, **kwargs
     ) -> StepOutput:
@@ -74,7 +70,6 @@ class BaseStrategy(ABC):
     def on_train_end(self, logs: Dict) -> None:
         pass
 
-    @abstractmethod
     def test_step(self, data, **kwargs: Any) -> StepOutput:
         pass
 
@@ -90,7 +85,6 @@ class BaseStrategy(ABC):
     def on_test_end(self, logs: Dict) -> None:
         pass
 
-    @abstractmethod
     def predict_step(self, data, **kwargs: Any) -> NetworkIOType:
         pass
 
