@@ -97,14 +97,14 @@ class MetricsModelIntegrationTest(unittest.TestCase):
 
     def setUp(self):
         torch.manual_seed(42)
-        self.pytorch_network = nn.Linear(1, 1)
+        self.pytorch_network = nn.Sequential(nn.Linear(1, 1), nn.Flatten(0))
         self.loss_function = nn.MSELoss()
         self.optimizer = torch.optim.SGD(self.pytorch_network.parameters(), lr=1e-3)
         dataset_size = MetricsModelIntegrationTest.batch_size * MetricsModelIntegrationTest.steps_per_epoch
         self.train_x = torch.rand(dataset_size, 1)
-        self.train_y = torch.rand(dataset_size, 1)
+        self.train_y = torch.rand(dataset_size)
         self.valid_x = torch.rand(dataset_size, 1)
-        self.valid_y = torch.rand(dataset_size, 1)
+        self.valid_y = torch.rand(dataset_size)
 
         self.metric_names = ('a', 'b')
         self.metric_values = [1, 2]
