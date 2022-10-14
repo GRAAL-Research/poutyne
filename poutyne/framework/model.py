@@ -1461,6 +1461,8 @@ class Model:
 
     def _compute_and_reset_loss(self, strategy):
         loss = strategy.compute_loss()
+        if loss is not None:
+            loss = float(loss)
         strategy.reset_loss()
         return loss
 

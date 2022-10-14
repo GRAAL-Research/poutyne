@@ -16,11 +16,11 @@ MetricReturnType = Union[torch.Tensor, float, np.ndarray, Dict[str, Union[torch.
 
 
 class StepOutput(NamedTuple):
-    loss: Union[torch.Tensor, float]
-    batch_metrics: Union[List[NetworkIOType], np.ndarray]
-    y_pred: NetworkIOType
-    y_true: NetworkIOType
-    x: NetworkIOType
+    loss: Optional[Union[torch.Tensor, float]] = None
+    batch_metrics: Optional[Union[List[NetworkIOType], np.ndarray]] = None
+    y_pred: Optional[NetworkIOType] = None
+    y_true: Optional[NetworkIOType] = None
+    x: Optional[NetworkIOType] = None
 
 
 class BaseStrategy(ABC):
@@ -29,17 +29,6 @@ class BaseStrategy(ABC):
 
     def set_model(self, model: 'poutyne.Model') -> None:
         self.model = model
-
-    def step_output(
-        self,
-        loss: Union[float, torch.Tensor],
-        *,
-        batch_metrics: Optional[List[MetricReturnType]] = None,
-        y_pred: Optional[NetworkIOType] = None,
-        y_true: Optional[NetworkIOType] = None,
-        x: Optional[NetworkIOType] = None,
-    ) -> StepOutput:
-        return StepOutput(loss, batch_metrics, y_pred, y_true, x)
 
     @abstractmethod
     def compute_loss(self) -> float:
@@ -196,7 +185,7 @@ class DefaultStrategy(BaseStrategy):
             batch_metrics = [metric(y_pred, y) for metric in self.batch_metrics]
             for epoch_metric in self.epoch_metrics:
                 epoch_metric.update(y_pred, y)
-        return self.step_output(loss, batch_metrics=batch_metrics, y_pred=y_pred, y_true=y)
+        return StepOutput(loss=loss, batch_metrics=batch_metrics, y_pred=y_pred, y_true=y)
 
     def optimizer_zero_grad(self, **kwargs: Any) -> None:  # pylint: disable=unused-argument
         for opt in self.model.optimizers:

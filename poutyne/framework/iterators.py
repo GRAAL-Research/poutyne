@@ -81,7 +81,8 @@ class StepIterator:
         logs = dict(zip(self.batch_metrics_names, self.batch_metrics))
         logs.update(dict(zip(self.epoch_metrics_names, self.epoch_metrics)))
 
-        logs = {f'{self.prefix}loss': self.loss, **logs}
+        if self.loss is not None:
+            logs = {f'{self.prefix}loss': self.loss, **logs}
         return logs
 
     def __iter__(self):
@@ -96,14 +97,14 @@ class StepIterator:
             batch_total_time = batch_end_time - time_since_last_batch
             time_since_last_batch = batch_end_time
 
-            metrics_log = dict(zip(self.batch_metrics_names, step_data.batch_metrics))
             batch_logs = {
                 'batch': step,
                 'size': step_data.size,
                 'time': batch_total_time,
-                f'{self.prefix}loss': step_data.loss,
-                **metrics_log,
             }
+            if step_data.loss is not None:
+                batch_logs[f'{self.prefix}loss'] = step_data.loss
+            batch_logs.update(dict(zip(self.batch_metrics_names, step_data.batch_metrics)))
 
             self.on_batch_end(step, batch_logs)
 
