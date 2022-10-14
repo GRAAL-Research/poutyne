@@ -31,7 +31,7 @@ import torch.optim as optim
 from torch.utils.data import DataLoader
 
 from poutyne import torch_to_numpy, numpy_to_torch, torch_to
-from poutyne.framework.strategy.base import GradientAccumulationStrategy, BaseStrategy, DefaultStrategy
+from poutyne.framework.strategy.base import GradientAccumulationStrategy, BaseStrategy, DefaultStrategy, StepOutput
 from .callbacks import CallbackList, ProgressionCallback, Callback
 from .iterators import EpochIterator, _get_step_iterator, StepIterator
 from .metrics import get_metric, rename_doubles, flatten_metric_names
@@ -1500,6 +1500,13 @@ class Model:
     ):
         data = self._preprocess_input(data)
         output = strategy.train_step(data, callback=callback, step=step)
+
+        if output is None:
+            raise ValueError("Did you forget to implement train_step() or to return a value ?")
+
+        if not isinstance(output, StepOutput):
+            raise ValueError("The method train_step() should return a StepOutput object.")
+
         return self._process_batch_output(
             output,
             convert_to_numpy=convert_to_numpy,
@@ -1519,6 +1526,13 @@ class Model:
     ):
         data = self._preprocess_input(data)
         output = strategy.test_step(data, **kwargs)
+
+        if output is None:
+            raise ValueError("Did you forget to implement test_step() or to return a value ?")
+
+        if not isinstance(output, StepOutput):
+            raise ValueError("The method test_step() should return a StepOutput object.")
+
         return self._process_batch_output(
             output,
             convert_to_numpy=convert_to_numpy,
@@ -1529,6 +1543,10 @@ class Model:
     def _predict_step(self, strategy, data, *, convert_to_numpy=True):
         data = self._preprocess_input(data)
         y_pred = strategy.predict_step(data)
+
+        if y_pred is None:
+            raise ValueError("Did you forget to implement predict_step() or to return a value ?")
+
         return torch_to_numpy(y_pred) if convert_to_numpy else y_pred
 
     def load_weights(self, f, strict=True):

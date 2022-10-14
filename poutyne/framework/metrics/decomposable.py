@@ -26,12 +26,44 @@ from .base import Metric
 from ...utils import get_batch_size
 
 
+class CumulativeAverage:
+    def __init__(self, *, keys=None):
+        super().__init__()
+        self.keys = [] if keys is None else list(keys)
+        self.reset()
+
+    def update(self, scores, batch_size):
+        # In order to aggregate the batches, it is simpler to put into a NumPy array all relevant values.
+        np_output = self._output_to_array(scores)
+        self.output_sums += np_output * batch_size
+        self.size += batch_size
+
+    def _output_to_array(self, output):
+        if (torch.is_tensor(output) or isinstance(output, np.ndarray)) and len(output.shape) == 0:
+            values = [float(output)]
+        elif isinstance(output, Mapping):
+            values = [float(output[name]) for name in self.keys]
+        elif isinstance(output, Iterable):
+            values = [float(metric) for metric in output]
+        else:
+            values = [float(output)]
+        return np.array(values)
+
+    def compute(self):
+        return self.output_sums / self.size
+
+    def reset(self) -> None:
+        self.output_sums = 0.0
+        self.size = 0
+
+
 class DecomposableMetric(Metric):
     def __init__(self, func, names):
         super().__init__()
         self.func = func
         self.names = [names] if isinstance(names, str) else names
         self.__name__ = self.names
+        self.average = CumulativeAverage(keys=self.names)
         self.reset()
 
     def forward(self, y_pred, y_true):
@@ -43,33 +75,17 @@ class DecomposableMetric(Metric):
     def _update(self, y_pred, y_true):
         output = self.func(y_pred, y_true)
 
-        # In order to aggregate the batches, it is simpler to put into a NumPy array all relevant values.
-        np_output = self._output_to_array(output)
-        batch_size = get_batch_size(y_pred, y_true)
-        self.output_sums += np_output * batch_size
-        self.size += batch_size
+        self.average.update(output, get_batch_size(y_pred, y_true))
 
         # We return `output` on purpose in order to keep the tensors as is so that a DecomposableMetric object can
         # be used as a loss function.
         return output
 
-    def _output_to_array(self, output):
-        if (torch.is_tensor(output) or isinstance(output, np.ndarray)) and len(output.shape) == 0:
-            values = [float(output)]
-        elif isinstance(output, Mapping):
-            values = [float(output[name]) for name in self.names]
-        elif isinstance(output, Iterable):
-            values = [float(metric) for metric in output]
-        else:
-            values = [float(output)]
-        return np.array(values)
-
     def compute(self):
-        return self.output_sums / self.size
+        return self.average.compute()
 
     def reset(self) -> None:
-        self.output_sums = np.zeros(len(self.names))
-        self.size = 0
+        self.average.reset()
 
 
 def convert_decomposable_metric_to_object(metric, names, is_epoch_metric=False):
