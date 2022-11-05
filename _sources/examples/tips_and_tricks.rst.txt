@@ -30,7 +30,17 @@ Let's import all the needed packages.
     from torchvision import transforms, utils
     from torchvision.datasets.mnist import MNIST
 
-    from poutyne import set_seeds, Model, ModelCheckpoint, CSVLogger, Callback, ModelBundle, SKLearnMetrics, plot_history
+    from poutyne import (
+        set_seeds,
+        Model,
+        ModelCheckpoint,
+        CSVLogger,
+        Callback,
+        ModelBundle,
+        Metric,
+        SKLearnMetrics,
+        plot_history,
+    )
 
 
 Hyperparameters, Dataset and Network
@@ -46,7 +56,7 @@ Now, let's set our training constants. We first have the CUDA device used for tr
 .. code-block:: python
 
     cuda_device = 0
-    device = torch.device("cuda:%d" % cuda_device if torch.cuda.is_available() else "cpu")
+    device = torch.device(f"cuda:{cuda_device}" if torch.cuda.is_available() else "cpu")
 
     train_split_percent = 0.8
 
@@ -62,7 +72,7 @@ Here, we initialize the dictionary for our optimizer as well as the string for o
 
 .. code-block:: python
 
-    optimizer = dict(optim='sgd', lr=learning_rate) # Could be 'sgd' if we didn't need to change the learning rate.
+    optimizer = dict(optim='sgd', lr=learning_rate)  # Could be 'sgd' if we didn't need to change the learning rate.
     loss_function = 'cross_entropy'
 
 Loading the Dataset
@@ -79,9 +89,11 @@ The following code helps load the MNIST dataset and creates the PyTorch DataLoad
     train_length = int(math.floor(train_split_percent * num_data))
     valid_length = num_data - train_length
 
-    train_dataset, valid_dataset = random_split(full_train_dataset,
-                                                [train_length, valid_length],
-                                                generator=torch.Generator().manual_seed(42))
+    train_dataset, valid_dataset = random_split(
+        full_train_dataset,
+        [train_length, valid_length],
+        generator=torch.Generator().manual_seed(42),
+    )
 
     train_loader = DataLoader(train_dataset, batch_size=batch_size, num_workers=2, shuffle=True)
     valid_loader = DataLoader(valid_dataset, batch_size=batch_size, num_workers=2)
@@ -121,12 +133,17 @@ The following code trains our network in the simplest way possible with Poutyne.
     network = create_network()
 
     # Poutyne Model on GPU
-    model = Model(network, optimizer, loss_function,
-                  batch_metrics=['accuracy'],
-                  device=device)
+    model = Model(
+        network,
+        optimizer,
+        loss_function,
+        batch_metrics=['accuracy'],  # Displayed for each batch and at the end of the epoch.
+        epoch_metrics=['f1'],  # Displayed only at the end of the epoch.
+        device=device,
+    )
 
     # Train
-    model.fit_generator(train_loader, valid_loader, epochs=num_epochs)
+    history = model.fit_generator(train_loader, valid_loader, epochs=num_epochs)
 
     # Test
     test_loss, test_acc = model.evaluate_generator(test_loader)
@@ -173,15 +190,164 @@ Instead of using magic strings for the optimizer and the loss function, it's qui
     own_loss_function = nn.CrossEntropyLoss()
 
     # Poutyne Model on GPU
-    model = Model(network, own_optimizer, own_loss_function,
-                  batch_metrics=['accuracy'],
-                  device=device)
+    model = Model(
+        network,
+        own_optimizer,
+        own_loss_function,
+        batch_metrics=['accuracy'],
+        device=device,
+    )
 
     # Train
     model.fit_generator(train_loader, valid_loader, epochs=num_epochs)
 
     # Test
     test_loss, test_acc = model.evaluate_generator(test_loader)
+
+Using Your Own Metric
+=====================
+
+Poutyne offers :ref:`a few metrics out-of-the-box <object oriented metrics>` and also supports metrics from `TorchMetrics <https://torchmetrics.readthedocs.io/>`__, a library implementing many known metrics in PyTorch. See the `TorchMetrics documentation <https://torchmetrics.readthedocs.io/en/latest/references/modules.html>`__ for available TorchMetrics metrics.
+
+If metrics available in Poutyne and TorchMetrics do not suit your needs, you can define your own metric. Poutyne offers two interfaces for metrics. The first interface is the same as PyTorch loss functions: ``metric(y_pred, y_true)``. When using that interface, the metric is assumed to be decomposable and is averaged for the whole epoch.
+
+The second interface is defined by the :class:`Metric class<poutyne.Metric>` interface. As documented in the class, it provides methods for updating and computing the metric. This interface is compatible with `TorchMetrics <https://torchmetrics.readthedocs.io/>`__.
+
+In the code below, we demonstrate the usage of the two interfaces by implementing the accuracy in the two ways. The Metric interface is a bit more complex to use but also offers more flexibility.
+
+.. code-block:: python
+
+    # Creating a metric using the PyTorch loss interface.
+    def my_accuracy_func(y_pred, y_true):
+        y_pred = y_pred.argmax(1)
+        acc_pred = (y_pred == y_true).float().mean()
+        return acc_pred * 100
+
+
+    # Creating a metric using the Metric interface.
+    class MyAccuracyMetric(Metric):
+        def __init__(self):
+            super().__init__()
+            self.reset()
+
+        def _compute_stats(self, y_pred, y_true):
+            """
+            Compute the number of true positives and the total number of elements
+            of a given batch.
+            """
+            y_pred = y_pred.argmax(1)
+            num_true_positives = (y_pred == y_true).long().sum().item()
+            total_exemples = y_true.numel()
+            return num_true_positives, total_exemples
+
+        def _compute_accuracy_from_stats(self, num_true_positives, total_exemples):
+            """
+            Compute the accuracy given by the statistics computed in _compute_stats().
+            """
+            return num_true_positives / total_exemples * 100
+
+        def _update(self, y_pred, y_true):
+            """
+            Increment the running number of true positives and number of elements.
+            """
+            num_true_positives, total_exemples = self._compute_stats(y_pred, y_true)
+            self.num_true_positives += num_true_positives
+            self.total_exemples += total_exemples
+            return num_true_positives, total_exemples
+
+        def forward(self, y_pred, y_true):
+            """
+            When using the metric as a batch metric, this is called. If the metric is only
+            used as an epoch metric, there is no need to implement this.
+            """
+            num_true_positives, total_exemples = self._update(y_pred, y_true)
+            return self._compute_accuracy_from_stats(num_true_positives, total_exemples)
+
+        def update(self, y_pred, y_true):
+            """
+            When using the metric as an epoch metric, this is called. If the metric is only
+            used as a batch metric, there is no need to implement this.
+            """
+            self._update(y_pred, y_true)
+
+        def compute(self):
+            """
+            This is called at the end to get the value for the whole epoch.
+            """
+            return self._compute_accuracy_from_stats(self.num_true_positives, self.total_exemples)
+
+        def reset(self) -> None:
+            """
+            Reset the statistics for another epoch.
+            """
+            self.num_true_positives = 0
+            self.total_exemples = 0
+
+.. code-block:: python
+
+    # Instantiating our network
+    network = create_network()
+
+    # Poutyne Model on GPU
+    model = Model(
+        network,
+        optimizer,
+        loss_function,
+        batch_metrics=['accuracy'],
+        epoch_metrics=['f1'],
+        device=device,
+    )
+
+    # Train
+    model.fit_generator(train_loader, valid_loader, epochs=num_epochs)
+
+    # Test
+    test_loss, (test_acc, test_f1) = model.evaluate_generator(test_loader)
+
+Furthermore, you could also use the :class:`~poutyne.SKLearnMetrics` wrapper to wrap a Scikit-learn metric as an epoch metric. Below, we show how to compute the AUC ROC using the :class:`~poutyne.SKLearnMetrics` class.
+
+.. code-block:: python
+
+    def softmax(x, axis=1):
+        """
+        Compute softmax function.
+        """
+        e_x = np.exp(x - x.max(axis=axis, keepdims=True))
+        return e_x / e_x.sum(axis=axis, keepdims=True)
+
+
+    def roc_auc(y_true, y_pred, **kwargs):
+        """
+        Since the `roc_auc_score` from Scikit-learn requires normalized probabilities,
+        we use the softmax function on the predictions.
+        """
+        y_pred = softmax(y_pred)
+        return roc_auc_score(y_true, y_pred, **kwargs)
+
+
+    # kwargs are keyword arguments we wish to pass to roc_auc.
+    roc_epoch_metric = SKLearnMetrics(roc_auc, kwargs=dict(multi_class='ovr', average='macro'))
+
+.. code-block:: python
+
+    # Instantiating our network
+    network = create_network()
+
+    # Poutyne Model on GPU
+    model = Model(
+        network,
+        optimizer,
+        loss_function,
+        batch_metrics=['accuracy'],
+        epoch_metrics=['f1', roc_epoch_metric],
+        device=device,
+    )
+
+    # Train
+    model.fit_generator(train_loader, valid_loader, epochs=num_epochs)
+
+    # Test
+    test_loss, (test_acc, test_f1, test_roc) = model.evaluate_generator(test_loader)
 
 Bypassing PyTorch DataLoaders
 =============================
@@ -194,21 +360,29 @@ Above, we defined DataLoaders for our datasets. However, with Poutyne, it is not
     network = create_network()
 
     # Poutyne Model on GPU
-    model = Model(network, optimizer, loss_function,
-                  batch_metrics=['accuracy'],
-                  device=device)
+    model = Model(
+        network,
+        optimizer,
+        loss_function,
+        batch_metrics=['accuracy'],
+        device=device,
+    )
 
     # Train
-    model.fit_dataset(train_dataset,
-                      valid_dataset,
-                      epochs=num_epochs,
-                      batch_size=batch_size,
-                      num_workers=2)
+    model.fit_dataset(
+        train_dataset,
+        valid_dataset,
+        epochs=num_epochs,
+        batch_size=batch_size,
+        num_workers=2,
+    )
 
     # Test
-    test_loss, test_acc = model.evaluate_dataset(test_dataset,
-                                                 batch_size=batch_size,
-                                                 num_workers=2)
+    test_loss, test_acc = model.evaluate_dataset(
+        test_dataset,
+        batch_size=batch_size,
+        num_workers=2,
+    )
 
 Using Callbacks
 ===============
@@ -224,11 +398,15 @@ One nice feature of Poutyne is :class:`callbacks <poutyne.Callback>`. Callbacks 
     callbacks = [
         # Save the latest weights to be able to continue the optimization at the end for more epochs.
         ModelCheckpoint(os.path.join(save_path, 'last_epoch.ckpt')),
-
         # Save the weights in a new file when the current model is better than all previous models.
-        ModelCheckpoint(os.path.join(save_path, 'best_epoch_{epoch}.ckpt'), monitor='val_acc', mode='max',
-                        save_best_only=True, restore_best=True, verbose=True),
-
+        ModelCheckpoint(
+            os.path.join(save_path, 'best_epoch_{epoch}.ckpt'),
+            monitor='val_acc',
+            mode='max',
+            save_best_only=True,
+            restore_best=True,
+            verbose=True,
+        ),
         # Save the losses and accuracies for each epoch in a TSV.
         CSVLogger(os.path.join(save_path, 'log.tsv'), separator='\t'),
     ]
@@ -239,15 +417,16 @@ One nice feature of Poutyne is :class:`callbacks <poutyne.Callback>`. Callbacks 
     network = create_network()
 
     # Poutyne Model on GPU
-    model = Model(network, optimizer, loss_function,
-                  batch_metrics=['accuracy'],
-                  device=device)
+    model = Model(
+        network,
+        optimizer,
+        loss_function,
+        batch_metrics=['accuracy'],
+        device=device,
+    )
 
     # Train
-    model.fit_generator(train_loader,
-                        valid_loader,
-                        epochs=num_epochs,
-                        callbacks=callbacks)
+    model.fit_generator(train_loader, valid_loader, epochs=num_epochs, callbacks=callbacks)
 
     # Test
     test_loss, test_acc = model.evaluate_generator(test_loader)
@@ -291,6 +470,7 @@ In the following example, we want to see the effect of temperature on the optimi
             celoss_with_temp (CrossEntropyLossWithTemperature): the loss module.
             decay (float): The value of the temperature decay.
         """
+
         def __init__(self, celoss_with_temp, decay):
             super().__init__()
             self.celoss_with_temp = celoss_with_temp
@@ -303,8 +483,8 @@ So our loss function will be the cross-entropy with temperature with an initial 
 
 .. code-block:: python
 
-    loss_function = CrossEntropyLossWithTemperature(0.1)
-    callbacks = callbacks + [TemperatureCallback(loss_function, 1.0008)]
+    custom_loss_function = CrossEntropyLossWithTemperature(0.1)
+    callbacks = [TemperatureCallback(custom_loss_function, 1.0008)]
 
 Now let's test our training loop for one epoch using the accuracy as the batch metric.
 
@@ -314,15 +494,16 @@ Now let's test our training loop for one epoch using the accuracy as the batch m
     network = create_network()
 
     # Poutyne Model on GPU
-    model = Model(network, optimizer, custom_loss_function,
-                  batch_metrics=['accuracy'],
-                  device=device)
+    model = Model(
+        network,
+        optimizer,
+        custom_loss_function,
+        batch_metrics=['accuracy'],
+        device=device,
+    )
 
     # Train
-    model.fit_generator(train_loader,
-                        valid_loader,
-                        epochs=num_epochs,
-                        callbacks=callbacks)
+    model.fit_generator(train_loader, valid_loader, epochs=num_epochs, callbacks=callbacks)
 
     # Test
     test_loss, test_acc = model.evaluate_generator(test_loader)
@@ -396,89 +577,33 @@ Here an example where we set the ``text_color`` to RED and the ``progress_bar_co
 
 .. code-block:: python
 
-    progress_options = dict(
-        coloring=dict(text_color="RED", progress_bar_color="LIGHTGREEN_EX")
+    progress_options = dict(coloring=dict(text_color="RED", progress_bar_color="LIGHTGREEN_EX"))
+
+    # Instantiating our network
+    network = create_network()
+
+    # Poutyne Model on GPU
+    model = Model(
+        network,
+        optimizer,
+        loss_function,
+        batch_metrics=['accuracy'],
+        device=device,
     )
 
-    # Instantiating our network
-    network = create_network()
-
-    # Poutyne Model on GPU
-    model = Model(network, optimizer, loss_function,
-                  batch_metrics=['accuracy'],
-                  device=device)
-
     # Train
-    model.fit_generator(train_loader,
-                        valid_loader,
-                        epochs=num_epochs,
-                        progress_options=progress_options)
+    model.fit_generator(
+        train_loader,
+        valid_loader,
+        epochs=num_epochs,
+        progress_options=progress_options,
+    )
 
     # Test
-    test_loss, test_acc = model.evaluate_generator(test_loader,
-                                                   progress_options=progress_options)
-
-Epoch metrics
-=============
-
-It's also possible to used epoch metrics such as :class:`~poutyne.F1`. You could also define your own epoch metric using the :class:`~poutyne.EpochMetric` interface.
-
-.. code-block:: python
-
-    # Instantiating our network
-    network = create_network()
-
-    # Poutyne Model on GPU
-    model = Model(network, optimizer, loss_function,
-                  batch_metrics=['accuracy'],
-                  epoch_metrics=['f1'],
-                  device=device)
-
-    # Train
-    model.fit_generator(train_loader, valid_loader, epochs=num_epochs)
-
-    # Test
-    test_loss, (test_acc, test_f1) = model.evaluate_generator(test_loader)
-
-Furthermore, you could also use the :class:`~poutyne.SKLearnMetrics` wrapper to wrap a Scikit-learn metric as an epoch metric. Below, we show how to compute the AUC ROC using the :class:`~poutyne.SKLearnMetrics` class.
-
-.. code-block:: python
-
-    def softmax(x, axis=1):
-        """
-        Compute softmax function.
-        """
-        e_x = np.exp(x - x.max(axis=axis, keepdims=True))
-        return e_x / e_x.sum(axis=axis, keepdims=True)
-
-    def roc_auc(y_true, y_pred, **kwargs):
-        """
-        Since the `roc_auc_score` from Scikit-learn requires normalized probabilities,
-        we use the softmax function on the predictions.
-        """
-        y_pred = softmax(y_pred)
-        return roc_auc_score(y_true, y_pred, **kwargs)
-
-    # kwargs are keyword arguments we wish to pass to roc_auc.
-    roc_epoch_metric = SKLearnMetrics(roc_auc,
-                                      kwargs=dict(multi_class='ovr', average='macro'))
-
-.. code-block:: python
-
-    # Instantiating our network
-    network = create_network()
-
-    # Poutyne Model on GPU
-    model = Model(network, optimizer, loss_function,
-                  batch_metrics=['accuracy'],
-                  epoch_metrics=['f1', roc_epoch_metric],
-                  device=device)
-
-    # Train
-    model.fit_generator(train_loader, valid_loader, epochs=num_epochs)
-
-    # Test
-    test_loss, (test_acc, test_f1, test_roc) = model.evaluate_generator(test_loader)
+    test_loss, test_acc = model.evaluate_generator(
+        test_loader,
+        progress_options=progress_options,
+    )
 
 Custom Metric Names
 ===================
@@ -491,10 +616,14 @@ It's also possible to name the metric using a tuple format ``(<metric name>, met
     network = create_network()
 
     # Poutyne Model on GPU
-    model = Model(network, optimizer, loss_function,
-                  batch_metrics=[("My accuracy name", 'accuracy')],
-                  epoch_metrics=[("My f1 name", 'f1')],
-                  device=device)
+    model = Model(
+        network,
+        optimizer,
+        loss_function,
+        batch_metrics=[("My accuracy name", 'accuracy')],
+        epoch_metrics=[("My f1 name", 'f1')],
+        device=device,
+    )
 
     # Train
     model.fit_generator(train_loader, valid_loader, epochs=num_epochs)
@@ -517,9 +646,13 @@ In our case here, multi-gpus takes more time because the task is not big enough 
     network = create_network()
 
     # Poutyne Model on GPU
-    model = Model(network, optimizer, loss_function,
-                  batch_metrics=['accuracy'],
-                  device="all")
+    model = Model(
+        network,
+        optimizer,
+        loss_function,
+        batch_metrics=['accuracy'],
+        device="all",
+    )
 
     # Train
     model.fit_generator(train_loader, valid_loader, epochs=num_epochs)

@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Tips and Tricks &mdash; Poutyne 1.12.1 documentation</title>
+  <title>Tips and Tricks &mdash; Poutyne 1.13 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -16,6 +16,7 @@
         <script src="../_static/underscore.js"></script>
         <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -32,7 +33,7 @@
             <img src="../_static/poutyne-light.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                1.12.1
+                1.13
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
@@ -64,12 +65,12 @@
 <li class="toctree-l2"><a class="reference internal" href="#vanilla-usage">Vanilla Usage</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#plotting-training">Plotting Training</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#initilalizing-your-optimizer-and-loss-function-yourself">Initilalizing Your Optimizer and Loss Function Yourself</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#using-your-own-metric">Using Your Own Metric</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#bypassing-pytorch-dataloaders">Bypassing PyTorch DataLoaders</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#using-callbacks">Using Callbacks</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#making-your-own-callback">Making Your Own Callback</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#using-modelbundle">Using ModelBundle</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#coloring">Coloring</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#epoch-metrics">Epoch metrics</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#custom-metric-names">Custom Metric Names</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#multi-gpus">Multi-GPUs</a></li>
 </ul>
@@ -95,8 +96,8 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>Tips and Tricks</li>
+      <li><a href="../index.html" class="icon icon-home"></a></li>
+      <li class="breadcrumb-item active">Tips and Tricks</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../_sources/examples/tips_and_tricks.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -131,7 +132,17 @@
 <span class="kn">from</span> <span class="nn">torchvision</span> <span class="kn">import</span> <span class="n">transforms</span><span class="p">,</span> <span class="n">utils</span>
 <span class="kn">from</span> <span class="nn">torchvision.datasets.mnist</span> <span class="kn">import</span> <span class="n">MNIST</span>
 
-<span class="kn">from</span> <span class="nn">poutyne</span> <span class="kn">import</span> <span class="n">set_seeds</span><span class="p">,</span> <span class="n">Model</span><span class="p">,</span> <span class="n">ModelCheckpoint</span><span class="p">,</span> <span class="n">CSVLogger</span><span class="p">,</span> <span class="n">Callback</span><span class="p">,</span> <span class="n">ModelBundle</span><span class="p">,</span> <span class="n">SKLearnMetrics</span><span class="p">,</span> <span class="n">plot_history</span>
+<span class="kn">from</span> <span class="nn">poutyne</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">set_seeds</span><span class="p">,</span>
+    <span class="n">Model</span><span class="p">,</span>
+    <span class="n">ModelCheckpoint</span><span class="p">,</span>
+    <span class="n">CSVLogger</span><span class="p">,</span>
+    <span class="n">Callback</span><span class="p">,</span>
+    <span class="n">ModelBundle</span><span class="p">,</span>
+    <span class="n">Metric</span><span class="p">,</span>
+    <span class="n">SKLearnMetrics</span><span class="p">,</span>
+    <span class="n">plot_history</span><span class="p">,</span>
+<span class="p">)</span>
 </pre></div>
 </div>
 <section id="hyperparameters-dataset-and-network">
@@ -141,7 +152,7 @@
 <h3>Training Constants<a class="headerlink" href="#training-constants" title="Permalink to this heading"></a></h3>
 <p>Now, let’s set our training constants. We first have the CUDA device used for training if one is present. Second, we set the <code class="docutils literal notranslate"><span class="pre">train_split</span></code> to 0.8 (80%) to use 80% of the dataset for training and 20% for testing the trained model. Third, we set the number of classes (i.e. one for each digit). Finally, we set the batch size (i.e. the number of elements to see before updating the model), the learning rate for the optimizer, and the number of epochs (i.e. the number of times we see the full dataset).</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">cuda_device</span> <span class="o">=</span> <span class="mi">0</span>
-<span class="n">device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">&quot;cuda:</span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">cuda_device</span> <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span> <span class="k">else</span> <span class="s2">&quot;cpu&quot;</span><span class="p">)</span>
+<span class="n">device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;cuda:</span><span class="si">{</span><span class="n">cuda_device</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span> <span class="k">else</span> <span class="s2">&quot;cpu&quot;</span><span class="p">)</span>
 
 <span class="n">train_split_percent</span> <span class="o">=</span> <span class="mf">0.8</span>
 
@@ -154,7 +165,7 @@
 </div>
 <p>In Poutyne, as we will see in the following sections, you can define your own loss functions and optimizers. However, we can also pass magic strings to use PyTorch’s standard optimizers and loss functions. Furthermore, for the optimizer, we can also use a dictionary to set other parameters as the learning rate, for instance, if we don’t want the default learning rate.</p>
 <p>Here, we initialize the dictionary for our optimizer as well as the string for our loss function. We thus use SGD with the specified learning rate and the cross-entropy loss.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">optimizer</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">optim</span><span class="o">=</span><span class="s1">&#39;sgd&#39;</span><span class="p">,</span> <span class="n">lr</span><span class="o">=</span><span class="n">learning_rate</span><span class="p">)</span> <span class="c1"># Could be &#39;sgd&#39; if we didn&#39;t need to change the learning rate.</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">optimizer</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">optim</span><span class="o">=</span><span class="s1">&#39;sgd&#39;</span><span class="p">,</span> <span class="n">lr</span><span class="o">=</span><span class="n">learning_rate</span><span class="p">)</span>  <span class="c1"># Could be &#39;sgd&#39; if we didn&#39;t need to change the learning rate.</span>
 <span class="n">loss_function</span> <span class="o">=</span> <span class="s1">&#39;cross_entropy&#39;</span>
 </pre></div>
 </div>
@@ -169,9 +180,11 @@
 <span class="n">train_length</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">train_split_percent</span> <span class="o">*</span> <span class="n">num_data</span><span class="p">))</span>
 <span class="n">valid_length</span> <span class="o">=</span> <span class="n">num_data</span> <span class="o">-</span> <span class="n">train_length</span>
 
-<span class="n">train_dataset</span><span class="p">,</span> <span class="n">valid_dataset</span> <span class="o">=</span> <span class="n">random_split</span><span class="p">(</span><span class="n">full_train_dataset</span><span class="p">,</span>
-                                            <span class="p">[</span><span class="n">train_length</span><span class="p">,</span> <span class="n">valid_length</span><span class="p">],</span>
-                                            <span class="n">generator</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">Generator</span><span class="p">()</span><span class="o">.</span><span class="n">manual_seed</span><span class="p">(</span><span class="mi">42</span><span class="p">))</span>
+<span class="n">train_dataset</span><span class="p">,</span> <span class="n">valid_dataset</span> <span class="o">=</span> <span class="n">random_split</span><span class="p">(</span>
+    <span class="n">full_train_dataset</span><span class="p">,</span>
+    <span class="p">[</span><span class="n">train_length</span><span class="p">,</span> <span class="n">valid_length</span><span class="p">],</span>
+    <span class="n">generator</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">Generator</span><span class="p">()</span><span class="o">.</span><span class="n">manual_seed</span><span class="p">(</span><span class="mi">42</span><span class="p">),</span>
+<span class="p">)</span>
 
 <span class="n">train_loader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">train_dataset</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">num_workers</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">valid_loader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">valid_dataset</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">num_workers</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
@@ -208,12 +221,17 @@
 <span class="n">network</span> <span class="o">=</span> <span class="n">create_network</span><span class="p">()</span>
 
 <span class="c1"># Poutyne Model on GPU</span>
-<span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span><span class="n">network</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">loss_function</span><span class="p">,</span>
-              <span class="n">batch_metrics</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;accuracy&#39;</span><span class="p">],</span>
-              <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span>
+    <span class="n">network</span><span class="p">,</span>
+    <span class="n">optimizer</span><span class="p">,</span>
+    <span class="n">loss_function</span><span class="p">,</span>
+    <span class="n">batch_metrics</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;accuracy&#39;</span><span class="p">],</span>  <span class="c1"># Displayed for each batch and at the end of the epoch.</span>
+    <span class="n">epoch_metrics</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;f1&#39;</span><span class="p">],</span>  <span class="c1"># Displayed only at the end of the epoch.</span>
+    <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span>
+<span class="p">)</span>
 
 <span class="c1"># Train</span>
-<span class="n">model</span><span class="o">.</span><span class="n">fit_generator</span><span class="p">(</span><span class="n">train_loader</span><span class="p">,</span> <span class="n">valid_loader</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="n">num_epochs</span><span class="p">)</span>
+<span class="n">history</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">fit_generator</span><span class="p">(</span><span class="n">train_loader</span><span class="p">,</span> <span class="n">valid_loader</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="n">num_epochs</span><span class="p">)</span>
 
 <span class="c1"># Test</span>
 <span class="n">test_loss</span><span class="p">,</span> <span class="n">test_acc</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">evaluate_generator</span><span class="p">(</span><span class="n">test_loader</span><span class="p">)</span>
@@ -252,15 +270,155 @@
 <span class="n">own_loss_function</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">CrossEntropyLoss</span><span class="p">()</span>
 
 <span class="c1"># Poutyne Model on GPU</span>
-<span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span><span class="n">network</span><span class="p">,</span> <span class="n">own_optimizer</span><span class="p">,</span> <span class="n">own_loss_function</span><span class="p">,</span>
-              <span class="n">batch_metrics</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;accuracy&#39;</span><span class="p">],</span>
-              <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span>
+    <span class="n">network</span><span class="p">,</span>
+    <span class="n">own_optimizer</span><span class="p">,</span>
+    <span class="n">own_loss_function</span><span class="p">,</span>
+    <span class="n">batch_metrics</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;accuracy&#39;</span><span class="p">],</span>
+    <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span>
+<span class="p">)</span>
 
 <span class="c1"># Train</span>
 <span class="n">model</span><span class="o">.</span><span class="n">fit_generator</span><span class="p">(</span><span class="n">train_loader</span><span class="p">,</span> <span class="n">valid_loader</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="n">num_epochs</span><span class="p">)</span>
 
 <span class="c1"># Test</span>
 <span class="n">test_loss</span><span class="p">,</span> <span class="n">test_acc</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">evaluate_generator</span><span class="p">(</span><span class="n">test_loader</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="using-your-own-metric">
+<h2>Using Your Own Metric<a class="headerlink" href="#using-your-own-metric" title="Permalink to this heading"></a></h2>
+<p>Poutyne offers <a class="reference internal" href="../metrics.html#object-oriented-metrics"><span class="std std-ref">a few metrics out-of-the-box</span></a> and also supports metrics from <a class="reference external" href="https://torchmetrics.readthedocs.io/">TorchMetrics</a>, a library implementing many known metrics in PyTorch. See the <a class="reference external" href="https://torchmetrics.readthedocs.io/en/latest/references/modules.html">TorchMetrics documentation</a> for available TorchMetrics metrics.</p>
+<p>If metrics available in Poutyne and TorchMetrics do not suit your needs, you can define your own metric. Poutyne offers two interfaces for metrics. The first interface is the same as PyTorch loss functions: <code class="docutils literal notranslate"><span class="pre">metric(y_pred,</span> <span class="pre">y_true)</span></code>. When using that interface, the metric is assumed to be decomposable and is averaged for the whole epoch.</p>
+<p>The second interface is defined by the <a class="reference internal" href="../metrics.html#poutyne.Metric" title="poutyne.Metric"><code class="xref py py-class docutils literal notranslate"><span class="pre">Metric</span> <span class="pre">class</span></code></a> interface. As documented in the class, it provides methods for updating and computing the metric. This interface is compatible with <a class="reference external" href="https://torchmetrics.readthedocs.io/">TorchMetrics</a>.</p>
+<p>In the code below, we demonstrate the usage of the two interfaces by implementing the accuracy in the two ways. The Metric interface is a bit more complex to use but also offers more flexibility.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Creating a metric using the PyTorch loss interface.</span>
+<span class="k">def</span> <span class="nf">my_accuracy_func</span><span class="p">(</span><span class="n">y_pred</span><span class="p">,</span> <span class="n">y_true</span><span class="p">):</span>
+    <span class="n">y_pred</span> <span class="o">=</span> <span class="n">y_pred</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">acc_pred</span> <span class="o">=</span> <span class="p">(</span><span class="n">y_pred</span> <span class="o">==</span> <span class="n">y_true</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">acc_pred</span> <span class="o">*</span> <span class="mi">100</span>
+
+
+<span class="c1"># Creating a metric using the Metric interface.</span>
+<span class="k">class</span> <span class="nc">MyAccuracyMetric</span><span class="p">(</span><span class="n">Metric</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_compute_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">y_true</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute the number of true positives and the total number of elements</span>
+<span class="sd">        of a given batch.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">y_pred</span> <span class="o">=</span> <span class="n">y_pred</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">num_true_positives</span> <span class="o">=</span> <span class="p">(</span><span class="n">y_pred</span> <span class="o">==</span> <span class="n">y_true</span><span class="p">)</span><span class="o">.</span><span class="n">long</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+        <span class="n">total_exemples</span> <span class="o">=</span> <span class="n">y_true</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">num_true_positives</span><span class="p">,</span> <span class="n">total_exemples</span>
+
+    <span class="k">def</span> <span class="nf">_compute_accuracy_from_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_true_positives</span><span class="p">,</span> <span class="n">total_exemples</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute the accuracy given by the statistics computed in _compute_stats().</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">num_true_positives</span> <span class="o">/</span> <span class="n">total_exemples</span> <span class="o">*</span> <span class="mi">100</span>
+
+    <span class="k">def</span> <span class="nf">_update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">y_true</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Increment the running number of true positives and number of elements.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">num_true_positives</span><span class="p">,</span> <span class="n">total_exemples</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_stats</span><span class="p">(</span><span class="n">y_pred</span><span class="p">,</span> <span class="n">y_true</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_true_positives</span> <span class="o">+=</span> <span class="n">num_true_positives</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">total_exemples</span> <span class="o">+=</span> <span class="n">total_exemples</span>
+        <span class="k">return</span> <span class="n">num_true_positives</span><span class="p">,</span> <span class="n">total_exemples</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">y_true</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        When using the metric as a batch metric, this is called. If the metric is only</span>
+<span class="sd">        used as an epoch metric, there is no need to implement this.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">num_true_positives</span><span class="p">,</span> <span class="n">total_exemples</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_update</span><span class="p">(</span><span class="n">y_pred</span><span class="p">,</span> <span class="n">y_true</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_accuracy_from_stats</span><span class="p">(</span><span class="n">num_true_positives</span><span class="p">,</span> <span class="n">total_exemples</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">y_true</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        When using the metric as an epoch metric, this is called. If the metric is only</span>
+<span class="sd">        used as a batch metric, there is no need to implement this.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_update</span><span class="p">(</span><span class="n">y_pred</span><span class="p">,</span> <span class="n">y_true</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">compute</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This is called at the end to get the value for the whole epoch.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_accuracy_from_stats</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_true_positives</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">total_exemples</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Reset the statistics for another epoch.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_true_positives</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">total_exemples</span> <span class="o">=</span> <span class="mi">0</span>
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Instantiating our network</span>
+<span class="n">network</span> <span class="o">=</span> <span class="n">create_network</span><span class="p">()</span>
+
+<span class="c1"># Poutyne Model on GPU</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span>
+    <span class="n">network</span><span class="p">,</span>
+    <span class="n">optimizer</span><span class="p">,</span>
+    <span class="n">loss_function</span><span class="p">,</span>
+    <span class="n">batch_metrics</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;accuracy&#39;</span><span class="p">],</span>
+    <span class="n">epoch_metrics</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;f1&#39;</span><span class="p">],</span>
+    <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="c1"># Train</span>
+<span class="n">model</span><span class="o">.</span><span class="n">fit_generator</span><span class="p">(</span><span class="n">train_loader</span><span class="p">,</span> <span class="n">valid_loader</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="n">num_epochs</span><span class="p">)</span>
+
+<span class="c1"># Test</span>
+<span class="n">test_loss</span><span class="p">,</span> <span class="p">(</span><span class="n">test_acc</span><span class="p">,</span> <span class="n">test_f1</span><span class="p">)</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">evaluate_generator</span><span class="p">(</span><span class="n">test_loader</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Furthermore, you could also use the <a class="reference internal" href="../metrics.html#poutyne.SKLearnMetrics" title="poutyne.SKLearnMetrics"><code class="xref py py-class docutils literal notranslate"><span class="pre">SKLearnMetrics</span></code></a> wrapper to wrap a Scikit-learn metric as an epoch metric. Below, we show how to compute the AUC ROC using the <a class="reference internal" href="../metrics.html#poutyne.SKLearnMetrics" title="poutyne.SKLearnMetrics"><code class="xref py py-class docutils literal notranslate"><span class="pre">SKLearnMetrics</span></code></a> class.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">softmax</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute softmax function.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">e_x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">x</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="n">axis</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">e_x</span> <span class="o">/</span> <span class="n">e_x</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="n">axis</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">roc_auc</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Since the `roc_auc_score` from Scikit-learn requires normalized probabilities,</span>
+<span class="sd">    we use the softmax function on the predictions.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">y_pred</span> <span class="o">=</span> <span class="n">softmax</span><span class="p">(</span><span class="n">y_pred</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">roc_auc_score</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+
+<span class="c1"># kwargs are keyword arguments we wish to pass to roc_auc.</span>
+<span class="n">roc_epoch_metric</span> <span class="o">=</span> <span class="n">SKLearnMetrics</span><span class="p">(</span><span class="n">roc_auc</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">multi_class</span><span class="o">=</span><span class="s1">&#39;ovr&#39;</span><span class="p">,</span> <span class="n">average</span><span class="o">=</span><span class="s1">&#39;macro&#39;</span><span class="p">))</span>
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Instantiating our network</span>
+<span class="n">network</span> <span class="o">=</span> <span class="n">create_network</span><span class="p">()</span>
+
+<span class="c1"># Poutyne Model on GPU</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span>
+    <span class="n">network</span><span class="p">,</span>
+    <span class="n">optimizer</span><span class="p">,</span>
+    <span class="n">loss_function</span><span class="p">,</span>
+    <span class="n">batch_metrics</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;accuracy&#39;</span><span class="p">],</span>
+    <span class="n">epoch_metrics</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;f1&#39;</span><span class="p">,</span> <span class="n">roc_epoch_metric</span><span class="p">],</span>
+    <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="c1"># Train</span>
+<span class="n">model</span><span class="o">.</span><span class="n">fit_generator</span><span class="p">(</span><span class="n">train_loader</span><span class="p">,</span> <span class="n">valid_loader</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="n">num_epochs</span><span class="p">)</span>
+
+<span class="c1"># Test</span>
+<span class="n">test_loss</span><span class="p">,</span> <span class="p">(</span><span class="n">test_acc</span><span class="p">,</span> <span class="n">test_f1</span><span class="p">,</span> <span class="n">test_roc</span><span class="p">)</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">evaluate_generator</span><span class="p">(</span><span class="n">test_loader</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
@@ -271,21 +429,29 @@
 <span class="n">network</span> <span class="o">=</span> <span class="n">create_network</span><span class="p">()</span>
 
 <span class="c1"># Poutyne Model on GPU</span>
-<span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span><span class="n">network</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">loss_function</span><span class="p">,</span>
-              <span class="n">batch_metrics</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;accuracy&#39;</span><span class="p">],</span>
-              <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span>
+    <span class="n">network</span><span class="p">,</span>
+    <span class="n">optimizer</span><span class="p">,</span>
+    <span class="n">loss_function</span><span class="p">,</span>
+    <span class="n">batch_metrics</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;accuracy&#39;</span><span class="p">],</span>
+    <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span>
+<span class="p">)</span>
 
 <span class="c1"># Train</span>
-<span class="n">model</span><span class="o">.</span><span class="n">fit_dataset</span><span class="p">(</span><span class="n">train_dataset</span><span class="p">,</span>
-                  <span class="n">valid_dataset</span><span class="p">,</span>
-                  <span class="n">epochs</span><span class="o">=</span><span class="n">num_epochs</span><span class="p">,</span>
-                  <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span>
-                  <span class="n">num_workers</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">fit_dataset</span><span class="p">(</span>
+    <span class="n">train_dataset</span><span class="p">,</span>
+    <span class="n">valid_dataset</span><span class="p">,</span>
+    <span class="n">epochs</span><span class="o">=</span><span class="n">num_epochs</span><span class="p">,</span>
+    <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span>
+    <span class="n">num_workers</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+<span class="p">)</span>
 
 <span class="c1"># Test</span>
-<span class="n">test_loss</span><span class="p">,</span> <span class="n">test_acc</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">evaluate_dataset</span><span class="p">(</span><span class="n">test_dataset</span><span class="p">,</span>
-                                             <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span>
-                                             <span class="n">num_workers</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">test_loss</span><span class="p">,</span> <span class="n">test_acc</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">evaluate_dataset</span><span class="p">(</span>
+    <span class="n">test_dataset</span><span class="p">,</span>
+    <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span>
+    <span class="n">num_workers</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+<span class="p">)</span>
 </pre></div>
 </div>
 </section>
@@ -299,11 +465,15 @@
 <span class="n">callbacks</span> <span class="o">=</span> <span class="p">[</span>
     <span class="c1"># Save the latest weights to be able to continue the optimization at the end for more epochs.</span>
     <span class="n">ModelCheckpoint</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">save_path</span><span class="p">,</span> <span class="s1">&#39;last_epoch.ckpt&#39;</span><span class="p">)),</span>
-
     <span class="c1"># Save the weights in a new file when the current model is better than all previous models.</span>
-    <span class="n">ModelCheckpoint</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">save_path</span><span class="p">,</span> <span class="s1">&#39;best_epoch_</span><span class="si">{epoch}</span><span class="s1">.ckpt&#39;</span><span class="p">),</span> <span class="n">monitor</span><span class="o">=</span><span class="s1">&#39;val_acc&#39;</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;max&#39;</span><span class="p">,</span>
-                    <span class="n">save_best_only</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">restore_best</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
-
+    <span class="n">ModelCheckpoint</span><span class="p">(</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">save_path</span><span class="p">,</span> <span class="s1">&#39;best_epoch_</span><span class="si">{epoch}</span><span class="s1">.ckpt&#39;</span><span class="p">),</span>
+        <span class="n">monitor</span><span class="o">=</span><span class="s1">&#39;val_acc&#39;</span><span class="p">,</span>
+        <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;max&#39;</span><span class="p">,</span>
+        <span class="n">save_best_only</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">restore_best</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">),</span>
     <span class="c1"># Save the losses and accuracies for each epoch in a TSV.</span>
     <span class="n">CSVLogger</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">save_path</span><span class="p">,</span> <span class="s1">&#39;log.tsv&#39;</span><span class="p">),</span> <span class="n">separator</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">),</span>
 <span class="p">]</span>
@@ -313,15 +483,16 @@
 <span class="n">network</span> <span class="o">=</span> <span class="n">create_network</span><span class="p">()</span>
 
 <span class="c1"># Poutyne Model on GPU</span>
-<span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span><span class="n">network</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">loss_function</span><span class="p">,</span>
-              <span class="n">batch_metrics</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;accuracy&#39;</span><span class="p">],</span>
-              <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span>
+    <span class="n">network</span><span class="p">,</span>
+    <span class="n">optimizer</span><span class="p">,</span>
+    <span class="n">loss_function</span><span class="p">,</span>
+    <span class="n">batch_metrics</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;accuracy&#39;</span><span class="p">],</span>
+    <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span>
+<span class="p">)</span>
 
 <span class="c1"># Train</span>
-<span class="n">model</span><span class="o">.</span><span class="n">fit_generator</span><span class="p">(</span><span class="n">train_loader</span><span class="p">,</span>
-                    <span class="n">valid_loader</span><span class="p">,</span>
-                    <span class="n">epochs</span><span class="o">=</span><span class="n">num_epochs</span><span class="p">,</span>
-                    <span class="n">callbacks</span><span class="o">=</span><span class="n">callbacks</span><span class="p">)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">fit_generator</span><span class="p">(</span><span class="n">train_loader</span><span class="p">,</span> <span class="n">valid_loader</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="n">num_epochs</span><span class="p">,</span> <span class="n">callbacks</span><span class="o">=</span><span class="n">callbacks</span><span class="p">)</span>
 
 <span class="c1"># Test</span>
 <span class="n">test_loss</span><span class="p">,</span> <span class="n">test_acc</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">evaluate_generator</span><span class="p">(</span><span class="n">test_loader</span><span class="p">)</span>
@@ -360,6 +531,7 @@
 <span class="sd">        celoss_with_temp (CrossEntropyLossWithTemperature): the loss module.</span>
 <span class="sd">        decay (float): The value of the temperature decay.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">celoss_with_temp</span><span class="p">,</span> <span class="n">decay</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">celoss_with_temp</span> <span class="o">=</span> <span class="n">celoss_with_temp</span>
@@ -370,8 +542,8 @@
 </pre></div>
 </div>
 <p>So our loss function will be the cross-entropy with temperature with an initial temperature of <code class="docutils literal notranslate"><span class="pre">0.1</span></code> and a temperature decay of <code class="docutils literal notranslate"><span class="pre">1.0008</span></code>.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">loss_function</span> <span class="o">=</span> <span class="n">CrossEntropyLossWithTemperature</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
-<span class="n">callbacks</span> <span class="o">=</span> <span class="n">callbacks</span> <span class="o">+</span> <span class="p">[</span><span class="n">TemperatureCallback</span><span class="p">(</span><span class="n">loss_function</span><span class="p">,</span> <span class="mf">1.0008</span><span class="p">)]</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">custom_loss_function</span> <span class="o">=</span> <span class="n">CrossEntropyLossWithTemperature</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
+<span class="n">callbacks</span> <span class="o">=</span> <span class="p">[</span><span class="n">TemperatureCallback</span><span class="p">(</span><span class="n">custom_loss_function</span><span class="p">,</span> <span class="mf">1.0008</span><span class="p">)]</span>
 </pre></div>
 </div>
 <p>Now let’s test our training loop for one epoch using the accuracy as the batch metric.</p>
@@ -379,15 +551,16 @@
 <span class="n">network</span> <span class="o">=</span> <span class="n">create_network</span><span class="p">()</span>
 
 <span class="c1"># Poutyne Model on GPU</span>
-<span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span><span class="n">network</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">custom_loss_function</span><span class="p">,</span>
-              <span class="n">batch_metrics</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;accuracy&#39;</span><span class="p">],</span>
-              <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span>
+    <span class="n">network</span><span class="p">,</span>
+    <span class="n">optimizer</span><span class="p">,</span>
+    <span class="n">custom_loss_function</span><span class="p">,</span>
+    <span class="n">batch_metrics</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;accuracy&#39;</span><span class="p">],</span>
+    <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span>
+<span class="p">)</span>
 
 <span class="c1"># Train</span>
-<span class="n">model</span><span class="o">.</span><span class="n">fit_generator</span><span class="p">(</span><span class="n">train_loader</span><span class="p">,</span>
-                    <span class="n">valid_loader</span><span class="p">,</span>
-                    <span class="n">epochs</span><span class="o">=</span><span class="n">num_epochs</span><span class="p">,</span>
-                    <span class="n">callbacks</span><span class="o">=</span><span class="n">callbacks</span><span class="p">)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">fit_generator</span><span class="p">(</span><span class="n">train_loader</span><span class="p">,</span> <span class="n">valid_loader</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="n">num_epochs</span><span class="p">,</span> <span class="n">callbacks</span><span class="o">=</span><span class="n">callbacks</span><span class="p">)</span>
 
 <span class="c1"># Test</span>
 <span class="n">test_loss</span><span class="p">,</span> <span class="n">test_acc</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">evaluate_generator</span><span class="p">(</span><span class="n">test_loader</span><span class="p">)</span>
@@ -449,84 +622,33 @@ One could either remove the coloring (<code class="docutils literal notranslate"
 If a field is not specified, the default color will be used.
 <a class="reference external" href="https://github.com/tartley/colorama/blob/9946cfb/colorama/ansi.py#L49">See available colors in colorama’s source code</a>.</p>
 <p>Here an example where we set the <code class="docutils literal notranslate"><span class="pre">text_color</span></code> to RED and the <code class="docutils literal notranslate"><span class="pre">progress_bar_color</span></code> to LIGHTGREEN_EX.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">progress_options</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
-    <span class="n">coloring</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">text_color</span><span class="o">=</span><span class="s2">&quot;RED&quot;</span><span class="p">,</span> <span class="n">progress_bar_color</span><span class="o">=</span><span class="s2">&quot;LIGHTGREEN_EX&quot;</span><span class="p">)</span>
-<span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">progress_options</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">coloring</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">text_color</span><span class="o">=</span><span class="s2">&quot;RED&quot;</span><span class="p">,</span> <span class="n">progress_bar_color</span><span class="o">=</span><span class="s2">&quot;LIGHTGREEN_EX&quot;</span><span class="p">))</span>
 
 <span class="c1"># Instantiating our network</span>
 <span class="n">network</span> <span class="o">=</span> <span class="n">create_network</span><span class="p">()</span>
 
 <span class="c1"># Poutyne Model on GPU</span>
-<span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span><span class="n">network</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">loss_function</span><span class="p">,</span>
-              <span class="n">batch_metrics</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;accuracy&#39;</span><span class="p">],</span>
-              <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span>
+    <span class="n">network</span><span class="p">,</span>
+    <span class="n">optimizer</span><span class="p">,</span>
+    <span class="n">loss_function</span><span class="p">,</span>
+    <span class="n">batch_metrics</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;accuracy&#39;</span><span class="p">],</span>
+    <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span>
+<span class="p">)</span>
 
 <span class="c1"># Train</span>
-<span class="n">model</span><span class="o">.</span><span class="n">fit_generator</span><span class="p">(</span><span class="n">train_loader</span><span class="p">,</span>
-                    <span class="n">valid_loader</span><span class="p">,</span>
-                    <span class="n">epochs</span><span class="o">=</span><span class="n">num_epochs</span><span class="p">,</span>
-                    <span class="n">progress_options</span><span class="o">=</span><span class="n">progress_options</span><span class="p">)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">fit_generator</span><span class="p">(</span>
+    <span class="n">train_loader</span><span class="p">,</span>
+    <span class="n">valid_loader</span><span class="p">,</span>
+    <span class="n">epochs</span><span class="o">=</span><span class="n">num_epochs</span><span class="p">,</span>
+    <span class="n">progress_options</span><span class="o">=</span><span class="n">progress_options</span><span class="p">,</span>
+<span class="p">)</span>
 
 <span class="c1"># Test</span>
-<span class="n">test_loss</span><span class="p">,</span> <span class="n">test_acc</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">evaluate_generator</span><span class="p">(</span><span class="n">test_loader</span><span class="p">,</span>
-                                               <span class="n">progress_options</span><span class="o">=</span><span class="n">progress_options</span><span class="p">)</span>
-</pre></div>
-</div>
-</section>
-<section id="epoch-metrics">
-<h2>Epoch metrics<a class="headerlink" href="#epoch-metrics" title="Permalink to this heading"></a></h2>
-<p>It’s also possible to used epoch metrics such as <a class="reference internal" href="../metrics.html#poutyne.F1" title="poutyne.F1"><code class="xref py py-class docutils literal notranslate"><span class="pre">F1</span></code></a>. You could also define your own epoch metric using the <code class="xref py py-class docutils literal notranslate"><span class="pre">EpochMetric</span></code> interface.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Instantiating our network</span>
-<span class="n">network</span> <span class="o">=</span> <span class="n">create_network</span><span class="p">()</span>
-
-<span class="c1"># Poutyne Model on GPU</span>
-<span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span><span class="n">network</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">loss_function</span><span class="p">,</span>
-              <span class="n">batch_metrics</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;accuracy&#39;</span><span class="p">],</span>
-              <span class="n">epoch_metrics</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;f1&#39;</span><span class="p">],</span>
-              <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
-
-<span class="c1"># Train</span>
-<span class="n">model</span><span class="o">.</span><span class="n">fit_generator</span><span class="p">(</span><span class="n">train_loader</span><span class="p">,</span> <span class="n">valid_loader</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="n">num_epochs</span><span class="p">)</span>
-
-<span class="c1"># Test</span>
-<span class="n">test_loss</span><span class="p">,</span> <span class="p">(</span><span class="n">test_acc</span><span class="p">,</span> <span class="n">test_f1</span><span class="p">)</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">evaluate_generator</span><span class="p">(</span><span class="n">test_loader</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>Furthermore, you could also use the <a class="reference internal" href="../metrics.html#poutyne.SKLearnMetrics" title="poutyne.SKLearnMetrics"><code class="xref py py-class docutils literal notranslate"><span class="pre">SKLearnMetrics</span></code></a> wrapper to wrap a Scikit-learn metric as an epoch metric. Below, we show how to compute the AUC ROC using the <a class="reference internal" href="../metrics.html#poutyne.SKLearnMetrics" title="poutyne.SKLearnMetrics"><code class="xref py py-class docutils literal notranslate"><span class="pre">SKLearnMetrics</span></code></a> class.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">softmax</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Compute softmax function.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">e_x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">x</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="n">axis</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
-    <span class="k">return</span> <span class="n">e_x</span> <span class="o">/</span> <span class="n">e_x</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="n">axis</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-
-<span class="k">def</span> <span class="nf">roc_auc</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Since the `roc_auc_score` from Scikit-learn requires normalized probabilities,</span>
-<span class="sd">    we use the softmax function on the predictions.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">y_pred</span> <span class="o">=</span> <span class="n">softmax</span><span class="p">(</span><span class="n">y_pred</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">roc_auc_score</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-
-<span class="c1"># kwargs are keyword arguments we wish to pass to roc_auc.</span>
-<span class="n">roc_epoch_metric</span> <span class="o">=</span> <span class="n">SKLearnMetrics</span><span class="p">(</span><span class="n">roc_auc</span><span class="p">,</span>
-                                  <span class="n">kwargs</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">multi_class</span><span class="o">=</span><span class="s1">&#39;ovr&#39;</span><span class="p">,</span> <span class="n">average</span><span class="o">=</span><span class="s1">&#39;macro&#39;</span><span class="p">))</span>
-</pre></div>
-</div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Instantiating our network</span>
-<span class="n">network</span> <span class="o">=</span> <span class="n">create_network</span><span class="p">()</span>
-
-<span class="c1"># Poutyne Model on GPU</span>
-<span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span><span class="n">network</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">loss_function</span><span class="p">,</span>
-              <span class="n">batch_metrics</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;accuracy&#39;</span><span class="p">],</span>
-              <span class="n">epoch_metrics</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;f1&#39;</span><span class="p">,</span> <span class="n">roc_epoch_metric</span><span class="p">],</span>
-              <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
-
-<span class="c1"># Train</span>
-<span class="n">model</span><span class="o">.</span><span class="n">fit_generator</span><span class="p">(</span><span class="n">train_loader</span><span class="p">,</span> <span class="n">valid_loader</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="n">num_epochs</span><span class="p">)</span>
-
-<span class="c1"># Test</span>
-<span class="n">test_loss</span><span class="p">,</span> <span class="p">(</span><span class="n">test_acc</span><span class="p">,</span> <span class="n">test_f1</span><span class="p">,</span> <span class="n">test_roc</span><span class="p">)</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">evaluate_generator</span><span class="p">(</span><span class="n">test_loader</span><span class="p">)</span>
+<span class="n">test_loss</span><span class="p">,</span> <span class="n">test_acc</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">evaluate_generator</span><span class="p">(</span>
+    <span class="n">test_loader</span><span class="p">,</span>
+    <span class="n">progress_options</span><span class="o">=</span><span class="n">progress_options</span><span class="p">,</span>
+<span class="p">)</span>
 </pre></div>
 </div>
 </section>
@@ -537,10 +659,14 @@ If a field is not specified, the default color will be used.
 <span class="n">network</span> <span class="o">=</span> <span class="n">create_network</span><span class="p">()</span>
 
 <span class="c1"># Poutyne Model on GPU</span>
-<span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span><span class="n">network</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">loss_function</span><span class="p">,</span>
-              <span class="n">batch_metrics</span><span class="o">=</span><span class="p">[(</span><span class="s2">&quot;My accuracy name&quot;</span><span class="p">,</span> <span class="s1">&#39;accuracy&#39;</span><span class="p">)],</span>
-              <span class="n">epoch_metrics</span><span class="o">=</span><span class="p">[(</span><span class="s2">&quot;My f1 name&quot;</span><span class="p">,</span> <span class="s1">&#39;f1&#39;</span><span class="p">)],</span>
-              <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span>
+    <span class="n">network</span><span class="p">,</span>
+    <span class="n">optimizer</span><span class="p">,</span>
+    <span class="n">loss_function</span><span class="p">,</span>
+    <span class="n">batch_metrics</span><span class="o">=</span><span class="p">[(</span><span class="s2">&quot;My accuracy name&quot;</span><span class="p">,</span> <span class="s1">&#39;accuracy&#39;</span><span class="p">)],</span>
+    <span class="n">epoch_metrics</span><span class="o">=</span><span class="p">[(</span><span class="s2">&quot;My f1 name&quot;</span><span class="p">,</span> <span class="s1">&#39;f1&#39;</span><span class="p">)],</span>
+    <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span>
+<span class="p">)</span>
 
 <span class="c1"># Train</span>
 <span class="n">model</span><span class="o">.</span><span class="n">fit_generator</span><span class="p">(</span><span class="n">train_loader</span><span class="p">,</span> <span class="n">valid_loader</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="n">num_epochs</span><span class="p">)</span>
@@ -562,9 +688,13 @@ If a field is not specified, the default color will be used.
 <span class="n">network</span> <span class="o">=</span> <span class="n">create_network</span><span class="p">()</span>
 
 <span class="c1"># Poutyne Model on GPU</span>
-<span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span><span class="n">network</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">loss_function</span><span class="p">,</span>
-              <span class="n">batch_metrics</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;accuracy&#39;</span><span class="p">],</span>
-              <span class="n">device</span><span class="o">=</span><span class="s2">&quot;all&quot;</span><span class="p">)</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span>
+    <span class="n">network</span><span class="p">,</span>
+    <span class="n">optimizer</span><span class="p">,</span>
+    <span class="n">loss_function</span><span class="p">,</span>
+    <span class="n">batch_metrics</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;accuracy&#39;</span><span class="p">],</span>
+    <span class="n">device</span><span class="o">=</span><span class="s2">&quot;all&quot;</span><span class="p">,</span>
+<span class="p">)</span>
 
 <span class="c1"># Train</span>
 <span class="n">model</span><span class="o">.</span><span class="n">fit_generator</span><span class="p">(</span><span class="n">train_loader</span><span class="p">,</span> <span class="n">valid_loader</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="n">num_epochs</span><span class="p">)</span>

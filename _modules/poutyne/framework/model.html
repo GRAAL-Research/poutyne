@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>poutyne.framework.model &mdash; Poutyne 1.12.1 documentation</title>
+  <title>poutyne.framework.model &mdash; Poutyne 1.13 documentation</title>
       <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -15,6 +15,7 @@
         <script src="../../../_static/underscore.js"></script>
         <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/sphinx_highlight.js"></script>
     <script src="../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" /> 
@@ -29,7 +30,7 @@
             <img src="../../../_static/poutyne-light.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                1.12.1
+                1.13
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
@@ -73,9 +74,9 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
-          <li><a href="../../index.html">Module code</a> &raquo;</li>
-      <li>poutyne.framework.model</li>
+      <li><a href="../../../index.html" class="icon icon-home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">poutyne.framework.model</li>
       <li class="wy-breadcrumbs-aside">
       </li>
   </ul>
@@ -107,7 +108,6 @@
 <span class="c1"># pylint: disable=too-many-lines,too-many-public-methods</span>
 <span class="kn">import</span> <span class="nn">contextlib</span>
 <span class="kn">import</span> <span class="nn">timeit</span>
-<span class="kn">import</span> <span class="nn">warnings</span>
 <span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Tuple</span>
 
@@ -281,7 +281,6 @@
         <span class="o">*</span><span class="p">,</span>
         <span class="n">batch_metrics</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">epoch_metrics</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-        <span class="n">torch_metrics</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">device</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">network</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
@@ -292,20 +291,16 @@
 
         <span class="n">batch_metrics</span> <span class="o">=</span> <span class="p">[]</span> <span class="k">if</span> <span class="n">batch_metrics</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">batch_metrics</span>
         <span class="n">epoch_metrics</span> <span class="o">=</span> <span class="p">[]</span> <span class="k">if</span> <span class="n">epoch_metrics</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">epoch_metrics</span>
-        <span class="k">if</span> <span class="n">torch_metrics</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">batch_metrics</span> <span class="o">+=</span> <span class="n">torch_metrics</span>
-            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
-                <span class="s2">&quot;The torch_metrics keyword is deprecated as of v.1.11. Use batch_metrics instead. &quot;</span>
-                <span class="s2">&quot;It will be remove in the next version.&quot;</span>
-            <span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">network</span> <span class="o">=</span> <span class="n">network</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span> <span class="o">=</span> <span class="n">get_optimizer</span><span class="p">(</span><span class="n">optimizer</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">network</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">loss_function</span> <span class="o">=</span> <span class="n">get_metric</span><span class="p">(</span><span class="n">loss_function</span><span class="p">)</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">loss_function</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">loss_function</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss_function</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">loss_function</span> <span class="o">=</span> <span class="n">convert_decomposable_metric_to_object</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">loss_function</span><span class="p">,</span> <span class="s1">&#39;loss&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">loss_function</span> <span class="o">=</span> <span class="n">loss_function</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss_function</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">loss_function</span> <span class="o">=</span> <span class="n">get_metric</span><span class="p">(</span><span class="n">loss_function</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">loss_function</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">loss_function</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss_function</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">loss_function</span> <span class="o">=</span> <span class="n">convert_decomposable_metric_to_object</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">loss_function</span><span class="p">,</span> <span class="s1">&#39;loss&#39;</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_check_network_optimizer_parameters_match</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_set_metrics_attributes</span><span class="p">(</span><span class="n">batch_metrics</span><span class="p">,</span> <span class="n">epoch_metrics</span><span class="p">)</span>
@@ -1419,7 +1414,7 @@
 <span class="sd">            .. code-block:: python</span>
 
 <span class="sd">                model = Model(pytorch_network, optimizer, loss_function,</span>
-<span class="sd">                              batch_metrics=[my_metric_fn], epoch_metrics=[MyEpochMetricClass()])</span>
+<span class="sd">                              batch_metrics=[my_metric_fn], epoch_metrics=[MyMetricClass()])</span>
 <span class="sd">                loss, (my_batch_metric, my__epoch_metric) = model.evaluate_generator(test_generator)</span>
 
 <span class="sd">            With batch metrics and ``return_pred`` flag:</span>
