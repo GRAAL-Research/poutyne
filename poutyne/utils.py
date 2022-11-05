@@ -64,9 +64,15 @@ def torch_to_numpy(obj, copy=False):
         :meth:`~poutyne.torch_apply` for supported types.
     """
     if copy:
-        func = lambda t: t.detach().cpu().numpy().copy()
+
+        def func(t):
+            return t.detach().cpu().numpy().copy()
+
     else:
-        func = lambda t: t.detach().cpu().numpy()
+
+        def func(t):
+            return t.detach().cpu().numpy()
+
     return torch_apply(obj, func)
 
 
@@ -88,7 +94,10 @@ def torch_apply(obj, func):
         A new Python object with the same structure as `obj` but where the tensors have been applied
         the function `func`. Not supported type are left as reference in the new object.
     """
-    fn = lambda t: func(t) if torch.is_tensor(t) else t
+
+    def fn(t):
+        return func(t) if torch.is_tensor(t) else t
+
     return _apply(obj, fn)
 
 
@@ -148,7 +157,10 @@ def numpy_to_torch(obj):
 
 
     """
-    fn = lambda a: torch.from_numpy(a) if isinstance(a, np.ndarray) else a
+
+    def fn(a):
+        return torch.from_numpy(a) if isinstance(a, np.ndarray) else a
+
     return _apply(obj, fn)
 
 

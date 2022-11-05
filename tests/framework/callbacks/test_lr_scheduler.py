@@ -44,7 +44,9 @@ class LRSchedulersTest(TestCase):
         self.valid_gen = some_data_generator(20)
 
     def test_lambda_lr_integration(self):
-        my_lambda = lambda epoch: 0.95**epoch
+        def my_lambda(epoch):
+            return 0.95**epoch
+
         lambda_lr = LambdaLR(lr_lambda=[my_lambda])
         self._fit_with_callback_integration(lambda_lr)
 

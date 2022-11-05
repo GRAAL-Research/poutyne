@@ -49,7 +49,9 @@ def get_names_of_metric(metric):
 
 
 def flatten_metric_names(metric_names):
-    to_list = lambda names: names if isinstance(names, (tuple, list)) else [names]
+    def to_list(names):
+        return names if isinstance(names, (tuple, list)) else [names]
+
     return [name for names in metric_names for name in to_list(names)]
 
 

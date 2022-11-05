@@ -285,7 +285,9 @@ class PeriodicSaveLambdaTest(TestCase):
         a_function_mock = MagicMock()
 
         a_restore_mock_function = MagicMock()
-        a_restore_function = lambda x: a_restore_mock_function(2)
+
+        def a_restore_function(_):
+            return a_restore_mock_function(2)
 
         periodic_save_lambda = PeriodicSaveLambda(
             filename=self.a_filename, func=a_function_mock, restore=a_restore_function

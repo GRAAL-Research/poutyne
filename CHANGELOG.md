@@ -1,5 +1,9 @@
 # v1.x.x
 
+*
+
+# v1.13
+
 Breaking changes:
 
 * The deprecated `torch_metrics` keyword argument has been removed. Users should use the `batch_metrics` or `epoch_metrics`
