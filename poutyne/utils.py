@@ -309,8 +309,8 @@ def get_batch_size(*values):
 
     if warning_settings['batch_size'] == 'warn':
         warnings.warn(
-            "Inferring the batch size is not possible. Hence, the batch size is set to 1. To disable this warning, "
-            "set\n"
+            "Inferring the batch size is not possible. Hence, the batch size is reported as 1. To disable this "
+            "warning, set\n"
             "from poutyne import warning_settings\n"
             "warning_settings['batch_size'] = 'ignore'\n\n"
             #
