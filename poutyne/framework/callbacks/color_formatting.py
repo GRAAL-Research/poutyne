@@ -327,11 +327,12 @@ class ColorProgress:
 
     def _get_formatted_metrics(self, metrics_str: str) -> str:
         formatted_metrics = ""
-        for metric in metrics_str.split(","):
-            name_value = metric.split(":")
-            name = name_value[0]
-            value = name_value[1]
-            formatted_metrics += self.text_color + name + ":" + self.metric_value_color + value
+        if len(metrics_str) != 0:
+            for metric in metrics_str.split(","):
+                name_value = metric.split(":")
+                name = name_value[0]
+                value = name_value[1]
+                formatted_metrics += self.text_color + name + ":" + self.metric_value_color + value
 
         return formatted_metrics
 

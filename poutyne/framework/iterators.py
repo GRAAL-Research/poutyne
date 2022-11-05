@@ -104,7 +104,8 @@ class StepIterator:
             }
             if step_data.loss is not None:
                 batch_logs[f'{self.prefix}loss'] = step_data.loss
-            batch_logs.update(dict(zip(self.batch_metrics_names, step_data.batch_metrics)))
+            if step_data.batch_metrics is not None:
+                batch_logs.update(dict(zip(self.batch_metrics_names, step_data.batch_metrics)))
 
             self.on_batch_end(step, batch_logs)
 

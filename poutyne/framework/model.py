@@ -727,7 +727,7 @@ class Model:
 
     def _format_loss_metrics_return(self, loss, metrics, pred_y, return_pred, true_y=None, return_ground_truth=False):
         # pylint: disable=too-many-arguments
-        ret = (loss,)
+        ret = (loss,) if loss is not None else ()
 
         ret += tuple(metrics.tolist()) if len(metrics) <= 1 else (metrics,)
 
@@ -741,7 +741,11 @@ class Model:
         if return_ground_truth:
             init += (true_y,)
 
-        return init[0] if len(init) == 1 else init
+        if len(init) == 0:
+            return None
+        if len(init) == 1:
+            return init[0]
+        return init
 
     def predict(
         self,
@@ -1473,10 +1477,10 @@ class Model:
         return data
 
     def _process_batch_output(self, output, *, convert_to_numpy=True, process_ground_truth=True, process_pred=True):
-        batch_metrics = self._flatten_metrics_output(output.batch_metrics, self.original_batch_metrics_names)
-        output = output._replace(batch_metrics=batch_metrics)
+        if output.batch_metrics is not None:
+            batch_metrics = self._flatten_metrics_output(output.batch_metrics, self.original_batch_metrics_names)
+            output = output._replace(batch_metrics=batch_metrics)
 
-        y_pred = output.y_true
         if process_ground_truth:
             y_true = torch_to_numpy(output.y_true) if convert_to_numpy else output.y_true
             output = output._replace(y_true=y_true)
