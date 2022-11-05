@@ -572,10 +572,16 @@ class ModelBundle:
         history = self.get_stats()
         metrics = history[self.monitor_metric].tolist()
         if self.monitor_mode == 'min':
-            monitor_op = lambda x, y: x < y
+
+            def monitor_op(x, y):
+                return x < y
+
             current_best = float('Inf')
         elif self.monitor_mode == 'max':
-            monitor_op = lambda x, y: x > y
+
+            def monitor_op(x, y):
+                return x > y
+
             current_best = -float('Inf')
         saved_epoch_indices = []
         for i, metric in enumerate(metrics):

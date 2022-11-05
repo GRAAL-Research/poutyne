@@ -66,9 +66,9 @@ class PlotHistoryTest(TestCase):
     def test_all_different(self):
         plot_history_figs, _ = plot_history(PlotHistoryTest.HISTORY, close=False, show=False)
         images = list(map(self._to_image, plot_history_figs))
-        for i, _ in enumerate(images):
+        for i, image_i in enumerate(images):
             for j in range(i + 1, len(images)):
-                self.assertNotEqual(images[i], images[j])
+                self.assertNotEqual(image_i, images[j])
 
     def test_title(self):
         title = 'My Title'
