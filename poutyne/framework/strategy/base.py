@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 # pylint: disable=too-many-public-methods
-from typing import Any, Union, NamedTuple
+from typing import Dict, List, Tuple, Any, NamedTuple
+from typing_extensions import TypeAlias
 import numpy as np
 import torch
 from torch.nn.utils.rnn import PackedSequence
@@ -13,20 +14,20 @@ from poutyne.framework.callbacks.callbacks import Callback
 from poutyne.framework.metrics import get_callables_and_names
 from poutyne.framework.metrics.decomposable import convert_decomposable_metric_to_object
 
-NetworkIOType = Union[dict[str, 'NetworkIOType'], list['NetworkIOType'], tuple['NetworkIOType', ...], torch.Tensor]
-MetricReturnType = Union[torch.Tensor, float, np.ndarray, dict[str, Union[torch.Tensor, float, np.ndarray]]]
+NetworkIOType: TypeAlias = "Dict[str, NetworkIOType] | List[NetworkIOType] | Tuple[NetworkIOType, ...] | torch.Tensor"
+MetricReturnType: TypeAlias = "torch.Tensor | float | np.ndarray | Dict[str, torch.Tensor | float | np.ndarray]"
 
 
 class StepOutput(NamedTuple):
     loss: torch.Tensor | float | None = None
-    batch_metrics: list[NetworkIOType] | np.ndarray | None = None
+    batch_metrics: List[NetworkIOType] | np.ndarray | None = None
     y_pred: NetworkIOType | None = None
     y_true: NetworkIOType | None = None
     x: NetworkIOType | None = None
 
 
 class BaseStrategy:
-    def set_params(self, params: dict[str, Any]) -> None:
+    def set_params(self, params: Dict[str, Any]) -> None:
         self.params = params
 
     def set_model(self, model: 'poutyne.Model') -> None:
@@ -38,16 +39,16 @@ class BaseStrategy:
     def reset_loss(self) -> None:
         pass
 
-    def get_batch_metric_names(self) -> list[str]:
+    def get_batch_metric_names(self) -> List[str]:
         return []
 
-    def get_epoch_metric_names(self) -> list[str]:
+    def get_epoch_metric_names(self) -> List[str]:
         return []
 
-    def compute_batch_metrics(self) -> list[MetricReturnType]:
+    def compute_batch_metrics(self) -> List[MetricReturnType]:
         return []
 
-    def compute_epoch_metrics(self) -> list[MetricReturnType]:
+    def compute_epoch_metrics(self) -> List[MetricReturnType]:
         return []
 
     def reset_batch_metrics(self) -> None:
@@ -61,40 +62,40 @@ class BaseStrategy:
     ) -> StepOutput:
         pass
 
-    def on_epoch_begin(self, epoch_number: int, logs: dict) -> None:
+    def on_epoch_begin(self, epoch_number: int, logs: Dict) -> None:
         pass
 
-    def on_epoch_end(self, epoch_number: int, logs: dict) -> None:
+    def on_epoch_end(self, epoch_number: int, logs: Dict) -> None:
         pass
 
-    def on_train_begin(self, logs: dict) -> None:
+    def on_train_begin(self, logs: Dict) -> None:
         pass
 
-    def on_train_end(self, logs: dict) -> None:
+    def on_train_end(self, logs: Dict) -> None:
         pass
 
     def test_step(self, data, **kwargs: Any) -> StepOutput:
         pass
 
-    def on_valid_begin(self, logs: dict) -> None:
+    def on_valid_begin(self, logs: Dict) -> None:
         pass
 
-    def on_valid_end(self, logs: dict) -> None:
+    def on_valid_end(self, logs: Dict) -> None:
         pass
 
-    def on_test_begin(self, logs: dict) -> None:
+    def on_test_begin(self, logs: Dict) -> None:
         pass
 
-    def on_test_end(self, logs: dict) -> None:
+    def on_test_end(self, logs: Dict) -> None:
         pass
 
     def predict_step(self, data, **kwargs: Any) -> NetworkIOType:
         pass
 
-    def on_predict_begin(self, logs: dict) -> None:
+    def on_predict_begin(self, logs: Dict) -> None:
         pass
 
-    def on_predict_end(self, logs: dict) -> None:
+    def on_predict_end(self, logs: Dict) -> None:
         pass
 
 
@@ -144,23 +145,23 @@ class DefaultStrategy(BaseStrategy):
     def reset_loss(self) -> None:
         self.loss_function.reset()
 
-    def get_batch_metric_names(self) -> list[str]:
+    def get_batch_metric_names(self) -> List[str]:
         return self.batch_metrics_names
 
-    def get_epoch_metric_names(self) -> list[str]:
+    def get_epoch_metric_names(self) -> List[str]:
         return self.epoch_metrics_names
 
-    def _compute_metrics(self, metrics) -> list[NetworkIOType]:
+    def _compute_metrics(self, metrics) -> List[NetworkIOType]:
         return [metric.compute() for metric in metrics]
 
     def _reset_metrics(self, metrics) -> None:
         for metric in metrics:
             metric.reset()
 
-    def compute_batch_metrics(self) -> list[MetricReturnType]:
+    def compute_batch_metrics(self) -> List[MetricReturnType]:
         return self._compute_metrics(self.batch_metrics)
 
-    def compute_epoch_metrics(self) -> list[MetricReturnType]:
+    def compute_epoch_metrics(self) -> List[MetricReturnType]:
         return self._compute_metrics(self.epoch_metrics)
 
     def reset_batch_metrics(self) -> None:
@@ -170,7 +171,7 @@ class DefaultStrategy(BaseStrategy):
         self._reset_metrics(self.epoch_metrics)
 
     def _compute_loss_and_metrics(
-        self, data: tuple[NetworkIOType, NetworkIOType], *, return_loss_tensor: bool = True
+        self, data: Tuple[NetworkIOType, NetworkIOType], *, return_loss_tensor: bool = True
     ) -> StepOutput:
         x, y = data
         y_pred = self.infer(x)
@@ -217,40 +218,40 @@ class DefaultStrategy(BaseStrategy):
 
         return output
 
-    def on_epoch_begin(self, epoch_number: int, logs: dict) -> None:
+    def on_epoch_begin(self, epoch_number: int, logs: Dict) -> None:
         pass
 
-    def on_epoch_end(self, epoch_number: int, logs: dict) -> None:
+    def on_epoch_end(self, epoch_number: int, logs: Dict) -> None:
         pass
 
-    def on_train_begin(self, logs: dict) -> None:
+    def on_train_begin(self, logs: Dict) -> None:
         pass
 
-    def on_train_end(self, logs: dict) -> None:
+    def on_train_end(self, logs: Dict) -> None:
         pass
 
     def test_step(self, data, **kwargs: Any) -> StepOutput:  # pylint: disable=unused-argument
         return self._compute_loss_and_metrics(data, return_loss_tensor=False)
 
-    def on_valid_begin(self, logs: dict) -> None:
+    def on_valid_begin(self, logs: Dict) -> None:
         pass
 
-    def on_valid_end(self, logs: dict) -> None:
+    def on_valid_end(self, logs: Dict) -> None:
         pass
 
-    def on_test_begin(self, logs: dict) -> None:
+    def on_test_begin(self, logs: Dict) -> None:
         pass
 
-    def on_test_end(self, logs: dict) -> None:
+    def on_test_end(self, logs: Dict) -> None:
         pass
 
     def predict_step(self, data, **kwargs: Any) -> NetworkIOType:  # pylint: disable=unused-argument
         return self.infer(data)
 
-    def on_predict_begin(self, logs: dict) -> None:
+    def on_predict_begin(self, logs: Dict) -> None:
         pass
 
-    def on_predict_end(self, logs: dict) -> None:
+    def on_predict_end(self, logs: Dict) -> None:
         pass
 
 
@@ -261,13 +262,13 @@ class GradientAccumulationStrategy(DefaultStrategy):
             raise ValueError("`batches_per_step` must be greater than 0.")
         self.batches_per_step = batches_per_step
 
-    def on_epoch_begin(self, epoch_number: int, logs: dict) -> None:
+    def on_epoch_begin(self, epoch_number: int, logs: Dict) -> None:
         self.zero_all_gradients = True
         self.do_optimizer_step = True
         self.examples_in_step = 0
         self.current_step_size = 0
 
-    def on_epoch_end(self, epoch_number: int, logs: dict) -> None:
+    def on_epoch_end(self, epoch_number: int, logs: Dict) -> None:
         if not self.do_optimizer_step:
             self._adjust_step_size()
             super().optimizer_step()
