@@ -21,7 +21,7 @@ You should have received a copy of the GNU Lesser General Public License along w
 
 from math import ceil
 from unittest import skipIf, main
-from unittest.mock import MagicMock, ANY
+from unittest.mock import MagicMock, ANY, call, Mock
 
 import numpy as np
 import torch
@@ -45,6 +45,7 @@ from tests.framework.tools import (
     repeat_batch_metric_value,
     some_constant_metric_value,
     SomeMetric,
+    SomeBatchMetric,
 )
 from tests.utils import populate_packed_sequence
 from .base import ModelFittingTestCase
@@ -725,8 +726,9 @@ class ModelTest(ModelFittingTestCase):
         self.assertEqual(first_metric, some_metric_1_value)
 
     def test_metrics_integration(self):
+        mock_metric = Mock(SomeBatchMetric, wraps=SomeBatchMetric())
         num_steps = 10
-        model = Model(self.pytorch_network, self.optimizer, self.loss_function, batch_metrics=[F.mse_loss])
+        model = Model(self.pytorch_network, self.optimizer, self.loss_function, batch_metrics=[F.mse_loss, mock_metric])
         train_generator = some_data_tensor_generator(ModelTest.batch_size)
         valid_generator = some_data_tensor_generator(ModelTest.batch_size)
         model.fit_generator(
@@ -737,27 +739,72 @@ class ModelTest(ModelFittingTestCase):
             validation_steps=ModelTest.steps_per_epoch,
             callbacks=[self.mock_callback],
         )
+        expected_calls = self._get_batch_metrics_expected_on_calls_when_training(
+            epochs=ModelTest.epochs, steps=ModelTest.steps_per_epoch, valid_steps=ModelTest.steps_per_epoch
+        )
+        self.assertEqual(len(mock_metric.mock_calls), len(expected_calls))
+        self.assertEqual(mock_metric.mock_calls, expected_calls)
+
         generator = some_data_tensor_generator(ModelTest.batch_size)
-        loss, mse = model.evaluate_generator(generator, steps=num_steps)
-        self.assertEqual(type(loss), float)
-        self.assertEqual(type(mse), float)
+        loss, (mse, _) = model.evaluate_generator(generator, steps=num_steps)
+        self.assertIsInstance(loss, float)
+        self.assertIsInstance(mse, float)
 
     def test_epoch_metrics_integration(self):
-        model = Model(self.pytorch_network, self.optimizer, self.loss_function, epoch_metrics=[SomeMetric()])
+        some_metric = SomeMetric()
+        some_metric.__name__ = "mock_metric"
+        mock_metric = Mock(SomeBatchMetric, wraps=some_metric)
+        model = Model(
+            self.pytorch_network, self.optimizer, self.loss_function, epoch_metrics=[SomeMetric(), mock_metric]
+        )
         train_generator = some_data_tensor_generator(ModelTest.batch_size)
         valid_generator = some_data_tensor_generator(ModelTest.batch_size)
         logs = model.fit_generator(
             train_generator,
             valid_generator,
-            epochs=1,
+            epochs=ModelTest.epochs,
             steps_per_epoch=ModelTest.steps_per_epoch,
             validation_steps=ModelTest.steps_per_epoch,
         )
         actual_value = logs[-1]['some_metric']
         val_actual_value = logs[-1]['val_some_metric']
-        expected_value = 5
+        expected_value = ModelTest.steps_per_epoch
         self.assertEqual(val_actual_value, expected_value)
         self.assertEqual(actual_value, expected_value)
+
+        expected_calls = self._get_epoch_metrics_expected_on_calls_when_training(
+            epochs=ModelTest.epochs, steps=ModelTest.steps_per_epoch, valid_steps=ModelTest.steps_per_epoch
+        )
+        self.assertEqual(len(mock_metric.mock_calls), len(expected_calls))
+        self.assertEqual(mock_metric.mock_calls, expected_calls)
+
+    def _get_batch_metrics_expected_on_calls_when_training(self, epochs, steps, has_valid=True, valid_steps=None):
+        call_list = []
+        for _ in range(epochs):
+            for _ in range(steps):
+                call_list.append(call(ANY, ANY))
+            call_list.append(call.compute())
+            call_list.append(call.reset())
+            if has_valid:
+                for _ in range(1, valid_steps + 1):
+                    call_list.append(call(ANY, ANY))
+                call_list.append(call.compute())
+                call_list.append(call.reset())
+        return call_list
+
+    def _get_epoch_metrics_expected_on_calls_when_training(self, epochs, steps, has_valid=True, valid_steps=None):
+        call_list = []
+        for _ in range(epochs):
+            for _ in range(steps):
+                call_list.append(call.update(ANY, ANY))
+            call_list.append(call.compute())
+            call_list.append(call.reset())
+            if has_valid:
+                for _ in range(1, valid_steps + 1):
+                    call_list.append(call.update(ANY, ANY))
+                call_list.append(call.compute())
+                call_list.append(call.reset())
+        return call_list
 
     def test_evaluate_with_no_metric(self):
         model = Model(self.pytorch_network, self.optimizer, self.loss_function)
