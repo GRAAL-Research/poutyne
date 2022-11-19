@@ -31,7 +31,7 @@ import torch.optim as optim
 from torch.utils.data import DataLoader
 
 from poutyne import torch_to_numpy, numpy_to_torch, torch_to
-from poutyne.framework.strategy.base import GradientAccumulationStrategy, BaseStrategy, DefaultStrategy, StepOutput
+from .strategy import GradientAccumulationStrategy, BaseStrategy, DefaultStrategy, StepOutput
 from .callbacks import CallbackList, ProgressionCallback, Callback
 from .iterators import EpochIterator, _get_step_iterator, StepIterator
 from .metrics import get_metric, rename_doubles, flatten_metric_names
