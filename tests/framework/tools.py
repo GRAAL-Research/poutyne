@@ -123,3 +123,21 @@ class SomeMetric(Metric):
 
     def reset(self):
         pass
+
+
+class SomeBatchMetric(Metric):
+    def __init__(self):
+        super().__init__()
+        self.increment = 0.0
+
+    def forward(self, y_pred, y_true):
+        self.increment += 1
+        return self.increment
+
+    def compute(self):
+        increment_value = self.increment
+        self.increment = 0
+        return increment_value
+
+    def reset(self):
+        pass
