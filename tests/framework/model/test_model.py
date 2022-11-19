@@ -133,7 +133,7 @@ class ModelTest(ModelFittingTestCase):
             'steps': ModelTest.steps_per_epoch,
             'valid_steps': ModelTest.steps_per_epoch,
         }
-        self._test_callbacks_train(params, logs, valid_steps=ModelTest.steps_per_epoch)
+        self._test_callbacks_train(params, logs)
 
     def test_fitting_without_valid_generator(self):
         train_generator = some_data_tensor_generator(ModelTest.batch_size)
@@ -284,7 +284,7 @@ class ModelTest(ModelFittingTestCase):
             'steps': ModelTest.steps_per_epoch,
             'valid_steps': ModelTest.steps_per_epoch,
         }
-        self._test_callbacks_train(params, logs, valid_steps=ModelTest.steps_per_epoch)
+        self._test_callbacks_train(params, logs)
 
     def test_fitting_with_data_loader(self):
         train_real_steps_per_epoch = 30
@@ -477,7 +477,8 @@ class ModelTest(ModelFittingTestCase):
         train_generator = SomeDataGeneratorUsingStopIteration(
             batch_size=ModelTest.batch_size, length=train_real_steps_per_epoch
         )
-        valid_generator = SomeDataGeneratorUsingStopIteration(batch_size=15, length=10)
+        valid_real_steps = 10
+        valid_generator = SomeDataGeneratorUsingStopIteration(batch_size=15, length=valid_real_steps)
         logs = self.model.fit_generator(
             train_generator,
             valid_generator,
@@ -487,7 +488,7 @@ class ModelTest(ModelFittingTestCase):
             callbacks=[self.mock_callback],
         )
         params = {'epochs': ModelTest.epochs, 'steps': None}
-        self._test_callbacks_train(params, logs, steps=train_real_steps_per_epoch)
+        self._test_callbacks_train(params, logs, steps=train_real_steps_per_epoch, valid_steps=valid_real_steps)
 
     def test_tensor_train_on_batch(self):
         x = torch.rand(ModelTest.batch_size, 1)
@@ -1137,7 +1138,7 @@ class ModelDatasetMethodsTest(ModelFittingTestCase):
             'steps': ModelTest.steps_per_epoch,
             'valid_steps': ModelTest.steps_per_epoch,
         }
-        self._test_callbacks_train(params, logs, valid_steps=ModelTest.steps_per_epoch)
+        self._test_callbacks_train(params, logs)
 
     def test_fitting_mnist_without_valid(self):
         logs = self.model.fit_dataset(
