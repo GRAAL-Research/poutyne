@@ -67,7 +67,7 @@ class ModelMultiIOTest(ModelFittingTestCase):
             'steps': ModelMultiIOTest.steps_per_epoch,
             'valid_steps': ModelMultiIOTest.steps_per_epoch,
         }
-        self._test_callbacks_train(params, logs, valid_steps=ModelMultiIOTest.steps_per_epoch)
+        self._test_callbacks_train(params, logs)
 
     def test_fitting_with_tensor_multi_io(self):
         train_real_steps_per_epoch = 30

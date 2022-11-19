@@ -50,10 +50,12 @@ class ModelFittingTestCase(CaptureOutputBase):
         self.pytorch_network = None
         self.optimizer = None
 
-    def _get_callback_expected_on_calls_when_training(self, params, logs, has_valid=True, steps=None, valid_steps=10):
+    def _get_callback_expected_on_calls_when_training(self, params, logs, has_valid=True, steps=None, valid_steps=None):
         # pylint: disable=too-many-arguments
         if steps is None:
             steps = params['steps']
+        if has_valid and valid_steps is None:
+            valid_steps = params['valid_steps']
 
         train_batch_dict = dict(zip(self.batch_metrics_names, self.batch_metrics_values), time=ANY, loss=ANY)
         train_epochs_dict = dict(zip(self.epoch_metrics_names, self.epoch_metrics_values))
