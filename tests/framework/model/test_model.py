@@ -31,6 +31,7 @@ import torch.nn.functional as F
 from torch.utils.data import DataLoader, Dataset
 
 from poutyne import Model, TensorDataset
+from poutyne.framework.metrics.decomposable import DecomposableMetric
 from poutyne.framework.optimizers import all_optimizers_dict
 from tests.framework.tools import (
     some_data_tensor_generator,
@@ -729,8 +730,9 @@ class ModelTest(ModelFittingTestCase):
 
     def test_metrics_integration(self):
         mock_metric = Mock(SomeBatchMetric, wraps=SomeBatchMetric())
+        mock_loss_fn = Mock(DecomposableMetric, wraps=DecomposableMetric(F.mse_loss, "loss"))
         num_steps = 10
-        model = Model(self.pytorch_network, self.optimizer, self.loss_function, batch_metrics=[F.mse_loss, mock_metric])
+        model = Model(self.pytorch_network, self.optimizer, mock_loss_fn, batch_metrics=[F.mse_loss, mock_metric])
         train_generator = some_data_tensor_generator(ModelTest.batch_size)
         valid_generator = some_data_tensor_generator(ModelTest.batch_size)
         model.fit_generator(
@@ -746,6 +748,9 @@ class ModelTest(ModelFittingTestCase):
         )
         self.assertEqual(len(mock_metric.mock_calls), len(expected_calls))
         self.assertEqual(mock_metric.mock_calls, expected_calls)
+
+        self.assertEqual(len(mock_loss_fn.mock_calls), len(expected_calls))
+        self.assertEqual(mock_loss_fn.mock_calls, expected_calls)
 
         generator = some_data_tensor_generator(ModelTest.batch_size)
         loss, (mse, _) = model.evaluate_generator(generator, steps=num_steps)
