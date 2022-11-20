@@ -18,13 +18,14 @@ You should have received a copy of the GNU Lesser General Public License along w
 """
 
 import os
+from typing import Any
 from unittest import main, TestCase
 from unittest.mock import ANY, Mock, call
 
 import torch
 import torch.nn as nn
 from poutyne import Model
-from poutyne import BaseStrategy, DefaultStrategy
+from poutyne import BaseStrategy, DefaultStrategy, NetworkIOType, StepOutput
 from tests.framework.tools import (
     some_data_tensor_generator,
     SomeConstantMetric,
@@ -36,6 +37,17 @@ from tests.framework.tools import (
     repeat_batch_metric_value,
     some_constant_metric_value,
 )
+
+
+class DummyStrategy(BaseStrategy):
+    def train_step(self, data: NetworkIOType, **kwargs: Any) -> StepOutput:
+        return StepOutput()
+
+    def test_step(self, data, **kwargs: Any) -> StepOutput:
+        return StepOutput()
+
+    def predict_step(self, data, **kwargs: Any) -> NetworkIOType:
+        return
 
 
 class StratgyIntegrationTest(TestCase):
@@ -85,6 +97,40 @@ class StratgyIntegrationTest(TestCase):
             strategy=self.mock_strategy,
         )
 
+    def test_strategy_calls_with_dummy_when_training(self):
+        self.batch_metrics = []
+        self.batch_metrics_names = []
+        self.batch_metrics_values = []
+        self.epoch_metrics = []
+        self.epoch_metrics_names = []
+        self.epoch_metrics_values = []
+        self.mock_strategy = Mock(BaseStrategy, wraps=DummyStrategy())
+        self.model = Model(
+            self.pytorch_network,
+            self.optimizer,
+            self.loss_function,
+            strategy=self.mock_strategy,
+        )
+        train_generator = some_data_tensor_generator(StratgyIntegrationTest.batch_size)
+        valid_generator = some_data_tensor_generator(StratgyIntegrationTest.batch_size)
+        logs = self.model.fit_generator(
+            train_generator,
+            valid_generator,
+            epochs=StratgyIntegrationTest.epochs,
+            steps_per_epoch=StratgyIntegrationTest.steps_per_epoch,
+            validation_steps=StratgyIntegrationTest.steps_per_epoch,
+        )
+
+        params = {
+            'epochs': StratgyIntegrationTest.epochs,
+            'steps': StratgyIntegrationTest.steps_per_epoch,
+            'valid_steps': StratgyIntegrationTest.steps_per_epoch,
+        }
+        expected_calls = self._get_expected_strategy_calls_when_training(params, logs, has_loss=False)
+        actual_calls = self.mock_strategy.mock_calls
+        for expected, actual in zip(expected_calls, actual_calls):
+            self.assertEqual(expected, actual)
+
     def test_strategy_calls_when_training(self):
         train_generator = some_data_tensor_generator(StratgyIntegrationTest.batch_size)
         valid_generator = some_data_tensor_generator(StratgyIntegrationTest.batch_size)
@@ -121,19 +167,25 @@ class StratgyIntegrationTest(TestCase):
         actual_calls = self.mock_strategy.mock_calls
         self.assertEqual(expected_calls, actual_calls)
 
-    def _get_expected_strategy_calls_when_training(self, params, logs, has_valid=True, steps=None, valid_steps=None):
-        # pylint: disable=too-many-arguments, too-many-locals
+    def _get_expected_strategy_calls_when_training(
+        self, params, logs, *, has_valid=True, steps=None, valid_steps=None, has_loss=True
+    ):
+        # pylint: disable=too-many-locals
         if steps is None:
             steps = params['steps']
         if has_valid and valid_steps is None:
             valid_steps = params['valid_steps']
 
-        train_batch_dict = dict(zip(self.batch_metrics_names, self.batch_metrics_values), time=ANY, loss=ANY)
+        train_batch_dict = dict(zip(self.batch_metrics_names, self.batch_metrics_values), time=ANY)
+        if has_loss:
+            train_batch_dict["loss"] = ANY
         train_epochs_dict = dict(zip(self.epoch_metrics_names, self.epoch_metrics_values))
         log_dict = {**train_batch_dict, **train_epochs_dict}
         if has_valid:
             val_batch_metrics_names = ['val_' + metric_name for metric_name in self.batch_metrics_names]
-            val_batch_dict = dict(zip(val_batch_metrics_names, self.batch_metrics_values), val_loss=ANY)
+            val_batch_dict = dict(zip(val_batch_metrics_names, self.batch_metrics_values))
+            if has_loss:
+                val_batch_dict["val_loss"] = ANY
             val_epoch_metrics_names = ['val_' + metric_name for metric_name in self.epoch_metrics_names]
             val_epochs_dict = dict(zip(val_epoch_metrics_names, self.epoch_metrics_values))
             log_dict.update({**val_batch_dict, **val_epochs_dict})
