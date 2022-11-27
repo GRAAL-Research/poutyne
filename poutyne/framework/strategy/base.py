@@ -74,7 +74,7 @@ class BaseStrategy:
         pass
 
     def train_step(
-        self, data: NetworkIOType, *, callback: Callback | None = None, step: int | None = None, **kwargs
+        self, data: NetworkIOType, *, callback: Callback | None = None, step: int | None = None, **kwargs: Any
     ) -> StepOutput:
         pass
 

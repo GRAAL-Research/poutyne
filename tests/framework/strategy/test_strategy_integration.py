@@ -128,8 +128,7 @@ class StratgyIntegrationTest(TestCase):
         }
         expected_calls = self._get_expected_strategy_calls_when_training(params, logs, has_loss=False)
         actual_calls = self.mock_strategy.mock_calls
-        for expected, actual in zip(expected_calls, actual_calls):
-            self.assertEqual(expected, actual)
+        self.assertEqual(expected_calls, actual_calls)
 
     def test_strategy_calls_when_training(self):
         train_generator = some_data_tensor_generator(StratgyIntegrationTest.batch_size)
@@ -213,7 +212,7 @@ class StratgyIntegrationTest(TestCase):
             if has_valid:
                 call_list.append(call.on_valid_begin({}))
                 for step in range(valid_steps):
-                    call_list.append(call.test_step(ANY))
+                    call_list.append(call.test_step((ANY, ANY)))
                 call_list.append(call.compute_loss())
                 call_list.append(call.reset_loss())
                 call_list.append(call.compute_batch_metrics())
@@ -225,6 +224,70 @@ class StratgyIntegrationTest(TestCase):
             call_list.append(call.on_epoch_end(epoch, logs[epoch - 1]))
 
         call_list.append(call.on_train_end({}))
+        return call_list
+
+    def test_strategy_calls_when_evaluating(self):
+        generator = some_data_tensor_generator(StratgyIntegrationTest.batch_size)
+        logs = self.model.evaluate_generator(
+            generator,
+            steps=StratgyIntegrationTest.steps_per_epoch,
+            return_dict_format=True,
+        )
+
+        params = {'steps': StratgyIntegrationTest.steps_per_epoch}
+        expected_calls = self._get_expected_strategy_calls_when_evaluating(params, logs)
+        actual_calls = self.mock_strategy.mock_calls
+        print(expected_calls, actual_calls)
+        self.assertEqual(expected_calls, actual_calls)
+
+    def test_strategy_calls_with_dummy_when_evaluating(self):
+        self.batch_metrics = []
+        self.batch_metrics_names = []
+        self.batch_metrics_values = []
+        self.epoch_metrics = []
+        self.epoch_metrics_names = []
+        self.epoch_metrics_values = []
+        self.mock_strategy = Mock(BaseStrategy, wraps=DummyStrategy())
+        self.model = Model(
+            self.pytorch_network,
+            self.optimizer,
+            self.loss_function,
+            strategy=self.mock_strategy,
+        )
+        geenerator = some_data_tensor_generator(StratgyIntegrationTest.batch_size)
+        logs = self.model.evaluate_generator(
+            geenerator,
+            steps=StratgyIntegrationTest.steps_per_epoch,
+            return_dict_format=True,
+        )
+
+        self.assertEqual({'time': ANY}, logs)
+
+        params = {'steps': StratgyIntegrationTest.steps_per_epoch}
+        expected_calls = self._get_expected_strategy_calls_when_evaluating(params, logs)
+        actual_calls = self.mock_strategy.mock_calls
+        self.assertEqual(expected_calls, actual_calls)
+
+    def _get_expected_strategy_calls_when_evaluating(self, params, logs, *, steps=None):
+        if steps is None:
+            steps = params['steps']
+
+        call_list = []
+        call_list.append(call.set_model(self.model))
+        call_list.append(call.get_batch_metric_names())
+        call_list.append(call.get_epoch_metric_names())
+        call_list.append(call.set_params(params))
+        call_list.append(call.on_test_begin({}))
+        for _ in range(steps):
+            call_list.append(call.test_step((ANY, ANY)))
+        call_list.append(call.compute_loss())
+        call_list.append(call.reset_loss())
+        call_list.append(call.compute_batch_metrics())
+        call_list.append(call.reset_batch_metrics())
+        call_list.append(call.compute_epoch_metrics())
+        call_list.append(call.reset_epoch_metrics())
+        call_list.append(call.on_test_end(logs))
+
         return call_list
 
 
