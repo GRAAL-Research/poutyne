@@ -37,7 +37,7 @@ jobs:
         run: |
           pytest
       - name: Upload Codecov
-        uses: codecov/codecov-action@v2.1.0
+        uses: codecov/codecov-action@v3
         with:
           files: ./coverage.xml
 
@@ -64,6 +64,6 @@ jobs:
           .  ./InvokeFunc.ps1
           Invoke-NativeCommand pytest
       - name: Upload Codecov
-        uses: codecov/codecov-action@v2.1.0
+        uses: codecov/codecov-action@v3
         with:
           files: ./coverage.xml
