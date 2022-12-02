@@ -38,7 +38,7 @@ Here is an example using metrics:
         # Can also use a string in this case:
         # batch_metrics=['accuracy', 'f1'],
 
-        epoch_metrics=[torchmetrics.AUROC(num_classes=10)],
+        epoch_metrics=[torchmetrics.AUROC(num_classes=10, task="multiclass")],
     )
     model.fit_dataset(train_dataset, valid_dataset)
 

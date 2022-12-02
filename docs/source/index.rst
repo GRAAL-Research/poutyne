@@ -97,7 +97,7 @@ You can now use Poutyne's model to train your network easily:
       'sgd',
       'cross_entropy',
       batch_metrics=['accuracy'],
-      epoch_metrics=['f1', torchmetrics.AUROC(num_classes=num_classes)],
+      epoch_metrics=['f1', torchmetrics.AUROC(num_classes=num_classes, task="multiclass")],
       device=device
   )
   model.fit(

@@ -124,7 +124,7 @@ class Model:
             # We create and optimize our model
             model = Model(pytorch_network, 'sgd', 'cross_entropy',
                           batch_metrics=['accuracy'],
-                          epoch_metrics=[torchmetrics.AUROC(num_classes=num_classes)])
+                          epoch_metrics=[torchmetrics.AUROC(num_classes=num_classes, task="multiclass")])
             model.fit(train_x, train_y,
                       validation_data=(valid_x, valid_y),
                       epochs=5,
@@ -168,7 +168,7 @@ class Model:
 
            model = Model(pytorch_network, 'sgd', 'cross_entropy',
                          batch_metrics=['accuracy'],
-                         epoch_metrics=[torchmetrics.AUROC(num_classes=num_classes)])
+                         epoch_metrics=[torchmetrics.AUROC(num_classes=num_classes, task="multiclass")])
            model.fit_generator(train_generator,
                                valid_generator,
                                epochs=5)

@@ -34,7 +34,7 @@ model = Model(
     'sgd',
     'cross_entropy',
     batch_metrics=['accuracy'],
-    epoch_metrics=['f1', torchmetrics.AUROC(num_classes=10)],
+    epoch_metrics=['f1', torchmetrics.AUROC(num_classes=10, task="multiclass")],
     device=device,
 )
 # Change the number of epochs to find the optimum value for your work
