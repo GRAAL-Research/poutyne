@@ -252,7 +252,7 @@ For training, we use the Jaccard index metric in addition to the accuracy and F1
         optimizer,
         criterion,
         batch_metrics=['accuracy'],
-        epoch_metrics=['f1', torchmetrics.JaccardIndex(num_classes=22)],
+        epoch_metrics=['f1', torchmetrics.JaccardIndex(num_classes=22, task="multiclass")],
         device=device,
     )
 

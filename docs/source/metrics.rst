@@ -173,22 +173,22 @@ Examples:
 
     metric_collection = MetricCollection(
         [
-            F1Score(num_classes=10, average='macro'),
-            Precision(num_classes=10, average='macro'),
-            Recall(num_classes=10, average='macro'),
+            F1Score(num_classes=10, average="macro", task="multiclass"),
+            Precision(num_classes=10, average="macro", task="multiclass"),
+            Recall(num_classes=10, average="macro", task="multiclass"),
         ]
     )
 
     metrics = [
-        ('custom_name', my_custom_metric),
-        (('metric_1', 'metric_2'), my_custom_metric2),
-        (('a', 'b'), my_custom_metric3),
-        (('metric_3', 'metric_4'), CustomMetric()),
-        (('c', 'd'), CustomMetric2()),
+        ("custom_name", my_custom_metric),
+        (("metric_1", "metric_2"), my_custom_metric2),
+        (("a", "b"), my_custom_metric3),
+        (("metric_3", "metric_4"), CustomMetric()),
+        (("c", "d"), CustomMetric2()),
 
         # No need to pass the names since the class sets the attribute __name__.
         CustomMetric3(),
 
         # The names are the keys returned by MetricCollection.
-        (('F1Score', 'Precision', 'Recall'), metric_collection),
+        (("F1Score", "Precision", "Recall"), metric_collection),
     ]
