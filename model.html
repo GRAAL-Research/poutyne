@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Model &mdash; Poutyne 1.13 documentation</title>
+  <title>Model &mdash; Poutyne 1.14 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -33,7 +33,7 @@
             <img src="_static/poutyne-light.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                1.13
+                1.14
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -142,7 +142,7 @@ object name). The loss function must have the signature <code class="docutils li
 <code class="docutils literal notranslate"><span class="pre">input</span></code> is the prediction of the network and <code class="docutils literal notranslate"><span class="pre">target</span></code> is the ground truth.
 (Default value = None)</p></li>
 <li><p><strong>batch_metrics</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.11)"><em>list</em></a>) – <p>List of functions with the same signature as a loss function or objects with the same
-signature as either <a class="reference internal" href="metrics.html#poutyne.Metric" title="poutyne.Metric"><code class="xref py py-class docutils literal notranslate"><span class="pre">Metric</span></code></a> or <a class="reference external" href="https://torchmetrics.readthedocs.io/en/latest/pages/implement.html#torchmetrics.Metric" title="(in PyTorch-Metrics v0.11.0dev)"><code class="xref py py-class docutils literal notranslate"><span class="pre">torchmetrics.Metric</span></code></a>. It can
+signature as either <a class="reference internal" href="metrics.html#poutyne.Metric" title="poutyne.Metric"><code class="xref py py-class docutils literal notranslate"><span class="pre">Metric</span></code></a> or <a class="reference external" href="https://torchmetrics.readthedocs.io/en/latest/pages/implement.html#torchmetrics.Metric" title="(in PyTorch-Metrics v0.12.0dev)"><code class="xref py py-class docutils literal notranslate"><span class="pre">torchmetrics.Metric</span></code></a>. It can
 also be a string with the same name as a PyTorch loss function (either the functional or object name).
 Some metrics, such as  ‘accuracy’ (or just ‘acc’), are also available as strings. See <a class="reference internal" href="metrics.html#metrics"><span class="std std-ref">Metrics</span></a> and
 the <a class="reference external" href="https://torchmetrics.readthedocs.io/en/latest/references/modules.html">TorchMetrics documentation</a>
@@ -158,7 +158,7 @@ to compute the metric. In such case, we advise to use them as epoch metrics inst
 </div>
 </p></li>
 <li><p><strong>epoch_metrics</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.11)"><em>list</em></a>) – <p>List of functions with the same signature as a loss function or objects with the same
-signature as either <a class="reference internal" href="metrics.html#poutyne.Metric" title="poutyne.Metric"><code class="xref py py-class docutils literal notranslate"><span class="pre">Metric</span></code></a> or <a class="reference external" href="https://torchmetrics.readthedocs.io/en/latest/pages/implement.html#torchmetrics.Metric" title="(in PyTorch-Metrics v0.11.0dev)"><code class="xref py py-class docutils literal notranslate"><span class="pre">torchmetrics.Metric</span></code></a>. It can
+signature as either <a class="reference internal" href="metrics.html#poutyne.Metric" title="poutyne.Metric"><code class="xref py py-class docutils literal notranslate"><span class="pre">Metric</span></code></a> or <a class="reference external" href="https://torchmetrics.readthedocs.io/en/latest/pages/implement.html#torchmetrics.Metric" title="(in PyTorch-Metrics v0.12.0dev)"><code class="xref py py-class docutils literal notranslate"><span class="pre">torchmetrics.Metric</span></code></a>. It can
 also be a string with the same name as a PyTorch loss function (either the functional or object name).
 Some metrics, such as  ‘accuracy’ (or just ‘acc’), are also available as strings. See <a class="reference internal" href="metrics.html#metrics"><span class="std std-ref">Metrics</span></a> and
 the <a class="reference external" href="https://torchmetrics.readthedocs.io/en/latest/references/modules.html">TorchMetrics documentation</a>
@@ -253,7 +253,7 @@ with the associated precision and recall). See <a class="reference internal" hre
 <span class="c1"># We create and optimize our model</span>
 <span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span><span class="n">pytorch_network</span><span class="p">,</span> <span class="s1">&#39;sgd&#39;</span><span class="p">,</span> <span class="s1">&#39;cross_entropy&#39;</span><span class="p">,</span>
               <span class="n">batch_metrics</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;accuracy&#39;</span><span class="p">],</span>
-              <span class="n">epoch_metrics</span><span class="o">=</span><span class="p">[</span><span class="n">torchmetrics</span><span class="o">.</span><span class="n">AUROC</span><span class="p">(</span><span class="n">num_classes</span><span class="o">=</span><span class="n">num_classes</span><span class="p">)])</span>
+              <span class="n">epoch_metrics</span><span class="o">=</span><span class="p">[</span><span class="n">torchmetrics</span><span class="o">.</span><span class="n">AUROC</span><span class="p">(</span><span class="n">num_classes</span><span class="o">=</span><span class="n">num_classes</span><span class="p">,</span> <span class="n">task</span><span class="o">=</span><span class="s2">&quot;multiclass&quot;</span><span class="p">)])</span>
 <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">train_x</span><span class="p">,</span> <span class="n">train_y</span><span class="p">,</span>
           <span class="n">validation_data</span><span class="o">=</span><span class="p">(</span><span class="n">valid_x</span><span class="p">,</span> <span class="n">valid_y</span><span class="p">),</span>
           <span class="n">epochs</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
@@ -296,7 +296,7 @@ val_loss: 1.741379 val_acc: 19.000000 val_auroc: 0.498577
 
 <span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span><span class="n">pytorch_network</span><span class="p">,</span> <span class="s1">&#39;sgd&#39;</span><span class="p">,</span> <span class="s1">&#39;cross_entropy&#39;</span><span class="p">,</span>
               <span class="n">batch_metrics</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;accuracy&#39;</span><span class="p">],</span>
-              <span class="n">epoch_metrics</span><span class="o">=</span><span class="p">[</span><span class="n">torchmetrics</span><span class="o">.</span><span class="n">AUROC</span><span class="p">(</span><span class="n">num_classes</span><span class="o">=</span><span class="n">num_classes</span><span class="p">)])</span>
+              <span class="n">epoch_metrics</span><span class="o">=</span><span class="p">[</span><span class="n">torchmetrics</span><span class="o">.</span><span class="n">AUROC</span><span class="p">(</span><span class="n">num_classes</span><span class="o">=</span><span class="n">num_classes</span><span class="p">,</span> <span class="n">task</span><span class="o">=</span><span class="s2">&quot;multiclass&quot;</span><span class="p">)])</span>
 <span class="n">model</span><span class="o">.</span><span class="n">fit_generator</span><span class="p">(</span><span class="n">train_generator</span><span class="p">,</span>
                     <span class="n">valid_generator</span><span class="p">,</span>
                     <span class="n">epochs</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>

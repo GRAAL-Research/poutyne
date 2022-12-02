@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>poutyne.framework.model &mdash; Poutyne 1.13 documentation</title>
+  <title>poutyne.framework.model &mdash; Poutyne 1.14 documentation</title>
       <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -30,7 +30,7 @@
             <img src="../../../_static/poutyne-light.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                1.13
+                1.14
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
@@ -212,7 +212,7 @@
 <span class="sd">            # We create and optimize our model</span>
 <span class="sd">            model = Model(pytorch_network, &#39;sgd&#39;, &#39;cross_entropy&#39;,</span>
 <span class="sd">                          batch_metrics=[&#39;accuracy&#39;],</span>
-<span class="sd">                          epoch_metrics=[torchmetrics.AUROC(num_classes=num_classes)])</span>
+<span class="sd">                          epoch_metrics=[torchmetrics.AUROC(num_classes=num_classes, task=&quot;multiclass&quot;)])</span>
 <span class="sd">            model.fit(train_x, train_y,</span>
 <span class="sd">                      validation_data=(valid_x, valid_y),</span>
 <span class="sd">                      epochs=5,</span>
@@ -256,7 +256,7 @@
 
 <span class="sd">           model = Model(pytorch_network, &#39;sgd&#39;, &#39;cross_entropy&#39;,</span>
 <span class="sd">                         batch_metrics=[&#39;accuracy&#39;],</span>
-<span class="sd">                         epoch_metrics=[torchmetrics.AUROC(num_classes=num_classes)])</span>
+<span class="sd">                         epoch_metrics=[torchmetrics.AUROC(num_classes=num_classes, task=&quot;multiclass&quot;)])</span>
 <span class="sd">           model.fit_generator(train_generator,</span>
 <span class="sd">                               valid_generator,</span>
 <span class="sd">                               epochs=5)</span>

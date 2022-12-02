@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>poutyne.framework.callbacks.lr_scheduler &mdash; Poutyne 1.13 documentation</title>
+  <title>poutyne.framework.callbacks.lr_scheduler &mdash; Poutyne 1.14 documentation</title>
       <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -30,7 +30,7 @@
             <img src="../../../../_static/poutyne-light.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                1.13
+                1.14
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
@@ -111,7 +111,11 @@
 
 <span class="kn">import</span> <span class="nn">torch.optim.lr_scheduler</span>
 <span class="kn">from</span> <span class="nn">torch.optim</span> <span class="kn">import</span> <span class="n">Optimizer</span>
-<span class="kn">from</span> <span class="nn">torch.optim.lr_scheduler</span> <span class="kn">import</span> <span class="n">_LRScheduler</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">torch.optim.lr_scheduler</span> <span class="kn">import</span> <span class="n">LRScheduler</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">torch.optim.lr_scheduler</span> <span class="kn">import</span> <span class="n">_LRScheduler</span> <span class="k">as</span> <span class="n">LRScheduler</span>
 
 <span class="kn">from</span> <span class="nn">.callbacks</span> <span class="kn">import</span> <span class="n">Callback</span>
 
@@ -172,7 +176,7 @@
 
 
 <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">module_cls</span> <span class="ow">in</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">lr_scheduler</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-    <span class="k">if</span> <span class="n">inspect</span><span class="o">.</span><span class="n">isclass</span><span class="p">(</span><span class="n">module_cls</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">module_cls</span><span class="p">,</span> <span class="n">_LRScheduler</span><span class="p">)</span> <span class="ow">and</span> <span class="n">module_cls</span> <span class="o">!=</span> <span class="n">_LRScheduler</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">inspect</span><span class="o">.</span><span class="n">isclass</span><span class="p">(</span><span class="n">module_cls</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">module_cls</span><span class="p">,</span> <span class="n">LRScheduler</span><span class="p">)</span> <span class="ow">and</span> <span class="n">module_cls</span> <span class="o">!=</span> <span class="n">LRScheduler</span><span class="p">:</span>
         <span class="n">_new_cls</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span>
             <span class="n">name</span><span class="p">,</span>
             <span class="p">(</span><span class="n">_PyTorchLRSchedulerWrapper</span><span class="p">,),</span>

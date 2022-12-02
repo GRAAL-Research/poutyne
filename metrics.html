@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Metrics &mdash; Poutyne 1.13 documentation</title>
+  <title>Metrics &mdash; Poutyne 1.14 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -34,7 +34,7 @@
             <img src="_static/poutyne-light.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                1.13
+                1.14
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -163,7 +163,7 @@ In such a case, we advise using them as epoch metrics instead.</p>
     <span class="c1"># Can also use a string in this case:</span>
     <span class="c1"># batch_metrics=[&#39;accuracy&#39;, &#39;f1&#39;],</span>
 
-    <span class="n">epoch_metrics</span><span class="o">=</span><span class="p">[</span><span class="n">torchmetrics</span><span class="o">.</span><span class="n">AUROC</span><span class="p">(</span><span class="n">num_classes</span><span class="o">=</span><span class="mi">10</span><span class="p">)],</span>
+    <span class="n">epoch_metrics</span><span class="o">=</span><span class="p">[</span><span class="n">torchmetrics</span><span class="o">.</span><span class="n">AUROC</span><span class="p">(</span><span class="n">num_classes</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">task</span><span class="o">=</span><span class="s2">&quot;multiclass&quot;</span><span class="p">)],</span>
 <span class="p">)</span>
 <span class="n">model</span><span class="o">.</span><span class="n">fit_dataset</span><span class="p">(</span><span class="n">train_dataset</span><span class="p">,</span> <span class="n">valid_dataset</span><span class="p">)</span>
 </pre></div>
@@ -770,24 +770,24 @@ Note that, when the metric returns a mapping, the names of the different metrics
 
 <span class="n">metric_collection</span> <span class="o">=</span> <span class="n">MetricCollection</span><span class="p">(</span>
     <span class="p">[</span>
-        <span class="n">F1Score</span><span class="p">(</span><span class="n">num_classes</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">average</span><span class="o">=</span><span class="s1">&#39;macro&#39;</span><span class="p">),</span>
-        <span class="n">Precision</span><span class="p">(</span><span class="n">num_classes</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">average</span><span class="o">=</span><span class="s1">&#39;macro&#39;</span><span class="p">),</span>
-        <span class="n">Recall</span><span class="p">(</span><span class="n">num_classes</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">average</span><span class="o">=</span><span class="s1">&#39;macro&#39;</span><span class="p">),</span>
+        <span class="n">F1Score</span><span class="p">(</span><span class="n">num_classes</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">average</span><span class="o">=</span><span class="s2">&quot;macro&quot;</span><span class="p">,</span> <span class="n">task</span><span class="o">=</span><span class="s2">&quot;multiclass&quot;</span><span class="p">),</span>
+        <span class="n">Precision</span><span class="p">(</span><span class="n">num_classes</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">average</span><span class="o">=</span><span class="s2">&quot;macro&quot;</span><span class="p">,</span> <span class="n">task</span><span class="o">=</span><span class="s2">&quot;multiclass&quot;</span><span class="p">),</span>
+        <span class="n">Recall</span><span class="p">(</span><span class="n">num_classes</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">average</span><span class="o">=</span><span class="s2">&quot;macro&quot;</span><span class="p">,</span> <span class="n">task</span><span class="o">=</span><span class="s2">&quot;multiclass&quot;</span><span class="p">),</span>
     <span class="p">]</span>
 <span class="p">)</span>
 
 <span class="n">metrics</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="p">(</span><span class="s1">&#39;custom_name&#39;</span><span class="p">,</span> <span class="n">my_custom_metric</span><span class="p">),</span>
-    <span class="p">((</span><span class="s1">&#39;metric_1&#39;</span><span class="p">,</span> <span class="s1">&#39;metric_2&#39;</span><span class="p">),</span> <span class="n">my_custom_metric2</span><span class="p">),</span>
-    <span class="p">((</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">),</span> <span class="n">my_custom_metric3</span><span class="p">),</span>
-    <span class="p">((</span><span class="s1">&#39;metric_3&#39;</span><span class="p">,</span> <span class="s1">&#39;metric_4&#39;</span><span class="p">),</span> <span class="n">CustomMetric</span><span class="p">()),</span>
-    <span class="p">((</span><span class="s1">&#39;c&#39;</span><span class="p">,</span> <span class="s1">&#39;d&#39;</span><span class="p">),</span> <span class="n">CustomMetric2</span><span class="p">()),</span>
+    <span class="p">(</span><span class="s2">&quot;custom_name&quot;</span><span class="p">,</span> <span class="n">my_custom_metric</span><span class="p">),</span>
+    <span class="p">((</span><span class="s2">&quot;metric_1&quot;</span><span class="p">,</span> <span class="s2">&quot;metric_2&quot;</span><span class="p">),</span> <span class="n">my_custom_metric2</span><span class="p">),</span>
+    <span class="p">((</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">),</span> <span class="n">my_custom_metric3</span><span class="p">),</span>
+    <span class="p">((</span><span class="s2">&quot;metric_3&quot;</span><span class="p">,</span> <span class="s2">&quot;metric_4&quot;</span><span class="p">),</span> <span class="n">CustomMetric</span><span class="p">()),</span>
+    <span class="p">((</span><span class="s2">&quot;c&quot;</span><span class="p">,</span> <span class="s2">&quot;d&quot;</span><span class="p">),</span> <span class="n">CustomMetric2</span><span class="p">()),</span>
 
     <span class="c1"># No need to pass the names since the class sets the attribute __name__.</span>
     <span class="n">CustomMetric3</span><span class="p">(),</span>
 
     <span class="c1"># The names are the keys returned by MetricCollection.</span>
-    <span class="p">((</span><span class="s1">&#39;F1Score&#39;</span><span class="p">,</span> <span class="s1">&#39;Precision&#39;</span><span class="p">,</span> <span class="s1">&#39;Recall&#39;</span><span class="p">),</span> <span class="n">metric_collection</span><span class="p">),</span>
+    <span class="p">((</span><span class="s2">&quot;F1Score&quot;</span><span class="p">,</span> <span class="s2">&quot;Precision&quot;</span><span class="p">,</span> <span class="s2">&quot;Recall&quot;</span><span class="p">),</span> <span class="n">metric_collection</span><span class="p">),</span>
 <span class="p">]</span>
 </pre></div>
 </div>
