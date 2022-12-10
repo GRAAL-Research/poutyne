@@ -20,15 +20,14 @@ You should have received a copy of the GNU Lesser General Public License along w
 # Because of the way the callbacks are generated, we have to disable linting here.
 # pylint: disable=no-name-in-module
 import os
-
 import unittest
-from unittest import TestCase
 from tempfile import TemporaryDirectory
+from unittest import TestCase
 
 import torch
 import torch.nn as nn
 
-from poutyne import torch_to_numpy, Model, LRSchedulerCheckpoint, ExponentialLR, ReduceLROnPlateau
+from poutyne import ExponentialLR, LRSchedulerCheckpoint, Model, ReduceLROnPlateau, torch_to_numpy
 from tests.framework.tools import some_data_generator
 
 

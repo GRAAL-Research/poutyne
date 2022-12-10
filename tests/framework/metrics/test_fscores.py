@@ -43,7 +43,7 @@ import numpy
 import torch
 import torch.nn as nn
 
-from poutyne import FBeta, F1, BinaryF1, Model
+from poutyne import F1, BinaryF1, FBeta, Model
 
 
 class FBetaTest(TestCase):

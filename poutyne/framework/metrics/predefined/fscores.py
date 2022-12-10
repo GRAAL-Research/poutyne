@@ -37,10 +37,12 @@ limitations under the License.
 """
 
 import warnings
-from typing import Optional, Union, List, Tuple
+from typing import List, Optional, Tuple, Union
+
 import torch
-from ..base import Metric
-from ..metrics_registering import register_metric_class
+
+from poutyne.framework.metrics.base import Metric
+from poutyne.framework.metrics.metrics_registering import register_metric_class
 
 
 class FBeta(Metric):

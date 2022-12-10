@@ -21,7 +21,7 @@ from typing import Dict
 
 import numpy as np
 
-from .callbacks import Callback
+from poutyne.framework.callbacks.callbacks import Callback
 
 
 class TerminateOnNaN(Callback):

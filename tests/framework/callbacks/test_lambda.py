@@ -22,9 +22,9 @@ from unittest.mock import Mock, call
 import torch
 import torch.nn as nn
 
-from poutyne import Model, LambdaCallback, Callback
-from tests.framework.tools import some_data_tensor_generator
+from poutyne import Callback, LambdaCallback, Model
 from tests.framework.model.base import ModelFittingTestCase
+from tests.framework.tools import some_data_tensor_generator
 
 
 class LambdaTest(ModelFittingTestCase):

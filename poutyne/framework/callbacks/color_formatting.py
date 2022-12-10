@@ -23,8 +23,8 @@ import time
 import warnings
 from typing import Dict, Union
 
-from poutyne import is_in_jupyter_notebook
-from .progress_bar import ProgressBar
+from poutyne.framework.callbacks.progress_bar import ProgressBar
+from poutyne.utils import is_in_jupyter_notebook
 
 
 class EmptyStringAttrClass:

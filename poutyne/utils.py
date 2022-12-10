@@ -17,19 +17,20 @@ You should have received a copy of the GNU Lesser General Public License along w
 <https://www.gnu.org/licenses/>.
 """
 
+import numbers
+
 # -*- coding: utf-8 -*-
 import os
 import random
-import numbers
-from typing import IO, Any, BinaryIO, Union
 import warnings
+from typing import IO, Any, BinaryIO, Union
 
 import numpy as np
 import torch
 from torch.nn.utils.rnn import PackedSequence
 from torch.utils.data import Dataset
 
-from .warning_manager import warning_settings
+from poutyne.warning_manager import warning_settings
 
 
 def torch_to_numpy(obj, copy=False):

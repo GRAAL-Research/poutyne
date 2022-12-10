@@ -20,7 +20,7 @@ You should have received a copy of the GNU Lesser General Public License along w
 import os
 from tempfile import TemporaryDirectory
 from unittest import TestCase
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 import pandas as pd
 from torch import nn

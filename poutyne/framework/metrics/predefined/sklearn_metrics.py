@@ -17,10 +17,12 @@ You should have received a copy of the GNU Lesser General Public License along w
 <https://www.gnu.org/licenses/>.
 """
 
-from typing import Optional, Union, List, Callable, Dict, Tuple
+from typing import Callable, Dict, List, Optional, Tuple, Union
+
 import numpy as np
 import torch
-from ..base import Metric
+
+from poutyne.framework.metrics.base import Metric
 
 
 class SKLearnMetrics(Metric):

@@ -18,6 +18,7 @@ You should have received a copy of the GNU Lesser General Public License along w
 """
 
 import unittest
+
 import torch
 import torch.nn as nn
 import torch.optim as optim

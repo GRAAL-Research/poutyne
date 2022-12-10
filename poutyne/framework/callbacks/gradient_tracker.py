@@ -17,12 +17,12 @@ You should have received a copy of the GNU Lesser General Public License along w
 <https://www.gnu.org/licenses/>.
 """
 
-from typing import Dict, List, Tuple, Iterable
+from typing import Dict, Iterable, List, Tuple
 
 import numpy as np
 import torch
 
-from .callbacks import Callback
+from poutyne.framework.callbacks.callbacks import Callback
 
 
 class WeightsGradientsStatsTracker:

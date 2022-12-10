@@ -17,13 +17,14 @@ You should have received a copy of the GNU Lesser General Public License along w
 <https://www.gnu.org/licenses/>.
 """
 
-from typing import Mapping, Iterable
+from typing import Iterable, Mapping
+
 import numpy as np
 import torch
 import torch.nn as nn
 
-from .base import Metric
-from ...utils import get_batch_size
+from poutyne.framework.metrics.base import Metric
+from poutyne.utils import get_batch_size
 
 
 class CumulativeAverage:

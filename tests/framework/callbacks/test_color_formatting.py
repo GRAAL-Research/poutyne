@@ -21,7 +21,7 @@ You should have received a copy of the GNU Lesser General Public License along w
 from unittest import TestCase
 from unittest.mock import patch
 
-from poutyne import EmptyStringAttrClass, ColorProgress
+from poutyne import ColorProgress, EmptyStringAttrClass
 
 
 class EmptyStringAttrClassTest(TestCase):

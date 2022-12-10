@@ -17,15 +17,15 @@ You should have received a copy of the GNU Lesser General Public License along w
 <https://www.gnu.org/licenses/>.
 """
 
-from unittest import TestCase, skipIf
 from itertools import repeat
+from unittest import TestCase, skipIf
 
 import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
 try:
-    from sklearn.metrics import roc_auc_score, average_precision_score, r2_score
+    from sklearn.metrics import average_precision_score, r2_score, roc_auc_score
 
     is_sklearn_available = True
 except ImportError:

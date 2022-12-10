@@ -34,6 +34,7 @@ jobs:
       - name: Formatting
         run: |
           black --diff --check .
+          isort --diff --check .
 
   windowsformatting:
     runs-on: windows-latest
@@ -55,3 +56,4 @@ jobs:
         run: |
           .  ./InvokeFunc.ps1
           Invoke-NativeCommand black --diff --check .
+          Invoke-NativeCommand isort --diff --check .

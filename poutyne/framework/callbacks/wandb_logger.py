@@ -1,11 +1,10 @@
 import os
 import warnings
-from typing import Dict, Optional, List
+from typing import Dict, List, Optional
 
 import torch
 
-
-from . import Logger
+from poutyne.framework.callbacks.logger import Logger
 
 try:
     import wandb

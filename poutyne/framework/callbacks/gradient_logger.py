@@ -17,14 +17,14 @@ You should have received a copy of the GNU Lesser General Public License along w
 <https://www.gnu.org/licenses/>.
 """
 
-import os
-from typing import Dict, List, Union, Optional, TextIO
 import csv
+import os
+from typing import Dict, List, Optional, TextIO, Union
 
 import torch
 
-from ._utils import atomic_lambda_save
-from .callbacks import Callback
+from poutyne.framework.callbacks._utils import atomic_lambda_save
+from poutyne.framework.callbacks.callbacks import Callback
 
 
 class GradientLoggerBase(Callback):

@@ -22,7 +22,7 @@ import unittest
 import torch
 import torch.nn as nn
 
-from poutyne import Model, EarlyStopping, Metric, Callback
+from poutyne import Callback, EarlyStopping, Metric, Model
 from tests.framework.base import CaptureOutputBase
 from tests.framework.tools import some_data_generator
 

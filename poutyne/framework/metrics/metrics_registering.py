@@ -17,7 +17,7 @@ You should have received a copy of the GNU Lesser General Public License along w
 <https://www.gnu.org/licenses/>.
 """
 
-from .utils import camel_to_snake
+from poutyne.framework.metrics.utils import camel_to_snake
 
 
 def _get_registering_decorator(register_function):

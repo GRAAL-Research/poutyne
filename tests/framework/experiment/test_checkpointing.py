@@ -25,8 +25,8 @@ import torch
 from torch import nn
 
 from poutyne import Experiment
-from tests.framework.tools import SomeDataGeneratorWithLen
 from tests.framework.experiment.utils import ConstantMetric, ConstantMetricCallback
+from tests.framework.tools import SomeDataGeneratorWithLen
 
 
 class BaseExperimentCheckpointLoadingTest:

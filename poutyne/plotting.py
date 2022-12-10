@@ -17,8 +17,8 @@ You should have received a copy of the GNU Lesser General Public License along w
 <https://www.gnu.org/licenses/>.
 """
 
-import os
 import itertools
+import os
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 try:
@@ -34,7 +34,7 @@ try:
 except ImportError:
     pd = None
 
-from poutyne import is_in_jupyter_notebook
+from poutyne.utils import is_in_jupyter_notebook
 
 jupyter = is_in_jupyter_notebook()
 

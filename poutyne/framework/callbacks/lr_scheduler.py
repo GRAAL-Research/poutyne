@@ -19,7 +19,7 @@ You should have received a copy of the GNU Lesser General Public License along w
 
 import inspect
 import sys
-from typing import Dict, BinaryIO
+from typing import BinaryIO, Dict
 
 import torch.optim.lr_scheduler
 from torch.optim import Optimizer
@@ -29,7 +29,7 @@ try:
 except ImportError:
     from torch.optim.lr_scheduler import _LRScheduler as LRScheduler
 
-from .callbacks import Callback
+from poutyne.framework.callbacks.callbacks import Callback
 
 
 class _PyTorchLRSchedulerWrapper(Callback):

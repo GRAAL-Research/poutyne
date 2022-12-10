@@ -20,7 +20,7 @@ You should have received a copy of the GNU Lesser General Public License along w
 import csv
 import os
 from tempfile import TemporaryDirectory
-from unittest import TestCase, skipIf, main
+from unittest import TestCase, main, skipIf
 from unittest.mock import MagicMock, call
 
 import torch
@@ -38,7 +38,9 @@ try:
 except ImportError:
     XSummaryWriter = None
 
-from poutyne import Model, Callback, TensorBoardLogger, CSVLogger as NonAtomicCSVLogger, AtomicCSVLogger
+from poutyne import AtomicCSVLogger, Callback
+from poutyne import CSVLogger as NonAtomicCSVLogger
+from poutyne import Model, TensorBoardLogger
 
 
 class History(Callback):

@@ -19,7 +19,7 @@ You should have received a copy of the GNU Lesser General Public License along w
 
 # pylint: disable=too-many-locals
 import os
-from unittest.mock import MagicMock, call, ANY
+from unittest.mock import ANY, MagicMock, call
 
 import numpy as np
 import torch

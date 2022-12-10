@@ -22,8 +22,7 @@ import torch
 import torch.nn as nn
 
 from poutyne import Model
-
-from .base import ModelFittingTestCase, MultiIOModel
+from tests.framework.model.base import ModelFittingTestCase, MultiIOModel
 
 
 def some_data_tensor_generator_multi_io(batch_size):

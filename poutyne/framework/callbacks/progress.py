@@ -18,10 +18,10 @@ You should have received a copy of the GNU Lesser General Public License along w
 """
 
 import itertools
-from typing import Dict, Callable
+from typing import Callable, Dict
 
-from .callbacks import Callback
-from .color_formatting import ColorProgress
+from poutyne.framework.callbacks.callbacks import Callback
+from poutyne.framework.callbacks.color_formatting import ColorProgress
 
 
 class ProgressionCallback(Callback):

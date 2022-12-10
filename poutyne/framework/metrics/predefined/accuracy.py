@@ -18,9 +18,10 @@ You should have received a copy of the GNU Lesser General Public License along w
 """
 
 from abc import ABC
+
 import torch.nn as nn
 
-from ..metrics_registering import register_metric_func, do_register_metric_func
+from poutyne.framework.metrics.metrics_registering import do_register_metric_func, register_metric_func
 
 
 class BatchMetric(ABC, nn.Module):

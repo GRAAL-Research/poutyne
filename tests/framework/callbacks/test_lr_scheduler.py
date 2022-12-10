@@ -25,7 +25,7 @@ from unittest import TestCase
 import torch
 import torch.nn as nn
 
-from poutyne import Model, LambdaLR, StepLR, MultiStepLR, ExponentialLR, CosineAnnealingLR, ReduceLROnPlateau
+from poutyne import CosineAnnealingLR, ExponentialLR, LambdaLR, Model, MultiStepLR, ReduceLROnPlateau, StepLR
 from tests.framework.tools import some_data_generator
 
 

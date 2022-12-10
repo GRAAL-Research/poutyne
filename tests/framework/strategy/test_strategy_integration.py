@@ -19,23 +19,23 @@ You should have received a copy of the GNU Lesser General Public License along w
 
 import os
 from typing import Any
-from unittest import main, TestCase
+from unittest import TestCase, main
 from unittest.mock import ANY, Mock, call
 
 import torch
 import torch.nn as nn
-from poutyne import Model
-from poutyne import BaseStrategy, DefaultStrategy, NetworkIOType, StepOutput
+
+from poutyne import BaseStrategy, DefaultStrategy, Model, NetworkIOType, StepOutput
 from tests.framework.tools import (
-    some_data_tensor_generator,
     SomeConstantMetric,
+    repeat_batch_metric,
+    repeat_batch_metric_value,
     some_batch_metric_1,
     some_batch_metric_2,
-    repeat_batch_metric,
+    some_constant_metric_value,
+    some_data_tensor_generator,
     some_metric_1_value,
     some_metric_2_value,
-    repeat_batch_metric_value,
-    some_constant_metric_value,
 )
 
 

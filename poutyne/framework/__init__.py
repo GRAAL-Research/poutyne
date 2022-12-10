@@ -18,9 +18,9 @@ You should have received a copy of the GNU Lesser General Public License along w
 """
 
 # pylint: disable=wildcard-import
-from .model import *
 from .callbacks import *
-from .metrics import *
 from .experiment import *
+from .metrics import *
+from .model import *
 from .model_bundle import *
 from .strategy import *

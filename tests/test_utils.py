@@ -17,11 +17,11 @@ You should have received a copy of the GNU Lesser General Public License along w
 <https://www.gnu.org/licenses/>.
 """
 
+import unittest
+
 # -*- coding: utf-8 -*-
 import warnings
 from collections import OrderedDict
-
-import unittest
 from unittest import TestCase, skipIf
 from unittest.mock import MagicMock, call
 
@@ -29,7 +29,7 @@ import numpy as np
 import torch
 from torch.nn.utils.rnn import PackedSequence
 
-from poutyne import TensorDataset, torch_apply, warning_settings, get_batch_size
+from poutyne import TensorDataset, get_batch_size, torch_apply, warning_settings
 from poutyne.utils import _concat
 from tests.utils import populate_packed_sequence
 

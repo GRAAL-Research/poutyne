@@ -20,9 +20,9 @@ You should have received a copy of the GNU Lesser General Public License along w
 # pylint: disable=line-too-long, pointless-string-statement
 import os
 import warnings
-from typing import Dict, Union, Mapping, Sequence
+from typing import Dict, Mapping, Sequence, Union
 
-from . import Logger
+from poutyne.framework.callbacks.logger import Logger
 
 try:
     import mlflow

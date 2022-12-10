@@ -17,9 +17,9 @@ You should have received a copy of the GNU Lesser General Public License along w
 <https://www.gnu.org/licenses/>.
 """
 
-from typing import Dict, Sequence, Optional, Union
+from typing import Dict, Optional, Sequence, Union
 
-from .callbacks import Callback, CallbackList
+from poutyne.framework.callbacks.callbacks import Callback, CallbackList
 
 
 class DelayCallback(Callback):

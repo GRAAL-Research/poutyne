@@ -23,7 +23,7 @@ from unittest import TestCase
 import torch
 import torch.nn as nn
 
-from poutyne import torch_to_numpy, Model, BestModelRestore
+from poutyne import BestModelRestore, Model, torch_to_numpy
 from tests.framework.tools import some_data_generator
 
 

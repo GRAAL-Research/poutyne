@@ -20,9 +20,9 @@ You should have received a copy of the GNU Lesser General Public License along w
 # pylint: disable=too-many-lines,too-many-public-methods
 import contextlib
 import timeit
-from collections import defaultdict
-from typing import Iterable, Mapping, List, Optional, Union, Any, Tuple
 import warnings
+from collections import defaultdict
+from typing import Any, Iterable, List, Mapping, Optional, Tuple, Union
 
 import numpy as np
 import torch
@@ -30,13 +30,12 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader
 
-from poutyne import torch_to_numpy, numpy_to_torch, torch_to
-from .strategy import GradientAccumulationStrategy, BaseStrategy, DefaultStrategy, StepOutput
-from .callbacks import CallbackList, ProgressionCallback, Callback
-from .iterators import EpochIterator, _get_step_iterator, StepIterator
-from .metrics import get_metric, rename_doubles, flatten_metric_names
-from .optimizers import get_optimizer
-from ..utils import TensorDataset, _concat, get_batch_size
+from poutyne.framework.callbacks import Callback, CallbackList, ProgressionCallback
+from poutyne.framework.iterators import EpochIterator, StepIterator, _get_step_iterator
+from poutyne.framework.metrics import flatten_metric_names, get_metric, rename_doubles
+from poutyne.framework.optimizers import get_optimizer
+from poutyne.framework.strategy import BaseStrategy, DefaultStrategy, GradientAccumulationStrategy, StepOutput
+from poutyne.utils import TensorDataset, _concat, get_batch_size, numpy_to_torch, torch_to, torch_to_numpy
 
 
 class Model:

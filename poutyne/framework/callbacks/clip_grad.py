@@ -22,7 +22,7 @@ from typing import Iterable, Union
 import torch
 from torch.nn.utils import clip_grad_norm_, clip_grad_value_
 
-from .callbacks import Callback
+from poutyne.framework.callbacks.callbacks import Callback
 
 _tensor_or_tensors = Union[torch.Tensor, Iterable[torch.Tensor]]
 

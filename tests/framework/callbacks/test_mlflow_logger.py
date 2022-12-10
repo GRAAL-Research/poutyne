@@ -18,10 +18,9 @@ You should have received a copy of the GNU Lesser General Public License along w
 """
 
 import os
-from typing import List, Dict
-from typing import Mapping, Sequence
+from typing import Dict, List, Mapping, Sequence
 from unittest import TestCase
-from unittest.mock import patch, MagicMock, call
+from unittest.mock import MagicMock, call, patch
 
 import git
 import torch
@@ -30,7 +29,7 @@ from mlflow.exceptions import MlflowException
 from omegaconf import DictConfig
 
 from poutyne import Model
-from poutyne.framework.callbacks.mlflow_logger import _get_git_commit, MLFlowLogger
+from poutyne.framework.callbacks.mlflow_logger import MLFlowLogger, _get_git_commit
 from tests.framework.tools import SomeDataGeneratorWithLen
 
 a_git_commit = "9bff900c30e80c3a35388d3e617db5b7a64c9afd"

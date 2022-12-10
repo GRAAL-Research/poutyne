@@ -19,7 +19,7 @@ You should have received a copy of the GNU Lesser General Public License along w
 
 from typing import List, Union
 from unittest import TestCase
-from unittest.mock import patch, MagicMock, call
+from unittest.mock import MagicMock, call, patch
 
 from poutyne import ProgressionCallback
 
