@@ -2,6 +2,11 @@
 
 *
 
+# v1.14
+
+* Update examples using classification metrics from torchmetrics to add the now required `task` argument.
+* Fix the no LR scheduler bug when using PyTorch 2.0.
+
 # v1.13
 
 Breaking changes:

@@ -23,7 +23,11 @@ from typing import Dict, BinaryIO
 
 import torch.optim.lr_scheduler
 from torch.optim import Optimizer
-from torch.optim.lr_scheduler import _LRScheduler
+
+try:
+    from torch.optim.lr_scheduler import LRScheduler
+except ImportError:
+    from torch.optim.lr_scheduler import _LRScheduler as LRScheduler
 
 from .callbacks import Callback
 
@@ -93,7 +97,7 @@ def new_init(torch_lr_scheduler):
 
 
 for name, module_cls in torch.optim.lr_scheduler.__dict__.items():
-    if inspect.isclass(module_cls) and issubclass(module_cls, _LRScheduler) and module_cls != _LRScheduler:
+    if inspect.isclass(module_cls) and issubclass(module_cls, LRScheduler) and module_cls != LRScheduler:
         _new_cls = type(
             name,
             (_PyTorchLRSchedulerWrapper,),
