@@ -1,7 +1,7 @@
 import os
 import subprocess
 
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
 current_file_path = os.path.abspath(os.path.dirname(__file__))
 

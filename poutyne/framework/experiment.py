@@ -17,6 +17,6 @@ You should have received a copy of the GNU Lesser General Public License along w
 <https://www.gnu.org/licenses/>.
 """
 
-from .model_bundle import ModelBundle
+from poutyne.framework.model_bundle import ModelBundle
 
 Experiment = ModelBundle.from_network

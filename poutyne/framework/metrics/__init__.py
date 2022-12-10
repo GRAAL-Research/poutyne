@@ -18,9 +18,9 @@ You should have received a copy of the GNU Lesser General Public License along w
 """
 
 # pylint: disable=wildcard-import
-from .metrics_registering import *
-from .pytorch_loss_functions_registering import *
 from .decomposable import *
-from .predefined import *
-from .utils import *
 from .metric_argument_indexing import *
+from .metrics_registering import *
+from .predefined import *
+from .pytorch_loss_functions_registering import *
+from .utils import *

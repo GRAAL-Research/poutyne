@@ -12,26 +12,26 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
+import datetime
 import os
 import sys
-import datetime
 
 sys.path.insert(0, os.path.abspath('../..'))
 
-from poutyne import __version__ as version
+from poutyne import __version__ as poutyne_version  # noqa: E402  # pylint: disable=wrong-import-position
 
 year = str(datetime.datetime.now().year)
 
 # -- Project information -----------------------------------------------------
 
 project = 'Poutyne'
-copyright = '2018-' + year + ', Frédérik Paradis'
+copyright = '2018-' + year + ', Frédérik Paradis'  # pylint: disable=redefined-builtin
 author = 'Frédérik Paradis'
 
 # The short X.Y version
-version = version
+version = poutyne_version
 # The full version, including alpha/beta/rc tags
-release = version
+release = poutyne_version
 
 # -- General configuration ---------------------------------------------------
 

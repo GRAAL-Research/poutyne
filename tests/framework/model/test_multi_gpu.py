@@ -25,17 +25,17 @@ import torch
 from torch import nn
 
 from poutyne import Model
-from .base import ModelFittingTestCase
-from ..tools import (
-    some_data_tensor_generator,
+from tests.framework.model.base import ModelFittingTestCase
+from tests.framework.tools import (
+    SomeConstantMetric,
+    repeat_batch_metric,
+    repeat_batch_metric_value,
     some_batch_metric_1,
     some_batch_metric_2,
-    repeat_batch_metric,
+    some_constant_metric_value,
+    some_data_tensor_generator,
     some_metric_1_value,
     some_metric_2_value,
-    repeat_batch_metric_value,
-    SomeConstantMetric,
-    some_constant_metric_value,
 )
 
 TEST_MULTI_GPUS = int(os.environ.get('MULTI_GPUS', 0))

@@ -1,17 +1,15 @@
 import os
 import warnings
 from tempfile import TemporaryDirectory, TemporaryFile
-
-from unittest.mock import patch, MagicMock, call
 from unittest import TestCase, main
-
+from unittest.mock import MagicMock, call, patch
 
 import torch
 import torch.nn as nn
 import wandb
 
+from poutyne import Callback, Model, ModelCheckpoint, WandBLogger
 from tests.framework.tools import some_data_generator
-from poutyne import Model, WandBLogger, ModelCheckpoint, Callback
 
 
 class History(Callback):

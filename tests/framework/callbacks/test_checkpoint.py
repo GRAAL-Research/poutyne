@@ -18,16 +18,14 @@ You should have received a copy of the GNU Lesser General Public License along w
 """
 
 import os
-
 import unittest
-from unittest import TestCase
-
 from tempfile import TemporaryDirectory
+from unittest import TestCase
 
 import torch
 import torch.nn as nn
 
-from poutyne import torch_to_numpy, Model, ModelCheckpoint
+from poutyne import Model, ModelCheckpoint, torch_to_numpy
 from tests.framework.tools import some_data_generator
 
 

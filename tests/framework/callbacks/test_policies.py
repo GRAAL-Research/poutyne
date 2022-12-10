@@ -19,7 +19,7 @@ You should have received a copy of the GNU Lesser General Public License along w
 
 import unittest
 
-from poutyne import linspace, cosinespace, Phase, OptimizerPolicy, one_cycle_phases, sgdr_phases
+from poutyne import OptimizerPolicy, Phase, cosinespace, linspace, one_cycle_phases, sgdr_phases
 
 
 class TestSpaces(unittest.TestCase):

@@ -21,10 +21,10 @@ import os
 from tempfile import TemporaryDirectory
 from unittest import TestCase
 
-from torch import nn
 import torch.nn.functional as F
+from torch import nn
 
-from poutyne import Experiment, acc, FBeta
+from poutyne import Experiment, FBeta, acc
 
 
 class ExperimentTasksTest(TestCase):

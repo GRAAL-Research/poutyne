@@ -4,6 +4,11 @@ skip-string-normalization = true
 required-version = '22'
 extend-exclude = '/(slides)/'
 
+[tool.isort]
+profile = "black"
+line_length = 120
+extend_skip = ["examples", "slides"]
+
 [tool.pytest.ini_options]
 addopts = '--cov --cov-report html --cov-report xml'
 testpaths = [

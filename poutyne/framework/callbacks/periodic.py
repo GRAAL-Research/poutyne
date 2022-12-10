@@ -62,11 +62,11 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import os
 import warnings
-from typing import IO, Dict, Optional, Callable
 from abc import ABC, abstractmethod
+from typing import IO, Callable, Dict, Optional
 
-from ._utils import atomic_lambda_save
-from .callbacks import Callback
+from poutyne.framework.callbacks._utils import atomic_lambda_save
+from poutyne.framework.callbacks.callbacks import Callback
 
 
 class PeriodicSaveCallback(ABC, Callback):

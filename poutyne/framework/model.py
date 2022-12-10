@@ -21,7 +21,7 @@ You should have received a copy of the GNU Lesser General Public License along w
 import contextlib
 import timeit
 from collections import defaultdict
-from typing import Iterable, Mapping, List, Union, Any, Tuple
+from typing import Any, Iterable, List, Mapping, Tuple, Union
 
 import numpy as np
 import torch
@@ -30,14 +30,12 @@ import torch.optim as optim
 from torch.nn.utils.rnn import PackedSequence
 from torch.utils.data import DataLoader
 
-from poutyne import torch_to_numpy, numpy_to_torch, torch_to
-from .callbacks import CallbackList, ProgressionCallback, Callback
-from .iterators import EpochIterator, _get_step_iterator, StepIterator
-from .metrics import get_metric
-from .metrics import get_callables_and_names, rename_doubles, flatten_metric_names
-from .metrics.decomposable import convert_decomposable_metric_to_object
-from .optimizers import get_optimizer
-from ..utils import TensorDataset, _concat, get_batch_size
+from poutyne.framework.callbacks import Callback, CallbackList, ProgressionCallback
+from poutyne.framework.iterators import EpochIterator, StepIterator, _get_step_iterator
+from poutyne.framework.metrics import flatten_metric_names, get_callables_and_names, get_metric, rename_doubles
+from poutyne.framework.metrics.decomposable import convert_decomposable_metric_to_object
+from poutyne.framework.optimizers import get_optimizer
+from poutyne.utils import TensorDataset, _concat, get_batch_size, numpy_to_torch, torch_to, torch_to_numpy
 
 
 class Model:

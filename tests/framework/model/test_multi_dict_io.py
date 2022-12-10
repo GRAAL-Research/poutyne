@@ -23,8 +23,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from poutyne import Model
-
-from .base import ModelFittingTestCase
+from tests.framework.model.base import ModelFittingTestCase
 
 
 class DictIOModel(nn.Module):

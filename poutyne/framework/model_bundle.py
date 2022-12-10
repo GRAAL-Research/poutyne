@@ -20,7 +20,7 @@ You should have received a copy of the GNU Lesser General Public License along w
 # pylint: disable=too-many-lines
 import os
 import warnings
-from typing import Union, Callable, List, Dict, Tuple, Any
+from typing import Any, Callable, Dict, List, Tuple, Union
 
 try:
     import pandas as pd
@@ -42,20 +42,19 @@ try:
 except ImportError:
     SummaryWriter = None
 
-from . import Model
-from ..utils import set_seeds
-from ..plotting import plot_history
-from .callbacks import (
+from poutyne.framework.callbacks import (
+    AtomicCSVLogger,
+    BestModelRestore,
+    LRSchedulerCheckpoint,
     ModelCheckpoint,
     OptimizerCheckpoint,
-    RandomStatesCheckpoint,
-    LRSchedulerCheckpoint,
     PeriodicSaveLambda,
-    AtomicCSVLogger,
+    RandomStatesCheckpoint,
     TensorBoardLogger,
-    BestModelRestore,
 )
-from ..utils import load_random_states
+from poutyne.framework.model import Model
+from poutyne.plotting import plot_history
+from poutyne.utils import load_random_states, set_seeds
 
 
 class ModelBundle:

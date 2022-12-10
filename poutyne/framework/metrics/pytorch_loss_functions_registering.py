@@ -19,7 +19,7 @@ You should have received a copy of the GNU Lesser General Public License along w
 
 import torch.nn.functional as F
 
-from .metrics_registering import do_register_metric_func
+from poutyne.framework.metrics.metrics_registering import do_register_metric_func
 
 do_register_metric_func(F.cross_entropy)
 do_register_metric_func(F.kl_div)

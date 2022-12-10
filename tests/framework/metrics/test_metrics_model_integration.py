@@ -25,12 +25,13 @@ import os
 import unittest
 from unittest import skipIf
 from unittest.mock import ANY
+
 import numpy as np
 import torch
 import torch.nn as nn
 import torchmetrics
 
-from poutyne import Model, Metric, rename_doubles, do_register_metric_class, unregister_metric_class
+from poutyne import Metric, Model, do_register_metric_class, rename_doubles, unregister_metric_class
 
 
 class MyConstTorchMetric(torchmetrics.Metric):

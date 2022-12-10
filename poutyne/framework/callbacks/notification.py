@@ -20,7 +20,7 @@ You should have received a copy of the GNU Lesser General Public License along w
 from abc import ABC, abstractmethod
 from typing import Dict, Union
 
-from . import Callback
+from poutyne.framework.callbacks.callbacks import Callback
 
 
 class Notificator(ABC):

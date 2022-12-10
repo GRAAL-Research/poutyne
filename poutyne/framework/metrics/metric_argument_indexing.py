@@ -17,10 +17,10 @@ You should have received a copy of the GNU Lesser General Public License along w
 <https://www.gnu.org/licenses/>.
 """
 
-from .utils import get_names_of_metric
-from .metrics_registering import get_metric
-from .base import Metric
-from .decomposable import convert_decomposable_metric_to_object
+from poutyne.framework.metrics.base import Metric
+from poutyne.framework.metrics.decomposable import convert_decomposable_metric_to_object
+from poutyne.framework.metrics.metrics_registering import get_metric
+from poutyne.framework.metrics.utils import get_names_of_metric
 
 
 class IndexedArgumentMetric(Metric):

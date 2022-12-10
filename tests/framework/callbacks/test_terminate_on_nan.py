@@ -21,8 +21,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 
-from poutyne import Model
-from poutyne import TerminateOnNaN
+from poutyne import Model, TerminateOnNaN
 from tests.framework.base import CaptureOutputBase
 from tests.framework.tools import some_data_generator
 

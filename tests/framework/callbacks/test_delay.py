@@ -19,12 +19,12 @@ You should have received a copy of the GNU Lesser General Public License along w
 
 import unittest
 from unittest import TestCase
-from unittest.mock import MagicMock, call, ANY
+from unittest.mock import ANY, MagicMock, call
 
 import torch
 import torch.nn as nn
 
-from poutyne import Model, DelayCallback, Callback, CallbackList
+from poutyne import Callback, CallbackList, DelayCallback, Model
 from tests.framework.tools import some_data_generator
 
 

@@ -20,8 +20,8 @@ You should have received a copy of the GNU Lesser General Public License along w
 # pylint: disable=too-many-locals,too-many-lines
 
 from math import ceil
-from unittest import skipIf, main
-from unittest.mock import MagicMock, ANY, call, Mock
+from unittest import main, skipIf
+from unittest.mock import ANY, MagicMock, Mock, call
 
 import numpy as np
 import torch
@@ -33,23 +33,23 @@ from torch.utils.data import DataLoader, Dataset
 from poutyne import Model, TensorDataset
 from poutyne.framework.metrics.decomposable import DecomposableMetric
 from poutyne.framework.optimizers import all_optimizers_dict
+from tests.framework.model.base import ModelFittingTestCase
 from tests.framework.tools import (
-    some_data_tensor_generator,
+    SomeBatchMetric,
+    SomeConstantMetric,
     SomeDataGeneratorUsingStopIteration,
     SomeDataGeneratorWithLen,
-    SomeConstantMetric,
+    SomeMetric,
+    repeat_batch_metric,
+    repeat_batch_metric_value,
     some_batch_metric_1,
     some_batch_metric_2,
-    repeat_batch_metric,
+    some_constant_metric_value,
+    some_data_tensor_generator,
     some_metric_1_value,
     some_metric_2_value,
-    repeat_batch_metric_value,
-    some_constant_metric_value,
-    SomeMetric,
-    SomeBatchMetric,
 )
 from tests.utils import populate_packed_sequence
-from .base import ModelFittingTestCase
 
 
 def some_ndarray_generator(batch_size):

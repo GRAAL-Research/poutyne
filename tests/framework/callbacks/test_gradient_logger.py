@@ -27,14 +27,9 @@ from unittest.mock import MagicMock
 import torch
 import torch.nn as nn
 
-from poutyne import (
-    Model,
-    CSVGradientLogger as NonAtomicCSVGradientLogger,
-    AtomicCSVGradientLogger,
-    MemoryGradientLogger,
-    GradientLoggerBase,
-    TensorBoardGradientLogger,
-)
+from poutyne import AtomicCSVGradientLogger
+from poutyne import CSVGradientLogger as NonAtomicCSVGradientLogger
+from poutyne import GradientLoggerBase, MemoryGradientLogger, Model, TensorBoardGradientLogger
 from tests.framework.tools import some_data_generator
 
 

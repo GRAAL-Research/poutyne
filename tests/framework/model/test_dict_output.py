@@ -22,8 +22,7 @@ import torch
 import torch.nn as nn
 
 from poutyne import Model
-
-from .base import ModelFittingTestCase
+from tests.framework.model.base import ModelFittingTestCase
 
 
 class DictOutputModel(nn.Module):

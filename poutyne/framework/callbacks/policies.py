@@ -19,16 +19,16 @@ You should have received a copy of the GNU Lesser General Public License along w
 
 import contextlib
 from collections import OrderedDict
-from itertools import islice, chain
+from itertools import chain, islice
 from math import cos, pi
-from typing import Dict, List, Tuple, Optional
+from typing import Dict, List, Optional, Tuple
 
 try:
     import matplotlib.pyplot as plt
 except ImportError:
     plt = None
 
-from .callbacks import Callback
+from poutyne.framework.callbacks.callbacks import Callback
 
 
 ###############################################################################

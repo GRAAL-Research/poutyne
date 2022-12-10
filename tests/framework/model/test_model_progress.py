@@ -24,19 +24,19 @@ import torch.nn as nn
 from torch.utils.data import DataLoader
 
 from poutyne import Model, TensorDataset
+from tests.framework.model.base import ModelFittingTestCase
 from tests.framework.tools import (
     SomeConstantMetric,
+    SomeDataGeneratorUsingStopIteration,
+    repeat_batch_metric,
+    repeat_batch_metric_value,
     some_batch_metric_1,
     some_batch_metric_2,
-    repeat_batch_metric,
-    some_metric_1_value,
-    some_metric_2_value,
-    repeat_batch_metric_value,
     some_constant_metric_value,
     some_data_tensor_generator,
-    SomeDataGeneratorUsingStopIteration,
+    some_metric_1_value,
+    some_metric_2_value,
 )
-from .base import ModelFittingTestCase
 
 try:
     import colorama as color

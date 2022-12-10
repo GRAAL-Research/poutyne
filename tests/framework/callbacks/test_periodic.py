@@ -20,7 +20,7 @@ You should have received a copy of the GNU Lesser General Public License along w
 import os
 import unittest
 from tempfile import TemporaryDirectory
-from typing import Dict, IO
+from typing import IO, Dict
 from unittest import TestCase
 from unittest.mock import MagicMock, call
 

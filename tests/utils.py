@@ -17,11 +17,11 @@ You should have received a copy of the GNU Lesser General Public License along w
 <https://www.gnu.org/licenses/>.
 """
 
-from unittest.mock import MagicMock
 from copy import deepcopy
+from unittest.mock import MagicMock
 
 import torch
-from torch.nn.utils.rnn import pad_sequence, pack_padded_sequence, PackedSequence
+from torch.nn.utils.rnn import PackedSequence, pack_padded_sequence, pad_sequence
 
 
 class CopyingMock(MagicMock):

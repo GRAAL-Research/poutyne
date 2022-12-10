@@ -27,15 +27,15 @@ from torch import nn
 from poutyne import Model
 from poutyne.framework.callbacks.notification import NotificationCallback
 from tests.framework.tools import (
-    some_data_tensor_generator,
-    some_batch_metric_1,
-    some_batch_metric_2,
+    SomeConstantMetric,
     repeat_batch_metric,
     repeat_batch_metric_value,
-    some_metric_2_value,
-    some_metric_1_value,
-    SomeConstantMetric,
+    some_batch_metric_1,
+    some_batch_metric_2,
     some_constant_metric_value,
+    some_data_tensor_generator,
+    some_metric_1_value,
+    some_metric_2_value,
 )
 
 

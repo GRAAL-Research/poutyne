@@ -22,15 +22,15 @@ from tempfile import TemporaryDirectory
 from unittest import TestCase
 
 import numpy as np
-import torch
 import pandas as pd
+import torch
 from torch import nn
 from torch.utils.data import TensorDataset
 
 # pylint: disable=no-name-in-module
 from poutyne import Experiment, ExponentialLR
-from tests.framework.tools import SomeDataGeneratorWithLen
 from tests.framework.experiment.utils import ConstantMetric, ConstantMetricCallback
+from tests.framework.tools import SomeDataGeneratorWithLen
 
 
 class BaseExperimentTest:

@@ -20,8 +20,7 @@ You should have received a copy of the GNU Lesser General Public License along w
 import math
 from tempfile import TemporaryDirectory
 from unittest import TestCase, skipIf
-from unittest.mock import MagicMock, call, ANY
-
+from unittest.mock import ANY, MagicMock, call
 
 import torch
 import torch.nn as nn
@@ -33,7 +32,7 @@ try:
 except ImportError:
     SummaryWriter = None
 
-from poutyne import Model, TensorBoardGradientTracker, WeightsGradientsStatsTracker, GradientTracker
+from poutyne import GradientTracker, Model, TensorBoardGradientTracker, WeightsGradientsStatsTracker
 
 
 class GradientStatsTrackerTest(TestCase):

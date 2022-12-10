@@ -18,12 +18,13 @@ You should have received a copy of the GNU Lesser General Public License along w
 """
 
 import warnings
-from typing import Dict, IO
+from typing import IO, Dict
+
 import torch
 
-from .lr_scheduler import _PyTorchLRSchedulerWrapper, ReduceLROnPlateau
-from .periodic import PeriodicSaveCallback
-from ...utils import load_random_states, save_random_states
+from poutyne.framework.callbacks.lr_scheduler import ReduceLROnPlateau, _PyTorchLRSchedulerWrapper
+from poutyne.framework.callbacks.periodic import PeriodicSaveCallback
+from poutyne.utils import load_random_states, save_random_states
 
 
 class ModelCheckpoint(PeriodicSaveCallback):
