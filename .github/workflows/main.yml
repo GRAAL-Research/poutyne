@@ -7,10 +7,6 @@ on:
     # Run the tests at 00:00 each week on Sunday
     - cron: "0 0 * * 0"
 
-defaults:
-  run:
-    shell: bash
-
 jobs:
   cicd-pipeline:
     strategy:
