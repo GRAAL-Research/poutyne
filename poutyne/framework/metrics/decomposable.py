@@ -29,9 +29,7 @@ from poutyne.utils import get_batch_size
 
 class DecomposableMetric(Metric):
     def __init__(self, func, names):
-        super().__init__(
-
-        )
+        super().__init__()
         self.func = func
         self.names = [names] if isinstance(names, str) else names
         self.__name__ = self.names
