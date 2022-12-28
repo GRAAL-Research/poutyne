@@ -1,0 +1,93 @@
+name: Reusable CI/CD
+
+on:
+  workflow_call:
+    inputs:
+      python-version:
+        required: true
+        type: string
+      os:
+        required: true
+        type: string
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  formatting:
+    runs-on: ${{ inputs.os }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python ${{ inputs.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ inputs.python-version }}
+      - name: Install dependencies
+        run: |
+          pip install -r styling_requirements.txt
+      - name: Formatting
+        run: |
+          black --diff --check .
+          isort --diff --check .
+
+  linting:
+    runs-on: ${{ inputs.os }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python ${{ inputs.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ inputs.python-version }}
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install -r styling_requirements.txt
+          pip install -r tests/requirements.txt
+          pip install -e .
+      - name: PyLint
+        run: |
+          pylint poutyne/ tests/
+      - name: Flake8
+        run: |
+          flake8 poutyne/ tests/
+
+  docs:
+    runs-on: ${{ inputs.os }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python ${{ inputs.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ inputs.python-version }}
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install -r docs/requirements.txt
+          pip install -e .
+      - name: Building doc
+        run: |
+          cd docs
+          ./rebuild_html_doc.sh
+          cd ..
+
+  tests:
+    runs-on: ${{ inputs.os }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python ${{ inputs.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ inputs.python-version }}
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install -r tests/requirements.txt
+          pip install -e .
+      - name: Test with pytest
+        run: |
+          pytest
+      - name: Upload Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./coverage.xml

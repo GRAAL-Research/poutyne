@@ -1,6 +1,11 @@
 name: Linting
 
-on: [push, pull_request]
+on:
+  push:
+  pull_request:
+  schedule:
+    # Run the tests at 00:00 each week on Sunday
+    - cron: "0 0 * * 0"
 
 defaults:
   run:
