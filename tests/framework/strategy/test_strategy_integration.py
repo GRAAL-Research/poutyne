@@ -200,7 +200,7 @@ class StratgyIntegrationTest(TestCase):
 
             # Train loop
             for step in range(1, steps + 1):
-                call_list.append(call.train_step(ANY, callback=ANY, step=step))
+                call_list.append(call.train_step((ANY, ANY), callback=ANY, step=step))
             call_list.append(call.compute_loss())
             call_list.append(call.reset_loss())
             call_list.append(call.compute_batch_metrics())

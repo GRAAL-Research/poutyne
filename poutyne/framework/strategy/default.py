@@ -20,7 +20,7 @@ You should have received a copy of the GNU Lesser General Public License along w
 from __future__ import annotations
 
 # pylint: disable=too-many-public-methods
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 import torch
 from torch.nn.utils.rnn import PackedSequence
@@ -73,16 +73,16 @@ class DefaultStrategy(BaseStrategy):
             pred_y = self.model.network(*x)
         return pred_y
 
-    def compute_loss(self) -> float:
+    def compute_loss(self) -> Optional[float]:
         return float(self.loss_function.compute())
 
     def reset_loss(self) -> None:
         self.loss_function.reset()
 
-    def get_batch_metric_names(self) -> List[str]:
+    def get_batch_metric_names(self) -> List[str | Tuple[str, ...]]:
         return self.batch_metrics_names
 
-    def get_epoch_metric_names(self) -> List[str]:
+    def get_epoch_metric_names(self) -> List[str | Tuple[str, ...]]:
         return self.epoch_metrics_names
 
     def _compute_metrics(self, metrics) -> List[NetworkIOType]:

@@ -246,6 +246,7 @@ API Reference
   experiment
   metrics
   callbacks
+  strategy
   layers
   utils
 
