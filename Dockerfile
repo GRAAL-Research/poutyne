@@ -1,5 +1,5 @@
 # syntax = docker/dockerfile:experimental
-FROM pytorch/pytorch:1.11.0-cuda11.3-cudnn8-runtime
+FROM pytorch/pytorch:latest
 
 ARG DEBIAN_FRONTEND=noninteractive
 

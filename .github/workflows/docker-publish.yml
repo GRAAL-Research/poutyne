@@ -1,12 +1,8 @@
 name: Create and publish a Docker image as a Github Package
 
-# on:
-#   release:
-#     types: [created]
 on:
-  push:
-    branches:
-      - fix/docker-actions-version
+  release:
+    types: [created]
 
 env:
   REGISTRY: ghcr.io
