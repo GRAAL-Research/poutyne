@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Tips and Tricks &mdash; Poutyne 1.14 documentation</title>
+  <title>Tips and Tricks &mdash; Poutyne 1.15 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -12,9 +12,6 @@
   <![endif]-->
   
         <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-        <script src="../_static/jquery.js"></script>
-        <script src="../_static/underscore.js"></script>
-        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../_static/doctools.js"></script>
         <script src="../_static/sphinx_highlight.js"></script>
     <script src="../_static/js/theme.js"></script>
@@ -29,15 +26,19 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="../index.html">
-            <img src="../_static/poutyne-light.png" class="logo" alt="Logo"/>
+
+          
+          
+          <a href="../index.html">
+            
+              <img src="../_static/poutyne-light.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                1.14
+                1.15
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -96,7 +97,7 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../index.html" class="icon icon-home"></a></li>
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
       <li class="breadcrumb-item active">Tips and Tricks</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../_sources/examples/tips_and_tricks.rst.txt" rel="nofollow"> View page source</a>
@@ -306,7 +307,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">_compute_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">y_true</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute the number of true positives and the total number of elements</span>
 <span class="sd">        of a given batch.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -316,13 +317,13 @@
         <span class="k">return</span> <span class="n">num_true_positives</span><span class="p">,</span> <span class="n">total_exemples</span>
 
     <span class="k">def</span> <span class="nf">_compute_accuracy_from_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_true_positives</span><span class="p">,</span> <span class="n">total_exemples</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute the accuracy given by the statistics computed in _compute_stats().</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">num_true_positives</span> <span class="o">/</span> <span class="n">total_exemples</span> <span class="o">*</span> <span class="mi">100</span>
 
     <span class="k">def</span> <span class="nf">_update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">y_true</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Increment the running number of true positives and number of elements.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">num_true_positives</span><span class="p">,</span> <span class="n">total_exemples</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_stats</span><span class="p">(</span><span class="n">y_pred</span><span class="p">,</span> <span class="n">y_true</span><span class="p">)</span>
@@ -331,7 +332,7 @@
         <span class="k">return</span> <span class="n">num_true_positives</span><span class="p">,</span> <span class="n">total_exemples</span>
 
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">y_true</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        When using the metric as a batch metric, this is called. If the metric is only</span>
 <span class="sd">        used as an epoch metric, there is no need to implement this.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -339,20 +340,20 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_accuracy_from_stats</span><span class="p">(</span><span class="n">num_true_positives</span><span class="p">,</span> <span class="n">total_exemples</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">y_true</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        When using the metric as an epoch metric, this is called. If the metric is only</span>
 <span class="sd">        used as a batch metric, there is no need to implement this.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_update</span><span class="p">(</span><span class="n">y_pred</span><span class="p">,</span> <span class="n">y_true</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">compute</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This is called at the end to get the value for the whole epoch.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_accuracy_from_stats</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_true_positives</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">total_exemples</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Reset the statistics for another epoch.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">num_true_positives</span> <span class="o">=</span> <span class="mi">0</span>
@@ -381,7 +382,7 @@
 </div>
 <p>Furthermore, you could also use the <a class="reference internal" href="../metrics.html#poutyne.SKLearnMetrics" title="poutyne.SKLearnMetrics"><code class="xref py py-class docutils literal notranslate"><span class="pre">SKLearnMetrics</span></code></a> wrapper to wrap a Scikit-learn metric as an epoch metric. Below, we show how to compute the AUC ROC using the <a class="reference internal" href="../metrics.html#poutyne.SKLearnMetrics" title="poutyne.SKLearnMetrics"><code class="xref py py-class docutils literal notranslate"><span class="pre">SKLearnMetrics</span></code></a> class.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">softmax</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Compute softmax function.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">e_x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">x</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="n">axis</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
@@ -389,7 +390,7 @@
 
 
 <span class="k">def</span> <span class="nf">roc_auc</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Since the `roc_auc_score` from Scikit-learn requires normalized probabilities,</span>
 <span class="sd">    we use the softmax function on the predictions.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -504,7 +505,7 @@
 <p>While Poutyne provides a great number of <a class="reference internal" href="../callbacks.html#poutyne.Callback" title="poutyne.Callback"><code class="xref py py-class docutils literal notranslate"><span class="pre">predefined</span> <span class="pre">callbacks</span></code></a>, it is sometimes useful to make your own callback.</p>
 <p>In the following example, we want to see the effect of temperature on the optimization of our neural network. To do so, we either increase or decrease the temperature during the optimization. As one can see in the result, temperature either as no effect or has a detrimental effect on the performance of the neural network. This is so because the temperature has for effect to artificially changing the learning rates. Since we have found the right learning rate, increasing or decreasing, it shows no improvement on the results.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">CrossEntropyLossWithTemperature</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This loss module is the cross-entropy loss function</span>
 <span class="sd">    with temperature. It divides the logits by a temperature</span>
 <span class="sd">    value before computing the cross-entropy loss.</span>
@@ -523,7 +524,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">celoss</span><span class="p">(</span><span class="n">y_pred</span><span class="p">,</span> <span class="n">y_true</span><span class="p">)</span>
 
 <span class="k">class</span> <span class="nc">TemperatureCallback</span><span class="p">(</span><span class="n">Callback</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This callback multiply the loss temperature with a decay before</span>
 <span class="sd">    each batch.</span>
 
@@ -573,7 +574,7 @@
 <p>This is why Poutyne provides a <a class="reference internal" href="../experiment.html#poutyne.ModelBundle" title="poutyne.ModelBundle"><code class="xref py py-class docutils literal notranslate"><span class="pre">ModelBundle</span></code></a> class, which aims specifically at enabling quick model iteration search, while not sacrificing the quality of a single experiment - statistics logging, best models saving, etc. As the name says, ModelBundle is actually a simple wrapper between a PyTorch network and Poutyne’s core Callback objects for logging and saving. Given a working directory where to output the various logging files and a PyTorch network, the ModelBundle class reduces the whole training loop to a single line.</p>
 <p>The following code uses Poutyne’s <a class="reference internal" href="../experiment.html#poutyne.ModelBundle" title="poutyne.ModelBundle"><code class="xref py py-class docutils literal notranslate"><span class="pre">ModelBundle</span></code></a> class to train a network for 5 epochs. The code is quite simpler than the code in the Poutyne Callbacks section while doing more (only a few lines). Once trained for 5 epochs, it is then possible to resume the optimization at the 5th epoch for 5 more epochs until the 10th epoch using the same function.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">train_model_bundle</span><span class="p">(</span><span class="n">network</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This function creates a Poutyne ModelBundle, trains the input module</span>
 <span class="sd">    on the train loader and then tests its performance on the test loader.</span>
 <span class="sd">    All training and testing statistics are saved, as well as best model</span>
@@ -714,7 +715,7 @@ If a field is not specified, the default color will be used.
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2018-2022, Frédérik Paradis.</p>
+    <p>&#169; Copyright 2018-2023, Frédérik Paradis.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

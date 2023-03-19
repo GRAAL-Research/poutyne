@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>poutyne.framework.callbacks.checkpoint &mdash; Poutyne 1.14 documentation</title>
+  <title>poutyne.framework.callbacks.checkpoint &mdash; Poutyne 1.15 documentation</title>
       <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -11,9 +11,6 @@
   <![endif]-->
   
         <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
-        <script src="../../../../_static/jquery.js"></script>
-        <script src="../../../../_static/underscore.js"></script>
-        <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../../../../_static/doctools.js"></script>
         <script src="../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -26,15 +23,19 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="../../../../index.html">
-            <img src="../../../../_static/poutyne-light.png" class="logo" alt="Logo"/>
+
+          
+          
+          <a href="../../../../index.html">
+            
+              <img src="../../../../_static/poutyne-light.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                1.14
+                1.15
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -74,7 +75,7 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../../../../index.html" class="icon icon-home"></a></li>
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
           <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
       <li class="breadcrumb-item active">poutyne.framework.callbacks.checkpoint</li>
       <li class="wy-breadcrumbs-aside">
@@ -106,16 +107,17 @@
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">import</span> <span class="nn">warnings</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">IO</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">IO</span><span class="p">,</span> <span class="n">Dict</span>
+
 <span class="kn">import</span> <span class="nn">torch</span>
 
-<span class="kn">from</span> <span class="nn">.lr_scheduler</span> <span class="kn">import</span> <span class="n">_PyTorchLRSchedulerWrapper</span><span class="p">,</span> <span class="n">ReduceLROnPlateau</span>
-<span class="kn">from</span> <span class="nn">.periodic</span> <span class="kn">import</span> <span class="n">PeriodicSaveCallback</span>
-<span class="kn">from</span> <span class="nn">...utils</span> <span class="kn">import</span> <span class="n">load_random_states</span><span class="p">,</span> <span class="n">save_random_states</span>
+<span class="kn">from</span> <span class="nn">poutyne.framework.callbacks.lr_scheduler</span> <span class="kn">import</span> <span class="n">ReduceLROnPlateau</span><span class="p">,</span> <span class="n">_PyTorchLRSchedulerWrapper</span>
+<span class="kn">from</span> <span class="nn">poutyne.framework.callbacks.periodic</span> <span class="kn">import</span> <span class="n">PeriodicSaveCallback</span>
+<span class="kn">from</span> <span class="nn">poutyne.utils</span> <span class="kn">import</span> <span class="n">load_random_states</span><span class="p">,</span> <span class="n">save_random_states</span>
 
 
 <div class="viewcode-block" id="ModelCheckpoint"><a class="viewcode-back" href="../../../../callbacks.html#poutyne.ModelCheckpoint">[docs]</a><span class="k">class</span> <span class="nc">ModelCheckpoint</span><span class="p">(</span><span class="n">PeriodicSaveCallback</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Save the model after every epoch. See</span>
 <span class="sd">    :class:`~poutyne.PeriodicSaveCallback` for the arguments&#39; descriptions.</span>
 
@@ -131,7 +133,7 @@
 
 
 <div class="viewcode-block" id="OptimizerCheckpoint"><a class="viewcode-back" href="../../../../callbacks.html#poutyne.OptimizerCheckpoint">[docs]</a><span class="k">class</span> <span class="nc">OptimizerCheckpoint</span><span class="p">(</span><span class="n">PeriodicSaveCallback</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Save the state of the optimizer after every epoch. The optimizer can be reloaded as follows.</span>
 
 <span class="sd">    .. code-block:: python</span>
@@ -153,7 +155,7 @@
 
 
 <div class="viewcode-block" id="LRSchedulerCheckpoint"><a class="viewcode-back" href="../../../../callbacks.html#poutyne.LRSchedulerCheckpoint">[docs]</a><span class="k">class</span> <span class="nc">LRSchedulerCheckpoint</span><span class="p">(</span><span class="n">PeriodicSaveCallback</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Save the state of an LR scheduler callback after every epoch. The LR scheduler callback should</span>
 <span class="sd">    not be passed to the fit*() methods since it is called by this callback instead. The LR</span>
 <span class="sd">    scheduler can be reloaded as follows.</span>
@@ -249,7 +251,7 @@
 
 
 <div class="viewcode-block" id="RandomStatesCheckpoint"><a class="viewcode-back" href="../../../../callbacks.html#poutyne.RandomStatesCheckpoint">[docs]</a><span class="k">class</span> <span class="nc">RandomStatesCheckpoint</span><span class="p">(</span><span class="n">PeriodicSaveCallback</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Save Python, Numpy and Pytorch&#39;s (both CPU and GPU) random states after every epoch. The random states</span>
 <span class="sd">    can be reloaded using :func:`~poutyne.load_random_states()`.</span>
 
@@ -273,7 +275,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2018-2022, Frédérik Paradis.</p>
+    <p>&#169; Copyright 2018-2023, Frédérik Paradis.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

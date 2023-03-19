@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>poutyne.framework.metrics.predefined.fscores &mdash; Poutyne 1.14 documentation</title>
+  <title>poutyne.framework.metrics.predefined.fscores &mdash; Poutyne 1.15 documentation</title>
       <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -11,9 +11,6 @@
   <![endif]-->
   
         <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
-        <script src="../../../../../_static/jquery.js"></script>
-        <script src="../../../../../_static/underscore.js"></script>
-        <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../../../../../_static/doctools.js"></script>
         <script src="../../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../../_static/js/theme.js"></script>
@@ -26,15 +23,19 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="../../../../../index.html">
-            <img src="../../../../../_static/poutyne-light.png" class="logo" alt="Logo"/>
+
+          
+          
+          <a href="../../../../../index.html">
+            
+              <img src="../../../../../_static/poutyne-light.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                1.14
+                1.15
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -74,7 +75,7 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../../../../../index.html" class="icon icon-home"></a></li>
+      <li><a href="../../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
           <li class="breadcrumb-item"><a href="../../../../index.html">Module code</a></li>
       <li class="breadcrumb-item active">poutyne.framework.metrics.predefined.fscores</li>
       <li class="wy-breadcrumbs-aside">
@@ -125,14 +126,16 @@
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">import</span> <span class="nn">warnings</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
+
 <span class="kn">import</span> <span class="nn">torch</span>
-<span class="kn">from</span> <span class="nn">..base</span> <span class="kn">import</span> <span class="n">Metric</span>
-<span class="kn">from</span> <span class="nn">..metrics_registering</span> <span class="kn">import</span> <span class="n">register_metric_class</span>
+
+<span class="kn">from</span> <span class="nn">poutyne.framework.metrics.base</span> <span class="kn">import</span> <span class="n">Metric</span>
+<span class="kn">from</span> <span class="nn">poutyne.framework.metrics.metrics_registering</span> <span class="kn">import</span> <span class="n">register_metric_class</span>
 
 
 <div class="viewcode-block" id="FBeta"><a class="viewcode-back" href="../../../../../metrics.html#poutyne.FBeta">[docs]</a><span class="k">class</span> <span class="nc">FBeta</span><span class="p">(</span><span class="n">Metric</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    The source code of this class is under the Apache v2 License and was copied from</span>
 <span class="sd">    the AllenNLP project and has been modified.</span>
 
@@ -286,7 +289,7 @@
 <div class="viewcode-block" id="FBeta.forward"><a class="viewcode-back" href="../../../../../metrics.html#poutyne.FBeta.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">y_true</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]]</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">]]:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Update the confusion matrix for calculating the F-score and compute the metrics for the current batch. See</span>
 <span class="sd">        :meth:`FBeta.compute` for details on the return value.</span>
 
@@ -306,7 +309,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute</span><span class="p">(</span><span class="n">true_positive_sum</span><span class="p">,</span> <span class="n">pred_sum</span><span class="p">,</span> <span class="n">true_sum</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="FBeta.update"><a class="viewcode-back" href="../../../../../metrics.html#poutyne.FBeta.update">[docs]</a>    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">y_true</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Update the confusion matrix for calculating the F-score.</span>
 
 <span class="sd">        Args:</span>
@@ -397,7 +400,7 @@
         <span class="k">return</span> <span class="n">true_positive_sum</span><span class="p">,</span> <span class="n">pred_sum</span><span class="p">,</span> <span class="n">true_sum</span>
 
 <div class="viewcode-block" id="FBeta.compute"><a class="viewcode-back" href="../../../../../metrics.html#poutyne.FBeta.compute">[docs]</a>    <span class="k">def</span> <span class="nf">compute</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">]]:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns either a float if a single metric is set in the ``__init__`` or a tuple</span>
 <span class="sd">        of floats (f-score, precision, recall) if all metrics are requested.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -449,7 +452,7 @@
 
 <div class="viewcode-block" id="F1"><a class="viewcode-back" href="../../../../../metrics.html#poutyne.F1">[docs]</a><span class="nd">@register_metric_class</span>
 <span class="k">class</span> <span class="nc">F1</span><span class="p">(</span><span class="n">FBeta</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Alias class for :class:`~poutyne.FBeta` where ``metric == &#39;fscore&#39;`` and ``beta == 1``.</span>
 
 <span class="sd">    Possible string name:</span>
@@ -469,7 +472,7 @@
 
 <div class="viewcode-block" id="Precision"><a class="viewcode-back" href="../../../../../metrics.html#poutyne.Precision">[docs]</a><span class="nd">@register_metric_class</span>
 <span class="k">class</span> <span class="nc">Precision</span><span class="p">(</span><span class="n">FBeta</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Alias class for :class:`~poutyne.FBeta` where ``metric == &#39;precision&#39;``.</span>
 
 <span class="sd">    Possible string name:</span>
@@ -488,7 +491,7 @@
 
 <div class="viewcode-block" id="Recall"><a class="viewcode-back" href="../../../../../metrics.html#poutyne.Recall">[docs]</a><span class="nd">@register_metric_class</span>
 <span class="k">class</span> <span class="nc">Recall</span><span class="p">(</span><span class="n">FBeta</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Alias class for :class:`~poutyne.FBeta` where ``metric == &#39;recall&#39;``.</span>
 
 <span class="sd">    Possible string name:</span>
@@ -507,7 +510,7 @@
 
 <div class="viewcode-block" id="BinaryF1"><a class="viewcode-back" href="../../../../../metrics.html#poutyne.BinaryF1">[docs]</a><span class="nd">@register_metric_class</span><span class="p">(</span><span class="s1">&#39;binaryf1&#39;</span><span class="p">,</span> <span class="s1">&#39;binf1&#39;</span><span class="p">)</span>
 <span class="k">class</span> <span class="nc">BinaryF1</span><span class="p">(</span><span class="n">FBeta</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Alias class for :class:`~poutyne.FBeta` where ``metric == &#39;fscore&#39;``, ``average=&#39;binary&#39;`` and ``beta == 1``.</span>
 
 <span class="sd">    Possible string name:</span>
@@ -527,7 +530,7 @@
 
 <div class="viewcode-block" id="BinaryPrecision"><a class="viewcode-back" href="../../../../../metrics.html#poutyne.BinaryPrecision">[docs]</a><span class="nd">@register_metric_class</span><span class="p">(</span><span class="s1">&#39;binaryprecision&#39;</span><span class="p">,</span> <span class="s1">&#39;binprecision&#39;</span><span class="p">)</span>
 <span class="k">class</span> <span class="nc">BinaryPrecision</span><span class="p">(</span><span class="n">FBeta</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Alias class for :class:`~poutyne.FBeta` where ``metric == &#39;precision&#39;`` and ``average=&#39;binary&#39;``.</span>
 
 <span class="sd">    Possible string name:</span>
@@ -546,7 +549,7 @@
 
 <div class="viewcode-block" id="BinaryRecall"><a class="viewcode-back" href="../../../../../metrics.html#poutyne.BinaryRecall">[docs]</a><span class="nd">@register_metric_class</span><span class="p">(</span><span class="s1">&#39;binaryrecall&#39;</span><span class="p">,</span> <span class="s1">&#39;binrecall&#39;</span><span class="p">)</span>
 <span class="k">class</span> <span class="nc">BinaryRecall</span><span class="p">(</span><span class="n">FBeta</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Alias class for :class:`~poutyne.FBeta` where ``metric == &#39;recall&#39;`` and ``average=&#39;binary&#39;``.</span>
 
 <span class="sd">    Possible string name:</span>
@@ -564,7 +567,7 @@
 
 
 <span class="k">def</span> <span class="nf">_prf_divide</span><span class="p">(</span><span class="n">numerator</span><span class="p">,</span> <span class="n">denominator</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Performs division and handles divide-by-zero.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Performs division and handles divide-by-zero.</span>
 
 <span class="sd">    On zero-division, sets the corresponding result elements to zero.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -590,7 +593,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2018-2022, Frédérik Paradis.</p>
+    <p>&#169; Copyright 2018-2023, Frédérik Paradis.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

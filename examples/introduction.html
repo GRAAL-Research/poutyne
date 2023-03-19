@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Introduction to PyTorch and Poutyne &mdash; Poutyne 1.14 documentation</title>
+  <title>Introduction to PyTorch and Poutyne &mdash; Poutyne 1.15 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -12,9 +12,6 @@
   <![endif]-->
   
         <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-        <script src="../_static/jquery.js"></script>
-        <script src="../_static/underscore.js"></script>
-        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../_static/doctools.js"></script>
         <script src="../_static/sphinx_highlight.js"></script>
     <script src="../_static/js/theme.js"></script>
@@ -29,15 +26,19 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="../index.html">
-            <img src="../_static/poutyne-light.png" class="logo" alt="Logo"/>
+
+          
+          
+          <a href="../index.html">
+            
+              <img src="../_static/poutyne-light.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                1.14
+                1.15
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -94,7 +95,7 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../index.html" class="icon icon-home"></a></li>
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
       <li class="breadcrumb-item active">Introduction to PyTorch and Poutyne</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../_sources/examples/introduction.rst.txt" rel="nofollow"> View page source</a>
@@ -199,11 +200,6 @@
 <h4>Fully-connected Network<a class="headerlink" href="#fully-connected-network" title="Permalink to this heading"></a></h4>
 <p>In short, the fully-connected network follows this architecture: <code class="docutils literal notranslate"><span class="pre">Input</span> <span class="pre">-&gt;</span> <span class="pre">[Linear</span> <span class="pre">-&gt;</span> <span class="pre">ReLU]*3</span> <span class="pre">-&gt;</span> <span class="pre">Linear</span></code>. The following table shows it in details:</p>
 <table class="docutils align-default">
-<colgroup>
-<col style="width: 33%" />
-<col style="width: 33%" />
-<col style="width: 33%" />
-</colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p>Layer Type</p></th>
 <th class="head"><p>Output size</p></th>
@@ -255,11 +251,6 @@
 <h4>Convolutional Network<a class="headerlink" href="#convolutional-network" title="Permalink to this heading"></a></h4>
 <p>The convolutional neural network architecture starts with some convolution and max-pooling layers. These are then followed by fully-connected layers. We calculate the total number of parameters that the network needs. In short, the convolutional network follows this architecture: <code class="docutils literal notranslate"><span class="pre">Input</span> <span class="pre">-&gt;</span> <span class="pre">[Conv</span> <span class="pre">-&gt;</span> <span class="pre">ReLU</span> <span class="pre">-&gt;</span> <span class="pre">MaxPool]*2</span> <span class="pre">-&gt;</span> <span class="pre">Dropout</span> <span class="pre">-&gt;</span> <span class="pre">Linear</span> <span class="pre">-&gt;</span> <span class="pre">ReLU</span> <span class="pre">-&gt;</span> <span class="pre">Dropout</span> <span class="pre">-&gt;</span> <span class="pre">Linear</span></code>. The following table shows it in details:</p>
 <table class="docutils align-default">
-<colgroup>
-<col style="width: 33%" />
-<col style="width: 33%" />
-<col style="width: 33%" />
-</colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p>Layer Type</p></th>
 <th class="head"><p>Output Size</p></th>
@@ -323,7 +314,7 @@
 </table>
 <p>Total # of parameters of the convolutional network: 206,922</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">create_fully_connected_network</span><span class="p">():</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This function returns the fully-connected network layed out above.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
@@ -338,7 +329,7 @@
     <span class="p">)</span>
 
 <span class="k">def</span> <span class="nf">create_convolutional_network</span><span class="p">():</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This function returns the convolutional network layed out above.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
@@ -364,7 +355,7 @@
 <h2>Training the PyTorch way<a class="headerlink" href="#training-the-pytorch-way" title="Permalink to this heading"></a></h2>
 <p>That is, doing your own training loop.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">pytorch_accuracy</span><span class="p">(</span><span class="n">y_pred</span><span class="p">,</span> <span class="n">y_true</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Computes the accuracy for a batch of predictions</span>
 
 <span class="sd">    Args:</span>
@@ -378,7 +369,7 @@
     <span class="k">return</span> <span class="p">(</span><span class="n">y_pred</span> <span class="o">==</span> <span class="n">y_true</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="o">*</span> <span class="mi">100</span>
 
 <span class="k">def</span> <span class="nf">pytorch_train_one_epoch</span><span class="p">(</span><span class="n">network</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">loss_function</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Trains the neural network for one epoch on the train DataLoader.</span>
 
 <span class="sd">    Args:</span>
@@ -422,7 +413,7 @@
     <span class="k">return</span> <span class="n">avg_loss</span><span class="p">,</span> <span class="n">avg_acc</span>
 
 <span class="k">def</span> <span class="nf">pytorch_test</span><span class="p">(</span><span class="n">network</span><span class="p">,</span> <span class="n">loader</span><span class="p">,</span> <span class="n">loss_function</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Tests the neural network on a DataLoader.</span>
 
 <span class="sd">    Args:</span>
@@ -460,7 +451,7 @@
 
 
 <span class="k">def</span> <span class="nf">pytorch_train</span><span class="p">(</span><span class="n">network</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This function transfers the neural network to the right device,</span>
 <span class="sd">    trains it for a certain number of epochs, tests at each epoch on</span>
 <span class="sd">    the validation set and outputs the results on the test set at the</span>
@@ -522,7 +513,7 @@
 <h2>Training the Poutyne way<a class="headerlink" href="#training-the-poutyne-way" title="Permalink to this heading"></a></h2>
 <p>That is, only 8 lines of code with a better output.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">poutyne_train</span><span class="p">(</span><span class="n">network</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This function creates a Poutyne Model (see https://poutyne.org/model.html), sends the</span>
 <span class="sd">    Model on the specified device, and uses the `fit_generator` method to train the</span>
 <span class="sd">    neural network. At the end, the `evaluate_generator` is used on  the test set.</span>
@@ -561,7 +552,7 @@
 <h2>Poutyne Callbacks<a class="headerlink" href="#poutyne-callbacks" title="Permalink to this heading"></a></h2>
 <p>One nice feature of Poutyne is <a class="reference internal" href="../callbacks.html#poutyne.Callback" title="poutyne.Callback"><code class="xref py py-class docutils literal notranslate"><span class="pre">callbacks</span></code></a>. Callbacks allow doing actions during the training of the neural network. In the following example, we use three callbacks. One that saves the latest weights in a file to be able to continue the optimization at the end of training if more epochs are needed. Another one that saves the best weights according to the performance on the validation dataset. Finally, another one that saves the displayed logs into a TSV file.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">train_with_callbacks</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">network</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    In addition to the the `poutyne_train`, this function saves checkpoints and logs as described above.</span>
 
 <span class="sd">    Args:</span>
@@ -619,7 +610,7 @@
 <p>This is why Poutyne provides a <a class="reference internal" href="../experiment.html#poutyne.ModelBundle" title="poutyne.ModelBundle"><code class="xref py py-class docutils literal notranslate"><span class="pre">ModelBundle</span></code></a> class, which aims specifically at enabling quick model iteration search, while not sacrifying on the quality of a single experiment - statistics logging, best models saving, etc. ModelBundle is actually a simple wrapper between a PyTorch network and Poutyne’s core Callback objects for logging and saving. Given a working directory where to output the various logging files and a PyTorch network, the ModelBundle class reduces the whole training loop to a single line.</p>
 <p>The following code uses Poutyne’s <a class="reference internal" href="../experiment.html#poutyne.ModelBundle" title="poutyne.ModelBundle"><code class="xref py py-class docutils literal notranslate"><span class="pre">ModelBundle</span></code></a> class to train a network for 5 epochs. The code is quite simpler than the code in the Poutyne Callbacks section while doing more (only 3 lines). Once trained for 5 epochs, it is then possible to resume the optimization at the 5th epoch for 5 more epochs until the 10th epoch using the same function.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">train_model_bundle</span><span class="p">(</span><span class="n">network</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This function creates a Poutyne ModelBundle, trains the input module</span>
 <span class="sd">    on the train loader and then tests its performance on the test loader.</span>
 <span class="sd">    All training and testing statistics are saved, as well as best model</span>
@@ -677,7 +668,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2018-2022, Frédérik Paradis.</p>
+    <p>&#169; Copyright 2018-2023, Frédérik Paradis.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

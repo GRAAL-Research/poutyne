@@ -21,7 +21,7 @@ Use Poutyne to:
 - Train models easily.
 - Use callbacks to save your best model, perform early stopping and much more.
 
-Poutyne is compatible with the **latest version of PyTorch** and  **Python >= 3.7**.
+Poutyne is compatible with the **latest version of PyTorch** and  **Python >= 3.8**.
 
 Cite
 ----

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>poutyne.framework.callbacks.policies &mdash; Poutyne 1.14 documentation</title>
+  <title>poutyne.framework.callbacks.policies &mdash; Poutyne 1.15 documentation</title>
       <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -11,9 +11,6 @@
   <![endif]-->
   
         <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
-        <script src="../../../../_static/jquery.js"></script>
-        <script src="../../../../_static/underscore.js"></script>
-        <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../../../../_static/doctools.js"></script>
         <script src="../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -26,15 +23,19 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="../../../../index.html">
-            <img src="../../../../_static/poutyne-light.png" class="logo" alt="Logo"/>
+
+          
+          
+          <a href="../../../../index.html">
+            
+              <img src="../../../../_static/poutyne-light.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                1.14
+                1.15
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -74,7 +75,7 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../../../../index.html" class="icon icon-home"></a></li>
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
           <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
       <li class="breadcrumb-item active">poutyne.framework.callbacks.policies</li>
       <li class="wy-breadcrumbs-aside">
@@ -107,23 +108,23 @@
 
 <span class="kn">import</span> <span class="nn">contextlib</span>
 <span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">OrderedDict</span>
-<span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">islice</span><span class="p">,</span> <span class="n">chain</span>
+<span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">chain</span><span class="p">,</span> <span class="n">islice</span>
 <span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">cos</span><span class="p">,</span> <span class="n">pi</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Optional</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span>
 
 <span class="k">try</span><span class="p">:</span>
     <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
     <span class="n">plt</span> <span class="o">=</span> <span class="kc">None</span>
 
-<span class="kn">from</span> <span class="nn">.callbacks</span> <span class="kn">import</span> <span class="n">Callback</span>
+<span class="kn">from</span> <span class="nn">poutyne.framework.callbacks.callbacks</span> <span class="kn">import</span> <span class="n">Callback</span>
 
 
 <span class="c1">###############################################################################</span>
 <span class="c1"># Lazy parameter spaces</span>
 <span class="c1"># A space is just an iterable</span>
 <div class="viewcode-block" id="linspace"><a class="viewcode-back" href="../../../../callbacks.html#poutyne.linspace">[docs]</a><span class="k">class</span> <span class="nc">linspace</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A lazy linear parameter space that goes from ``start`` to ``end`` in ``steps`` steps.</span>
 
 <span class="sd">    Args:</span>
@@ -149,7 +150,7 @@
 
 
 <div class="viewcode-block" id="cosinespace"><a class="viewcode-back" href="../../../../callbacks.html#poutyne.cosinespace">[docs]</a><span class="k">class</span> <span class="nc">cosinespace</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A lazy cosine parameter space that goes from ``start`` to ``end`` in ``steps`` steps.</span>
 
 <span class="sd">    Args:</span>
@@ -176,7 +177,7 @@
 
 <span class="c1">###############################################################################</span>
 <div class="viewcode-block" id="Phase"><a class="viewcode-back" href="../../../../callbacks.html#poutyne.Phase">[docs]</a><span class="k">class</span> <span class="nc">Phase</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Defines how to configure an optimizer.</span>
 
 <span class="sd">    For each train step it returns a dictionary that contains the configuration for the optimizer.</span>
@@ -211,7 +212,7 @@
         <span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">param_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;lr&quot;</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Plot the phase for the given `param_name`.</span>
 
 <span class="sd">        Args:</span>
@@ -242,7 +243,7 @@
     <span class="n">finetune_lr</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.01</span><span class="p">,</span>
     <span class="n">finetune_fraction</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Phase</span><span class="p">]:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    The &quot;one-cycle&quot; policy as described in the paper `Super-Convergence: Very Fast Training of</span>
 <span class="sd">    Neural Networks Using Large Learning Rates &lt;https://arxiv.org/abs/1708.07120&gt;`_.</span>
 
@@ -289,7 +290,7 @@
     <span class="n">lr</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">),</span>
     <span class="n">cycle_mult</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Phase</span><span class="p">]:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    The &quot;SGDR&quot; policy as described in the paper `SGDR: Stochastic Gradient Descent with Warm Restarts</span>
 <span class="sd">    &lt;https://arxiv.org/abs/1608.03983&gt;`_.</span>
 
@@ -318,7 +319,7 @@
 
 <span class="c1">###############################################################################</span>
 <div class="viewcode-block" id="OptimizerPolicy"><a class="viewcode-back" href="../../../../callbacks.html#poutyne.OptimizerPolicy">[docs]</a><span class="k">class</span> <span class="nc">OptimizerPolicy</span><span class="p">(</span><span class="n">Callback</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Combine different :class:`~poutyne.Phase` instances</span>
 <span class="sd">    in an :class:`~poutyne.OptimizerPolicy` and execute the policies in a</span>
 <span class="sd">    row.</span>
@@ -348,7 +349,7 @@
             <span class="k">yield</span> <span class="n">param_dict</span>
 
     <span class="k">def</span> <span class="nf">all_steps</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return the list of dictionaries of configurations for all steps.</span>
 
 <span class="sd">        This does not advance the current_step count.</span>
@@ -367,7 +368,7 @@
                 <span class="n">group</span><span class="p">[</span><span class="n">param_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">param_value</span>
 
     <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">param_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;lr&quot;</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Visualize all  :class:`~poutyne.Phase`s of</span>
 <span class="sd">        this  :class:`~poutyne.OptimizerPolicy`.</span>
 
@@ -396,7 +397,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2018-2022, Frédérik Paradis.</p>
+    <p>&#169; Copyright 2018-2023, Frédérik Paradis.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

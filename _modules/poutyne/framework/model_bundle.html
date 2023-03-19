@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>poutyne.framework.model_bundle &mdash; Poutyne 1.14 documentation</title>
+  <title>poutyne.framework.model_bundle &mdash; Poutyne 1.15 documentation</title>
       <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -11,9 +11,6 @@
   <![endif]-->
   
         <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
-        <script src="../../../_static/jquery.js"></script>
-        <script src="../../../_static/underscore.js"></script>
-        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../../../_static/doctools.js"></script>
         <script src="../../../_static/sphinx_highlight.js"></script>
     <script src="../../../_static/js/theme.js"></script>
@@ -26,15 +23,19 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="../../../index.html">
-            <img src="../../../_static/poutyne-light.png" class="logo" alt="Logo"/>
+
+          
+          
+          <a href="../../../index.html">
+            
+              <img src="../../../_static/poutyne-light.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                1.14
+                1.15
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -74,7 +75,7 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../../../index.html" class="icon icon-home"></a></li>
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
           <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
       <li class="breadcrumb-item active">poutyne.framework.model_bundle</li>
       <li class="wy-breadcrumbs-aside">
@@ -108,7 +109,7 @@
 <span class="c1"># pylint: disable=too-many-lines</span>
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">warnings</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Any</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
 
 <span class="k">try</span><span class="p">:</span>
     <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
@@ -130,24 +131,23 @@
 <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
     <span class="n">SummaryWriter</span> <span class="o">=</span> <span class="kc">None</span>
 
-<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">Model</span>
-<span class="kn">from</span> <span class="nn">..utils</span> <span class="kn">import</span> <span class="n">set_seeds</span>
-<span class="kn">from</span> <span class="nn">..plotting</span> <span class="kn">import</span> <span class="n">plot_history</span>
-<span class="kn">from</span> <span class="nn">.callbacks</span> <span class="kn">import</span> <span class="p">(</span>
+<span class="kn">from</span> <span class="nn">poutyne.framework.callbacks</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">AtomicCSVLogger</span><span class="p">,</span>
+    <span class="n">BestModelRestore</span><span class="p">,</span>
+    <span class="n">LRSchedulerCheckpoint</span><span class="p">,</span>
     <span class="n">ModelCheckpoint</span><span class="p">,</span>
     <span class="n">OptimizerCheckpoint</span><span class="p">,</span>
-    <span class="n">RandomStatesCheckpoint</span><span class="p">,</span>
-    <span class="n">LRSchedulerCheckpoint</span><span class="p">,</span>
     <span class="n">PeriodicSaveLambda</span><span class="p">,</span>
-    <span class="n">AtomicCSVLogger</span><span class="p">,</span>
+    <span class="n">RandomStatesCheckpoint</span><span class="p">,</span>
     <span class="n">TensorBoardLogger</span><span class="p">,</span>
-    <span class="n">BestModelRestore</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="kn">from</span> <span class="nn">..utils</span> <span class="kn">import</span> <span class="n">load_random_states</span>
+<span class="kn">from</span> <span class="nn">poutyne.framework.model</span> <span class="kn">import</span> <span class="n">Model</span>
+<span class="kn">from</span> <span class="nn">poutyne.plotting</span> <span class="kn">import</span> <span class="n">plot_history</span>
+<span class="kn">from</span> <span class="nn">poutyne.utils</span> <span class="kn">import</span> <span class="n">load_random_states</span><span class="p">,</span> <span class="n">set_seeds</span>
 
 
 <div class="viewcode-block" id="ModelBundle"><a class="viewcode-back" href="../../../experiment.html#poutyne.ModelBundle">[docs]</a><span class="k">class</span> <span class="nc">ModelBundle</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    The :class:`~poutyne.ModelBundle` class provides a straightforward experimentation tool for efficient and entirely</span>
 <span class="sd">    customizable finetuning of the whole neural network training procedure with PyTorch. The</span>
 <span class="sd">    :class:`~poutyne.ModelBundle` object takes care of the training and testing processes while also managing to keep</span>
@@ -212,7 +212,7 @@
         <span class="n">task</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="c1"># pylint: disable=line-too-long</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Instanciate a :class:`~poutyne.ModelBundle` from a PyTorch :class:`~torch.nn.Module` instance.</span>
 
 <span class="sd">        Args:</span>
@@ -423,7 +423,7 @@
         <span class="n">monitor_mode</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="c1"># pylint: disable=line-too-long</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Instanciate a :class:`~poutyne.ModelBundle` from a :class:`~poutyne.Model` instance.</span>
 
 <span class="sd">        Args:</span>
@@ -555,7 +555,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">test_log_filename</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_path</span><span class="p">(</span><span class="n">ModelBundle</span><span class="o">.</span><span class="n">TEST_LOG_FILENAME</span><span class="p">)</span>
 
 <div class="viewcode-block" id="ModelBundle.get_path"><a class="viewcode-back" href="../../../experiment.html#poutyne.ModelBundle.get_path">[docs]</a>    <span class="k">def</span> <span class="nf">get_path</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">paths</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns the path inside the model bundle directory.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">directory</span><span class="p">,</span> <span class="o">*</span><span class="n">paths</span><span class="p">)</span></div>
@@ -627,7 +627,7 @@
         <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log_filename</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">)</span>
 
 <div class="viewcode-block" id="ModelBundle.get_best_epoch_stats"><a class="viewcode-back" href="../../../experiment.html#poutyne.ModelBundle.get_best_epoch_stats">[docs]</a>    <span class="k">def</span> <span class="nf">get_best_epoch_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns all computed statistics corresponding to the best epoch according to the</span>
 <span class="sd">        ``monitor_metric`` and ``monitor_mode`` attributes.</span>
 
@@ -646,7 +646,7 @@
         <span class="k">return</span> <span class="n">history</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">best_epoch_index</span> <span class="p">:</span> <span class="n">best_epoch_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span></div>
 
 <div class="viewcode-block" id="ModelBundle.get_saved_epochs"><a class="viewcode-back" href="../../../experiment.html#poutyne.ModelBundle.get_saved_epochs">[docs]</a>    <span class="k">def</span> <span class="nf">get_saved_epochs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns a pandas DataFrame which each row corresponds to an epoch having</span>
 <span class="sd">        a saved checkpoint.</span>
 
@@ -796,7 +796,7 @@
             <span class="p">)</span>
 
 <div class="viewcode-block" id="ModelBundle.train"><a class="viewcode-back" href="../../../experiment.html#poutyne.ModelBundle.train">[docs]</a>    <span class="k">def</span> <span class="nf">train</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">train_generator</span><span class="p">,</span> <span class="n">valid_generator</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Trains or finetunes the model on a dataset using a generator. If a previous training already occurred</span>
 <span class="sd">        and lasted a total of `n_previous` epochs, then the model&#39;s weights will be set to the last checkpoint and the</span>
 <span class="sd">        training will be resumed for epochs range (`n_previous`, `epochs`].</span>
@@ -840,7 +840,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_train</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">fit_generator</span><span class="p">,</span> <span class="n">train_generator</span><span class="p">,</span> <span class="n">valid_generator</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="ModelBundle.train_dataset"><a class="viewcode-back" href="../../../experiment.html#poutyne.ModelBundle.train_dataset">[docs]</a>    <span class="k">def</span> <span class="nf">train_dataset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">train_dataset</span><span class="p">,</span> <span class="n">valid_dataset</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Trains or finetunes the model on a dataset. If a previous training already occurred</span>
 <span class="sd">        and lasted a total of `n_previous` epochs, then the model&#39;s weights will be set to the last checkpoint and the</span>
 <span class="sd">        training will be resumed for epochs range (`n_previous`, `epochs`].</span>
@@ -881,7 +881,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_train</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">fit_dataset</span><span class="p">,</span> <span class="n">train_dataset</span><span class="p">,</span> <span class="n">valid_dataset</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="ModelBundle.train_data"><a class="viewcode-back" href="../../../experiment.html#poutyne.ModelBundle.train_data">[docs]</a>    <span class="k">def</span> <span class="nf">train_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">validation_data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Trains or finetunes the model on data under the form of NumPy arrays or torch tensors. If a previous</span>
 <span class="sd">        training already occurred and lasted a total of `n_previous` epochs, then the model&#39;s weights will be set to the</span>
 <span class="sd">        last checkpoint and the training will be resumed for epochs range (`n_previous`, `epochs`].</span>
@@ -1009,7 +1009,7 @@
 <div class="viewcode-block" id="ModelBundle.load_checkpoint"><a class="viewcode-back" href="../../../experiment.html#poutyne.ModelBundle.load_checkpoint">[docs]</a>    <span class="k">def</span> <span class="nf">load_checkpoint</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">checkpoint</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="o">*</span><span class="p">,</span> <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">strict</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">Dict</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Loads the model&#39;s weights with the weights at a given checkpoint epoch.</span>
 
 <span class="sd">        Args:</span>
@@ -1105,7 +1105,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">load_weights</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="n">strict</span><span class="p">)</span>
 
 <div class="viewcode-block" id="ModelBundle.test"><a class="viewcode-back" href="../../../experiment.html#poutyne.ModelBundle.test">[docs]</a>    <span class="k">def</span> <span class="nf">test</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">test_generator</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Computes and returns the loss and the metrics of the model on a given test examples</span>
 <span class="sd">        generator.</span>
 
@@ -1140,7 +1140,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_test</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">evaluate_generator</span><span class="p">,</span> <span class="n">test_generator</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="ModelBundle.test_dataset"><a class="viewcode-back" href="../../../experiment.html#poutyne.ModelBundle.test_dataset">[docs]</a>    <span class="k">def</span> <span class="nf">test_dataset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">test_dataset</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Computes and returns the loss and the metrics of the model on a given test dataset.</span>
 
 <span class="sd">        If the ModelBundle has logging enabled (i.e. self.logging is True), a checkpoint (the best one by default)</span>
@@ -1173,7 +1173,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_test</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">evaluate_dataset</span><span class="p">,</span> <span class="n">test_dataset</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="ModelBundle.test_data"><a class="viewcode-back" href="../../../experiment.html#poutyne.ModelBundle.test_data">[docs]</a>    <span class="k">def</span> <span class="nf">test_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Computes and returns the loss and the metrics of the model on a given test dataset.</span>
 
 <span class="sd">        If the ModelBundle has logging enabled (i.e. self.logging is True), a checkpoint (the best one by default)</span>
@@ -1247,7 +1247,7 @@
         <span class="k">return</span> <span class="n">ret</span>
 
 <div class="viewcode-block" id="ModelBundle.infer"><a class="viewcode-back" href="../../../experiment.html#poutyne.ModelBundle.infer">[docs]</a>    <span class="k">def</span> <span class="nf">infer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">generator</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns the predictions of the network given batches of samples ``x``, where the tensors are</span>
 <span class="sd">        converted into Numpy arrays.</span>
 
@@ -1276,7 +1276,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_predict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">predict_generator</span><span class="p">,</span> <span class="n">generator</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="ModelBundle.infer_dataset"><a class="viewcode-back" href="../../../experiment.html#poutyne.ModelBundle.infer_dataset">[docs]</a>    <span class="k">def</span> <span class="nf">infer_dataset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns the inferred predictions of the network given a dataset, where the tensors are</span>
 <span class="sd">        converted into Numpy arrays.</span>
 
@@ -1299,7 +1299,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_predict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">predict_dataset</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="ModelBundle.infer_data"><a class="viewcode-back" href="../../../experiment.html#poutyne.ModelBundle.infer_data">[docs]</a>    <span class="k">def</span> <span class="nf">infer_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns the inferred predictions of the network given a dataset ``x``, where the tensors are</span>
 <span class="sd">        converted into Numpy arrays.</span>
 
@@ -1335,7 +1335,7 @@
         <span class="k">return</span> <span class="n">ret</span>
 
 <div class="viewcode-block" id="ModelBundle.is_better_than"><a class="viewcode-back" href="../../../experiment.html#poutyne.ModelBundle.is_better_than">[docs]</a>    <span class="k">def</span> <span class="nf">is_better_than</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">another_model_bundle</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compare the results of the ModelBundle with another model bundle. To compare, both ModelBundles need to be</span>
 <span class="sd">        logged, monitor the same metric and the same monitor mode (&quot;min&quot; or &quot;max&quot;).</span>
 
@@ -1382,7 +1382,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2018-2022, Frédérik Paradis.</p>
+    <p>&#169; Copyright 2018-2023, Frédérik Paradis.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

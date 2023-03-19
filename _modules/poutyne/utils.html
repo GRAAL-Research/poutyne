@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>poutyne.utils &mdash; Poutyne 1.14 documentation</title>
+  <title>poutyne.utils &mdash; Poutyne 1.15 documentation</title>
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -11,9 +11,6 @@
   <![endif]-->
   
         <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-        <script src="../../_static/jquery.js"></script>
-        <script src="../../_static/underscore.js"></script>
-        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../../_static/doctools.js"></script>
         <script src="../../_static/sphinx_highlight.js"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -26,15 +23,19 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="../../index.html">
-            <img src="../../_static/poutyne-light.png" class="logo" alt="Logo"/>
+
+          
+          
+          <a href="../../index.html">
+            
+              <img src="../../_static/poutyne-light.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                1.14
+                1.15
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -74,7 +75,7 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../../index.html" class="icon icon-home"></a></li>
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
           <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
       <li class="breadcrumb-item active">poutyne.utils</li>
       <li class="wy-breadcrumbs-aside">
@@ -105,23 +106,24 @@
 <span class="sd">&lt;https://www.gnu.org/licenses/&gt;.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
+<span class="kn">import</span> <span class="nn">numbers</span>
+
 <span class="c1"># -*- coding: utf-8 -*-</span>
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">random</span>
-<span class="kn">import</span> <span class="nn">numbers</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">IO</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">BinaryIO</span><span class="p">,</span> <span class="n">Union</span>
 <span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">IO</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">BinaryIO</span><span class="p">,</span> <span class="n">Union</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">from</span> <span class="nn">torch.nn.utils.rnn</span> <span class="kn">import</span> <span class="n">PackedSequence</span>
 <span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="kn">import</span> <span class="n">Dataset</span>
 
-<span class="kn">from</span> <span class="nn">.warning_manager</span> <span class="kn">import</span> <span class="n">warning_settings</span>
+<span class="kn">from</span> <span class="nn">poutyne.warning_manager</span> <span class="kn">import</span> <span class="n">warning_settings</span>
 
 
 <div class="viewcode-block" id="torch_to_numpy"><a class="viewcode-back" href="../../utils.html#poutyne.torch_to_numpy">[docs]</a><span class="k">def</span> <span class="nf">torch_to_numpy</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Convert to Numpy arrays all tensors inside a Python object composed of the supported types.</span>
 
 <span class="sd">    Args:</span>
@@ -169,7 +171,7 @@
 
 
 <div class="viewcode-block" id="torch_apply"><a class="viewcode-back" href="../../utils.html#poutyne.torch_apply">[docs]</a><span class="k">def</span> <span class="nf">torch_apply</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">func</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Apply a function to all tensors inside a Python object composed of the supported types.</span>
 
 <span class="sd">    Supported types are: list, tuple and dict.</span>
@@ -218,7 +220,7 @@
 
 
 <div class="viewcode-block" id="numpy_to_torch"><a class="viewcode-back" href="../../utils.html#poutyne.numpy_to_torch">[docs]</a><span class="k">def</span> <span class="nf">numpy_to_torch</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Convert to tensors all Numpy arrays inside a Python object composed of the supported types.</span>
 
 <span class="sd">    Args:</span>
@@ -268,7 +270,7 @@
 
 
 <span class="k">class</span> <span class="nc">TensorDataset</span><span class="p">(</span><span class="n">Dataset</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Dataset wrapping tensors.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Dataset wrapping tensors.</span>
 
 <span class="sd">    Each sample will be retrieved by indexing tensors along the first dimension.</span>
 
@@ -289,7 +291,7 @@
 
 
 <div class="viewcode-block" id="set_seeds"><a class="viewcode-back" href="../../utils.html#poutyne.set_seeds">[docs]</a><span class="k">def</span> <span class="nf">set_seeds</span><span class="p">(</span><span class="n">seed</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Set Python, Numpy and Pytorch&#39;s random seeds in order to make</span>
 <span class="sd">    the random number generation procedure deterministic and reproducible.</span>
 
@@ -303,7 +305,7 @@
 
 
 <div class="viewcode-block" id="save_random_states"><a class="viewcode-back" href="../../utils.html#poutyne.save_random_states">[docs]</a><span class="k">def</span> <span class="nf">save_random_states</span><span class="p">(</span><span class="n">f</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">PathLike</span><span class="p">,</span> <span class="n">BinaryIO</span><span class="p">,</span> <span class="n">IO</span><span class="p">[</span><span class="nb">bytes</span><span class="p">]]):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Save Python, Numpy and Pytorch&#39;s (both CPU and GPU) random states.</span>
 
 <span class="sd">    Args:</span>
@@ -322,7 +324,7 @@
 
 
 <div class="viewcode-block" id="load_random_states"><a class="viewcode-back" href="../../utils.html#poutyne.load_random_states">[docs]</a><span class="k">def</span> <span class="nf">load_random_states</span><span class="p">(</span><span class="n">f</span><span class="p">:</span> <span class="n">Any</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Load Python, Numpy and Pytorch&#39;s (both CPU and GPU) random states as saved by :func:`~poutyne.save_random_states()`.</span>
 
 <span class="sd">    Args:</span>
@@ -350,7 +352,7 @@
 
 
 <div class="viewcode-block" id="get_batch_size"><a class="viewcode-back" href="../../utils.html#poutyne.get_batch_size">[docs]</a><span class="k">def</span> <span class="nf">get_batch_size</span><span class="p">(</span><span class="o">*</span><span class="n">values</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This method infers the batch size of a batch. Here is the inferring algorithm used to compute the</span>
 <span class="sd">    batch size. The values are tested in order at each step of the inferring algorithm. If one</span>
 <span class="sd">    step succeed for one of the values, the algorithm stops.</span>
@@ -428,7 +430,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2018-2022, Frédérik Paradis.</p>
+    <p>&#169; Copyright 2018-2023, Frédérik Paradis.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

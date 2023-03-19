@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>poutyne.framework.metrics.predefined.accuracy &mdash; Poutyne 1.14 documentation</title>
+  <title>poutyne.framework.metrics.predefined.accuracy &mdash; Poutyne 1.15 documentation</title>
       <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -11,9 +11,6 @@
   <![endif]-->
   
         <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
-        <script src="../../../../../_static/jquery.js"></script>
-        <script src="../../../../../_static/underscore.js"></script>
-        <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../../../../../_static/doctools.js"></script>
         <script src="../../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../../_static/js/theme.js"></script>
@@ -26,15 +23,19 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="../../../../../index.html">
-            <img src="../../../../../_static/poutyne-light.png" class="logo" alt="Logo"/>
+
+          
+          
+          <a href="../../../../../index.html">
+            
+              <img src="../../../../../_static/poutyne-light.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                1.14
+                1.15
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -74,7 +75,7 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../../../../../index.html" class="icon icon-home"></a></li>
+      <li><a href="../../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
           <li class="breadcrumb-item"><a href="../../../../index.html">Module code</a></li>
       <li class="breadcrumb-item active">poutyne.framework.metrics.predefined.accuracy</li>
       <li class="wy-breadcrumbs-aside">
@@ -106,9 +107,10 @@
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABC</span>
+
 <span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
 
-<span class="kn">from</span> <span class="nn">..metrics_registering</span> <span class="kn">import</span> <span class="n">register_metric_func</span><span class="p">,</span> <span class="n">do_register_metric_func</span>
+<span class="kn">from</span> <span class="nn">poutyne.framework.metrics.metrics_registering</span> <span class="kn">import</span> <span class="n">do_register_metric_func</span><span class="p">,</span> <span class="n">register_metric_func</span>
 
 
 <span class="k">class</span> <span class="nc">BatchMetric</span><span class="p">(</span><span class="n">ABC</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
@@ -122,7 +124,7 @@
 
 
 <div class="viewcode-block" id="Accuracy"><a class="viewcode-back" href="../../../../../metrics.html#poutyne.Accuracy">[docs]</a><span class="k">class</span> <span class="nc">Accuracy</span><span class="p">(</span><span class="n">BatchMetric</span><span class="p">):</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This metric computes the accuracy using a similar interface to</span>
 <span class="sd">    :class:`~torch.nn.CrossEntropyLoss`.</span>
 
@@ -164,7 +166,7 @@
 
 <div class="viewcode-block" id="acc"><a class="viewcode-back" href="../../../../../metrics.html#poutyne.acc">[docs]</a><span class="nd">@register_metric_func</span><span class="p">(</span><span class="s1">&#39;acc&#39;</span><span class="p">,</span> <span class="s1">&#39;accuracy&#39;</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">acc</span><span class="p">(</span><span class="n">y_pred</span><span class="p">,</span> <span class="n">y_true</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=-</span><span class="mi">100</span><span class="p">,</span> <span class="n">reduction</span><span class="o">=</span><span class="s1">&#39;mean&#39;</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Computes the accuracy.</span>
 
 <span class="sd">    This is a functional version of :class:`~poutyne.Accuracy`.</span>
@@ -186,7 +188,7 @@
 
 
 <div class="viewcode-block" id="BinaryAccuracy"><a class="viewcode-back" href="../../../../../metrics.html#poutyne.BinaryAccuracy">[docs]</a><span class="k">class</span> <span class="nc">BinaryAccuracy</span><span class="p">(</span><span class="n">BatchMetric</span><span class="p">):</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This metric computes the accuracy using a similar interface to</span>
 <span class="sd">    :class:`~torch.nn.BCEWithLogitsLoss`.</span>
 
@@ -225,7 +227,7 @@
 
 <div class="viewcode-block" id="bin_acc"><a class="viewcode-back" href="../../../../../metrics.html#poutyne.bin_acc">[docs]</a><span class="nd">@register_metric_func</span><span class="p">(</span><span class="s1">&#39;binacc&#39;</span><span class="p">,</span> <span class="s1">&#39;binaryacc&#39;</span><span class="p">,</span> <span class="s1">&#39;binaryaccuracy&#39;</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">bin_acc</span><span class="p">(</span><span class="n">y_pred</span><span class="p">,</span> <span class="n">y_true</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">reduction</span><span class="o">=</span><span class="s1">&#39;mean&#39;</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Computes the binary accuracy.</span>
 
 <span class="sd">    This is a functional version of :class:`~poutyne.BinaryAccuracy`.</span>
@@ -242,7 +244,7 @@
 
 
 <div class="viewcode-block" id="TopKAccuracy"><a class="viewcode-back" href="../../../../../metrics.html#poutyne.TopKAccuracy">[docs]</a><span class="k">class</span> <span class="nc">TopKAccuracy</span><span class="p">(</span><span class="n">BatchMetric</span><span class="p">):</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This metric computes the top-k accuracy using a similar interface to</span>
 <span class="sd">    :class:`~torch.nn.CrossEntropyLoss`.</span>
 
@@ -290,7 +292,7 @@
 
 
 <div class="viewcode-block" id="topk"><a class="viewcode-back" href="../../../../../metrics.html#poutyne.topk">[docs]</a><span class="k">def</span> <span class="nf">topk</span><span class="p">(</span><span class="n">y_pred</span><span class="p">,</span> <span class="n">y_true</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=-</span><span class="mi">100</span><span class="p">,</span> <span class="n">reduction</span><span class="o">=</span><span class="s1">&#39;mean&#39;</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Computes the top-k accuracy.</span>
 
 <span class="sd">    This is a functional version of :class:`~poutyne.TopKAccuracy`.</span>
@@ -332,7 +334,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2018-2022, Frédérik Paradis.</p>
+    <p>&#169; Copyright 2018-2023, Frédérik Paradis.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

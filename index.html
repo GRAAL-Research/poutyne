@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 <meta content="Poutyne is a simplified framework for PyTorch and handles much of the boilerplating code needed to train neural networks." name="description" />
 <meta content="poutyne, poutine, deep learning, pytorch, neural network, keras, machine learning, data science, python" name="keywords" />
 <meta content="Frédérik Paradis" name="author" />
 <meta content="https://poutyne.org/_static/logos/poutyne-notext.png" property="og:image" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Here is Poutyne &mdash; Poutyne 1.14 documentation</title>
+  <title>Here is Poutyne &mdash; Poutyne 1.15 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -16,9 +16,6 @@
   <![endif]-->
   
         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-        <script src="_static/jquery.js"></script>
-        <script src="_static/underscore.js"></script>
-        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
         <script src="_static/sphinx_highlight.js"></script>
     <script src="_static/js/theme.js"></script>
@@ -32,15 +29,19 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="#">
-            <img src="_static/poutyne-light.png" class="logo" alt="Logo"/>
+
+          
+          
+          <a href="#">
+            
+              <img src="_static/poutyne-light.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                1.14
+                1.15
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -80,7 +81,7 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="#" class="icon icon-home"></a></li>
+      <li><a href="#" class="icon icon-home" aria-label="Home"></a></li>
       <li class="breadcrumb-item active">Here is Poutyne</li>
       <li class="wy-breadcrumbs-aside">
               <!-- User defined GitHub URL -->
@@ -100,15 +101,15 @@
 <li><p>Train models easily.</p></li>
 <li><p>Use callbacks to save your best model, perform early stopping and much more.</p></li>
 </ul>
-<p>Poutyne is compatible with the <strong>latest version of PyTorch</strong> and  <strong>Python &gt;= 3.7</strong>.</p>
+<p>Poutyne is compatible with the <strong>latest version of PyTorch</strong> and  <strong>Python &gt;= 3.8</strong>.</p>
 <section id="cite">
 <h2>Cite<a class="headerlink" href="#cite" title="Permalink to this heading"></a></h2>
-<div class="highlight-bib notranslate"><div class="highlight"><pre><span></span><span class="nc">@misc</span><span class="p">{</span><span class="nl">Paradis_Poutyne_A_Simplified_2020</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="na">author</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{Paradis, Frédérik and Beauchemin, David and Godbout, Mathieu and Alain, Mathieu and Garneau, Nicolas and Otte, Stefan and Tremblay, Alexis and Bélanger, Marc-Antoine and Laviolette, François}</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="na">title</span><span class="w">  </span><span class="p">=</span><span class="w"> </span><span class="s">{{Poutyne: A Simplified Framework for Deep Learning}}</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="na">year</span><span class="w">   </span><span class="p">=</span><span class="w"> </span><span class="s">{2020}</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="na">url</span><span class="w">    </span><span class="p">=</span><span class="w"> </span><span class="s">{https://poutyne.org}</span><span class="w"></span>
-<span class="p">}</span><span class="w"></span>
+<div class="highlight-bib notranslate"><div class="highlight"><pre><span></span><span class="nc">@misc</span><span class="p">{</span><span class="nl">Paradis_Poutyne_A_Simplified_2020</span><span class="p">,</span>
+<span class="w">    </span><span class="na">author</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{Paradis, Frédérik and Beauchemin, David and Godbout, Mathieu and Alain, Mathieu and Garneau, Nicolas and Otte, Stefan and Tremblay, Alexis and Bélanger, Marc-Antoine and Laviolette, François}</span><span class="p">,</span>
+<span class="w">    </span><span class="na">title</span><span class="w">  </span><span class="p">=</span><span class="w"> </span><span class="s">{{Poutyne: A Simplified Framework for Deep Learning}}</span><span class="p">,</span>
+<span class="w">    </span><span class="na">year</span><span class="w">   </span><span class="p">=</span><span class="w"> </span><span class="s">{2020}</span><span class="p">,</span>
+<span class="w">    </span><span class="na">url</span><span class="w">    </span><span class="p">=</span><span class="w"> </span><span class="s">{https://poutyne.org}</span>
+<span class="p">}</span>
 </pre></div>
 </div>
 </section>
@@ -202,17 +203,17 @@
 <p>Before installing Poutyne, you must have the latest version of <a class="reference external" href="https://pytorch.org/">PyTorch</a> in your environment.</p>
 <ul>
 <li><p><strong>Install the stable version of Poutyne:</strong></p>
-<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>pip install poutyne
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>poutyne
 </pre></div>
 </div>
 </li>
 <li><p><strong>Install the latest development version of Poutyne:</strong></p>
-<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>pip install -U git+https://github.com/GRAAL-Research/poutyne.git@dev
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>-U<span class="w"> </span>git+https://github.com/GRAAL-Research/poutyne.git@dev
 </pre></div>
 </div>
 </li>
 <li><p><strong>Install and develop on top of the provided Docker Image</strong></p>
-<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>docker pull ghcr.io/graal-research/poutyne:latest
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>docker<span class="w"> </span>pull<span class="w"> </span>ghcr.io/graal-research/poutyne:latest
 </pre></div>
 </div>
 </li>
@@ -325,7 +326,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2018-2022, Frédérik Paradis.</p>
+    <p>&#169; Copyright 2018-2023, Frédérik Paradis.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
