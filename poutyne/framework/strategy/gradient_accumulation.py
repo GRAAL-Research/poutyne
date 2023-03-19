@@ -19,7 +19,7 @@ You should have received a copy of the GNU Lesser General Public License along w
 
 from __future__ import annotations
 
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 import torch
 
@@ -48,7 +48,7 @@ class GradientAccumulationStrategy(DefaultStrategy):
             super().optimizer_step()
 
     def train_step(
-        self, data: NetworkIOType, *, callback: Callback | None = None, step: int | None = None, **kwargs
+        self, data: NetworkIOType, *, callback: Optional[Callback] = None, step: Optional[int] = None, **kwargs
     ) -> StepOutput:
         if step is not None:
             self.zero_all_gradients = (step - 1) % self.batches_per_step == 0

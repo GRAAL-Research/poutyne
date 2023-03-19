@@ -134,8 +134,8 @@ class DefaultStrategy(BaseStrategy):
         self,
         data: NetworkIOType,
         *,
-        callback: Callback | None = None,
-        step: int | None = None,
+        callback: Optional[Callback] = None,
+        step: Optional[int] = None,
         **kwargs,  # pylint: disable=unused-argument
     ) -> StepOutput:
         output = self._compute_loss_and_metrics(data, return_loss_tensor=True)

@@ -41,19 +41,19 @@ class StepOutput(NamedTuple):
     Dataclass used to return information in a training or a testing step.
     """
 
-    loss: torch.Tensor | float | None = None
+    loss: Optional[torch.Tensor | float] = None
     """
     The loss for the step.
     """
 
-    batch_metrics: List[MetricReturnType] | np.ndarray | None = None
+    batch_metrics: Optional[List[MetricReturnType] | np.ndarray] = None
     """
     List of batch metric values for the step. :ref:`callbacks <callbacks>`
     """
 
-    y_pred: NetworkIOType | None = None
-    y_true: NetworkIOType | None = None
-    x: NetworkIOType | None = None
+    y_pred: Optional[NetworkIOType] = None
+    y_true: Optional[NetworkIOType] = None
+    x: Optional[NetworkIOType] = None
 
 
 class BaseStrategy:
@@ -196,7 +196,7 @@ class BaseStrategy:
         pass
 
     def train_step(
-        self, data: NetworkIOType, *, callback: Callback | None = None, step: int | None = None, **kwargs: Any
+        self, data: NetworkIOType, *, callback: Optional[Callback] = None, step: Optional[int] = None, **kwargs: Any
     ) -> StepOutput:
         pass
 
