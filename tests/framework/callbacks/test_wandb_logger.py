@@ -1,12 +1,16 @@
 import os
 import warnings
 from tempfile import TemporaryDirectory, TemporaryFile
-from unittest import TestCase, main
+from unittest import TestCase, main, skipIf
 from unittest.mock import MagicMock, call, patch
 
 import torch
 import torch.nn as nn
-import wandb
+
+try:
+    import wandb
+except ImportError:
+    wandb = None
 
 from poutyne import Callback, Model, ModelCheckpoint, WandBLogger
 from tests.framework.tools import some_data_generator
@@ -25,6 +29,7 @@ class History(Callback):
         self.history = []
 
 
+@skipIf(wandb is None, "imports for WandBLogger not available")
 class WandBLoggerTest(TestCase):
     def setUp(self):
         torch.manual_seed(42)
