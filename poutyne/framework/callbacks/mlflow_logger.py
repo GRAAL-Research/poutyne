@@ -88,8 +88,9 @@ class MLFlowLogger(Logger):
 
     def __init__(
         self,
-        experiment_name: Optional[str] = None,
+        deprecated_experiment_name: Optional[str] = None,
         *,
+        experiment_name: Optional[str] = None,
         experiment_id: Optional[str] = None,
         run_id: Optional[str] = None,
         tracking_uri: Optional[str] = None,
@@ -99,6 +100,19 @@ class MLFlowLogger(Logger):
         super().__init__(batch_granularity=batch_granularity)
         if mlflow is None:
             raise ImportError("Mlflow needs to be installed to use this callback.")
+
+        if deprecated_experiment_name is not None and experiment_name is not None:
+            raise ValueError(
+                "`experiment_name` was passed as positional and keyword arguments. Make sure to only pass it once as a "
+                "keyword argument."
+            )
+
+        if deprecated_experiment_name is not None:
+            warnings.warn(
+                'Positional argument `experiment_name` is deprecated and will be removed in future versions. Please '
+                'use it as a keyword argument, i.e. experiment_name="my-experiment-name"'
+            )
+            experiment_name = deprecated_experiment_name
 
         self.tracking = tracking_uri
 
