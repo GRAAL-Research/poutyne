@@ -43,12 +43,12 @@ class MLFlowLogger(Logger):
     logger will log all run into the same experiment.
 
     Args:
-        experiment_name (Optiona[str]): The name of the experiment. The name is case-sensitive. An `experiment_id` must
+        experiment_name (Optional[str]): The name of the experiment. The name is case-sensitive. An `experiment_id` must
             not be passed if this is passed.
-        experiment_id (Optiona[str]): The id of the experiment. An `experiment_name` must not be passed if this is
+        experiment_id (Optional[str]): The id of the experiment. An `experiment_name` must not be passed if this is
             passed.
-        run_id (Optiona[str]): The id of the run. An experiment name/id must not be passed if this is passed.
-        tracking_uri (Optiona[str]): Either the URI tracking path (for server tracking) of the absolute path to
+        run_id (Optional[str]): The id of the run. An experiment name/id must not be passed if this is passed.
+        tracking_uri (Optional[str]): Either the URI tracking path (for server tracking) of the absolute path to
             the directory to save the files (for file store). For example: ``http://<ip address>:<port>``
             (remote server) or ``/home/<user>/mlflow-server`` (local server).
             If None, will use the default MLflow file tracking URI ``"./mlruns"``.
