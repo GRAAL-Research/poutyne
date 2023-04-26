@@ -19,14 +19,20 @@ You should have received a copy of the GNU Lesser General Public License along w
 
 import os
 from typing import Dict, List, Mapping, Sequence
-from unittest import TestCase
+from unittest import TestCase, skipIf
 from unittest.mock import MagicMock, call, patch
 
 import git
 import torch
 import torch.nn as nn
-from mlflow.exceptions import MlflowException
-from omegaconf import DictConfig
+
+try:
+    from mlflow.exceptions import MlflowException
+    from omegaconf import DictConfig
+
+    mlflow_available = True
+except ImportError:
+    mlflow_available = False
 
 from poutyne import Model
 from poutyne.framework.callbacks.mlflow_logger import MLFlowLogger, _get_git_commit
@@ -36,6 +42,7 @@ a_git_commit = "9bff900c30e80c3a35388d3e617db5b7a64c9afd"
 mlflow_default_git_commit_tag = "mlflow.source.git.commit"
 
 
+@skipIf(not mlflow_available, "imports for MLFlowLogger not available")
 class MLFlowLoggerTest(TestCase):
     def setUp(self) -> None:
         self.a_experiment_name = "a_name"
@@ -118,10 +125,6 @@ class MLFlowLoggerTest(TestCase):
             ]
             ml_flow_client_patch.assert_has_calls(settings_calls)
 
-            actual_experiment_id = mlflow_logger.experiment_id
-            expected_experiment_id = self.a_experiment_id
-            self.assertEqual(expected_experiment_id, actual_experiment_id)
-
             actual_run_id = mlflow_logger.run_id
             expected_run_id = self.a_run_id
             self.assertEqual(expected_run_id, actual_run_id)
@@ -149,7 +152,7 @@ class MLFlowLoggerTest(TestCase):
             ml_flow_client_calls = []
             for key, value in self.a_log.items():
                 mlflow_logger.log_metric(key, value)
-                ml_flow_client_calls.append(call().log_metric(run_id=self.a_run_id, key=key, value=value, step=None))
+                ml_flow_client_calls.append(call().log_metric(run_id=self.a_run_id, key=key, value=value))
             ml_flow_client_patch.assert_has_calls(ml_flow_client_calls)
 
     @patch("poutyne.framework.mlflow_logger._get_git_commit", MagicMock())
@@ -214,9 +217,7 @@ class MLFlowLoggerTest(TestCase):
             mlflow_logger.set_params({"epochs": self.num_epochs})
             mlflow_logger.on_train_end(self.a_log)
 
-            ml_flow_client_calls = [
-                call().log_metric(run_id=self.a_run_id, key='last-epoch', value=self.num_epochs, step=None)
-            ]
+            ml_flow_client_calls = [call().log_metric(run_id=self.a_run_id, key='last-epoch', value=self.num_epochs)]
             ml_flow_client_patch.assert_has_calls(ml_flow_client_calls)
 
     @patch("poutyne.framework.mlflow_logger._get_git_commit", MagicMock())
@@ -339,9 +340,7 @@ class MLFlowLoggerTest(TestCase):
                 ml_flow_client_calls.append(
                     call().log_metric(run_id=self.a_run_id, key=key, value=value, step=epoch_num + 1)
                 )  # +1 for enumerate
-        ml_flow_client_calls.append(
-            call().log_metric(run_id=self.a_run_id, key="last-epoch", value=self.num_epochs, step=None)
-        )
+        ml_flow_client_calls.append(call().log_metric(run_id=self.a_run_id, key="last-epoch", value=self.num_epochs))
         ml_flow_client_calls.append(call().set_terminated(self.a_run_id, status='FINISHED'))
         return ml_flow_client_calls
 

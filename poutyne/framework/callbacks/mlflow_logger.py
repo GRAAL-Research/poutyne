@@ -20,7 +20,7 @@ You should have received a copy of the GNU Lesser General Public License along w
 # pylint: disable=line-too-long, pointless-string-statement
 import os
 import warnings
-from typing import Dict, Mapping, Sequence, Union
+from typing import Any, Dict, Mapping, Optional, Sequence, Union
 
 from poutyne.framework.callbacks.logger import Logger
 
@@ -82,7 +82,14 @@ class MLFlowLogger(Logger):
     """
 
     def __init__(
-        self, experiment_name: str, tracking_uri: Union[str, None] = None, batch_granularity: bool = False
+        self,
+        experiment_name: Optional[str] = None,
+        *,
+        experiment_id: Optional[str] = None,
+        tracking_uri: Optional[str] = None,
+        run_id: Optional[str] = None,
+        batch_granularity: bool = False,
+        terminate_on_end=True,
     ) -> None:
         super().__init__(batch_granularity=batch_granularity)
         if mlflow is None:
@@ -94,23 +101,35 @@ class MLFlowLogger(Logger):
 
         self.ml_flow_client = MlflowClient(tracking_uri=self.tracking)
 
-        self._handle_experiment_id(experiment_name)
-        self.run_id = self.ml_flow_client.create_run(experiment_id=self.experiment_id).info.run_id
+        if run_id is None:
+            experiment_id = self._handle_experiment_id(experiment_name, experiment_id)
+            self.run_id = self.ml_flow_client.create_run(experiment_id=experiment_id).info.run_id
+        else:
+            self.run_id = run_id
 
         self._log_git_version()
 
+        self.terminate_on_end = terminate_on_end
         self._status = "FAILED"  # Base case is a failure.
 
-    def log_config_params(self, config_params: Mapping) -> None:
+    def log_config_params(self, config_params: Mapping, **kwargs: Any) -> None:
         """
         Args:
             config_params (Mapping):
                 The config parameters of the training to log, such as number of epoch, loss function, optimizer etc.
         """
         for param_name, element in config_params.items():
-            self._log_config_write(param_name, element)
+            self._log_config_write(param_name, element, **kwargs)
 
-    def log_param(self, param_name: str, value: Union[str, float]) -> None:
+    def log_params(self, params: dict[str, Any], **kwargs: Any):
+        for k, v in params.items():
+            self.log_param(k, v, **kwargs)
+
+    def log_metrics(self, metrics: dict[str, float], **kwargs: Any):
+        for k, v in metrics.items():
+            self.log_metric(k, v, **kwargs)
+
+    def log_param(self, param_name: str, value: Union[str, float], **kwargs: Any) -> None:
         """
         Log the value of a parameter into the experiment.
 
@@ -119,9 +138,9 @@ class MLFlowLogger(Logger):
             value (Union[str, float]): The value of the parameter.
 
         """
-        self.ml_flow_client.log_param(run_id=self.run_id, key=param_name, value=value)
+        self.ml_flow_client.log_param(run_id=self.run_id, key=param_name, value=value, **kwargs)
 
-    def log_metric(self, metric_name: str, value: float, step: Union[int, None] = None) -> None:
+    def log_metric(self, metric_name: str, value: float, **kwargs: Any) -> None:
         """
         Log the value of a metric into the experiment.
 
@@ -130,22 +149,24 @@ class MLFlowLogger(Logger):
             value (float): The value of the metric.
             step (Union[int, None]): The step when the metric was computed (Default = None).
         """
-        self.ml_flow_client.log_metric(run_id=self.run_id, key=metric_name, value=value, step=step)
+        self.ml_flow_client.log_metric(run_id=self.run_id, key=metric_name, value=value, **kwargs)
 
-    def _log_config_write(self, parent_name: str, element: Union[int, float, str, Mapping, Sequence]) -> None:
+    def _log_config_write(
+        self, parent_name: str, element: Union[int, float, str, Mapping, Sequence], **kwargs: Any
+    ) -> None:
         """
         Log the config parameters when it's a mapping or a sequence of elements.
         """
         if isinstance(element, Mapping):
             for key, value in element.items():
                 # We recursively open the element (Dict format type).
-                self._log_config_write(f"{parent_name}.{key}", value)
+                self._log_config_write(f"{parent_name}.{key}", value, **kwargs)
         elif isinstance(element, Sequence) and not isinstance(element, str):
             # Since str are sequence we negate it to be logged in the else.
             for idx, value in enumerate(element):
-                self._log_config_write(f"{parent_name}.{idx}", value)
+                self._log_config_write(f"{parent_name}.{idx}", value, **kwargs)
         else:
-            self.log_param(parent_name, element)
+            self.log_param(parent_name, element, **kwargs)
 
     def _on_train_batch_end_write(self, batch_number: int, logs: Dict) -> None:
         """
@@ -168,8 +189,6 @@ class MLFlowLogger(Logger):
         """
         self._on_train_end_write(logs)
         self._status = "FINISHED"
-
-        mlflow.end_run()
         self._status_handling()
 
     def _on_train_end_write(self, logs) -> None:
@@ -191,7 +210,6 @@ class MLFlowLogger(Logger):
             self._on_test_end_write(logs)
             self._status = "FINISHED"
 
-        mlflow.end_run()
         self._status_handling()
 
     def _on_test_end_write(self, logs: Dict) -> None:
@@ -199,17 +217,24 @@ class MLFlowLogger(Logger):
             self.log_metric(key, value)
 
     def _status_handling(self):
-        # We set_terminated the run to get the finishing status (FINISHED or FAILED)
-        self.ml_flow_client.set_terminated(self.run_id, status=self._status)
+        if self.terminate_on_end:
+            # We set_terminated the run to get the finishing status (FINISHED or FAILED)
+            self.ml_flow_client.set_terminated(self.run_id, status=self._status)
 
-    def _handle_experiment_id(self, experiment_name):
+    def _handle_experiment_id(self, experiment_name, experiment_id):
         """
         Handle the existing experiment name to grab the id and append a new experiment to it.
         """
+        if experiment_name is not None and experiment_id is not None:
+            raise ValueError("Either provide the experiment name or experiment id, not both.")
+
+        if experiment_id is not None:
+            return experiment_id
+
         try:
-            self.experiment_id = self.ml_flow_client.create_experiment(experiment_name, self.tracking)
+            return self.ml_flow_client.create_experiment(experiment_name, self.tracking)
         except MlflowException:
-            self.experiment_id = self.ml_flow_client.get_experiment_by_name(experiment_name).experiment_id
+            return self.ml_flow_client.get_experiment_by_name(experiment_name).experiment_id
 
     def _log_git_version(self):
         """
