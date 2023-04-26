@@ -106,7 +106,7 @@ class MLFlowLogger(Logger):
 
         self.ml_flow_client = MlflowClient(tracking_uri=self.tracking)
 
-        if run_id is None and (experiment_name is not None or experiment_id is not None):
+        if run_id is not None and (experiment_name is not None or experiment_id is not None):
             raise ValueError("Either provide an experiment name/id or a run id, not both.")
 
         if run_id is None:
