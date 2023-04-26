@@ -43,13 +43,18 @@ class MLFlowLogger(Logger):
     logger will log all run into the same experiment.
 
     Args:
-        experiment_name (str): The name of the experiment. The name must be unique and are case-sensitive.
-        tracking_uri (Union[str, None]): Either the URI tracking path (for server tracking) of the absolute path to
+        experiment_name (Optiona[str]): The name of the experiment. The name is case-sensitive. An `experiment_id` must
+            not be passed if this is passed.
+        experiment_id (Optiona[str]): The id of the experiment. An `experiment_name` must not be passed if this is
+            passed.
+        run_id (Optiona[str]): The id of the run. An experiment name/id must not be passed if this is passed.
+        tracking_uri (Optiona[str]): Either the URI tracking path (for server tracking) of the absolute path to
             the directory to save the files (for file store). For example: ``http://<ip address>:<port>``
             (remote server) or ``/home/<user>/mlflow-server`` (local server).
             If None, will use the default MLflow file tracking URI ``"./mlruns"``.
         batch_granularity (bool): Whether to also output the result of each batch in addition to the epochs.
             (Default value = False)
+        terminate_on_end (bool): Wheter to end the run at the end of the training or testing. (Default value = True)
 
     Example:
         Using file store::
@@ -86,8 +91,8 @@ class MLFlowLogger(Logger):
         experiment_name: Optional[str] = None,
         *,
         experiment_id: Optional[str] = None,
-        tracking_uri: Optional[str] = None,
         run_id: Optional[str] = None,
+        tracking_uri: Optional[str] = None,
         batch_granularity: bool = False,
         terminate_on_end=True,
     ) -> None:
@@ -100,6 +105,9 @@ class MLFlowLogger(Logger):
         self._working_directory = os.getcwd()  # For Git hash monitoring.
 
         self.ml_flow_client = MlflowClient(tracking_uri=self.tracking)
+
+        if run_id is None and (experiment_name is not None or experiment_id is not None):
+            raise ValueError("Either provide an experiment name/id or a run id, not both.")
 
         if run_id is None:
             experiment_id = self._handle_experiment_id(experiment_name, experiment_id)
@@ -121,11 +129,23 @@ class MLFlowLogger(Logger):
         for param_name, element in config_params.items():
             self._log_config_write(param_name, element, **kwargs)
 
-    def log_params(self, params: dict[str, Any], **kwargs: Any):
+    def log_params(self, params: Dict[str, Any], **kwargs: Any):
+        """
+        Log the values of the parameters into the experiment.
+
+        Args:
+            params (Dict[str, float]): Dictionary of key-value to log.
+        """
         for k, v in params.items():
             self.log_param(k, v, **kwargs)
 
-    def log_metrics(self, metrics: dict[str, float], **kwargs: Any):
+    def log_metrics(self, metrics: Dict[str, float], **kwargs: Any):
+        """
+        Log the values of the metrics into the experiment.
+
+        Args:
+            metrics (Dict[str, float]): Dictionary of key-value to log.
+        """
         for k, v in metrics.items():
             self.log_metric(k, v, **kwargs)
 
