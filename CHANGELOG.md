@@ -2,6 +2,16 @@
 
 -
 
+# v1.16
+
+- Add `run_id` and `terminate_on_end` arguments to [MLFlowLogger](https://poutyne.org/callbacks.html#poutyne.MLFlowLogger).
+
+Breaking change:
+
+- In [MLFlowLogger](https://poutyne.org/callbacks.html#poutyne.MLFlowLogger), except for `experiment_name`, all
+  arguments must now be passed as keyword arguments. Passing `experiment_name` as a positional argument is also
+  deprecated and will be removed in future versions.
+
 # v1.15
 
 - Remove support for Python 3.7
