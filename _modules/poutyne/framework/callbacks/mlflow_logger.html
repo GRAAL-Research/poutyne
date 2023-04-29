@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>poutyne.framework.callbacks.mlflow_logger &mdash; Poutyne 1.15 documentation</title>
+  <title>poutyne.framework.callbacks.mlflow_logger &mdash; Poutyne 1.16 documentation</title>
       <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -31,7 +31,7 @@
               <img src="../../../../_static/poutyne-light.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                1.15
+                1.16
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
@@ -109,7 +109,7 @@
 <span class="c1"># pylint: disable=line-too-long, pointless-string-statement</span>
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">warnings</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Union</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Union</span>
 
 <span class="kn">from</span> <span class="nn">poutyne.framework.callbacks.logger</span> <span class="kn">import</span> <span class="n">Logger</span>
 
@@ -132,13 +132,18 @@
 <span class="sd">    logger will log all run into the same experiment.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        experiment_name (str): The name of the experiment. The name must be unique and are case-sensitive.</span>
-<span class="sd">        tracking_uri (Union[str, None]): Either the URI tracking path (for server tracking) of the absolute path to</span>
+<span class="sd">        experiment_name (Optional[str]): The name of the experiment. The name is case-sensitive. An `experiment_id` must</span>
+<span class="sd">            not be passed if this is passed.</span>
+<span class="sd">        experiment_id (Optional[str]): The id of the experiment. An `experiment_name` must not be passed if this is</span>
+<span class="sd">            passed.</span>
+<span class="sd">        run_id (Optional[str]): The id of the run. An experiment name/id must not be passed if this is passed.</span>
+<span class="sd">        tracking_uri (Optional[str]): Either the URI tracking path (for server tracking) of the absolute path to</span>
 <span class="sd">            the directory to save the files (for file store). For example: ``http://&lt;ip address&gt;:&lt;port&gt;``</span>
 <span class="sd">            (remote server) or ``/home/&lt;user&gt;/mlflow-server`` (local server).</span>
 <span class="sd">            If None, will use the default MLflow file tracking URI ``&quot;./mlruns&quot;``.</span>
 <span class="sd">        batch_granularity (bool): Whether to also output the result of each batch in addition to the epochs.</span>
 <span class="sd">            (Default value = False)</span>
+<span class="sd">        terminate_on_end (bool): Wheter to end the run at the end of the training or testing. (Default value = True)</span>
 
 <span class="sd">    Example:</span>
 <span class="sd">        Using file store::</span>
@@ -171,11 +176,32 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">experiment_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">tracking_uri</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">batch_granularity</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">deprecated_experiment_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">experiment_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">experiment_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">run_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">tracking_uri</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">batch_granularity</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">terminate_on_end</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">batch_granularity</span><span class="o">=</span><span class="n">batch_granularity</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">mlflow</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span><span class="s2">&quot;Mlflow needs to be installed to use this callback.&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">deprecated_experiment_name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">experiment_name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;`experiment_name` was passed as positional and keyword arguments. Make sure to only pass it once as a &quot;</span>
+                <span class="s2">&quot;keyword argument.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">deprecated_experiment_name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                <span class="s1">&#39;Positional argument `experiment_name` is deprecated and will be removed in future versions. Please &#39;</span>
+                <span class="s1">&#39;use it as a keyword argument, i.e. experiment_name=&quot;my-experiment-name&quot;&#39;</span>
+            <span class="p">)</span>
+            <span class="n">experiment_name</span> <span class="o">=</span> <span class="n">deprecated_experiment_name</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">tracking</span> <span class="o">=</span> <span class="n">tracking_uri</span>
 
@@ -183,23 +209,50 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">ml_flow_client</span> <span class="o">=</span> <span class="n">MlflowClient</span><span class="p">(</span><span class="n">tracking_uri</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tracking</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_handle_experiment_id</span><span class="p">(</span><span class="n">experiment_name</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">run_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ml_flow_client</span><span class="o">.</span><span class="n">create_run</span><span class="p">(</span><span class="n">experiment_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">experiment_id</span><span class="p">)</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">run_id</span>
+        <span class="k">if</span> <span class="n">run_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="p">(</span><span class="n">experiment_name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">experiment_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Either provide an experiment name/id or a run id, not both.&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">run_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">experiment_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_handle_experiment_id</span><span class="p">(</span><span class="n">experiment_name</span><span class="p">,</span> <span class="n">experiment_id</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">run_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ml_flow_client</span><span class="o">.</span><span class="n">create_run</span><span class="p">(</span><span class="n">experiment_id</span><span class="o">=</span><span class="n">experiment_id</span><span class="p">)</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">run_id</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">run_id</span> <span class="o">=</span> <span class="n">run_id</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_log_git_version</span><span class="p">()</span>
 
+        <span class="bp">self</span><span class="o">.</span><span class="n">terminate_on_end</span> <span class="o">=</span> <span class="n">terminate_on_end</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_status</span> <span class="o">=</span> <span class="s2">&quot;FAILED&quot;</span>  <span class="c1"># Base case is a failure.</span>
 
-<div class="viewcode-block" id="MLFlowLogger.log_config_params"><a class="viewcode-back" href="../../../../callbacks.html#poutyne.MLFlowLogger.log_config_params">[docs]</a>    <span class="k">def</span> <span class="nf">log_config_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config_params</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="MLFlowLogger.log_config_params"><a class="viewcode-back" href="../../../../callbacks.html#poutyne.MLFlowLogger.log_config_params">[docs]</a>    <span class="k">def</span> <span class="nf">log_config_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config_params</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Args:</span>
 <span class="sd">            config_params (Mapping):</span>
 <span class="sd">                The config parameters of the training to log, such as number of epoch, loss function, optimizer etc.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">param_name</span><span class="p">,</span> <span class="n">element</span> <span class="ow">in</span> <span class="n">config_params</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_log_config_write</span><span class="p">(</span><span class="n">param_name</span><span class="p">,</span> <span class="n">element</span><span class="p">)</span></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_log_config_write</span><span class="p">(</span><span class="n">param_name</span><span class="p">,</span> <span class="n">element</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="MLFlowLogger.log_param"><a class="viewcode-back" href="../../../../callbacks.html#poutyne.MLFlowLogger.log_param">[docs]</a>    <span class="k">def</span> <span class="nf">log_param</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">param_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">log_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">params</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Log the values of the parameters into the experiment.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            params (Dict[str, float]): Dictionary of key-value to log.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">params</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log_param</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">log_metrics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">metrics</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Log the values of the metrics into the experiment.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            metrics (Dict[str, float]): Dictionary of key-value to log.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">metrics</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log_metric</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="MLFlowLogger.log_param"><a class="viewcode-back" href="../../../../callbacks.html#poutyne.MLFlowLogger.log_param">[docs]</a>    <span class="k">def</span> <span class="nf">log_param</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">param_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Log the value of a parameter into the experiment.</span>
 
@@ -208,9 +261,9 @@
 <span class="sd">            value (Union[str, float]): The value of the parameter.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">ml_flow_client</span><span class="o">.</span><span class="n">log_param</span><span class="p">(</span><span class="n">run_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">run_id</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">param_name</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">value</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ml_flow_client</span><span class="o">.</span><span class="n">log_param</span><span class="p">(</span><span class="n">run_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">run_id</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">param_name</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">value</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="MLFlowLogger.log_metric"><a class="viewcode-back" href="../../../../callbacks.html#poutyne.MLFlowLogger.log_metric">[docs]</a>    <span class="k">def</span> <span class="nf">log_metric</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">metric_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">step</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="MLFlowLogger.log_metric"><a class="viewcode-back" href="../../../../callbacks.html#poutyne.MLFlowLogger.log_metric">[docs]</a>    <span class="k">def</span> <span class="nf">log_metric</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">metric_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Log the value of a metric into the experiment.</span>
 
@@ -219,22 +272,24 @@
 <span class="sd">            value (float): The value of the metric.</span>
 <span class="sd">            step (Union[int, None]): The step when the metric was computed (Default = None).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">ml_flow_client</span><span class="o">.</span><span class="n">log_metric</span><span class="p">(</span><span class="n">run_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">run_id</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">metric_name</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">value</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="n">step</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ml_flow_client</span><span class="o">.</span><span class="n">log_metric</span><span class="p">(</span><span class="n">run_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">run_id</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">metric_name</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">value</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">_log_config_write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">element</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">_log_config_write</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">parent_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">element</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Log the config parameters when it&#39;s a mapping or a sequence of elements.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">element</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">):</span>
             <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">element</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
                 <span class="c1"># We recursively open the element (Dict format type).</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_log_config_write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">parent_name</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_log_config_write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">parent_name</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">element</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">element</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
             <span class="c1"># Since str are sequence we negate it to be logged in the else.</span>
             <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">element</span><span class="p">):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_log_config_write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">parent_name</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">idx</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_log_config_write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">parent_name</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">idx</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">log_param</span><span class="p">(</span><span class="n">parent_name</span><span class="p">,</span> <span class="n">element</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log_param</span><span class="p">(</span><span class="n">parent_name</span><span class="p">,</span> <span class="n">element</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_on_train_batch_end_write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch_number</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">logs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -257,8 +312,6 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_on_train_end_write</span><span class="p">(</span><span class="n">logs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_status</span> <span class="o">=</span> <span class="s2">&quot;FINISHED&quot;</span>
-
-        <span class="n">mlflow</span><span class="o">.</span><span class="n">end_run</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_status_handling</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">_on_train_end_write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -280,7 +333,6 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_on_test_end_write</span><span class="p">(</span><span class="n">logs</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_status</span> <span class="o">=</span> <span class="s2">&quot;FINISHED&quot;</span>
 
-        <span class="n">mlflow</span><span class="o">.</span><span class="n">end_run</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_status_handling</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">_on_test_end_write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -288,17 +340,24 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">log_metric</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_status_handling</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="c1"># We set_terminated the run to get the finishing status (FINISHED or FAILED)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">ml_flow_client</span><span class="o">.</span><span class="n">set_terminated</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">run_id</span><span class="p">,</span> <span class="n">status</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_status</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">terminate_on_end</span><span class="p">:</span>
+            <span class="c1"># We set_terminated the run to get the finishing status (FINISHED or FAILED)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ml_flow_client</span><span class="o">.</span><span class="n">set_terminated</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">run_id</span><span class="p">,</span> <span class="n">status</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_status</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_handle_experiment_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">experiment_name</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_handle_experiment_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">experiment_name</span><span class="p">,</span> <span class="n">experiment_id</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Handle the existing experiment name to grab the id and append a new experiment to it.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">experiment_name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">experiment_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Either provide the experiment name or experiment id, not both.&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">experiment_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">experiment_id</span>
+
         <span class="k">try</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">experiment_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ml_flow_client</span><span class="o">.</span><span class="n">create_experiment</span><span class="p">(</span><span class="n">experiment_name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tracking</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ml_flow_client</span><span class="o">.</span><span class="n">create_experiment</span><span class="p">(</span><span class="n">experiment_name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tracking</span><span class="p">)</span>
         <span class="k">except</span> <span class="n">MlflowException</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">experiment_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ml_flow_client</span><span class="o">.</span><span class="n">get_experiment_by_name</span><span class="p">(</span><span class="n">experiment_name</span><span class="p">)</span><span class="o">.</span><span class="n">experiment_id</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ml_flow_client</span><span class="o">.</span><span class="n">get_experiment_by_name</span><span class="p">(</span><span class="n">experiment_name</span><span class="p">)</span><span class="o">.</span><span class="n">experiment_id</span>
 
     <span class="k">def</span> <span class="nf">_log_git_version</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
