@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>poutyne.utils &mdash; Poutyne 1.16 documentation</title>
+  <title>poutyne.utils &mdash; Poutyne 1.17 documentation</title>
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -31,7 +31,7 @@
               <img src="../../_static/poutyne-light.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                1.16
+                1.17
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -106,13 +106,14 @@
 <span class="sd">&lt;https://www.gnu.org/licenses/&gt;.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
+<span class="kn">import</span> <span class="nn">contextlib</span>
 <span class="kn">import</span> <span class="nn">numbers</span>
 
 <span class="c1"># -*- coding: utf-8 -*-</span>
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">random</span>
 <span class="kn">import</span> <span class="nn">warnings</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">IO</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">BinaryIO</span><span class="p">,</span> <span class="n">Union</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">IO</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">BinaryIO</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">torch</span>
@@ -421,6 +422,18 @@
             <span class="s2">&quot;tensor or a Numpy array.</span><span class="se">\n</span><span class="s2">&quot;</span>
         <span class="p">)</span>
     <span class="k">return</span> <span class="mi">1</span></div>
+
+
+<span class="nd">@contextlib</span><span class="o">.</span><span class="n">contextmanager</span>
+<span class="k">def</span> <span class="nf">set_deterministic_debug_mode</span><span class="p">(</span><span class="n">mode</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]):</span>
+    <span class="k">if</span> <span class="n">mode</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">yield</span>
+        <span class="k">return</span>
+
+    <span class="n">old_mode</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">get_deterministic_debug_mode</span><span class="p">()</span>
+    <span class="n">torch</span><span class="o">.</span><span class="n">set_deterministic_debug_mode</span><span class="p">(</span><span class="n">mode</span><span class="p">)</span>
+    <span class="k">yield</span>
+    <span class="n">torch</span><span class="o">.</span><span class="n">set_deterministic_debug_mode</span><span class="p">(</span><span class="n">old_mode</span><span class="p">)</span>
 </pre></div>
 
            </div>

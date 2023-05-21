@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>poutyne.framework.metrics.predefined.fscores &mdash; Poutyne 1.16 documentation</title>
+  <title>poutyne.framework.metrics.predefined.fscores &mdash; Poutyne 1.17 documentation</title>
       <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -31,7 +31,7 @@
               <img src="../../../../../_static/poutyne-light.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                1.16
+                1.17
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
@@ -132,6 +132,8 @@
 
 <span class="kn">from</span> <span class="nn">poutyne.framework.metrics.base</span> <span class="kn">import</span> <span class="n">Metric</span>
 <span class="kn">from</span> <span class="nn">poutyne.framework.metrics.metrics_registering</span> <span class="kn">import</span> <span class="n">register_metric_class</span>
+<span class="kn">from</span> <span class="nn">poutyne.framework.metrics.predefined.bincount</span> <span class="kn">import</span> <span class="n">_bincount</span>
+<span class="kn">from</span> <span class="nn">poutyne.utils</span> <span class="kn">import</span> <span class="n">set_deterministic_debug_mode</span>
 
 
 <div class="viewcode-block" id="FBeta"><a class="viewcode-back" href="../../../../../metrics.html#poutyne.FBeta">[docs]</a><span class="k">class</span> <span class="nc">FBeta</span><span class="p">(</span><span class="n">Metric</span><span class="p">):</span>
@@ -204,6 +206,8 @@
 <span class="sd">        names (Optional[Union[str, List[str]]]): The names associated to the metrics. It is a string when</span>
 <span class="sd">            a single metric is requested. It is a list of 3 strings if all metrics are requested.</span>
 <span class="sd">            (Default value = None)</span>
+<span class="sd">        make_deterministic (Optional[bool]): Avoid non-deterministic operations in computations. This might make the</span>
+<span class="sd">            code slower.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
@@ -216,6 +220,7 @@
         <span class="n">ignore_index</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">100</span><span class="p">,</span>
         <span class="n">threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
         <span class="n">names</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">make_deterministic</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">metric_options</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;fscore&#39;</span><span class="p">,</span> <span class="s1">&#39;precision&#39;</span><span class="p">,</span> <span class="s1">&#39;recall&#39;</span><span class="p">)</span>
@@ -243,6 +248,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">ignore_index</span> <span class="o">=</span> <span class="n">ignore_index</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">threshold</span> <span class="o">=</span> <span class="n">threshold</span>
         <span class="bp">self</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_names</span><span class="p">(</span><span class="n">names</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">deterministic_debug_mode</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s2">&quot;error&quot;</span> <span class="k">if</span> <span class="n">make_deterministic</span> <span class="ow">is</span> <span class="kc">True</span> <span class="k">else</span> <span class="s2">&quot;default&quot;</span> <span class="k">if</span> <span class="n">make_deterministic</span> <span class="ow">is</span> <span class="kc">False</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="p">)</span>
 
         <span class="c1"># statistics</span>
         <span class="c1"># the total number of true positive instances under each class</span>
@@ -324,80 +332,81 @@
 
     <span class="k">def</span> <span class="nf">_update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">y_true</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="c1"># pylint: disable=too-many-branches</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
-            <span class="n">y_true</span><span class="p">,</span> <span class="n">mask</span> <span class="o">=</span> <span class="n">y_true</span>
-            <span class="n">mask</span> <span class="o">=</span> <span class="n">mask</span><span class="o">.</span><span class="n">bool</span><span class="p">()</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">mask</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">y_true</span><span class="p">)</span><span class="o">.</span><span class="n">bool</span><span class="p">()</span>
+        <span class="k">with</span> <span class="n">set_deterministic_debug_mode</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">deterministic_debug_mode</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+                <span class="n">y_true</span><span class="p">,</span> <span class="n">mask</span> <span class="o">=</span> <span class="n">y_true</span>
+                <span class="n">mask</span> <span class="o">=</span> <span class="n">mask</span><span class="o">.</span><span class="n">bool</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">mask</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">y_true</span><span class="p">)</span><span class="o">.</span><span class="n">bool</span><span class="p">()</span>
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ignore_index</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">mask</span> <span class="o">*=</span> <span class="n">y_true</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ignore_index</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ignore_index</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">mask</span> <span class="o">*=</span> <span class="n">y_true</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ignore_index</span>
 
-        <span class="k">if</span> <span class="n">y_pred</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="n">y_pred</span><span class="p">,</span> <span class="n">y_true</span><span class="p">,</span> <span class="n">mask</span> <span class="o">=</span> <span class="p">(</span>
-                <span class="n">y_pred</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span>
-                <span class="n">y_true</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span>
-                <span class="n">mask</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span>
-            <span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">y_pred</span><span class="p">,</span> <span class="n">y_true</span><span class="p">,</span> <span class="n">mask</span> <span class="o">=</span> <span class="n">y_pred</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(),</span> <span class="n">y_true</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(),</span> <span class="n">mask</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">y_pred</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">y_pred</span><span class="p">,</span> <span class="n">y_true</span><span class="p">,</span> <span class="n">mask</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">y_pred</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span>
+                    <span class="n">y_true</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span>
+                    <span class="n">mask</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">y_pred</span><span class="p">,</span> <span class="n">y_true</span><span class="p">,</span> <span class="n">mask</span> <span class="o">=</span> <span class="n">y_pred</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(),</span> <span class="n">y_true</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(),</span> <span class="n">mask</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
 
-        <span class="n">num_classes</span> <span class="o">=</span> <span class="mi">2</span>
-        <span class="k">if</span> <span class="n">y_pred</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="n">y_true</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
-            <span class="n">num_classes</span> <span class="o">=</span> <span class="n">y_pred</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">num_classes</span> <span class="o">=</span> <span class="mi">2</span>
+            <span class="k">if</span> <span class="n">y_pred</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="n">y_true</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
+                <span class="n">num_classes</span> <span class="o">=</span> <span class="n">y_pred</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="p">(</span><span class="n">y_true</span> <span class="o">&gt;=</span> <span class="n">num_classes</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;A gold label passed to FBetaMeasure contains an id &gt;= </span><span class="si">{</span><span class="n">num_classes</span><span class="si">}</span><span class="s2">, the number of classes.&quot;</span>
-            <span class="p">)</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">y_true</span> <span class="o">&gt;=</span> <span class="n">num_classes</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;A gold label passed to FBetaMeasure contains an id &gt;= </span><span class="si">{</span><span class="n">num_classes</span><span class="si">}</span><span class="s2">, the number of classes.&quot;</span>
+                <span class="p">)</span>
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_average</span> <span class="o">==</span> <span class="s1">&#39;binary&#39;</span> <span class="ow">and</span> <span class="n">num_classes</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;When `average` is binary, the number of prediction scores must be 2.&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_average</span> <span class="o">==</span> <span class="s1">&#39;binary&#39;</span> <span class="ow">and</span> <span class="n">num_classes</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;When `average` is binary, the number of prediction scores must be 2.&quot;</span><span class="p">)</span>
 
-        <span class="c1"># It means we call this metric at the first time</span>
-        <span class="c1"># when `self._true_positive_sum` is None.</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_true_positive_sum</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_true_positive_sum</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">num_classes</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">y_pred</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_true_sum</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">num_classes</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">y_pred</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_pred_sum</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">num_classes</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">y_pred</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_total_sum</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">num_classes</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">y_pred</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+            <span class="c1"># It means we call this metric at the first time</span>
+            <span class="c1"># when `self._true_positive_sum` is None.</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_true_positive_sum</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_true_positive_sum</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">num_classes</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">y_pred</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_true_sum</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">num_classes</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">y_pred</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_pred_sum</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">num_classes</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">y_pred</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_total_sum</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">num_classes</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">y_pred</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
 
-        <span class="n">y_true</span> <span class="o">=</span> <span class="n">y_true</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
+            <span class="n">y_true</span> <span class="o">=</span> <span class="n">y_true</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
 
-        <span class="k">if</span> <span class="n">y_pred</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="n">y_true</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
-            <span class="n">argmax_y_pred</span> <span class="o">=</span> <span class="n">y_pred</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">argmax_y_pred</span> <span class="o">=</span> <span class="p">(</span><span class="n">y_pred</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">threshold</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
-        <span class="n">true_positives</span> <span class="o">=</span> <span class="p">(</span><span class="n">y_true</span> <span class="o">==</span> <span class="n">argmax_y_pred</span><span class="p">)</span> <span class="o">*</span> <span class="n">mask</span>
-        <span class="n">true_positives_bins</span> <span class="o">=</span> <span class="n">y_true</span><span class="p">[</span><span class="n">true_positives</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">y_pred</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="n">y_true</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
+                <span class="n">argmax_y_pred</span> <span class="o">=</span> <span class="n">y_pred</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">argmax_y_pred</span> <span class="o">=</span> <span class="p">(</span><span class="n">y_pred</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">threshold</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
+            <span class="n">true_positives</span> <span class="o">=</span> <span class="p">(</span><span class="n">y_true</span> <span class="o">==</span> <span class="n">argmax_y_pred</span><span class="p">)</span> <span class="o">*</span> <span class="n">mask</span>
+            <span class="n">true_positives_bins</span> <span class="o">=</span> <span class="n">y_true</span><span class="p">[</span><span class="n">true_positives</span><span class="p">]</span>
 
-        <span class="c1"># Watch it:</span>
-        <span class="c1"># The total numbers of true positives under all _predicted_ classes are zeros.</span>
-        <span class="k">if</span> <span class="n">true_positives_bins</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">true_positive_sum</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">num_classes</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">y_pred</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">true_positive_sum</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">bincount</span><span class="p">(</span><span class="n">true_positives_bins</span><span class="o">.</span><span class="n">long</span><span class="p">(),</span> <span class="n">minlength</span><span class="o">=</span><span class="n">num_classes</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
+            <span class="c1"># Watch it:</span>
+            <span class="c1"># The total numbers of true positives under all _predicted_ classes are zeros.</span>
+            <span class="k">if</span> <span class="n">true_positives_bins</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">true_positive_sum</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">num_classes</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">y_pred</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">true_positive_sum</span> <span class="o">=</span> <span class="n">_bincount</span><span class="p">(</span><span class="n">true_positives_bins</span><span class="o">.</span><span class="n">long</span><span class="p">(),</span> <span class="n">minlength</span><span class="o">=</span><span class="n">num_classes</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
 
-        <span class="n">pred_bins</span> <span class="o">=</span> <span class="n">argmax_y_pred</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span><span class="o">.</span><span class="n">long</span><span class="p">()</span>
-        <span class="c1"># Watch it:</span>
-        <span class="c1"># When the `mask` is all 0, we will get an _empty_ tensor.</span>
-        <span class="k">if</span> <span class="n">pred_bins</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">pred_sum</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">bincount</span><span class="p">(</span><span class="n">pred_bins</span><span class="p">,</span> <span class="n">minlength</span><span class="o">=</span><span class="n">num_classes</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">pred_sum</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">num_classes</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">y_pred</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+            <span class="n">pred_bins</span> <span class="o">=</span> <span class="n">argmax_y_pred</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span><span class="o">.</span><span class="n">long</span><span class="p">()</span>
+            <span class="c1"># Watch it:</span>
+            <span class="c1"># When the `mask` is all 0, we will get an _empty_ tensor.</span>
+            <span class="k">if</span> <span class="n">pred_bins</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">pred_sum</span> <span class="o">=</span> <span class="n">_bincount</span><span class="p">(</span><span class="n">pred_bins</span><span class="p">,</span> <span class="n">minlength</span><span class="o">=</span><span class="n">num_classes</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">pred_sum</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">num_classes</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">y_pred</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
 
-        <span class="n">y_true_bins</span> <span class="o">=</span> <span class="n">y_true</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span><span class="o">.</span><span class="n">long</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">y_true</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">true_sum</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">bincount</span><span class="p">(</span><span class="n">y_true_bins</span><span class="p">,</span> <span class="n">minlength</span><span class="o">=</span><span class="n">num_classes</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">true_sum</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">num_classes</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">y_pred</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+            <span class="n">y_true_bins</span> <span class="o">=</span> <span class="n">y_true</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span><span class="o">.</span><span class="n">long</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">y_true</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">true_sum</span> <span class="o">=</span> <span class="n">_bincount</span><span class="p">(</span><span class="n">y_true_bins</span><span class="p">,</span> <span class="n">minlength</span><span class="o">=</span><span class="n">num_classes</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">true_sum</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">num_classes</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">y_pred</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_true_positive_sum</span> <span class="o">+=</span> <span class="n">true_positive_sum</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_pred_sum</span> <span class="o">+=</span> <span class="n">pred_sum</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_true_sum</span> <span class="o">+=</span> <span class="n">true_sum</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_total_sum</span> <span class="o">+=</span> <span class="n">mask</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">float</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_true_positive_sum</span> <span class="o">+=</span> <span class="n">true_positive_sum</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_pred_sum</span> <span class="o">+=</span> <span class="n">pred_sum</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_true_sum</span> <span class="o">+=</span> <span class="n">true_sum</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_total_sum</span> <span class="o">+=</span> <span class="n">mask</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">float</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">true_positive_sum</span><span class="p">,</span> <span class="n">pred_sum</span><span class="p">,</span> <span class="n">true_sum</span>
+            <span class="k">return</span> <span class="n">true_positive_sum</span><span class="p">,</span> <span class="n">pred_sum</span><span class="p">,</span> <span class="n">true_sum</span>
 
 <div class="viewcode-block" id="FBeta.compute"><a class="viewcode-back" href="../../../../../metrics.html#poutyne.FBeta.compute">[docs]</a>    <span class="k">def</span> <span class="nf">compute</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">]]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
