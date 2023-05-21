@@ -17,13 +17,14 @@ You should have received a copy of the GNU Lesser General Public License along w
 <https://www.gnu.org/licenses/>.
 """
 
+import contextlib
 import numbers
 
 # -*- coding: utf-8 -*-
 import os
 import random
 import warnings
-from typing import IO, Any, BinaryIO, Union
+from typing import IO, Any, BinaryIO, Optional, Union
 
 import numpy as np
 import torch
@@ -332,3 +333,15 @@ def get_batch_size(*values):
             "tensor or a Numpy array.\n"
         )
     return 1
+
+
+@contextlib.contextmanager
+def set_deterministic_debug_mode(mode: Optional[Union[str, int]]):
+    if mode is None:
+        yield
+        return
+
+    old_mode = torch.get_deterministic_debug_mode()
+    torch.set_deterministic_debug_mode(mode)
+    yield
+    torch.set_deterministic_debug_mode(old_mode)

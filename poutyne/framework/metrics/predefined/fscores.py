@@ -43,6 +43,8 @@ import torch
 
 from poutyne.framework.metrics.base import Metric
 from poutyne.framework.metrics.metrics_registering import register_metric_class
+from poutyne.framework.metrics.predefined.bincount import _bincount
+from poutyne.utils import set_deterministic_debug_mode
 
 
 class FBeta(Metric):
@@ -115,6 +117,8 @@ class FBeta(Metric):
         names (Optional[Union[str, List[str]]]): The names associated to the metrics. It is a string when
             a single metric is requested. It is a list of 3 strings if all metrics are requested.
             (Default value = None)
+        make_deterministic (Optional[bool]): Avoid non-deterministic operations in computations. This might make the
+            code slower.
     """
 
     def __init__(
@@ -127,6 +131,7 @@ class FBeta(Metric):
         ignore_index: int = -100,
         threshold: float = 0.0,
         names: Optional[Union[str, List[str]]] = None,
+        make_deterministic: Optional[bool] = None,
     ) -> None:
         super().__init__()
         self.metric_options = ('fscore', 'precision', 'recall')
@@ -154,6 +159,9 @@ class FBeta(Metric):
         self.ignore_index = ignore_index
         self.threshold = threshold
         self.__name__ = self._get_names(names)
+        self.deterministic_debug_mode = (
+            "error" if make_deterministic is True else "default" if make_deterministic is False else None
+        )
 
         # statistics
         # the total number of true positive instances under each class
@@ -235,80 +243,81 @@ class FBeta(Metric):
 
     def _update(self, y_pred: torch.Tensor, y_true: Union[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]) -> None:
         # pylint: disable=too-many-branches
-        if isinstance(y_true, tuple):
-            y_true, mask = y_true
-            mask = mask.bool()
-        else:
-            mask = torch.ones_like(y_true).bool()
+        with set_deterministic_debug_mode(self.deterministic_debug_mode):
+            if isinstance(y_true, tuple):
+                y_true, mask = y_true
+                mask = mask.bool()
+            else:
+                mask = torch.ones_like(y_true).bool()
 
-        if self.ignore_index is not None:
-            mask *= y_true != self.ignore_index
+            if self.ignore_index is not None:
+                mask *= y_true != self.ignore_index
 
-        if y_pred.shape[0] == 1:
-            y_pred, y_true, mask = (
-                y_pred.squeeze().unsqueeze(0),
-                y_true.squeeze().unsqueeze(0),
-                mask.squeeze().unsqueeze(0),
-            )
-        else:
-            y_pred, y_true, mask = y_pred.squeeze(), y_true.squeeze(), mask.squeeze()
+            if y_pred.shape[0] == 1:
+                y_pred, y_true, mask = (
+                    y_pred.squeeze().unsqueeze(0),
+                    y_true.squeeze().unsqueeze(0),
+                    mask.squeeze().unsqueeze(0),
+                )
+            else:
+                y_pred, y_true, mask = y_pred.squeeze(), y_true.squeeze(), mask.squeeze()
 
-        num_classes = 2
-        if y_pred.shape != y_true.shape:
-            num_classes = y_pred.size(1)
+            num_classes = 2
+            if y_pred.shape != y_true.shape:
+                num_classes = y_pred.size(1)
 
-        if (y_true >= num_classes).any():
-            raise ValueError(
-                f"A gold label passed to FBetaMeasure contains an id >= {num_classes}, the number of classes."
-            )
+            if (y_true >= num_classes).any():
+                raise ValueError(
+                    f"A gold label passed to FBetaMeasure contains an id >= {num_classes}, the number of classes."
+                )
 
-        if self._average == 'binary' and num_classes > 2:
-            raise ValueError("When `average` is binary, the number of prediction scores must be 2.")
+            if self._average == 'binary' and num_classes > 2:
+                raise ValueError("When `average` is binary, the number of prediction scores must be 2.")
 
-        # It means we call this metric at the first time
-        # when `self._true_positive_sum` is None.
-        if self._true_positive_sum is None:
-            self._true_positive_sum = torch.zeros(num_classes, device=y_pred.device)
-            self._true_sum = torch.zeros(num_classes, device=y_pred.device)
-            self._pred_sum = torch.zeros(num_classes, device=y_pred.device)
-            self._total_sum = torch.zeros(num_classes, device=y_pred.device)
+            # It means we call this metric at the first time
+            # when `self._true_positive_sum` is None.
+            if self._true_positive_sum is None:
+                self._true_positive_sum = torch.zeros(num_classes, device=y_pred.device)
+                self._true_sum = torch.zeros(num_classes, device=y_pred.device)
+                self._pred_sum = torch.zeros(num_classes, device=y_pred.device)
+                self._total_sum = torch.zeros(num_classes, device=y_pred.device)
 
-        y_true = y_true.float()
+            y_true = y_true.float()
 
-        if y_pred.shape != y_true.shape:
-            argmax_y_pred = y_pred.argmax(1).float()
-        else:
-            argmax_y_pred = (y_pred > self.threshold).float()
-        true_positives = (y_true == argmax_y_pred) * mask
-        true_positives_bins = y_true[true_positives]
+            if y_pred.shape != y_true.shape:
+                argmax_y_pred = y_pred.argmax(1).float()
+            else:
+                argmax_y_pred = (y_pred > self.threshold).float()
+            true_positives = (y_true == argmax_y_pred) * mask
+            true_positives_bins = y_true[true_positives]
 
-        # Watch it:
-        # The total numbers of true positives under all _predicted_ classes are zeros.
-        if true_positives_bins.shape[0] == 0:
-            true_positive_sum = torch.zeros(num_classes, device=y_pred.device)
-        else:
-            true_positive_sum = torch.bincount(true_positives_bins.long(), minlength=num_classes).float()
+            # Watch it:
+            # The total numbers of true positives under all _predicted_ classes are zeros.
+            if true_positives_bins.shape[0] == 0:
+                true_positive_sum = torch.zeros(num_classes, device=y_pred.device)
+            else:
+                true_positive_sum = _bincount(true_positives_bins.long(), minlength=num_classes).float()
 
-        pred_bins = argmax_y_pred[mask].long()
-        # Watch it:
-        # When the `mask` is all 0, we will get an _empty_ tensor.
-        if pred_bins.shape[0] != 0:
-            pred_sum = torch.bincount(pred_bins, minlength=num_classes).float()
-        else:
-            pred_sum = torch.zeros(num_classes, device=y_pred.device)
+            pred_bins = argmax_y_pred[mask].long()
+            # Watch it:
+            # When the `mask` is all 0, we will get an _empty_ tensor.
+            if pred_bins.shape[0] != 0:
+                pred_sum = _bincount(pred_bins, minlength=num_classes).float()
+            else:
+                pred_sum = torch.zeros(num_classes, device=y_pred.device)
 
-        y_true_bins = y_true[mask].long()
-        if y_true.shape[0] != 0:
-            true_sum = torch.bincount(y_true_bins, minlength=num_classes).float()
-        else:
-            true_sum = torch.zeros(num_classes, device=y_pred.device)
+            y_true_bins = y_true[mask].long()
+            if y_true.shape[0] != 0:
+                true_sum = _bincount(y_true_bins, minlength=num_classes).float()
+            else:
+                true_sum = torch.zeros(num_classes, device=y_pred.device)
 
-        self._true_positive_sum += true_positive_sum
-        self._pred_sum += pred_sum
-        self._true_sum += true_sum
-        self._total_sum += mask.sum().to(torch.float)
+            self._true_positive_sum += true_positive_sum
+            self._pred_sum += pred_sum
+            self._true_sum += true_sum
+            self._total_sum += mask.sum().to(torch.float)
 
-        return true_positive_sum, pred_sum, true_sum
+            return true_positive_sum, pred_sum, true_sum
 
     def compute(self) -> Union[float, Tuple[float]]:
         """
