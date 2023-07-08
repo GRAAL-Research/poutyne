@@ -39,7 +39,12 @@ from typing import Optional
 
 import torch
 from torch import Tensor
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_12, _XLA_AVAILABLE
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_12
+
+try:
+    from torchmetrics.utilities.imports import _XLA_AVAILABLE
+except ImportError:
+    _XLA_AVAILABLE = False
 
 
 def _bincount(x: Tensor, minlength: Optional[int] = None) -> Tensor:
