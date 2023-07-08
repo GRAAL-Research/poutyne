@@ -43,7 +43,7 @@ class WandBLoggerTest(TestCase):
         self.a_dir = os.getcwd()
         self.anonymous_lut = {True: "allow", False: None}
         self.run_mock = MagicMock(spec=wandb.sdk.wandb_run.Run)
-        self.artifact_mock = MagicMock(spec=wandb.sdk.wandb_artifacts.Artifact)
+        self.artifact_mock = MagicMock(spec=wandb.Artifact)
         self.initialize_experiment = MagicMock(return_value=self.run_mock)
         self.a_config_params = {"param_1": 1, "param_2": 2, "param_3": "value"}
         self.uncleaned_log = {"size": 32, "accuracy": 85}
