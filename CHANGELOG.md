@@ -1,3 +1,8 @@
+# v1.17.1
+
+- Fix `_XLA_AVAILABLE` import with old versions of torchmetrics.
+- Fix WandB tests.
+
 # v1.17
 
 - [`FBeta`](https://poutyne.org/metrics.html#poutyne.FBeta) is using the non-deterministic torch function [`bincount`](https://pytorch.org/docs/stable/generated/torch.bincount.html). Either by passing the argument `make_deterministic` to the [`FBeta`](https://poutyne.org/metrics.html#poutyne.FBeta) class or by using one of the PyTorch functions `torch.set_deterministic_debug_mode` or `torch.use_deterministic_algorithms`, you can now make this function deterministic. Note that this might make your code slower.
