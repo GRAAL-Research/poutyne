@@ -34,12 +34,20 @@ try:
 except ImportError:
     matplotlib_available = False
 
-from PIL import Image
+
+try:
+    from PIL import Image
+
+    pil_available = True
+except ImportError:
+    pil_available = False
+
 
 from poutyne import plot_history, plot_metric
 
 
 @skipIf(not matplotlib_available, "matplotlib is not available")
+@skipIf(not pil_available, "PIL is not available")
 class PlotHistoryTest(TestCase):
     HISTORY = [
         {'epoch': 1, 'time': 6.2788, 'loss': 0.3683, 'acc': 88.2645, 'val_loss': 0.0984, 'val_acc': 97.0833},
