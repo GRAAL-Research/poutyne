@@ -2,6 +2,7 @@
 
 - np.Inf was deprecated forever and is now gone in Numpy 2.0
 - Update Black, isort, PyLint and flake8.
+- Add tests with only bare dependencies.
 
 # v1.17.1
 
