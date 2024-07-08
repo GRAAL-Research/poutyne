@@ -19,10 +19,16 @@ You should have received a copy of the GNU Lesser General Public License along w
 
 import os
 from tempfile import TemporaryDirectory
-from unittest import TestCase
+from unittest import TestCase, skipIf
 
 import numpy as np
-import pandas as pd
+
+try:
+    import pandas as pd
+
+    pandas_available = True
+except ImportError:
+    pandas_available = False
 import torch
 from torch import nn
 from torch.utils.data import TensorDataset
@@ -33,6 +39,7 @@ from tests.framework.experiment.utils import ConstantMetric, ConstantMetricCallb
 from tests.framework.tools import SomeDataGeneratorWithLen
 
 
+@skipIf(not pandas_available, "pandas is not available")
 class BaseExperimentTest:
     # pylint: disable=no-member
     NUM_EPOCHS = None

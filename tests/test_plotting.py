@@ -20,19 +20,26 @@ You should have received a copy of the GNU Lesser General Public License along w
 import os
 from io import BytesIO
 from tempfile import TemporaryDirectory
-from unittest import TestCase
+from unittest import TestCase, skipIf
 
-import matplotlib as mpl
-import matplotlib.pyplot as plt
-from matplotlib.axes import Axes
-from matplotlib.figure import Figure
+try:
+    import matplotlib as mpl
+    import matplotlib.pyplot as plt
+    from matplotlib.axes import Axes
+    from matplotlib.figure import Figure
+
+    mpl.use('Agg')
+
+    matplotlib_available = True
+except ImportError:
+    matplotlib_available = False
+
 from PIL import Image
 
 from poutyne import plot_history, plot_metric
 
-mpl.use('Agg')
 
-
+@skipIf(not matplotlib_available, "matplotlib is not available")
 class PlotHistoryTest(TestCase):
     HISTORY = [
         {'epoch': 1, 'time': 6.2788, 'loss': 0.3683, 'acc': 88.2645, 'val_loss': 0.0984, 'val_acc': 97.0833},
