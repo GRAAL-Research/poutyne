@@ -9,6 +9,9 @@ on:
       os:
         required: true
         type: string
+    secrets:
+      codecov_token:
+        required: true
 
 defaults:
   run:
@@ -91,7 +94,7 @@ jobs:
         uses: codecov/codecov-action@v4
         with:
           files: ./coverage.xml
-          token: ${{ secrets.CODECOV_TOKEN }}
+          token: ${{ secrets.codecov_token }}
 
   tests_without_deps:
     runs-on: ${{ inputs.os }}
@@ -113,4 +116,4 @@ jobs:
         uses: codecov/codecov-action@v4
         with:
           files: ./coverage.xml
-          token: ${{ secrets.CODECOV_TOKEN }}
+          token: ${{ secrets.codecov_token }}
