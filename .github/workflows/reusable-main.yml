@@ -91,3 +91,22 @@ jobs:
         uses: codecov/codecov-action@v3
         with:
           files: ./coverage.xml
+
+  tests_without_deps:
+    runs-on: ${{ inputs.os }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python ${{ inputs.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ inputs.python-version }}
+      - name: Install dependencies
+        run: |
+          pip install -e .
+      - name: Test with pytest
+        run: |
+          pytest
+      - name: Upload Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./coverage.xml
