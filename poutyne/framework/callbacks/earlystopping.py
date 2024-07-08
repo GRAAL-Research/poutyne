@@ -122,7 +122,7 @@ class EarlyStopping(Callback):
         # Allow instances to be re-used
         self.wait = 0
         self.stopped_epoch = 0
-        self.best = np.Inf if self.mode == 'min' else -np.Inf
+        self.best = np.inf if self.mode == 'min' else -np.inf
 
     def on_epoch_end(self, epoch_number: int, logs: Dict):
         current = logs[self.monitor]
