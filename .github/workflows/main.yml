@@ -20,6 +20,8 @@ jobs:
           - python-version: "3.11"
             os: windows-latest
     uses: ./.github/workflows/reusable-main.yml
+    secrets:
+      codecov_token: ${{ secrets.CODECOV_TOKEN }}
     with:
       os: ${{ matrix.os }}
       python-version: ${{ matrix.python-version }}
