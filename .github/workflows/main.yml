@@ -6,6 +6,7 @@ on:
   schedule:
     # Run the tests at 00:00 each week on Sunday
     - cron: "0 0 * * 0"
+  workflow_call:
 
 jobs:
   cicd-pipeline:

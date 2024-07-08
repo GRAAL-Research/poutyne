@@ -94,7 +94,7 @@ jobs:
 
   tests_without_deps:
     runs-on: ${{ inputs.os }}
-    if: ${{ matrix.os != 'windows-latest' }}
+    if: ${{ inputs.os != 'windows-latest' }}
     steps:
       - uses: actions/checkout@v3
       - name: Set up Python ${{ inputs.python-version }}
