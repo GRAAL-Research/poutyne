@@ -1,8 +1,8 @@
 # v1.17.2
 
-- np.Inf was deprecated forever and is now gone in Numpy 2.0
+- np.Inf was deprecated forever and is now gone in Numpy 2.0.
 - Update Black, isort, PyLint and flake8.
-- Add tests with only bare dependencies.
+- Add step to run tests in CI with only bare dependencies.
 
 # v1.17.1
 
