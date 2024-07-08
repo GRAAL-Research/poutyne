@@ -157,7 +157,7 @@ class NotificationCallbackTest(TestCase):
         call_list = []
         call_list.append(call.send_notification('', subject=f'Start of the {mode}{experiment_name_text}.'))
 
-        message = ''
+        message = ""
         if mode == "training":
             for batch_log in logs:
                 formatted_log_data = " ".join([f"{key}: {value}\n" for key, value in batch_log.items()])
