@@ -1,3 +1,9 @@
+# v1.17.2
+
+- np.Inf was deprecated forever and is now gone in Numpy 2.0.
+- Update Black, isort, PyLint and flake8.
+- Add step to run tests in CI with only bare dependencies.
+
 # v1.17.1
 
 - Fix `_XLA_AVAILABLE` import with old versions of torchmetrics.

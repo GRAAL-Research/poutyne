@@ -1,7 +1,7 @@
 [tool.black]
 line-length = 120
 skip-string-normalization = true
-required-version = '22'
+required-version = '24'
 extend-exclude = '/(slides)/'
 
 [tool.isort]

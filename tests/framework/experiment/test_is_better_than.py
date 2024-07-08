@@ -19,15 +19,21 @@ You should have received a copy of the GNU Lesser General Public License along w
 
 import os
 from tempfile import TemporaryDirectory
-from unittest import TestCase
+from unittest import TestCase, skipIf
 from unittest.mock import MagicMock, patch
 
-import pandas as pd
+try:
+    import pandas as pd
+
+    pandas_available = True
+except ImportError:
+    pandas_available = False
 from torch import nn
 
 from poutyne import Experiment, ModelBundle
 
 
+@skipIf(not pandas_available, "pandas is not available")
 class ExperimentIsBetterThanTest(TestCase):
     def setUpTwoExperiment(self, a_params=None, b_params=None):
         temp_dir_obj = TemporaryDirectory()

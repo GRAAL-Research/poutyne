@@ -423,6 +423,7 @@ class ModelFittingTestCaseProgress(ModelFittingTestCase):
         self.assertStdoutNotContains(["%", "\u2588"])
         self.assertStdoutNotContains(["[32m", "[35m", "[36m", "[94m"])
 
+    @skipIf(color is None, "Unable to import colorama")
     def test_evaluate_data_loader_with_progress_bar_coloring(self):
         x = torch.rand(ModelFittingTestCase.evaluate_dataset_len, 1)
         y = torch.rand(ModelFittingTestCase.evaluate_dataset_len, 1)
@@ -433,6 +434,7 @@ class ModelFittingTestCaseProgress(ModelFittingTestCase):
 
         self.assertStdoutContains(["%", "[32m", "[35m", "[36m", "[94m", "\u2588"])
 
+    @skipIf(color is None, "Unable to import colorama")
     def test_evaluate_generator_with_progress_bar_coloring(self):
         generator = some_data_tensor_generator(ModelFittingTestCase.batch_size)
 
@@ -440,6 +442,7 @@ class ModelFittingTestCaseProgress(ModelFittingTestCase):
 
         self.assertStdoutContains(["%", "[32m", "[35m", "[36m", "[94m", "\u2588"])
 
+    @skipIf(color is None, "Unable to import colorama")
     def test_evaluate_generator_with_callback_and_progress_bar_coloring(self):
         generator = some_data_tensor_generator(ModelFittingTestCase.batch_size)
 
@@ -449,6 +452,7 @@ class ModelFittingTestCaseProgress(ModelFittingTestCase):
 
         self.assertStdoutContains(["%", "[32m", "[35m", "[36m", "[94m", "\u2588"])
 
+    @skipIf(color is None, "Unable to import colorama")
     def test_fitting_complete_display_test_with_progress_bar_coloring(self):
         # we use the same color for all components for simplicity
         coloring = {
@@ -568,6 +572,7 @@ class ModelFittingTestCaseProgress(ModelFittingTestCase):
         last_print_regex = r".*Train steps:.*5.*Val steps:.*5.*" + ModelFittingTestCaseProgress.TIME_REGEX
         self.assertRegex(steps_update[-1], last_print_regex)
 
+    @skipIf(color is None, "Unable to import colorama")
     def test_evaluate_complete_display_test_with_progress_bar_coloring(self):
         # we use the same color for all components for simplicity
         coloring = {
@@ -742,6 +747,7 @@ class ModelFittingTestCaseProgress(ModelFittingTestCase):
         self.assertStdoutNotContains(["%", "\u2588"])
         self.assertStdoutNotContains(["[32m", "[35m", "[36m"])
 
+    @skipIf(color is None, "Unable to import colorama")
     def test_predict_dataset_complete_display_predict_with_progress_bar_coloring(self):
         x = torch.rand(ModelFittingTestCase.evaluate_dataset_len, 1)
         # we use the same color for all components for simplicity

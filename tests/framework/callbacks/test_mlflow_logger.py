@@ -22,7 +22,12 @@ from typing import Dict, List, Mapping, Sequence
 from unittest import TestCase, skipIf
 from unittest.mock import MagicMock, call, patch
 
-import git
+try:
+    import git
+
+    git_available = True
+except ImportError:
+    git_available = False
 import torch
 import torch.nn as nn
 
@@ -42,6 +47,7 @@ a_git_commit = "9bff900c30e80c3a35388d3e617db5b7a64c9afd"
 mlflow_default_git_commit_tag = "mlflow.source.git.commit"
 
 
+@skipIf(not git_available, "git package is not available")
 @skipIf(not mlflow_available, "imports for MLFlowLogger not available")
 class MLFlowLoggerTest(TestCase):
     def setUp(self) -> None:
@@ -385,6 +391,7 @@ class MLFlowLoggerTest(TestCase):
                 ml_flow_client_patch.assert_has_calls(ml_flow_client_step_calls)
 
 
+@skipIf(not git_available, "git package is not available")
 class GetGitCommitTest(TestCase):
     def setUp(self) -> None:
         self.a_fake_path = "a_fake_path"

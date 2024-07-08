@@ -15,7 +15,7 @@ repos:
         entry: black
         language: python
         types_or: [python, pyi]
-        additional_dependencies: [black~=22.3, "black[jupyter]"]
+        additional_dependencies: ["black[jupyter]~=24.4.2"]
   - repo: local
     hooks:
       - id: isort
@@ -23,7 +23,16 @@ repos:
         entry: isort
         language: python
         types_or: [python, pyi]
-        additional_dependencies: [isort~=5.1]
+        additional_dependencies: [isort~=5.13.2]
+  - repo: local
+    hooks:
+      - id: flake8
+        name: flake8
+        entry: flake8
+        language: python
+        types: [python]
+        args: ["poutyne", "tests"]
+        additional_dependencies: [flake8==7.1.0]
   - repo: local
     hooks:
       - id: pylint
@@ -33,12 +42,3 @@ repos:
         types: [python]
         args: ["poutyne", "tests", "-rn"]
         # additional_dependencies: [pylint==2.12.1]
-  - repo: local
-    hooks:
-      - id: flake8
-        name: flake8
-        entry: flake8
-        language: python
-        types: [python]
-        args: ["poutyne", "tests"]
-        additional_dependencies: [flake8==4.0.1]
