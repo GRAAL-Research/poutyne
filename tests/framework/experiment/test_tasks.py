@@ -19,14 +19,21 @@ You should have received a copy of the GNU Lesser General Public License along w
 
 import os
 from tempfile import TemporaryDirectory
-from unittest import TestCase
+from unittest import TestCase, skipIf
 
+try:
+    import pandas  # pylint: disable=unused-import  # noqa: F401
+
+    pandas_available = True
+except ImportError:
+    pandas_available = False
 import torch.nn.functional as F
 from torch import nn
 
 from poutyne import Experiment, FBeta, acc
 
 
+@skipIf(not pandas_available, "pandas is not available")
 class ExperimentTasksTest(TestCase):
     def setUp(self):
         self.temp_dir_obj = TemporaryDirectory()

@@ -391,6 +391,7 @@ class MLFlowLoggerTest(TestCase):
                 ml_flow_client_patch.assert_has_calls(ml_flow_client_step_calls)
 
 
+@skipIf(not git_available, "git package is not available")
 class GetGitCommitTest(TestCase):
     def setUp(self) -> None:
         self.a_fake_path = "a_fake_path"

@@ -26,6 +26,15 @@ repos:
         additional_dependencies: [isort~=5.13.2]
   - repo: local
     hooks:
+      - id: flake8
+        name: flake8
+        entry: flake8
+        language: python
+        types: [python]
+        args: ["poutyne", "tests"]
+        additional_dependencies: [flake8==7.1.0]
+  - repo: local
+    hooks:
       - id: pylint
         name: pylint
         entry: pylint
@@ -33,12 +42,3 @@ repos:
         types: [python]
         args: ["poutyne", "tests", "-rn"]
         # additional_dependencies: [pylint==2.12.1]
-  - repo: local
-    hooks:
-      - id: flake8
-        name: flake8
-        entry: flake8
-        language: python
-        types: [python]
-        args: ["poutyne", "tests"]
-        additional_dependencies: [flake8==4.0.1]

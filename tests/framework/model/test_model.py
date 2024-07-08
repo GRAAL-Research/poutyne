@@ -23,6 +23,12 @@ from math import ceil
 from unittest import main, skipIf
 from unittest.mock import ANY, MagicMock, Mock, call
 
+try:
+    import colorama  # pylint: disable=unused-import  # noqa: F401
+
+    colorama_available = True
+except ImportError:
+    colorama_available = False
 import numpy as np
 import torch
 import torch.nn as nn
@@ -1217,6 +1223,7 @@ class ModelDatasetMethodsTest(ModelFittingTestCase):
         self.assertEqual(type(pred_y), np.ndarray)
         self.assertEqual(pred_y.shape, (num_steps * ModelTest.batch_size, 10))
 
+    @skipIf(not colorama_available, "colorama is not available")
     def test_evaluate_dataset_with_progress_bar_coloring(self):
         num_steps = 10
         self._capture_output()
