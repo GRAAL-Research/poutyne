@@ -102,6 +102,7 @@ jobs:
           python-version: ${{ inputs.python-version }}
       - name: Install dependencies
         run: |
+          pip install pytest pytest-cov
           pip install -e .
       - name: Test with pytest
         run: |
