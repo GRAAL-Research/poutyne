@@ -15,7 +15,7 @@ repos:
         entry: black
         language: python
         types_or: [python, pyi]
-        additional_dependencies: [black~=22.3, "black[jupyter]"]
+        additional_dependencies: ["black[jupyter]~=24.4.2"]
   - repo: local
     hooks:
       - id: isort
@@ -23,7 +23,7 @@ repos:
         entry: isort
         language: python
         types_or: [python, pyi]
-        additional_dependencies: [isort~=5.1]
+        additional_dependencies: [isort~=5.13.2]
   - repo: local
     hooks:
       - id: pylint

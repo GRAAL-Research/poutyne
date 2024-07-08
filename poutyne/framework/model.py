@@ -621,7 +621,7 @@ class Model:
 
                     examples_in_step += step.size
 
-                    (step.loss, step.batch_metrics, did_backprop, _,) = self._fit_batch_n_batches_per_step(
+                    (step.loss, step.batch_metrics, did_backprop, _) = self._fit_batch_n_batches_per_step(
                         x, y, batches_per_step, examples_in_step, callback=callback_list, step=step
                     )
 
@@ -1018,6 +1018,7 @@ class Model:
                     x, y = self.preprocess_input(*batch)
                 else:
                     x = self.preprocess_input(batch)
+                    y = None  # Silence PyLint
 
                 batch_pred = self.network(*x)
                 pred_y.append(torch_to_numpy(batch_pred) if convert_to_numpy else batch_pred)

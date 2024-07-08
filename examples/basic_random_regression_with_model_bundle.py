@@ -4,9 +4,10 @@ python basic_random_regression_with_experiment.py
 
 Look in ./saves/my_regression_network for the checkpoints and logging.
 """
+
+import numpy as np
 import torch
 import torch.nn as nn
-import numpy as np
 from sklearn.metrics import r2_score
 
 # Import the Poutyne Model

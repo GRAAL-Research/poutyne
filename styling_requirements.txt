@@ -1,6 +1,5 @@
-astroid==2.12.12
-black[jupyter]
-black~=22.3
-flake8==5.0.4
-isort~=5.1
-pylint==2.15.5
+astroid==3.2.2
+black[jupyter]~=24.4.2
+flake8==7.1.0
+isort~=5.13.2
+pylint==3.2.5

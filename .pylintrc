@@ -72,7 +72,9 @@ disable=raw-checker-failed,
         cyclic-import,
         arguments-differ,
         consider-using-from-import,
-        consider-using-with
+        consider-using-with,
+        use-dict-literal,
+        too-many-arguments
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
@@ -475,4 +477,4 @@ known-third-party=enchant
 
 # Exceptions that will emit a warning when being caught. Defaults to
 # "Exception"
-overgeneral-exceptions=Exception
+overgeneral-exceptions=builtins.Exception

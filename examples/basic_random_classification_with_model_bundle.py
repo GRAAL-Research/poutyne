@@ -4,9 +4,10 @@ python basic_random_classification_with_experiment.py
 
 Look in ./saves/my_classification_network for the checkpoints and logging.
 """
+
+import numpy as np
 import torch
 import torch.nn as nn
-import numpy as np
 
 # Import the Poutyne Model
 from poutyne import ModelBundle

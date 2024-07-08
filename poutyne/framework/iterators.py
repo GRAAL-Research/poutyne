@@ -32,8 +32,7 @@ class Step:
 
 def cycle(iterable):  # Equivalent to itertools cycle, without any extra memory requirement
     while True:
-        for x in iterable:
-            yield x
+        yield from iterable
 
 
 def _get_step_iterator(steps, generator):
