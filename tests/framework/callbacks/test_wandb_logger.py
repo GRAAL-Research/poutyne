@@ -36,7 +36,9 @@ class WandBLoggerTest(TestCase):
         self.pytorch_network = nn.Linear(1, 1)
         self.loss_function = nn.MSELoss()
         self.a_lr = 1e-3
-        self.optimizer = torch.optim.SGD(self.pytorch_network.parameters(), lr=self.a_lr)
+        self.optimizer = torch.optim.SGD(
+            self.pytorch_network.parameters(), lr=self.a_lr
+        )
         self.model = Model(self.pytorch_network, self.optimizer, self.loss_function)
         self.num_epochs = 2
         self.a_name = "test_run"
@@ -120,7 +122,9 @@ class WandBLoggerTest(TestCase):
             wandb_patch.Artifact.return_value = self.artifact_mock
             wandb_patch.init = self.initialize_experiment
             wandb_patch.run = None
-            logger = WandBLogger(name=self.a_name, initial_artifacts_paths=[self.temp_file_obj.name])
+            logger = WandBLogger(
+                name=self.a_name, initial_artifacts_paths=[self.temp_file_obj.name]
+            )
             self.artifact_mock.add_file.assert_called_once_with(self.temp_file_obj.name)
             logger.run.log_artifact.assert_called_once_with(self.artifact_mock)
 
@@ -129,7 +133,9 @@ class WandBLoggerTest(TestCase):
             wandb_patch.Artifact.return_value = self.artifact_mock
             wandb_patch.init = self.initialize_experiment
             wandb_patch.run = None
-            logger = WandBLogger(name=self.a_name, initial_artifacts_paths=[self.temp_dir_obj.name])
+            logger = WandBLogger(
+                name=self.a_name, initial_artifacts_paths=[self.temp_dir_obj.name]
+            )
             self.artifact_mock.add_dir.assert_called_once_with(self.temp_dir_obj.name)
             logger.run.log_artifact.assert_called_once_with(self.artifact_mock)
 
@@ -142,7 +148,11 @@ class WandBLoggerTest(TestCase):
             logger = WandBLogger(name=self.a_name)
 
             self.model.fit_generator(
-                train_gen, valid_gen, epochs=self.num_epochs, steps_per_epoch=5, callbacks=[logger]
+                train_gen,
+                valid_gen,
+                epochs=self.num_epochs,
+                steps_per_epoch=5,
+                callbacks=[logger],
             )
 
             logger.run.watch.assert_not_called()
@@ -155,10 +165,16 @@ class WandBLoggerTest(TestCase):
             wandb_patch.run = None
             logger = WandBLogger(name=self.a_name, log_gradient_frequency=1)
             self.model.fit_generator(
-                train_gen, valid_gen, epochs=self.num_epochs, steps_per_epoch=5, callbacks=[logger]
+                train_gen,
+                valid_gen,
+                epochs=self.num_epochs,
+                steps_per_epoch=5,
+                callbacks=[logger],
             )
 
-            logger.run.watch.assert_called_once_with(self.pytorch_network, log="all", log_freq=1)
+            logger.run.watch.assert_called_once_with(
+                self.pytorch_network, log="all", log_freq=1
+            )
 
     def test_log_epoch(self):
         with patch("poutyne.framework.wandb_logger.wandb") as wandb_patch:
@@ -166,18 +182,32 @@ class WandBLoggerTest(TestCase):
             valid_gen = some_data_generator(20)
             wandb_patch.init = self.initialize_experiment
             wandb_patch.run = None
-            logger = WandBLogger(name=self.a_name, log_gradient_frequency=1, batch_granularity=False)
+            logger = WandBLogger(
+                name=self.a_name, log_gradient_frequency=1, batch_granularity=False
+            )
             history = self.model.fit_generator(
-                train_gen, valid_gen, epochs=self.num_epochs, steps_per_epoch=5, callbacks=[logger]
+                train_gen,
+                valid_gen,
+                epochs=self.num_epochs,
+                steps_per_epoch=5,
+                callbacks=[logger],
             )
             experiment_call = []
             for log in history:
                 epoch = log["epoch"]
-                train_metrics = {key: value for (key, value) in log.items() if not key.startswith("val_")}
+                train_metrics = {
+                    key: value
+                    for (key, value) in log.items()
+                    if not key.startswith("val_")
+                }
                 train_metrics = {"training": train_metrics}
                 experiment_call.append(call.log(train_metrics, step=epoch))
 
-                val_metrics = {key[4:]: value for (key, value) in log.items() if key.startswith("val_")}
+                val_metrics = {
+                    key[4:]: value
+                    for (key, value) in log.items()
+                    if key.startswith("val_")
+                }
                 val_metrics = {"validation": val_metrics}
                 experiment_call.append(call(val_metrics, step=epoch))
 
@@ -192,26 +222,44 @@ class WandBLoggerTest(TestCase):
             wandb_patch.init = self.initialize_experiment
             wandb_patch.run = None
             num_batchs = 5
-            logger = WandBLogger(name=self.a_name, log_gradient_frequency=1, batch_granularity=True)
+            logger = WandBLogger(
+                name=self.a_name, log_gradient_frequency=1, batch_granularity=True
+            )
             history = History()
             self.model.fit_generator(
-                train_gen, valid_gen, epochs=self.num_epochs, steps_per_epoch=num_batchs, callbacks=[logger, history]
+                train_gen,
+                valid_gen,
+                epochs=self.num_epochs,
+                steps_per_epoch=num_batchs,
+                callbacks=[logger, history],
             )
             experiment_call = []
             for is_epoch, log in history.history:
                 if is_epoch:
-                    train_metrics = {key: value for (key, value) in log.items() if not key.startswith("val_")}
+                    train_metrics = {
+                        key: value
+                        for (key, value) in log.items()
+                        if not key.startswith("val_")
+                    }
                     train_metrics = {"training": {"epoch": train_metrics}}
 
                     experiment_call.append(call.log(train_metrics))
-                    val_metrics = {key[4:]: value for (key, value) in log.items() if key.startswith("val_")}
+                    val_metrics = {
+                        key[4:]: value
+                        for (key, value) in log.items()
+                        if key.startswith("val_")
+                    }
                     val_metrics = {"validation": {"epoch": val_metrics}}
 
                     experiment_call.append(call(val_metrics))
 
                     experiment_call.append(call({"params": {"lr": self.a_lr}}))
                 else:
-                    train_metrics = {key: value for (key, value) in log.items() if not key.startswith("val_")}
+                    train_metrics = {
+                        key: value
+                        for (key, value) in log.items()
+                        if not key.startswith("val_")
+                    }
                     train_metrics = {"training": {"batch": train_metrics}}
                     experiment_call.append(call(train_metrics))
 
@@ -223,9 +271,11 @@ class WandBLoggerTest(TestCase):
             y = torch.rand(10, 1)
             wandb_patch.init = self.initialize_experiment
             wandb_patch.run = None
-            logger = WandBLogger(name=self.a_name, log_gradient_frequency=1, batch_granularity=True)
+            logger = WandBLogger(
+                name=self.a_name, log_gradient_frequency=1, batch_granularity=True
+            )
             self.model.evaluate(x, y, callbacks=[logger])
-            logger.run.log.called_once()
+            logger.run.log.assert_called_once()
 
     def test_log_checkpoints(self):
         with patch("poutyne.framework.wandb_logger.wandb") as wandb_patch:
@@ -234,10 +284,18 @@ class WandBLoggerTest(TestCase):
             wandb_patch.init = self.initialize_experiment
             wandb_patch.run = None
             wandb_patch.Artifact.return_value = self.artifact_mock
-            tmp_filename = os.path.join(self.temp_dir_obj.name, 'my_checkpoint.tmp.ckpt')
-            checkpoint_filename = os.path.join(self.temp_dir_obj.name, 'my_checkpoint.ckpt')
+            tmp_filename = os.path.join(
+                self.temp_dir_obj.name, "my_checkpoint.tmp.ckpt"
+            )
+            checkpoint_filename = os.path.join(
+                self.temp_dir_obj.name, "my_checkpoint.ckpt"
+            )
             checkpointer = ModelCheckpoint(
-                checkpoint_filename, monitor='val_loss', verbose=True, period=1, temporary_filename=tmp_filename
+                checkpoint_filename,
+                monitor="val_loss",
+                verbose=True,
+                period=1,
+                temporary_filename=tmp_filename,
             )
             logger = WandBLogger(
                 name=self.a_name,
@@ -246,7 +304,11 @@ class WandBLoggerTest(TestCase):
                 checkpoints_path=self.temp_dir_obj.name,
             )
             self.model.fit_generator(
-                train_gen, valid_gen, epochs=self.num_epochs, steps_per_epoch=5, callbacks=[logger, checkpointer]
+                train_gen,
+                valid_gen,
+                epochs=self.num_epochs,
+                steps_per_epoch=5,
+                callbacks=[logger, checkpointer],
             )
             self.artifact_mock.add_dir.assert_called_once_with(self.temp_dir_obj.name)
             logger.run.log_artifact.assert_called_once_with(self.artifact_mock)
@@ -270,14 +332,22 @@ class WandBLoggerTest(TestCase):
                     logger.run.dir = "a_path"
                     logger.run.name = self.a_name
                     self.model.fit_generator(
-                        train_gen, valid_gen, epochs=self.num_epochs, steps_per_epoch=num_batchs, callbacks=[logger]
+                        train_gen,
+                        valid_gen,
+                        epochs=self.num_epochs,
+                        steps_per_epoch=num_batchs,
+                        callbacks=[logger],
                     )
 
                     torch_onx_patch.export.assert_called_once_with(
-                        self.pytorch_network, torch_randn_patch().to(), f"a_path/{self.a_name}_model.onnx"
+                        self.pytorch_network,
+                        torch_randn_patch().to(),
+                        f"a_path/{self.a_name}_model.onnx",
                     )
-                    logger.run.save.assert_called_once_with(f"a_path/{self.a_name}_model.onnx")
+                    logger.run.save.assert_called_once_with(
+                        f"a_path/{self.a_name}_model.onnx"
+                    )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

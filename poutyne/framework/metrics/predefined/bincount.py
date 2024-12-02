@@ -40,7 +40,10 @@ from typing import Optional
 
 import torch
 from torch import Tensor
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_12
+from lightning_utilities.core.imports import RequirementCache
+
+_TORCH_GREATER_EQUAL_1_12 = RequirementCache("torch>=1.12.0")
+
 
 try:
     from torchmetrics.utilities.imports import _XLA_AVAILABLE
@@ -65,7 +68,12 @@ def _bincount(x: Tensor, minlength: Optional[int] = None) -> Tensor:
     """
     if minlength is None:
         minlength = len(torch.unique(x))
-    if torch.are_deterministic_algorithms_enabled() or _XLA_AVAILABLE or _TORCH_GREATER_EQUAL_1_12 and x.is_mps:
+    if (
+        torch.are_deterministic_algorithms_enabled()
+        or _XLA_AVAILABLE
+        or _TORCH_GREATER_EQUAL_1_12
+        and x.is_mps
+    ):
         output = torch.zeros(minlength, device=x.device, dtype=torch.long)
         for i in range(minlength):
             output[i] = (x == i).sum()
