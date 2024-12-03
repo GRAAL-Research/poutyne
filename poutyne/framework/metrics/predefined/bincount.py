@@ -39,8 +39,11 @@ limitations under the License.
 from typing import Optional
 
 import torch
+from lightning_utilities.core.imports import RequirementCache
 from torch import Tensor
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_12
+
+_TORCH_GREATER_EQUAL_1_12 = RequirementCache("torch>=1.12.0")
+
 
 try:
     from torchmetrics.utilities.imports import _XLA_AVAILABLE
