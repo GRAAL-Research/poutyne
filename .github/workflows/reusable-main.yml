@@ -98,7 +98,6 @@ jobs:
 
   tests_without_deps:
     runs-on: ${{ inputs.os }}
-    if: ${{ inputs.os != 'windows-latest' }}
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python ${{ inputs.python-version }}
@@ -112,8 +111,3 @@ jobs:
       - name: Test with pytest
         run: |
           pytest
-      - name: Upload Codecov
-        uses: codecov/codecov-action@v4
-        with:
-          files: ./coverage.xml
-          token: ${{ secrets.codecov_token }}

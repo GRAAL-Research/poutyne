@@ -225,7 +225,7 @@ class WandBLoggerTest(TestCase):
             wandb_patch.run = None
             logger = WandBLogger(name=self.a_name, log_gradient_frequency=1, batch_granularity=True)
             self.model.evaluate(x, y, callbacks=[logger])
-            logger.run.log.called_once()
+            logger.run.log.assert_called_once()
 
     def test_log_checkpoints(self):
         with patch("poutyne.framework.wandb_logger.wandb") as wandb_patch:

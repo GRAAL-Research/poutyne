@@ -44,7 +44,6 @@ from torch import Tensor
 
 _TORCH_GREATER_EQUAL_1_12 = RequirementCache("torch>=1.12.0")
 
-
 try:
     from torchmetrics.utilities.imports import _XLA_AVAILABLE
 except ImportError:

@@ -1,4 +1,4 @@
+lightning_utilities
 numpy
 torch
 torchmetrics
-lightning_utilities
