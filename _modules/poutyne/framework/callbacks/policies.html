@@ -1,20 +1,20 @@
+
+
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="../../../../">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>poutyne.framework.callbacks.policies &mdash; Poutyne 1.17.1 documentation</title>
-      <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
-  <!--[if lt IE 9]>
-    <script src="../../../../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
+  <title>poutyne.framework.callbacks.policies &mdash; Poutyne 1.17.3 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=e59714d7" />
+
   
-        <script src="../../../../_static/jquery.js"></script>
-        <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
-        <script src="../../../../_static/doctools.js"></script>
-        <script src="../../../../_static/sphinx_highlight.js"></script>
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=a487ca7d"></script>
+      <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../../genindex.html" />
     <link rel="search" title="Search" href="../../../../search.html" /> 
@@ -32,9 +32,6 @@
             
               <img src="../../../../_static/poutyne-light.png" class="logo" alt="Logo"/>
           </a>
-              <div class="version">
-                1.17.1
-              </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
@@ -125,7 +122,9 @@
 <span class="c1">###############################################################################</span>
 <span class="c1"># Lazy parameter spaces</span>
 <span class="c1"># A space is just an iterable</span>
-<div class="viewcode-block" id="linspace"><a class="viewcode-back" href="../../../../callbacks.html#poutyne.linspace">[docs]</a><span class="k">class</span> <span class="nc">linspace</span><span class="p">:</span>
+<div class="viewcode-block" id="linspace">
+<a class="viewcode-back" href="../../../../callbacks.html#poutyne.linspace">[docs]</a>
+<span class="k">class</span> <span class="nc">linspace</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A lazy linear parameter space that goes from ``start`` to ``end`` in ``steps`` steps.</span>
 
@@ -151,7 +150,10 @@
         <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">start</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_progress</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">end</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">steps</span><span class="p">))</span></div>
 
 
-<div class="viewcode-block" id="cosinespace"><a class="viewcode-back" href="../../../../callbacks.html#poutyne.cosinespace">[docs]</a><span class="k">class</span> <span class="nc">cosinespace</span><span class="p">:</span>
+
+<div class="viewcode-block" id="cosinespace">
+<a class="viewcode-back" href="../../../../callbacks.html#poutyne.cosinespace">[docs]</a>
+<span class="k">class</span> <span class="nc">cosinespace</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A lazy cosine parameter space that goes from ``start`` to ``end`` in ``steps`` steps.</span>
 
@@ -177,8 +179,11 @@
         <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">end</span> <span class="o">+</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">start</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">end</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">cos</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_progress</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">*</span> <span class="n">pi</span><span class="p">))</span> <span class="o">/</span> <span class="mi">2</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">steps</span><span class="p">))</span></div>
 
 
+
 <span class="c1">###############################################################################</span>
-<div class="viewcode-block" id="Phase"><a class="viewcode-back" href="../../../../callbacks.html#poutyne.Phase">[docs]</a><span class="k">class</span> <span class="nc">Phase</span><span class="p">:</span>
+<div class="viewcode-block" id="Phase">
+<a class="viewcode-back" href="../../../../callbacks.html#poutyne.Phase">[docs]</a>
+<span class="k">class</span> <span class="nc">Phase</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Defines how to configure an optimizer.</span>
 
@@ -235,10 +240,13 @@
         <span class="k">return</span> <span class="n">ax</span></div>
 
 
+
 <span class="c1">###############################################################################</span>
 <span class="c1"># complex policies build from simple phases</span>
 <span class="c1"># pylint</span>
-<div class="viewcode-block" id="one_cycle_phases"><a class="viewcode-back" href="../../../../callbacks.html#poutyne.one_cycle_phases">[docs]</a><span class="k">def</span> <span class="nf">one_cycle_phases</span><span class="p">(</span>
+<div class="viewcode-block" id="one_cycle_phases">
+<a class="viewcode-back" href="../../../../callbacks.html#poutyne.one_cycle_phases">[docs]</a>
+<span class="k">def</span> <span class="nf">one_cycle_phases</span><span class="p">(</span>
     <span class="n">steps</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="n">lr</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
     <span class="n">momentum</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.95</span><span class="p">,</span> <span class="mf">0.85</span><span class="p">),</span>
@@ -286,7 +294,10 @@
     <span class="p">]</span></div>
 
 
-<div class="viewcode-block" id="sgdr_phases"><a class="viewcode-back" href="../../../../callbacks.html#poutyne.sgdr_phases">[docs]</a><span class="k">def</span> <span class="nf">sgdr_phases</span><span class="p">(</span>
+
+<div class="viewcode-block" id="sgdr_phases">
+<a class="viewcode-back" href="../../../../callbacks.html#poutyne.sgdr_phases">[docs]</a>
+<span class="k">def</span> <span class="nf">sgdr_phases</span><span class="p">(</span>
     <span class="n">base_cycle_length</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="n">cycles</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="n">lr</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">),</span>
@@ -319,8 +330,11 @@
     <span class="k">return</span> <span class="p">[</span><span class="n">Phase</span><span class="p">(</span><span class="n">lr</span><span class="o">=</span><span class="n">cosinespace</span><span class="p">(</span><span class="n">lr</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">lr</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">step</span><span class="p">))</span> <span class="k">for</span> <span class="n">step</span> <span class="ow">in</span> <span class="n">steps</span><span class="p">]</span></div>
 
 
+
 <span class="c1">###############################################################################</span>
-<div class="viewcode-block" id="OptimizerPolicy"><a class="viewcode-back" href="../../../../callbacks.html#poutyne.OptimizerPolicy">[docs]</a><span class="k">class</span> <span class="nc">OptimizerPolicy</span><span class="p">(</span><span class="n">Callback</span><span class="p">):</span>
+<div class="viewcode-block" id="OptimizerPolicy">
+<a class="viewcode-back" href="../../../../callbacks.html#poutyne.OptimizerPolicy">[docs]</a>
+<span class="k">class</span> <span class="nc">OptimizerPolicy</span><span class="p">(</span><span class="n">Callback</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Combine different :class:`~poutyne.Phase` instances</span>
 <span class="sd">    in an :class:`~poutyne.OptimizerPolicy` and execute the policies in a</span>
@@ -390,6 +404,7 @@
         <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="n">param_name</span><span class="p">)</span>
         <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;steps&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">ax</span></div>
+
 </pre></div>
 
            </div>
@@ -399,7 +414,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2018-2023, Frédérik Paradis.</p>
+    <p>&#169; Copyright 2018-2024, Frédérik Paradis.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

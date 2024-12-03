@@ -1,21 +1,21 @@
+
+
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="../">
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Tips and Tricks &mdash; Poutyne 1.17.1 documentation</title>
-      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  <!--[if lt IE 9]>
-    <script src="../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
+  <title>Tips and Tricks &mdash; Poutyne 1.17.3 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+
   
-        <script src="../_static/jquery.js"></script>
-        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-        <script src="../_static/doctools.js"></script>
-        <script src="../_static/sphinx_highlight.js"></script>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=a487ca7d"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -35,9 +35,6 @@
             
               <img src="../_static/poutyne-light.png" class="logo" alt="Logo"/>
           </a>
-              <div class="version">
-                1.17.1
-              </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
@@ -111,7 +108,7 @@
            <div itemprop="articleBody">
              
   <section id="tips-and-tricks">
-<span id="id1"></span><h1>Tips and Tricks<a class="headerlink" href="#tips-and-tricks" title="Permalink to this heading"></a></h1>
+<span id="id1"></span><h1>Tips and Tricks<a class="headerlink" href="#tips-and-tricks" title="Link to this heading"></a></h1>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <ul class="simple">
@@ -149,10 +146,10 @@
 </pre></div>
 </div>
 <section id="hyperparameters-dataset-and-network">
-<h2>Hyperparameters, Dataset and Network<a class="headerlink" href="#hyperparameters-dataset-and-network" title="Permalink to this heading"></a></h2>
+<h2>Hyperparameters, Dataset and Network<a class="headerlink" href="#hyperparameters-dataset-and-network" title="Link to this heading"></a></h2>
 <p>In this section, we setup the hyperparameters, dataset and network we will use throughout these tips and tricks.</p>
 <section id="training-constants">
-<h3>Training Constants<a class="headerlink" href="#training-constants" title="Permalink to this heading"></a></h3>
+<h3>Training Constants<a class="headerlink" href="#training-constants" title="Link to this heading"></a></h3>
 <p>Now, let’s set our training constants. We first have the CUDA device used for training if one is present. Second, we set the <code class="docutils literal notranslate"><span class="pre">train_split</span></code> to 0.8 (80%) to use 80% of the dataset for training and 20% for testing the trained model. Third, we set the number of classes (i.e. one for each digit). Finally, we set the batch size (i.e. the number of elements to see before updating the model), the learning rate for the optimizer, and the number of epochs (i.e. the number of times we see the full dataset).</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">cuda_device</span> <span class="o">=</span> <span class="mi">0</span>
 <span class="n">device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;cuda:</span><span class="si">{</span><span class="n">cuda_device</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span> <span class="k">else</span> <span class="s2">&quot;cpu&quot;</span><span class="p">)</span>
@@ -174,7 +171,7 @@
 </div>
 </section>
 <section id="loading-the-dataset">
-<h3>Loading the Dataset<a class="headerlink" href="#loading-the-dataset" title="Permalink to this heading"></a></h3>
+<h3>Loading the Dataset<a class="headerlink" href="#loading-the-dataset" title="Link to this heading"></a></h3>
 <p>The following code helps load the MNIST dataset and creates the PyTorch DataLoaders that split our datasets into batches. Then, the train DataLoader shuffles the examples of the training dataset to draw the examples without replacement.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">full_train_dataset</span> <span class="o">=</span> <span class="n">MNIST</span><span class="p">(</span><span class="s1">&#39;./datasets&#39;</span><span class="p">,</span> <span class="n">train</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">download</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">transforms</span><span class="o">.</span><span class="n">ToTensor</span><span class="p">())</span>
 <span class="n">test_dataset</span> <span class="o">=</span> <span class="n">MNIST</span><span class="p">(</span><span class="s1">&#39;./datasets&#39;</span><span class="p">,</span> <span class="n">train</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">download</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">transforms</span><span class="o">.</span><span class="n">ToTensor</span><span class="p">())</span>
@@ -196,7 +193,7 @@
 </div>
 </section>
 <section id="initializing-the-network">
-<h3>Initializing the Network<a class="headerlink" href="#initializing-the-network" title="Permalink to this heading"></a></h3>
+<h3>Initializing the Network<a class="headerlink" href="#initializing-the-network" title="Link to this heading"></a></h3>
 <p>We create a fonction to initialize a simple convolutional neural network.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">create_network</span><span class="p">():</span>
     <span class="k">return</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
@@ -218,7 +215,7 @@
 </section>
 </section>
 <section id="vanilla-usage">
-<h2>Vanilla Usage<a class="headerlink" href="#vanilla-usage" title="Permalink to this heading"></a></h2>
+<h2>Vanilla Usage<a class="headerlink" href="#vanilla-usage" title="Link to this heading"></a></h2>
 <p>The following code trains our network in the simplest way possible with Poutyne. We use the accuracy metric so that we can see the performance during training.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Instantiating our network</span>
 <span class="n">network</span> <span class="o">=</span> <span class="n">create_network</span><span class="p">()</span>
@@ -242,7 +239,7 @@
 </div>
 </section>
 <section id="plotting-training">
-<h2>Plotting Training<a class="headerlink" href="#plotting-training" title="Permalink to this heading"></a></h2>
+<h2>Plotting Training<a class="headerlink" href="#plotting-training" title="Link to this heading"></a></h2>
 <p>The training methods in Poutyne returns a list of dictionaries containing the metrics output during training. Using Poutyne, it is then possible to plot this training history.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">_</span> <span class="o">=</span> <span class="n">plot_history</span><span class="p">(</span><span class="n">history</span><span class="p">)</span>
 </pre></div>
@@ -263,7 +260,7 @@
 <img alt="../_images/plot_history_acc_customized.png" src="../_images/plot_history_acc_customized.png" />
 </section>
 <section id="initilalizing-your-optimizer-and-loss-function-yourself">
-<h2>Initilalizing Your Optimizer and Loss Function Yourself<a class="headerlink" href="#initilalizing-your-optimizer-and-loss-function-yourself" title="Permalink to this heading"></a></h2>
+<h2>Initilalizing Your Optimizer and Loss Function Yourself<a class="headerlink" href="#initilalizing-your-optimizer-and-loss-function-yourself" title="Link to this heading"></a></h2>
 <p>Instead of using magic strings for the optimizer and the loss function, it’s quite easy to initialize your own and pass them to Poutyne.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Instantiating our network</span>
 <span class="n">network</span> <span class="o">=</span> <span class="n">create_network</span><span class="p">()</span>
@@ -290,7 +287,7 @@
 </div>
 </section>
 <section id="using-your-own-metric">
-<h2>Using Your Own Metric<a class="headerlink" href="#using-your-own-metric" title="Permalink to this heading"></a></h2>
+<h2>Using Your Own Metric<a class="headerlink" href="#using-your-own-metric" title="Link to this heading"></a></h2>
 <p>Poutyne offers <a class="reference internal" href="../metrics.html#object-oriented-metrics"><span class="std std-ref">a few metrics out-of-the-box</span></a> and also supports metrics from <a class="reference external" href="https://torchmetrics.readthedocs.io/">TorchMetrics</a>, a library implementing many known metrics in PyTorch. See the <a class="reference external" href="https://torchmetrics.readthedocs.io/en/latest/references/modules.html">TorchMetrics documentation</a> for available TorchMetrics metrics.</p>
 <p>If metrics available in Poutyne and TorchMetrics do not suit your needs, you can define your own metric. Poutyne offers two interfaces for metrics. The first interface is the same as PyTorch loss functions: <code class="docutils literal notranslate"><span class="pre">metric(y_pred,</span> <span class="pre">y_true)</span></code>. When using that interface, the metric is assumed to be decomposable and is averaged for the whole epoch.</p>
 <p>The second interface is defined by the <a class="reference internal" href="../metrics.html#poutyne.Metric" title="poutyne.Metric"><code class="xref py py-class docutils literal notranslate"><span class="pre">Metric</span> <span class="pre">class</span></code></a> interface. As documented in the class, it provides methods for updating and computing the metric. This interface is compatible with <a class="reference external" href="https://torchmetrics.readthedocs.io/">TorchMetrics</a>.</p>
@@ -426,7 +423,7 @@
 </div>
 </section>
 <section id="bypassing-pytorch-dataloaders">
-<h2>Bypassing PyTorch DataLoaders<a class="headerlink" href="#bypassing-pytorch-dataloaders" title="Permalink to this heading"></a></h2>
+<h2>Bypassing PyTorch DataLoaders<a class="headerlink" href="#bypassing-pytorch-dataloaders" title="Link to this heading"></a></h2>
 <p>Above, we defined DataLoaders for our datasets. However, with Poutyne, it is not strictly necessary since it provides the <a class="reference internal" href="../model.html#poutyne.Model.fit_dataset" title="poutyne.Model.fit_dataset"><code class="xref py py-meth docutils literal notranslate"><span class="pre">fit_dataset</span></code></a> and <a class="reference internal" href="../model.html#poutyne.Model.evaluate_dataset" title="poutyne.Model.evaluate_dataset"><code class="xref py py-meth docutils literal notranslate"><span class="pre">evaluate_dataset</span></code></a> methods to which you can pass the necessary parameters such as the batch size. Under the hood, Poutyne initializes the DataLoaders for you.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Instantiating our network</span>
 <span class="n">network</span> <span class="o">=</span> <span class="n">create_network</span><span class="p">()</span>
@@ -459,7 +456,7 @@
 </div>
 </section>
 <section id="using-callbacks">
-<h2>Using Callbacks<a class="headerlink" href="#using-callbacks" title="Permalink to this heading"></a></h2>
+<h2>Using Callbacks<a class="headerlink" href="#using-callbacks" title="Link to this heading"></a></h2>
 <p>One nice feature of Poutyne is <a class="reference internal" href="../callbacks.html#poutyne.Callback" title="poutyne.Callback"><code class="xref py py-class docutils literal notranslate"><span class="pre">callbacks</span></code></a>. Callbacks allow doing actions during the training of the neural network. In the following example, we use three callbacks. The first that saves the latest weights in a file to be able to continue the optimization at the end of training if more epochs are needed. The second that saves the best weights according to the performance on the validation dataset. The last that saves the displayed logs into a TSV file.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Saves everything into saves/convnet_mnist</span>
 <span class="n">save_path</span> <span class="o">=</span> <span class="s2">&quot;saves/convnet_mnist&quot;</span>
@@ -503,7 +500,7 @@
 </div>
 </section>
 <section id="making-your-own-callback">
-<span id="id2"></span><h2>Making Your Own Callback<a class="headerlink" href="#making-your-own-callback" title="Permalink to this heading"></a></h2>
+<span id="id2"></span><h2>Making Your Own Callback<a class="headerlink" href="#making-your-own-callback" title="Link to this heading"></a></h2>
 <p>While Poutyne provides a great number of <a class="reference internal" href="../callbacks.html#poutyne.Callback" title="poutyne.Callback"><code class="xref py py-class docutils literal notranslate"><span class="pre">predefined</span> <span class="pre">callbacks</span></code></a>, it is sometimes useful to make your own callback.</p>
 <p>In the following example, we want to see the effect of temperature on the optimization of our neural network. To do so, we either increase or decrease the temperature during the optimization. As one can see in the result, temperature either as no effect or has a detrimental effect on the performance of the neural network. This is so because the temperature has for effect to artificially changing the learning rates. Since we have found the right learning rate, increasing or decreasing, it shows no improvement on the results.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">CrossEntropyLossWithTemperature</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
@@ -571,7 +568,7 @@
 </div>
 </section>
 <section id="using-modelbundle">
-<h2>Using ModelBundle<a class="headerlink" href="#using-modelbundle" title="Permalink to this heading"></a></h2>
+<h2>Using ModelBundle<a class="headerlink" href="#using-modelbundle" title="Link to this heading"></a></h2>
 <p>Most of the time, when using Poutyne (or even PyTorch in general), we will find ourselves in an iterative model hyperparameters finetuning loop. For efficient model search, we will usually wish to save our best performing models, their training and testing statistics and even sometimes wish to retrain an already trained model for further tuning. All of the above can be easily implemented with the flexibility of Poutyne Callbacks, but having to define and initialize each and every Callback object we wish for our model quickly feels cumbersome.</p>
 <p>This is why Poutyne provides a <a class="reference internal" href="../experiment.html#poutyne.ModelBundle" title="poutyne.ModelBundle"><code class="xref py py-class docutils literal notranslate"><span class="pre">ModelBundle</span></code></a> class, which aims specifically at enabling quick model iteration search, while not sacrificing the quality of a single experiment - statistics logging, best models saving, etc. As the name says, ModelBundle is actually a simple wrapper between a PyTorch network and Poutyne’s core Callback objects for logging and saving. Given a working directory where to output the various logging files and a PyTorch network, the ModelBundle class reduces the whole training loop to a single line.</p>
 <p>The following code uses Poutyne’s <a class="reference internal" href="../experiment.html#poutyne.ModelBundle" title="poutyne.ModelBundle"><code class="xref py py-class docutils literal notranslate"><span class="pre">ModelBundle</span></code></a> class to train a network for 5 epochs. The code is quite simpler than the code in the Poutyne Callbacks section while doing more (only a few lines). Once trained for 5 epochs, it is then possible to resume the optimization at the 5th epoch for 5 more epochs until the 10th epoch using the same function.</p>
@@ -618,7 +615,7 @@
 </div>
 </section>
 <section id="coloring">
-<h2>Coloring<a class="headerlink" href="#coloring" title="Permalink to this heading"></a></h2>
+<h2>Coloring<a class="headerlink" href="#coloring" title="Link to this heading"></a></h2>
 <p>Also, Poutyne use by default a coloring template of the training step when the package <cite>colorama</cite> is installed.
 One could either remove the coloring (<code class="docutils literal notranslate"><span class="pre">progress_options=dict(coloring=False)</span></code>) or set a different coloring template using the fields:
 <code class="docutils literal notranslate"><span class="pre">text_color</span></code>, <code class="docutils literal notranslate"><span class="pre">ratio_color</span></code>, <code class="docutils literal notranslate"><span class="pre">metric_value_color</span></code>, <code class="docutils literal notranslate"><span class="pre">time_color</span></code> and <code class="docutils literal notranslate"><span class="pre">progress_bar_color</span></code>.
@@ -656,7 +653,7 @@ If a field is not specified, the default color will be used.
 </div>
 </section>
 <section id="custom-metric-names">
-<h2>Custom Metric Names<a class="headerlink" href="#custom-metric-names" title="Permalink to this heading"></a></h2>
+<h2>Custom Metric Names<a class="headerlink" href="#custom-metric-names" title="Link to this heading"></a></h2>
 <p>It’s also possible to name the metric using a tuple format <code class="docutils literal notranslate"><span class="pre">(&lt;metric</span> <span class="pre">name&gt;,</span> <span class="pre">metric)</span></code>. That way, it’s possible to use multiple times the same metric type (i.e. having micro and macro F1-score).</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Instantiating our network</span>
 <span class="n">network</span> <span class="o">=</span> <span class="n">create_network</span><span class="p">()</span>
@@ -680,7 +677,7 @@ If a field is not specified, the default color will be used.
 </div>
 </section>
 <section id="multi-gpus">
-<h2>Multi-GPUs<a class="headerlink" href="#multi-gpus" title="Permalink to this heading"></a></h2>
+<h2>Multi-GPUs<a class="headerlink" href="#multi-gpus" title="Link to this heading"></a></h2>
 <p>Finally, it’s also possible to use multi-GPUs for your training either by specifying a list of devices or using the arg <code class="docutils literal notranslate"><span class="pre">&quot;all&quot;</span></code> to take them all.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -717,7 +714,7 @@ If a field is not specified, the default color will be used.
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2018-2023, Frédérik Paradis.</p>
+    <p>&#169; Copyright 2018-2024, Frédérik Paradis.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

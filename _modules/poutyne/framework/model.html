@@ -1,20 +1,20 @@
+
+
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="../../../">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>poutyne.framework.model &mdash; Poutyne 1.17.1 documentation</title>
-      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
-  <!--[if lt IE 9]>
-    <script src="../../../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
+  <title>poutyne.framework.model &mdash; Poutyne 1.17.3 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+
   
-        <script src="../../../_static/jquery.js"></script>
-        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
-        <script src="../../../_static/doctools.js"></script>
-        <script src="../../../_static/sphinx_highlight.js"></script>
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=a487ca7d"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" /> 
@@ -32,9 +32,6 @@
             
               <img src="../../../_static/poutyne-light.png" class="logo" alt="Logo"/>
           </a>
-              <div class="version">
-                1.17.1
-              </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
@@ -129,7 +126,9 @@
 <span class="kn">from</span> <span class="nn">poutyne.utils</span> <span class="kn">import</span> <span class="n">TensorDataset</span><span class="p">,</span> <span class="n">_concat</span><span class="p">,</span> <span class="n">get_batch_size</span><span class="p">,</span> <span class="n">numpy_to_torch</span><span class="p">,</span> <span class="n">torch_to</span><span class="p">,</span> <span class="n">torch_to_numpy</span>
 
 
-<div class="viewcode-block" id="Model"><a class="viewcode-back" href="../../../model.html#poutyne.Model">[docs]</a><span class="k">class</span> <span class="nc">Model</span><span class="p">:</span>
+<div class="viewcode-block" id="Model">
+<a class="viewcode-back" href="../../../model.html#poutyne.Model">[docs]</a>
+<span class="k">class</span> <span class="nc">Model</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    The Model class encapsulates a PyTorch network, a PyTorch optimizer, a loss function and</span>
 <span class="sd">    metric functions. It allows the user to train a neural network without hand-coding the</span>
@@ -360,7 +359,9 @@
             <span class="k">yield</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">network</span><span class="o">.</span><span class="n">train</span><span class="p">(</span><span class="n">old_training</span><span class="p">)</span>
 
-<div class="viewcode-block" id="Model.fit"><a class="viewcode-back" href="../../../model.html#poutyne.Model.fit">[docs]</a>    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span>
+<div class="viewcode-block" id="Model.fit">
+<a class="viewcode-back" href="../../../model.html#poutyne.Model.fit">[docs]</a>
+    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">x</span><span class="p">,</span>
         <span class="n">y</span><span class="p">,</span>
@@ -466,11 +467,14 @@
             <span class="n">dataloader_kwargs</span><span class="o">=</span><span class="n">dataloader_kwargs</span><span class="p">,</span>
         <span class="p">)</span></div>
 
+
     <span class="k">def</span> <span class="nf">_dataset_from_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">args</span><span class="p">):</span>
         <span class="n">args</span> <span class="o">=</span> <span class="n">numpy_to_torch</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">TensorDataset</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
-<div class="viewcode-block" id="Model.fit_dataset"><a class="viewcode-back" href="../../../model.html#poutyne.Model.fit_dataset">[docs]</a>    <span class="k">def</span> <span class="nf">fit_dataset</span><span class="p">(</span>
+<div class="viewcode-block" id="Model.fit_dataset">
+<a class="viewcode-back" href="../../../model.html#poutyne.Model.fit_dataset">[docs]</a>
+    <span class="k">def</span> <span class="nf">fit_dataset</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">train_dataset</span><span class="p">,</span>
         <span class="n">valid_dataset</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -582,7 +586,10 @@
             <span class="n">callbacks</span><span class="o">=</span><span class="n">callbacks</span><span class="p">,</span>
         <span class="p">)</span></div>
 
-<div class="viewcode-block" id="Model.fit_generator"><a class="viewcode-back" href="../../../model.html#poutyne.Model.fit_generator">[docs]</a>    <span class="k">def</span> <span class="nf">fit_generator</span><span class="p">(</span>
+
+<div class="viewcode-block" id="Model.fit_generator">
+<a class="viewcode-back" href="../../../model.html#poutyne.Model.fit_generator">[docs]</a>
+    <span class="k">def</span> <span class="nf">fit_generator</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">train_generator</span><span class="p">,</span>
         <span class="n">valid_generator</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -702,6 +709,7 @@
 
         <span class="k">return</span> <span class="n">epoch_iterator</span><span class="o">.</span><span class="n">epoch_logs</span></div>
 
+
     <span class="k">def</span> <span class="nf">_fit_generator_n_batches_per_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">epoch_iterator</span><span class="p">,</span> <span class="n">callback_list</span><span class="p">,</span> <span class="n">batches_per_step</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">train_step_iterator</span><span class="p">,</span> <span class="n">valid_step_iterator</span> <span class="ow">in</span> <span class="n">epoch_iterator</span><span class="p">:</span>
             <span class="n">examples_in_step</span> <span class="o">=</span> <span class="mi">0</span>
@@ -712,7 +720,7 @@
 
                     <span class="n">examples_in_step</span> <span class="o">+=</span> <span class="n">step</span><span class="o">.</span><span class="n">size</span>
 
-                    <span class="p">(</span><span class="n">step</span><span class="o">.</span><span class="n">loss</span><span class="p">,</span> <span class="n">step</span><span class="o">.</span><span class="n">batch_metrics</span><span class="p">,</span> <span class="n">did_backprop</span><span class="p">,</span> <span class="n">_</span><span class="p">,)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fit_batch_n_batches_per_step</span><span class="p">(</span>
+                    <span class="p">(</span><span class="n">step</span><span class="o">.</span><span class="n">loss</span><span class="p">,</span> <span class="n">step</span><span class="o">.</span><span class="n">batch_metrics</span><span class="p">,</span> <span class="n">did_backprop</span><span class="p">,</span> <span class="n">_</span><span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fit_batch_n_batches_per_step</span><span class="p">(</span>
                         <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">batches_per_step</span><span class="p">,</span> <span class="n">examples_in_step</span><span class="p">,</span> <span class="n">callback</span><span class="o">=</span><span class="n">callback_list</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="n">step</span>
                     <span class="p">)</span>
 
@@ -835,7 +843,9 @@
 
         <span class="k">return</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span> <span class="k">if</span> <span class="n">y</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">x</span>
 
-<div class="viewcode-block" id="Model.train_on_batch"><a class="viewcode-back" href="../../../model.html#poutyne.Model.train_on_batch">[docs]</a>    <span class="k">def</span> <span class="nf">train_on_batch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">return_pred</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">return_dict_format</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">convert_to_numpy</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<div class="viewcode-block" id="Model.train_on_batch">
+<a class="viewcode-back" href="../../../model.html#poutyne.Model.train_on_batch">[docs]</a>
+    <span class="k">def</span> <span class="nf">train_on_batch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">return_pred</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">return_dict_format</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">convert_to_numpy</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Trains the network for the batch ``(x, y)`` and computes the loss and the metrics, and</span>
 <span class="sd">        optionally returns the predictions.</span>
@@ -882,6 +892,7 @@
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_format_loss_metrics_return</span><span class="p">(</span><span class="n">loss</span><span class="p">,</span> <span class="n">batch_metrics</span><span class="p">,</span> <span class="n">pred_y</span><span class="p">,</span> <span class="n">return_pred</span><span class="p">)</span></div>
 
+
     <span class="k">def</span> <span class="nf">_format_loss_metrics_return</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">loss</span><span class="p">,</span> <span class="n">metrics</span><span class="p">,</span> <span class="n">pred_y</span><span class="p">,</span> <span class="n">return_pred</span><span class="p">,</span> <span class="n">true_y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">return_ground_truth</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="c1"># pylint: disable=too-many-arguments</span>
         <span class="n">ret</span> <span class="o">=</span> <span class="p">(</span><span class="n">loss</span><span class="p">,)</span>
@@ -900,7 +911,9 @@
 
         <span class="k">return</span> <span class="n">init</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">init</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">init</span>
 
-<div class="viewcode-block" id="Model.predict"><a class="viewcode-back" href="../../../model.html#poutyne.Model.predict">[docs]</a>    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span>
+<div class="viewcode-block" id="Model.predict">
+<a class="viewcode-back" href="../../../model.html#poutyne.Model.predict">[docs]</a>
+    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">x</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
@@ -949,7 +962,10 @@
             <span class="n">callbacks</span><span class="o">=</span><span class="n">callbacks</span><span class="p">,</span>
         <span class="p">)</span></div>
 
-<div class="viewcode-block" id="Model.predict_dataset"><a class="viewcode-back" href="../../../model.html#poutyne.Model.predict_dataset">[docs]</a>    <span class="k">def</span> <span class="nf">predict_dataset</span><span class="p">(</span>
+
+<div class="viewcode-block" id="Model.predict_dataset">
+<a class="viewcode-back" href="../../../model.html#poutyne.Model.predict_dataset">[docs]</a>
+    <span class="k">def</span> <span class="nf">predict_dataset</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">dataset</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
@@ -1033,7 +1049,10 @@
             <span class="n">callbacks</span><span class="o">=</span><span class="n">callbacks</span><span class="p">,</span>
         <span class="p">)</span></div>
 
-<div class="viewcode-block" id="Model.predict_generator"><a class="viewcode-back" href="../../../model.html#poutyne.Model.predict_generator">[docs]</a>    <span class="k">def</span> <span class="nf">predict_generator</span><span class="p">(</span>
+
+<div class="viewcode-block" id="Model.predict_generator">
+<a class="viewcode-back" href="../../../model.html#poutyne.Model.predict_generator">[docs]</a>
+    <span class="k">def</span> <span class="nf">predict_generator</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">generator</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
@@ -1109,6 +1128,7 @@
                     <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">preprocess_input</span><span class="p">(</span><span class="o">*</span><span class="n">batch</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">preprocess_input</span><span class="p">(</span><span class="n">batch</span><span class="p">)</span>
+                    <span class="n">y</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># Silence PyLint</span>
 
                 <span class="n">batch_pred</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">network</span><span class="p">(</span><span class="o">*</span><span class="n">x</span><span class="p">)</span>
                 <span class="n">pred_y</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">torch_to_numpy</span><span class="p">(</span><span class="n">batch_pred</span><span class="p">)</span> <span class="k">if</span> <span class="n">convert_to_numpy</span> <span class="k">else</span> <span class="n">batch_pred</span><span class="p">)</span>
@@ -1132,7 +1152,10 @@
             <span class="k">return</span> <span class="n">pred_y</span><span class="p">,</span> <span class="n">true_y</span>
         <span class="k">return</span> <span class="n">pred_y</span></div>
 
-<div class="viewcode-block" id="Model.predict_on_batch"><a class="viewcode-back" href="../../../model.html#poutyne.Model.predict_on_batch">[docs]</a>    <span class="k">def</span> <span class="nf">predict_on_batch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">convert_to_numpy</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+
+<div class="viewcode-block" id="Model.predict_on_batch">
+<a class="viewcode-back" href="../../../model.html#poutyne.Model.predict_on_batch">[docs]</a>
+    <span class="k">def</span> <span class="nf">predict_on_batch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">convert_to_numpy</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns the predictions of the network given a batch ``x``, where the tensors are converted</span>
 <span class="sd">        into Numpy arrays.</span>
@@ -1150,7 +1173,10 @@
             <span class="n">y_pred</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">network</span><span class="p">(</span><span class="o">*</span><span class="n">x</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">torch_to_numpy</span><span class="p">(</span><span class="n">y_pred</span><span class="p">)</span> <span class="k">if</span> <span class="n">convert_to_numpy</span> <span class="k">else</span> <span class="n">y_pred</span></div>
 
-<div class="viewcode-block" id="Model.evaluate"><a class="viewcode-back" href="../../../model.html#poutyne.Model.evaluate">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span>
+
+<div class="viewcode-block" id="Model.evaluate">
+<a class="viewcode-back" href="../../../model.html#poutyne.Model.evaluate">[docs]</a>
+    <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">x</span><span class="p">,</span>
         <span class="n">y</span><span class="p">,</span>
@@ -1226,7 +1252,10 @@
             <span class="n">dataloader_kwargs</span><span class="o">=</span><span class="n">dataloader_kwargs</span><span class="p">,</span>
         <span class="p">)</span></div>
 
-<div class="viewcode-block" id="Model.evaluate_dataset"><a class="viewcode-back" href="../../../model.html#poutyne.Model.evaluate_dataset">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate_dataset</span><span class="p">(</span>
+
+<div class="viewcode-block" id="Model.evaluate_dataset">
+<a class="viewcode-back" href="../../../model.html#poutyne.Model.evaluate_dataset">[docs]</a>
+    <span class="k">def</span> <span class="nf">evaluate_dataset</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">dataset</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
@@ -1323,7 +1352,10 @@
             <span class="n">progress_options</span><span class="o">=</span><span class="n">progress_options</span><span class="p">,</span>
         <span class="p">)</span></div>
 
-<div class="viewcode-block" id="Model.evaluate_generator"><a class="viewcode-back" href="../../../model.html#poutyne.Model.evaluate_generator">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate_generator</span><span class="p">(</span>
+
+<div class="viewcode-block" id="Model.evaluate_generator">
+<a class="viewcode-back" href="../../../model.html#poutyne.Model.evaluate_generator">[docs]</a>
+    <span class="k">def</span> <span class="nf">evaluate_generator</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">generator</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
@@ -1496,7 +1528,10 @@
             <span class="n">step_iterator</span><span class="o">.</span><span class="n">loss</span><span class="p">,</span> <span class="n">metrics</span><span class="p">,</span> <span class="n">pred_y</span><span class="p">,</span> <span class="n">return_pred</span><span class="p">,</span> <span class="n">true_y</span><span class="p">,</span> <span class="n">return_ground_truth</span>
         <span class="p">)</span></div>
 
-<div class="viewcode-block" id="Model.evaluate_on_batch"><a class="viewcode-back" href="../../../model.html#poutyne.Model.evaluate_on_batch">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate_on_batch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">return_pred</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">return_dict_format</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">convert_to_numpy</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">:</span>
+
+<div class="viewcode-block" id="Model.evaluate_on_batch">
+<a class="viewcode-back" href="../../../model.html#poutyne.Model.evaluate_on_batch">[docs]</a>
+    <span class="k">def</span> <span class="nf">evaluate_on_batch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">return_pred</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">return_dict_format</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">convert_to_numpy</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Computes the loss and the metrics of the network on a single batch of samples and optionally</span>
 <span class="sd">        returns the predictions.</span>
@@ -1537,6 +1572,7 @@
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_format_truth_pred_return</span><span class="p">((</span><span class="n">logs</span><span class="p">,),</span> <span class="n">pred_y</span><span class="p">,</span> <span class="n">return_pred</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_format_loss_metrics_return</span><span class="p">(</span><span class="n">loss</span><span class="p">,</span> <span class="n">batch_metrics</span><span class="p">,</span> <span class="n">pred_y</span><span class="p">,</span> <span class="n">return_pred</span><span class="p">)</span></div>
+
 
     <span class="k">def</span> <span class="nf">_validate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step_iterator</span><span class="p">,</span> <span class="n">return_pred</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">return_ground_truth</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">convert_to_numpy</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="n">pred_list</span> <span class="o">=</span> <span class="kc">None</span>
@@ -1620,7 +1656,9 @@
             <span class="p">[</span><span class="n">metric</span> <span class="k">for</span> <span class="n">names</span><span class="p">,</span> <span class="n">metrics</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">names_list</span><span class="p">,</span> <span class="n">metrics_list</span><span class="p">)</span> <span class="k">for</span> <span class="n">metric</span> <span class="ow">in</span> <span class="n">_get_metric</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="n">metrics</span><span class="p">)]</span>
         <span class="p">)</span>
 
-<div class="viewcode-block" id="Model.load_weights"><a class="viewcode-back" href="../../../model.html#poutyne.Model.load_weights">[docs]</a>    <span class="k">def</span> <span class="nf">load_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<div class="viewcode-block" id="Model.load_weights">
+<a class="viewcode-back" href="../../../model.html#poutyne.Model.load_weights">[docs]</a>
+    <span class="k">def</span> <span class="nf">load_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Loads the weights saved using the :func:`torch.save()` method or the :func:`save_weights()` method</span>
 <span class="sd">        of this class. Contrary to :func:`torch.load()`, the weights are not transferred to the device</span>
@@ -1639,7 +1677,10 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">set_weights</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">map_location</span><span class="o">=</span><span class="s1">&#39;cpu&#39;</span><span class="p">),</span> <span class="n">strict</span><span class="o">=</span><span class="n">strict</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Model.save_weights"><a class="viewcode-back" href="../../../model.html#poutyne.Model.save_weights">[docs]</a>    <span class="k">def</span> <span class="nf">save_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Model.save_weights">
+<a class="viewcode-back" href="../../../model.html#poutyne.Model.save_weights">[docs]</a>
+    <span class="k">def</span> <span class="nf">save_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Saves the weights of the current network.</span>
 
@@ -1649,7 +1690,10 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">torch</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">network</span><span class="o">.</span><span class="n">state_dict</span><span class="p">(),</span> <span class="n">f</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Model.load_optimizer_state"><a class="viewcode-back" href="../../../model.html#poutyne.Model.load_optimizer_state">[docs]</a>    <span class="k">def</span> <span class="nf">load_optimizer_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Model.load_optimizer_state">
+<a class="viewcode-back" href="../../../model.html#poutyne.Model.load_optimizer_state">[docs]</a>
+    <span class="k">def</span> <span class="nf">load_optimizer_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Loads the optimizer state saved using the :func:`torch.save()` method or the</span>
 <span class="sd">        :func:`save_optimizer_state()` method of this class.</span>
@@ -1660,7 +1704,10 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">map_location</span><span class="o">=</span><span class="s1">&#39;cpu&#39;</span><span class="p">))</span></div>
 
-<div class="viewcode-block" id="Model.save_optimizer_state"><a class="viewcode-back" href="../../../model.html#poutyne.Model.save_optimizer_state">[docs]</a>    <span class="k">def</span> <span class="nf">save_optimizer_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Model.save_optimizer_state">
+<a class="viewcode-back" href="../../../model.html#poutyne.Model.save_optimizer_state">[docs]</a>
+    <span class="k">def</span> <span class="nf">save_optimizer_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Saves the state of the current optimizer.</span>
 
@@ -1669,6 +1716,7 @@
 <span class="sd">                containing a file name.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">torch</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">state_dict</span><span class="p">(),</span> <span class="n">f</span><span class="p">)</span></div>
+
 
     <span class="k">def</span> <span class="nf">_transfer_optimizer_state_to_right_device</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -1724,7 +1772,9 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_set_named_optimizer_attrs</span><span class="p">(</span><span class="n">param_name_groups</span><span class="p">,</span> <span class="n">named_state</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_transfer_optimizer_state_to_right_device</span><span class="p">()</span>
 
-<div class="viewcode-block" id="Model.get_weights"><a class="viewcode-back" href="../../../model.html#poutyne.Model.get_weights">[docs]</a>    <span class="k">def</span> <span class="nf">get_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="Model.get_weights">
+<a class="viewcode-back" href="../../../model.html#poutyne.Model.get_weights">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns a dictionary containing the parameters of the network. The tensors are just</span>
 <span class="sd">        references to the parameters. To get copies of the weights, see the :func:`get_weight_copies()`</span>
@@ -1732,7 +1782,10 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">network</span><span class="o">.</span><span class="n">state_dict</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="Model.get_weight_copies"><a class="viewcode-back" href="../../../model.html#poutyne.Model.get_weight_copies">[docs]</a>    <span class="k">def</span> <span class="nf">get_weight_copies</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Model.get_weight_copies">
+<a class="viewcode-back" href="../../../model.html#poutyne.Model.get_weight_copies">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_weight_copies</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns a dictionary containing copies of the parameters of the network.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1741,7 +1794,10 @@
             <span class="n">weights</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">weights</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">weights</span></div>
 
-<div class="viewcode-block" id="Model.set_weights"><a class="viewcode-back" href="../../../model.html#poutyne.Model.set_weights">[docs]</a>    <span class="k">def</span> <span class="nf">set_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">weights</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Model.set_weights">
+<a class="viewcode-back" href="../../../model.html#poutyne.Model.set_weights">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">weights</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Modifies the weights of the network with the given weights.</span>
 
@@ -1755,7 +1811,10 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">network</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">weights</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="n">strict</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Model.cuda"><a class="viewcode-back" href="../../../model.html#poutyne.Model.cuda">[docs]</a>    <span class="k">def</span> <span class="nf">cuda</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Model.cuda">
+<a class="viewcode-back" href="../../../model.html#poutyne.Model.cuda">[docs]</a>
+    <span class="k">def</span> <span class="nf">cuda</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Transfers the network on the GPU. The arguments are passed to the :meth:`torch.nn.Module.cuda()` method.</span>
 <span class="sd">        Notice that the device is saved so that the batches can send to the right device before passing it to</span>
@@ -1787,7 +1846,10 @@
 
         <span class="k">return</span> <span class="bp">self</span></div>
 
-<div class="viewcode-block" id="Model.cpu"><a class="viewcode-back" href="../../../model.html#poutyne.Model.cpu">[docs]</a>    <span class="k">def</span> <span class="nf">cpu</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Model.cpu">
+<a class="viewcode-back" href="../../../model.html#poutyne.Model.cpu">[docs]</a>
+    <span class="k">def</span> <span class="nf">cpu</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Transfers the network on the CPU. The arguments are passed to the :meth:`torch.nn.Module.cpu()`</span>
 <span class="sd">        method. Notice that the device is saved so that the batches can send to the right device</span>
@@ -1819,7 +1881,10 @@
 
         <span class="k">return</span> <span class="bp">self</span></div>
 
-<div class="viewcode-block" id="Model.to"><a class="viewcode-back" href="../../../model.html#poutyne.Model.to">[docs]</a>    <span class="k">def</span> <span class="nf">to</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Model.to">
+<a class="viewcode-back" href="../../../model.html#poutyne.Model.to">[docs]</a>
+    <span class="k">def</span> <span class="nf">to</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Transfer the network on the specified device. The device is saved so that the batches can</span>
 <span class="sd">        send to the right device before passing it to the network. One could also use multi GPUs by</span>
@@ -1861,6 +1926,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_transfer_loss_and_metrics_modules_to_right_device</span><span class="p">()</span>
         <span class="k">return</span> <span class="bp">self</span></div>
 
+
     <span class="k">def</span> <span class="nf">_transfer_loss_and_metrics_modules_to_right_device</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">loss_function</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">loss_function</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
@@ -1870,6 +1936,7 @@
                 <span class="n">metric</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="bp">self</span></div>
+
 </pre></div>
 
            </div>
@@ -1879,7 +1946,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2018-2023, Frédérik Paradis.</p>
+    <p>&#169; Copyright 2018-2024, Frédérik Paradis.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

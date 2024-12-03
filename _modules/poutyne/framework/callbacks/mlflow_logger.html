@@ -1,20 +1,20 @@
+
+
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="../../../../">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>poutyne.framework.callbacks.mlflow_logger &mdash; Poutyne 1.17.1 documentation</title>
-      <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
-  <!--[if lt IE 9]>
-    <script src="../../../../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
+  <title>poutyne.framework.callbacks.mlflow_logger &mdash; Poutyne 1.17.3 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=e59714d7" />
+
   
-        <script src="../../../../_static/jquery.js"></script>
-        <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
-        <script src="../../../../_static/doctools.js"></script>
-        <script src="../../../../_static/sphinx_highlight.js"></script>
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=a487ca7d"></script>
+      <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../../genindex.html" />
     <link rel="search" title="Search" href="../../../../search.html" /> 
@@ -32,9 +32,6 @@
             
               <img src="../../../../_static/poutyne-light.png" class="logo" alt="Logo"/>
           </a>
-              <div class="version">
-                1.17.1
-              </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
@@ -128,7 +125,9 @@
     <span class="n">git</span> <span class="o">=</span> <span class="kc">None</span>
 
 
-<div class="viewcode-block" id="MLFlowLogger"><a class="viewcode-back" href="../../../../callbacks.html#poutyne.MLFlowLogger">[docs]</a><span class="k">class</span> <span class="nc">MLFlowLogger</span><span class="p">(</span><span class="n">Logger</span><span class="p">):</span>
+<div class="viewcode-block" id="MLFlowLogger">
+<a class="viewcode-back" href="../../../../callbacks.html#poutyne.MLFlowLogger">[docs]</a>
+<span class="k">class</span> <span class="nc">MLFlowLogger</span><span class="p">(</span><span class="n">Logger</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    MLflow logger to manage logging of experiments parameters, metrics update, models log and other information. The</span>
 <span class="sd">    logger will log all run into the same experiment.</span>
@@ -225,7 +224,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">terminate_on_end</span> <span class="o">=</span> <span class="n">terminate_on_end</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_status</span> <span class="o">=</span> <span class="s2">&quot;FAILED&quot;</span>  <span class="c1"># Base case is a failure.</span>
 
-<div class="viewcode-block" id="MLFlowLogger.log_config_params"><a class="viewcode-back" href="../../../../callbacks.html#poutyne.MLFlowLogger.log_config_params">[docs]</a>    <span class="k">def</span> <span class="nf">log_config_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config_params</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="MLFlowLogger.log_config_params">
+<a class="viewcode-back" href="../../../../callbacks.html#poutyne.MLFlowLogger.log_config_params">[docs]</a>
+    <span class="k">def</span> <span class="nf">log_config_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config_params</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Args:</span>
 <span class="sd">            config_params (Mapping):</span>
@@ -233,6 +234,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">param_name</span><span class="p">,</span> <span class="n">element</span> <span class="ow">in</span> <span class="n">config_params</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_log_config_write</span><span class="p">(</span><span class="n">param_name</span><span class="p">,</span> <span class="n">element</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
 
     <span class="k">def</span> <span class="nf">log_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">params</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -254,7 +256,9 @@
         <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">metrics</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">log_metric</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
-<div class="viewcode-block" id="MLFlowLogger.log_param"><a class="viewcode-back" href="../../../../callbacks.html#poutyne.MLFlowLogger.log_param">[docs]</a>    <span class="k">def</span> <span class="nf">log_param</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">param_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="MLFlowLogger.log_param">
+<a class="viewcode-back" href="../../../../callbacks.html#poutyne.MLFlowLogger.log_param">[docs]</a>
+    <span class="k">def</span> <span class="nf">log_param</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">param_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Log the value of a parameter into the experiment.</span>
 
@@ -265,7 +269,10 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ml_flow_client</span><span class="o">.</span><span class="n">log_param</span><span class="p">(</span><span class="n">run_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">run_id</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">param_name</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">value</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="MLFlowLogger.log_metric"><a class="viewcode-back" href="../../../../callbacks.html#poutyne.MLFlowLogger.log_metric">[docs]</a>    <span class="k">def</span> <span class="nf">log_metric</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">metric_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+
+<div class="viewcode-block" id="MLFlowLogger.log_metric">
+<a class="viewcode-back" href="../../../../callbacks.html#poutyne.MLFlowLogger.log_metric">[docs]</a>
+    <span class="k">def</span> <span class="nf">log_metric</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">metric_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Log the value of a metric into the experiment.</span>
 
@@ -275,6 +282,7 @@
 <span class="sd">            step (Union[int, None]): The step when the metric was computed (Default = None).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ml_flow_client</span><span class="o">.</span><span class="n">log_metric</span><span class="p">(</span><span class="n">run_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">run_id</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">metric_name</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">value</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
 
     <span class="k">def</span> <span class="nf">_log_config_write</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">parent_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">element</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span>
@@ -370,6 +378,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">ml_flow_client</span><span class="o">.</span><span class="n">set_tag</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">run_id</span><span class="p">,</span> <span class="s2">&quot;mlflow.source.git.commit&quot;</span><span class="p">,</span> <span class="n">source_version</span><span class="p">)</span></div>
 
 
+
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">The source code of the function _get_git_commit was inspired by the MLflow project</span>
 <span class="sd">(https://github.com/mlflow/mlflow/blob/7fde53e497c50b4eb4da1e9988710695b8c2e093/mlflow/tracking/context/git_context.py#L11),</span>
@@ -412,7 +421,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2018-2023, Frédérik Paradis.</p>
+    <p>&#169; Copyright 2018-2024, Frédérik Paradis.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
