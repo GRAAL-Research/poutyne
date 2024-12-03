@@ -111,8 +111,3 @@ jobs:
       - name: Test with pytest
         run: |
           pytest
-      - name: Upload Codecov
-        uses: codecov/codecov-action@v4
-        with:
-          files: ./coverage.xml
-          token: ${{ secrets.codecov_token }}
