@@ -20,6 +20,7 @@ You should have received a copy of the GNU Lesser General Public License along w
 import os
 from tempfile import TemporaryDirectory
 from unittest import TestCase, skipIf
+import pickle
 
 try:
     import pandas  # pylint: disable=unused-import  # noqa: F401
@@ -90,27 +91,41 @@ class BaseExperimentCheckpointLoadingTest:
         filename = self.checkpoint_paths[0]
         self.test_experiment.load_checkpoint(index)
 
-        self.assertEqual(self.test_experiment.model.network.state_dict(), torch.load(filename, map_location="cpu"))
+        self.assertEqual(
+            self.test_experiment.model.network.state_dict(),
+            torch.load(filename, pickle_module=pickle, map_location="cpu"),
+        )
 
     def test_load_checkpoint_best(self):
         filename = self.checkpoint_paths[-1]
         self.test_experiment.load_checkpoint("best")
 
-        self.assertEqual(self.test_experiment.model.network.state_dict(), torch.load(filename, map_location="cpu"))
+        self.assertEqual(
+            self.test_experiment.model.network.state_dict(),
+            torch.load(filename, pickle_module=pickle, map_location="cpu"),
+        )
 
     def test_load_checkpoint_last(self):
         self.test_experiment.load_checkpoint("last")
 
         self.assertEqual(
-            self.test_experiment.model.network.state_dict(), torch.load(self.last_checkpoint_path, map_location="cpu")
+            self.test_experiment.model.network.state_dict(),
+            torch.load(self.last_checkpoint_path, pickle_module=pickle, map_location="cpu"),
         )
 
     def test_load_checkpoint_using_path(self):
         cpkt_path = os.path.join(self.test_checkpoints_path, "test_model_weights_state_dict.p")
-        torch.save(torch.load(self.checkpoint_paths[0], map_location="cpu"), cpkt_path)  # change the ckpt path
+        torch.save(
+            torch.load(self.checkpoint_paths[0], pickle_module=pickle, map_location="cpu"),
+            f=cpkt_path,
+            pickle_module=pickle,
+        )  # change the ckpt path
         self.test_experiment.load_checkpoint(cpkt_path)
 
-        self.assertEqual(self.test_experiment.model.network.state_dict(), torch.load(cpkt_path, map_location="cpu"))
+        self.assertEqual(
+            self.test_experiment.model.network.state_dict(),
+            torch.load(cpkt_path, pickle_module=pickle, map_location="cpu"),
+        )
 
     def test_load_invalid_checkpoint(self):
         with self.assertRaises(ValueError):

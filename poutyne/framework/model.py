@@ -22,6 +22,7 @@ import contextlib
 import timeit
 from collections import defaultdict
 from typing import Any, Iterable, List, Mapping, Tuple, Union
+import pickle
 
 import numpy as np
 import torch
@@ -1547,7 +1548,7 @@ class Model:
                 * **missing_keys** is a list of str containing the missing keys
                 * **unexpected_keys** is a list of str containing the unexpected keys
         """
-        return self.set_weights(torch.load(f, map_location='cpu'), strict=strict)
+        return self.set_weights(torch.load(f, pickle_module=pickle, map_location='cpu'), strict=strict)
 
     def save_weights(self, f):
         """
@@ -1557,7 +1558,7 @@ class Model:
             f: File-like object (has to implement fileno that returns a file descriptor) or string
                 containing a file name.
         """
-        torch.save(self.network.state_dict(), f)
+        torch.save(self.network.state_dict(), f=f, pickle_module=pickle)
 
     def load_optimizer_state(self, f):
         """
@@ -1568,7 +1569,7 @@ class Model:
             f: File-like object (has to implement fileno that returns a file descriptor) or string
                 containing a file name.
         """
-        self.optimizer.load_state_dict(torch.load(f, map_location='cpu'))
+        self.optimizer.load_state_dict(torch.load(f, pickle_module=pickle, map_location='cpu'))
 
     def save_optimizer_state(self, f):
         """
@@ -1578,7 +1579,7 @@ class Model:
             f: File-like object (has to implement fileno that returns a file descriptor) or string
                 containing a file name.
         """
-        torch.save(self.optimizer.state_dict(), f)
+        torch.save(self.optimizer.state_dict(), f=f, pickle_module=pickle)
 
     def _transfer_optimizer_state_to_right_device(self):
         if self.optimizer is None:

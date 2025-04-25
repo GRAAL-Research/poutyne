@@ -21,6 +21,7 @@ You should have received a copy of the GNU Lesser General Public License along w
 import os
 import warnings
 from typing import Any, Callable, Dict, List, Tuple, Union
+import pickle
 
 try:
     import pandas as pd
@@ -663,7 +664,7 @@ class ModelBundle:
                 best_checkpoint.best_filename = best_filename
                 best_checkpoint.current_best = best_epoch_stats[self.monitor_metric].item()
             else:
-                best_restore.best_weights = torch.load(best_filename, map_location='cpu')
+                best_restore.best_weights = torch.load(best_filename, pickle_module=pickle, map_location='cpu')
                 best_restore.current_best = best_epoch_stats[self.monitor_metric].item()
 
         return callbacks

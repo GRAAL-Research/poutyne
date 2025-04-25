@@ -19,6 +19,7 @@ You should have received a copy of the GNU Lesser General Public License along w
 
 import warnings
 from typing import IO, Dict
+import pickle
 
 import torch
 
@@ -142,10 +143,10 @@ class StateCheckpoint(PeriodicSaveCallback):
 
     def save_file(self, fd: IO, epoch_number: int, logs: Dict):
         states = {k: v.state_dict() for k, v in self.name_to_stateful.items()}
-        torch.save(states, fd)
+        torch.save(states, f=fd, pickle_module=pickle)
 
     def restore(self, fd: IO):
-        states = torch.load(fd, map_location='cpu')
+        states = torch.load(fd, pickle_module=pickle, map_location='cpu')
 
         unexpected_keys = set(states.keys()) - set(self.name_to_stateful)
         missing_keys = set(self.name_to_stateful) - set(states.keys())
