@@ -19,10 +19,10 @@ You should have received a copy of the GNU Lesser General Public License along w
 
 import contextlib
 import numbers
-import pickle
 
 # -*- coding: utf-8 -*-
 import os
+import pickle
 import random
 import warnings
 from typing import IO, Any, BinaryIO, Optional, Union

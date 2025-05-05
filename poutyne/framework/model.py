@@ -19,10 +19,10 @@ You should have received a copy of the GNU Lesser General Public License along w
 
 # pylint: disable=too-many-lines,too-many-public-methods
 import contextlib
+import pickle
 import timeit
 from collections import defaultdict
 from typing import Any, Iterable, List, Mapping, Tuple, Union
-import pickle
 
 import numpy as np
 import torch

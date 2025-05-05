@@ -18,9 +18,9 @@ You should have received a copy of the GNU Lesser General Public License along w
 """
 
 import os
+import pickle
 from tempfile import TemporaryDirectory
 from unittest import TestCase, skipIf
-import pickle
 
 try:
     import pandas  # pylint: disable=unused-import  # noqa: F401

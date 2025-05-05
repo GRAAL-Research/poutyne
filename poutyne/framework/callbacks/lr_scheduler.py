@@ -18,9 +18,9 @@ You should have received a copy of the GNU Lesser General Public License along w
 """
 
 import inspect
+import pickle
 import sys
 from typing import BinaryIO, Dict
-import pickle
 
 import torch.optim.lr_scheduler
 from torch.optim import Optimizer

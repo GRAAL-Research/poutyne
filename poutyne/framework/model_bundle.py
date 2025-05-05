@@ -19,9 +19,9 @@ You should have received a copy of the GNU Lesser General Public License along w
 
 # pylint: disable=too-many-lines
 import os
+import pickle
 import warnings
 from typing import Any, Callable, Dict, List, Tuple, Union
-import pickle
 
 try:
     import pandas as pd
