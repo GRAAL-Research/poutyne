@@ -143,7 +143,7 @@ class StateCheckpoint(PeriodicSaveCallback):
 
     def save_file(self, fd: IO, epoch_number: int, logs: Dict):
         states = {k: v.state_dict() for k, v in self.name_to_stateful.items()}
-        torch.save(states, f=fd, pickle_module=pickle)
+        torch.save(states, fd, pickle_module=pickle)
 
     def restore(self, fd: IO):
         states = torch.load(fd, pickle_module=pickle, map_location='cpu')

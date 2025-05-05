@@ -117,7 +117,7 @@ class BaseExperimentCheckpointLoadingTest:
         cpkt_path = os.path.join(self.test_checkpoints_path, "test_model_weights_state_dict.p")
         torch.save(
             torch.load(self.checkpoint_paths[0], pickle_module=pickle, map_location="cpu"),
-            f=cpkt_path,
+            cpkt_path,
             pickle_module=pickle,
         )  # change the ckpt path
         self.test_experiment.load_checkpoint(cpkt_path)
