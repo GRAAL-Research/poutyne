@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Sequence Tagging With an RNN &mdash; Poutyne 1.17.3 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+  <title>Sequence Tagging With an RNN &mdash; Poutyne 1.17.4 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=a487ca7d"></script>
+      <script src="../_static/documentation_options.js?v=6f0e5ab0"></script>
       <script src="../_static/doctools.js?v=9bcbadda"></script>
       <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/js/theme.js"></script>
@@ -115,24 +115,24 @@
 </div>
 <p>In this example, we will do sequence tagging with RNNs using Poutyne.</p>
 <p>Let’s import all the needed packages.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">contextlib</span>
-<span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">pickle</span>
-<span class="kn">import</span> <span class="nn">re</span>
-<span class="kn">import</span> <span class="nn">sys</span>
-<span class="kn">from</span> <span class="nn">io</span> <span class="kn">import</span> <span class="n">TextIOBase</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">contextlib</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pickle</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">io</span><span class="w"> </span><span class="kn">import</span> <span class="n">TextIOBase</span>
 
-<span class="kn">import</span> <span class="nn">fasttext</span>
-<span class="kn">import</span> <span class="nn">fasttext.util</span>
-<span class="kn">import</span> <span class="nn">requests</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">torch</span>
-<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
-<span class="kn">import</span> <span class="nn">torch.optim</span> <span class="k">as</span> <span class="nn">optim</span>
-<span class="kn">from</span> <span class="nn">torch.nn.utils.rnn</span> <span class="kn">import</span> <span class="n">pad_packed_sequence</span><span class="p">,</span> <span class="n">pack_padded_sequence</span><span class="p">,</span> <span class="n">pad_sequence</span><span class="p">,</span> <span class="n">PackedSequence</span>
-<span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="kn">import</span> <span class="n">DataLoader</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">fasttext</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">fasttext.util</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch.nn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nn</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch.optim</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">optim</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">torch.nn.utils.rnn</span><span class="w"> </span><span class="kn">import</span> <span class="n">pad_packed_sequence</span><span class="p">,</span> <span class="n">pack_padded_sequence</span><span class="p">,</span> <span class="n">pad_sequence</span><span class="p">,</span> <span class="n">PackedSequence</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">torch.utils.data</span><span class="w"> </span><span class="kn">import</span> <span class="n">DataLoader</span>
 
-<span class="kn">from</span> <span class="nn">poutyne</span> <span class="kn">import</span> <span class="n">set_seeds</span><span class="p">,</span> <span class="n">Model</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">poutyne</span><span class="w"> </span><span class="kn">import</span> <span class="n">set_seeds</span><span class="p">,</span> <span class="n">Model</span>
 </pre></div>
 </div>
 <p>Also, we need to set Python’s, NumPy’s and PyTorch’s seeds by using Poutyne function so that our training is (almost) reproducible.</p>
@@ -189,7 +189,7 @@
 <section id="the-dataset">
 <h3>The Dataset<a class="headerlink" href="#the-dataset" title="Link to this heading"></a></h3>
 <p>Now let’s download our dataset; it’s already split into a train, valid and test set using the following.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">download_data</span><span class="p">(</span><span class="n">saving_dir</span><span class="p">,</span> <span class="n">data_type</span><span class="p">):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">download_data</span><span class="p">(</span><span class="n">saving_dir</span><span class="p">,</span> <span class="n">data_type</span><span class="p">):</span>
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">Function to download the dataset using data_type to specify if we want the train, valid or test.</span>
 <span class="sd">&quot;&quot;&quot;</span>
@@ -219,8 +219,8 @@
 <p>Here a snapshot of the output:</p>
 <img alt="../_images/train_data_snapshot.png" src="../_images/train_data_snapshot.png" />
 <p>Since the address is a text, we need to <em>convert</em> it into categorical value, such as word embeddings, for that we will use a vectorizer. This embedding vectorizer will be able to extract for every word embedding value.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">EmbeddingVectorizer</span><span class="p">:</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">EmbeddingVectorizer</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Embedding vectorizer</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -228,7 +228,7 @@
         <span class="n">fasttext</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">download_model</span><span class="p">(</span><span class="s1">&#39;fr&#39;</span><span class="p">,</span> <span class="n">if_exists</span><span class="o">=</span><span class="s1">&#39;ignore&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">embedding_model</span> <span class="o">=</span> <span class="n">fasttext</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="s2">&quot;./cc.fr.``300``.bin&quot;</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">address</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">address</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Convert address to embedding vectors</span>
 <span class="sd">        :param address: The address to convert</span>
@@ -243,8 +243,8 @@
 </pre></div>
 </div>
 <p>We also need a vectorizer to convert the address tag (e.g. StreetNumber, StreetName) into categorical values. So we will use a Vectorizer class that can use the embedding vectorizer and convert the address tag. We will explain and use the argument <code class="docutils literal notranslate"><span class="pre">predict</span></code> later.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Vectorizer</span><span class="p">:</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">embedding_model</span><span class="p">,</span> <span class="n">predict</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">Vectorizer</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">embedding_model</span><span class="p">,</span> <span class="n">predict</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">dataset</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">embedding_model</span> <span class="o">=</span> <span class="n">embedding_model</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">predict</span> <span class="o">=</span> <span class="n">predict</span>
@@ -259,11 +259,11 @@
             <span class="s2">&quot;GeneralDelivery&quot;</span><span class="p">:</span> <span class="mi">7</span>
         <span class="p">}</span>
 
-    <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># for the dataloader</span>
         <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
         <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">item</span><span class="p">]</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">predict</span><span class="p">:</span>
@@ -277,7 +277,7 @@
         <span class="n">address_vector</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">embedding_model</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">address_vector</span>
 
-    <span class="k">def</span> <span class="nf">_convert_tags_to_idx</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tags</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_convert_tags_to_idx</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tags</span><span class="p">):</span>
         <span class="n">idx_tags</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">tag</span> <span class="ow">in</span> <span class="n">tags</span><span class="p">:</span>
             <span class="n">idx_tags</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tags_set</span><span class="p">[</span><span class="n">tag</span><span class="p">])</span>
@@ -292,9 +292,9 @@
 <section id="dataloader">
 <h4>DataLoader<a class="headerlink" href="#dataloader" title="Link to this heading"></a></h4>
 <p>Now, since all the addresses are not of the same size, it is impossible to batch them together since all elements of a tensor must have the same lengths. But there is a trick, padding!</p>
-<p>The idea is simple. We add <em>empty</em> tokens at the end of each sequence up to the longest one in a batch. For the word vectors, we add vectors of 0 as padding. For the tag indices, we pad with -100s. We do so because of the <a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html#torch.nn.CrossEntropyLoss" title="(in PyTorch v2.5)"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrossEntropyLoss</span></code></a>, the accuracy metric and the <a class="reference internal" href="../metrics.html#poutyne.F1" title="poutyne.F1"><code class="xref py py-class docutils literal notranslate"><span class="pre">F1</span></code></a> metric all ignore targets with values of <code class="docutils literal notranslate"><span class="pre">-100</span></code>.</p>
-<p>To do this padding, we use the <code class="docutils literal notranslate"><span class="pre">collate_fn</span></code> argument of the PyTorch <a class="reference external" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader" title="(in PyTorch v2.5)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataLoader</span></code></a> and on running time, that process will be done. One thing to take into account, since we pad the sequence, we need each sequence’s lengths to unpad them in the forward pass. That way, we can pad and pack the sequence to minimize the training time (read <a class="reference external" href="https://stackoverflow.com/questions/51030782/why-do-we-pack-the-sequences-in-pytorch">this good explanation</a> of why we pad and pack sequences).</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">pad_collate_fn</span><span class="p">(</span><span class="n">batch</span><span class="p">):</span>
+<p>The idea is simple. We add <em>empty</em> tokens at the end of each sequence up to the longest one in a batch. For the word vectors, we add vectors of 0 as padding. For the tag indices, we pad with -100s. We do so because of the <a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html#torch.nn.CrossEntropyLoss" title="(in PyTorch v2.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">CrossEntropyLoss</span></code></a>, the accuracy metric and the <a class="reference internal" href="../metrics.html#poutyne.F1" title="poutyne.F1"><code class="xref py py-class docutils literal notranslate"><span class="pre">F1</span></code></a> metric all ignore targets with values of <code class="docutils literal notranslate"><span class="pre">-100</span></code>.</p>
+<p>To do this padding, we use the <code class="docutils literal notranslate"><span class="pre">collate_fn</span></code> argument of the PyTorch <a class="reference external" href="https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader" title="(in PyTorch v2.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataLoader</span></code></a> and on running time, that process will be done. One thing to take into account, since we pad the sequence, we need each sequence’s lengths to unpad them in the forward pass. That way, we can pad and pack the sequence to minimize the training time (read <a class="reference external" href="https://stackoverflow.com/questions/51030782/why-do-we-pack-the-sequences-in-pytorch">this good explanation</a> of why we pad and pack sequences).</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">pad_collate_fn</span><span class="p">(</span><span class="n">batch</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    The collate_fn that can add padding to the sequences so all can have</span>
 <span class="sd">    the same length as the longest one.</span>
@@ -341,16 +341,16 @@
 </section>
 <section id="full-network">
 <h4>Full Network<a class="headerlink" href="#full-network" title="Link to this heading"></a></h4>
-<p>Since our sequences are of variable lengths and we want to be the most efficient possible by packing them, we cannot use the PyTorch <a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.Sequential.html#torch.nn.Sequential" title="(in PyTorch v2.5)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Sequential</span></code></a> class to define our model, so we define the forward pass for it to pack and unpack the sequences (again, you can read <a class="reference external" href="https://stackoverflow.com/questions/51030782/why-do-we-pack-the-sequences-in-pytorch">this good explanation</a> of why we pad and pack sequences).</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">FullNetWork</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lstm_network</span><span class="p">,</span> <span class="n">fully_connected_network</span><span class="p">):</span>
+<p>Since our sequences are of variable lengths and we want to be the most efficient possible by packing them, we cannot use the PyTorch <a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.Sequential.html#torch.nn.Sequential" title="(in PyTorch v2.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Sequential</span></code></a> class to define our model, so we define the forward pass for it to pack and unpack the sequences (again, you can read <a class="reference external" href="https://stackoverflow.com/questions/51030782/why-do-we-pack-the-sequences-in-pytorch">this good explanation</a> of why we pad and pack sequences).</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">FullNetWork</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lstm_network</span><span class="p">,</span> <span class="n">fully_connected_network</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">hidden_state</span> <span class="o">=</span> <span class="kc">None</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">lstm_network</span> <span class="o">=</span> <span class="n">lstm_network</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">fully_connected_network</span> <span class="o">=</span> <span class="n">fully_connected_network</span>
 
-<span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pack_padded_sequences_vectors</span><span class="p">:</span> <span class="n">PackedSequence</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pack_padded_sequences_vectors</span><span class="p">:</span> <span class="n">PackedSequence</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">            Defines the computation performed at every call.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -404,7 +404,7 @@ Now that we have all the components for the network let’s define our SGD optim
 </pre></div>
 </div>
 <p>We need to change a little the <code class="docutils literal notranslate"><span class="pre">pad_collate_fn</span></code> since we also pad the labels.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">pad_collate_fn_predict</span><span class="p">(</span><span class="n">batch</span><span class="p">):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">pad_collate_fn_predict</span><span class="p">(</span><span class="n">batch</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    The collate_fn add padding to the sequences so all can have</span>
 <span class="sd">    the same length as the longest one.</span>
@@ -495,7 +495,7 @@ Now that we have all the components for the network let’s define our SGD optim
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2018-2024, Frédérik Paradis.</p>
+    <p>&#169; Copyright 2018-2025, Frédérik Paradis.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

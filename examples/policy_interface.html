@@ -6,14 +6,14 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Interface of policy &mdash; Poutyne 1.17.3 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+  <title>Interface of policy &mdash; Poutyne 1.17.4 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
 
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=a487ca7d"></script>
+      <script src="../_static/documentation_options.js?v=6f0e5ab0"></script>
       <script src="../_static/doctools.js?v=9bcbadda"></script>
       <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/js/theme.js"></script>
@@ -119,15 +119,15 @@
 </div>
 <p>Let’s install the latest version of Poutyne (if it’s not already) and import all the needed packages.
 For the first section discussing the <code class="docutils literal notranslate"><span class="pre">policy</span></code> API, only the Poutyne import is necessary.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
-<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
-<span class="kn">import</span> <span class="nn">torch.optim</span> <span class="k">as</span> <span class="nn">optim</span>
-<span class="kn">import</span> <span class="nn">torchvision.datasets</span> <span class="k">as</span> <span class="nn">datasets</span>
-<span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="kn">import</span> <span class="n">DataLoader</span>
-<span class="kn">from</span> <span class="nn">torchvision</span> <span class="kn">import</span> <span class="n">transforms</span>
-<span class="kn">from</span> <span class="nn">torchvision.models</span> <span class="kn">import</span> <span class="n">resnet18</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch.nn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nn</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch.optim</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">optim</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torchvision.datasets</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">datasets</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">torch.utils.data</span><span class="w"> </span><span class="kn">import</span> <span class="n">DataLoader</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">torchvision</span><span class="w"> </span><span class="kn">import</span> <span class="n">transforms</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">torchvision.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">resnet18</span>
 
-<span class="kn">from</span> <span class="nn">poutyne</span> <span class="kn">import</span> <span class="n">Model</span><span class="p">,</span> <span class="n">OptimizerPolicy</span><span class="p">,</span> <span class="n">linspace</span><span class="p">,</span> <span class="n">cosinespace</span><span class="p">,</span> <span class="n">one_cycle_phases</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">poutyne</span><span class="w"> </span><span class="kn">import</span> <span class="n">Model</span><span class="p">,</span> <span class="n">OptimizerPolicy</span><span class="p">,</span> <span class="n">linspace</span><span class="p">,</span> <span class="n">cosinespace</span><span class="p">,</span> <span class="n">one_cycle_phases</span>
 </pre></div>
 </div>
 <section id="about-policy">
@@ -137,7 +137,7 @@ This example demonstrates how policies work and how you can create your own poli
 <section id="parameter-spaces-and-phases">
 <h3>Parameter Spaces and Phases<a class="headerlink" href="#parameter-spaces-and-phases" title="Link to this heading"></a></h3>
 <p>Parameter spaces like <a class="reference internal" href="../callbacks.html#poutyne.linspace" title="poutyne.linspace"><code class="xref py py-class docutils literal notranslate"><span class="pre">linspace</span></code></a> and <code class="xref py py-class docutils literal notranslate"><span class="pre">cosinespace</span></code> are the basic building blocks.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">poutyne</span> <span class="kn">import</span> <span class="n">linspace</span><span class="p">,</span> <span class="n">cosinespace</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">poutyne</span><span class="w"> </span><span class="kn">import</span> <span class="n">linspace</span><span class="p">,</span> <span class="n">cosinespace</span>
 </pre></div>
 </div>
 <p>You can define the space and iterate over them:</p>
@@ -154,7 +154,7 @@ This example demonstrates how policies work and how you can create your own poli
 </div>
 <img alt="../_images/cosine_space.png" src="../_images/cosine_space.png" />
 <p>You can use the space and create a phase with them:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">poutyne</span> <span class="kn">import</span> <span class="n">Phase</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">poutyne</span><span class="w"> </span><span class="kn">import</span> <span class="n">Phase</span>
 
 <span class="n">phase</span> <span class="o">=</span> <span class="n">Phase</span><span class="p">(</span><span class="n">lr</span><span class="o">=</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
 
@@ -165,7 +165,7 @@ This example demonstrates how policies work and how you can create your own poli
 </div>
 <img alt="../_images/phase.png" src="../_images/phase.png" />
 <p>You can also visualize your phase:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
 <span class="n">phase</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="s2">&quot;lr&quot;</span><span class="p">);</span>
 </pre></div>
 </div>
@@ -214,7 +214,7 @@ This example demonstrates how policies work and how you can create your own poli
 <section id="build-complex-policies-from-basic-phases">
 <h2>Build Complex Policies From Basic Phases<a class="headerlink" href="#build-complex-policies-from-basic-phases" title="Link to this heading"></a></h2>
 <p>You can build complex optimizer policies by chaining phases together:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">poutyne</span> <span class="kn">import</span> <span class="n">OptimizerPolicy</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">poutyne</span><span class="w"> </span><span class="kn">import</span> <span class="n">OptimizerPolicy</span>
 
 <span class="n">policy</span> <span class="o">=</span> <span class="n">OptimizerPolicy</span><span class="p">([</span>
     <span class="n">Phase</span><span class="p">(</span><span class="n">lr</span><span class="o">=</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">100</span><span class="p">)),</span>
@@ -230,7 +230,7 @@ This example demonstrates how policies work and how you can create your own poli
 <section id="use-already-defined-complex-policies">
 <h3>Use Already Defined Complex Policies<a class="headerlink" href="#use-already-defined-complex-policies" title="Link to this heading"></a></h3>
 <p>It’s easy to build your own policies, but Poutyne contains some pre-defined phases.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">poutyne</span> <span class="kn">import</span> <span class="n">sgdr_phases</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">poutyne</span><span class="w"> </span><span class="kn">import</span> <span class="n">sgdr_phases</span>
 
 <span class="c1"># build them manually</span>
 <span class="n">policy</span> <span class="o">=</span> <span class="n">OptimizerPolicy</span><span class="p">([</span>
@@ -252,7 +252,7 @@ This example demonstrates how policies work and how you can create your own poli
 </div>
 <img alt="../_images/list_phase_preset.png" src="../_images/list_phase_preset.png" />
 <p>Here is the one-cycle policy:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">poutyne</span> <span class="kn">import</span> <span class="n">one_cycle_phases</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">poutyne</span><span class="w"> </span><span class="kn">import</span> <span class="n">one_cycle_phases</span>
 
 <span class="n">tp</span> <span class="o">=</span> <span class="n">OptimizerPolicy</span><span class="p">(</span><span class="n">one_cycle_phases</span><span class="p">(</span><span class="n">steps</span><span class="o">=</span><span class="mi">500</span><span class="p">))</span>
 <span class="n">tp</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="s2">&quot;lr&quot;</span><span class="p">)</span>
@@ -317,7 +317,7 @@ This example demonstrates how policies work and how you can create your own poli
 <h3>The Model<a class="headerlink" href="#the-model" title="Link to this heading"></a></h3>
 <p>We’ll train a simple <code class="docutils literal notranslate"><span class="pre">ResNet-18</span></code> network.
 This takes a while without GPU but is pretty quick with GPU.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">get_network</span><span class="p">():</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">get_network</span><span class="p">():</span>
     <span class="n">model</span> <span class="o">=</span> <span class="n">resnet18</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
     <span class="n">model</span><span class="o">.</span><span class="n">avgpool</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">AdaptiveAvgPool2d</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
     <span class="n">model</span><span class="o">.</span><span class="n">fc</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">512</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
@@ -391,7 +391,7 @@ This takes a while without GPU but is pretty quick with GPU.</p>
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2018-2024, Frédérik Paradis.</p>
+    <p>&#169; Copyright 2018-2025, Frédérik Paradis.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

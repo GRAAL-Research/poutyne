@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>poutyne.framework.model_bundle &mdash; Poutyne 1.17.3 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=fa44fd50" />
+  <title>poutyne.framework.model_bundle &mdash; Poutyne 1.17.4 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=a487ca7d"></script>
+      <script src="../../../_static/documentation_options.js?v=6f0e5ab0"></script>
       <script src="../../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/js/theme.js"></script>
@@ -106,31 +106,32 @@
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="c1"># pylint: disable=too-many-lines</span>
-<span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">warnings</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pickle</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
 
 <span class="k">try</span><span class="p">:</span>
-    <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
     <span class="n">pd</span> <span class="o">=</span> <span class="kc">None</span>
 
 <span class="k">try</span><span class="p">:</span>
     <span class="c1"># pylint: disable=unused-import</span>
-    <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span>  <span class="c1"># noqa: F401</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span>  <span class="c1"># noqa: F401</span>
 
     <span class="n">is_matplotlib_available</span> <span class="o">=</span> <span class="kc">True</span>
 <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
     <span class="n">is_matplotlib_available</span> <span class="o">=</span> <span class="kc">False</span>
 
-<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
 
 <span class="k">try</span><span class="p">:</span>
-    <span class="kn">from</span> <span class="nn">torch.utils.tensorboard</span> <span class="kn">import</span> <span class="n">SummaryWriter</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">torch.utils.tensorboard</span><span class="w"> </span><span class="kn">import</span> <span class="n">SummaryWriter</span>
 <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
     <span class="n">SummaryWriter</span> <span class="o">=</span> <span class="kc">None</span>
 
-<span class="kn">from</span> <span class="nn">poutyne.framework.callbacks</span> <span class="kn">import</span> <span class="p">(</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">poutyne.framework.callbacks</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">AtomicCSVLogger</span><span class="p">,</span>
     <span class="n">BestModelRestore</span><span class="p">,</span>
     <span class="n">LRSchedulerCheckpoint</span><span class="p">,</span>
@@ -140,14 +141,14 @@
     <span class="n">RandomStatesCheckpoint</span><span class="p">,</span>
     <span class="n">TensorBoardLogger</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="kn">from</span> <span class="nn">poutyne.framework.model</span> <span class="kn">import</span> <span class="n">Model</span>
-<span class="kn">from</span> <span class="nn">poutyne.plotting</span> <span class="kn">import</span> <span class="n">plot_history</span>
-<span class="kn">from</span> <span class="nn">poutyne.utils</span> <span class="kn">import</span> <span class="n">load_random_states</span><span class="p">,</span> <span class="n">set_seeds</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">poutyne.framework.model</span><span class="w"> </span><span class="kn">import</span> <span class="n">Model</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">poutyne.plotting</span><span class="w"> </span><span class="kn">import</span> <span class="n">plot_history</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">poutyne.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_random_states</span><span class="p">,</span> <span class="n">set_seeds</span>
 
 
 <div class="viewcode-block" id="ModelBundle">
 <a class="viewcode-back" href="../../../experiment.html#poutyne.ModelBundle">[docs]</a>
-<span class="k">class</span> <span class="nc">ModelBundle</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">ModelBundle</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    The :class:`~poutyne.ModelBundle` class provides a straightforward experimentation tool for efficient and entirely</span>
 <span class="sd">    customizable finetuning of the whole neural network training procedure with PyTorch. The</span>
@@ -168,7 +169,7 @@
     <span class="n">PLOTS_DIRECTORY</span> <span class="o">=</span> <span class="s1">&#39;plots&#39;</span>
     <span class="n">TEST_LOG_FILENAME</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{name}</span><span class="s1">_log.tsv&#39;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">directory</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">model</span><span class="p">:</span> <span class="n">Model</span><span class="p">,</span>
@@ -198,7 +199,7 @@
 <div class="viewcode-block" id="ModelBundle.from_network">
 <a class="viewcode-back" href="../../../experiment.html#poutyne.ModelBundle.from_network">[docs]</a>
     <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">from_network</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_network</span><span class="p">(</span>
         <span class="bp">cls</span><span class="p">,</span>
         <span class="n">directory</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">network</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span>
@@ -418,7 +419,7 @@
 <div class="viewcode-block" id="ModelBundle.from_model">
 <a class="viewcode-back" href="../../../experiment.html#poutyne.ModelBundle.from_model">[docs]</a>
     <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">from_model</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_model</span><span class="p">(</span>
         <span class="bp">cls</span><span class="p">,</span>
         <span class="n">directory</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="n">model</span><span class="p">:</span> <span class="n">Model</span><span class="p">,</span>
@@ -549,7 +550,7 @@
         <span class="p">)</span></div>
 
 
-    <span class="k">def</span> <span class="nf">set_paths</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_paths</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">best_checkpoint_filename</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_path</span><span class="p">(</span><span class="n">ModelBundle</span><span class="o">.</span><span class="n">BEST_CHECKPOINT_FILENAME</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">model_checkpoint_filename</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_path</span><span class="p">(</span><span class="n">ModelBundle</span><span class="o">.</span><span class="n">MODEL_CHECKPOINT_FILENAME</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">optimizer_checkpoint_filename</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_path</span><span class="p">(</span><span class="n">ModelBundle</span><span class="o">.</span><span class="n">OPTIMIZER_CHECKPOINT_FILENAME</span><span class="p">)</span>
@@ -563,7 +564,7 @@
 
 <div class="viewcode-block" id="ModelBundle.get_path">
 <a class="viewcode-back" href="../../../experiment.html#poutyne.ModelBundle.get_path">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_path</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">paths</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_path</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">paths</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns the path inside the model bundle directory.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -571,7 +572,7 @@
 
 
     <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">_get_loss_function</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_loss_function</span><span class="p">(</span>
         <span class="bp">cls</span><span class="p">,</span> <span class="n">loss_function</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Callable</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="n">network</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span> <span class="n">task</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">Callable</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
         <span class="k">if</span> <span class="n">loss_function</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -585,7 +586,7 @@
         <span class="k">return</span> <span class="n">loss_function</span>
 
     <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">_get_batch_metrics</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_batch_metrics</span><span class="p">(</span>
         <span class="bp">cls</span><span class="p">,</span> <span class="n">batch_metrics</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span> <span class="n">network</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span> <span class="n">task</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
         <span class="k">if</span> <span class="n">batch_metrics</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">batch_metrics</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
@@ -596,7 +597,7 @@
         <span class="k">return</span> <span class="n">batch_metrics</span>
 
     <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">_get_epoch_metrics</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">epoch_metrics</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span> <span class="n">network</span><span class="p">,</span> <span class="n">task</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="kc">None</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_epoch_metrics</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">epoch_metrics</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span> <span class="n">network</span><span class="p">,</span> <span class="n">task</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="kc">None</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
         <span class="k">if</span> <span class="n">epoch_metrics</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">epoch_metrics</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">network</span><span class="p">,</span> <span class="s1">&#39;epoch_metrics&#39;</span><span class="p">):</span>
                 <span class="k">return</span> <span class="n">network</span><span class="o">.</span><span class="n">epoch_metrics</span>
@@ -605,7 +606,7 @@
         <span class="k">return</span> <span class="n">epoch_metrics</span>
 
     <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">_get_monitoring_config</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_monitoring_config</span><span class="p">(</span>
         <span class="bp">cls</span><span class="p">,</span>
         <span class="n">monitoring</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
         <span class="n">monitor_metric</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span>
@@ -630,7 +631,7 @@
 
         <span class="k">return</span> <span class="kc">True</span><span class="p">,</span> <span class="n">monitor_metric</span><span class="p">,</span> <span class="n">monitor_mode</span>
 
-    <span class="k">def</span> <span class="nf">get_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log_filename</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;There are no logs available. Did you forget to train with logging enabled?&quot;</span><span class="p">)</span>
 
@@ -638,7 +639,7 @@
 
 <div class="viewcode-block" id="ModelBundle.get_best_epoch_stats">
 <a class="viewcode-back" href="../../../experiment.html#poutyne.ModelBundle.get_best_epoch_stats">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_best_epoch_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_best_epoch_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns all computed statistics corresponding to the best epoch according to the</span>
 <span class="sd">        ``monitor_metric`` and ``monitor_mode`` attributes.</span>
@@ -660,7 +661,7 @@
 
 <div class="viewcode-block" id="ModelBundle.get_saved_epochs">
 <a class="viewcode-back" href="../../../experiment.html#poutyne.ModelBundle.get_saved_epochs">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_saved_epochs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_saved_epochs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns a pandas DataFrame which each row corresponds to an epoch having</span>
 <span class="sd">        a saved checkpoint.</span>
@@ -676,13 +677,13 @@
         <span class="n">metrics</span> <span class="o">=</span> <span class="n">history</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">monitor_metric</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">monitor_mode</span> <span class="o">==</span> <span class="s1">&#39;min&#39;</span><span class="p">:</span>
 
-            <span class="k">def</span> <span class="nf">monitor_op</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+            <span class="k">def</span><span class="w"> </span><span class="nf">monitor_op</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
                 <span class="k">return</span> <span class="n">x</span> <span class="o">&lt;</span> <span class="n">y</span>
 
             <span class="n">current_best</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;Inf&#39;</span><span class="p">)</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">monitor_mode</span> <span class="o">==</span> <span class="s1">&#39;max&#39;</span><span class="p">:</span>
 
-            <span class="k">def</span> <span class="nf">monitor_op</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+            <span class="k">def</span><span class="w"> </span><span class="nf">monitor_op</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
                 <span class="k">return</span> <span class="n">x</span> <span class="o">&gt;</span> <span class="n">y</span>
 
             <span class="n">current_best</span> <span class="o">=</span> <span class="o">-</span><span class="nb">float</span><span class="p">(</span><span class="s1">&#39;Inf&#39;</span><span class="p">)</span>
@@ -694,10 +695,10 @@
         <span class="k">return</span> <span class="n">history</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">saved_epoch_indices</span><span class="p">]</span></div>
 
 
-    <span class="k">def</span> <span class="nf">_warn_missing_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_warn_missing_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Missing checkpoint: </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_load_epoch_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lr_schedulers</span><span class="p">:</span> <span class="n">List</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_load_epoch_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lr_schedulers</span><span class="p">:</span> <span class="n">List</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
         <span class="c1"># pylint: disable=broad-except</span>
         <span class="n">initial_epoch</span> <span class="o">=</span> <span class="mi">1</span>
         <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">epoch_filename</span><span class="p">):</span>
@@ -738,7 +739,7 @@
 
         <span class="k">return</span> <span class="n">initial_epoch</span>
 
-    <span class="k">def</span> <span class="nf">_init_model_restoring_callbacks</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_init_model_restoring_callbacks</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">initial_epoch</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">keep_only_last_best</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">save_every_epoch</span><span class="p">:</span> <span class="nb">bool</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">:</span>
         <span class="n">callbacks</span> <span class="o">=</span> <span class="p">[]</span>
@@ -768,12 +769,12 @@
                 <span class="n">best_checkpoint</span><span class="o">.</span><span class="n">best_filename</span> <span class="o">=</span> <span class="n">best_filename</span>
                 <span class="n">best_checkpoint</span><span class="o">.</span><span class="n">current_best</span> <span class="o">=</span> <span class="n">best_epoch_stats</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">monitor_metric</span><span class="p">]</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">best_restore</span><span class="o">.</span><span class="n">best_weights</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">best_filename</span><span class="p">,</span> <span class="n">map_location</span><span class="o">=</span><span class="s1">&#39;cpu&#39;</span><span class="p">)</span>
+                <span class="n">best_restore</span><span class="o">.</span><span class="n">best_weights</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">best_filename</span><span class="p">,</span> <span class="n">pickle_module</span><span class="o">=</span><span class="n">pickle</span><span class="p">,</span> <span class="n">map_location</span><span class="o">=</span><span class="s1">&#39;cpu&#39;</span><span class="p">)</span>
                 <span class="n">best_restore</span><span class="o">.</span><span class="n">current_best</span> <span class="o">=</span> <span class="n">best_epoch_stats</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">monitor_metric</span><span class="p">]</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
 
         <span class="k">return</span> <span class="n">callbacks</span>
 
-    <span class="k">def</span> <span class="nf">_init_tensorboard_callbacks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">disable_tensorboard</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_init_tensorboard_callbacks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">disable_tensorboard</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">:</span>
         <span class="n">tensorboard_writer</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="n">callbacks</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">disable_tensorboard</span><span class="p">:</span>
@@ -789,7 +790,7 @@
                 <span class="n">callbacks</span> <span class="o">+=</span> <span class="p">[</span><span class="n">TensorBoardLogger</span><span class="p">(</span><span class="n">tensorboard_writer</span><span class="p">)]</span>
         <span class="k">return</span> <span class="n">tensorboard_writer</span><span class="p">,</span> <span class="n">callbacks</span>
 
-    <span class="k">def</span> <span class="nf">_init_lr_scheduler_callbacks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lr_schedulers</span><span class="p">:</span> <span class="n">List</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_init_lr_scheduler_callbacks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lr_schedulers</span><span class="p">:</span> <span class="n">List</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">:</span>
         <span class="n">callbacks</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logging</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">lr_scheduler</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">lr_schedulers</span><span class="p">):</span>
@@ -799,7 +800,7 @@
             <span class="n">callbacks</span> <span class="o">+=</span> <span class="n">lr_schedulers</span>
         <span class="k">return</span> <span class="n">callbacks</span>
 
-    <span class="k">def</span> <span class="nf">_save_history</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_save_history</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">is_matplotlib_available</span><span class="p">:</span>
             <span class="n">history</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_stats</span><span class="p">()</span>
             <span class="n">plot_history</span><span class="p">(</span>
@@ -813,7 +814,7 @@
 
 <div class="viewcode-block" id="ModelBundle.train">
 <a class="viewcode-back" href="../../../experiment.html#poutyne.ModelBundle.train">[docs]</a>
-    <span class="k">def</span> <span class="nf">train</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">train_generator</span><span class="p">,</span> <span class="n">valid_generator</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">train</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">train_generator</span><span class="p">,</span> <span class="n">valid_generator</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Trains or finetunes the model on a dataset using a generator. If a previous training already occurred</span>
 <span class="sd">        and lasted a total of `n_previous` epochs, then the model&#39;s weights will be set to the last checkpoint and the</span>
@@ -860,7 +861,7 @@
 
 <div class="viewcode-block" id="ModelBundle.train_dataset">
 <a class="viewcode-back" href="../../../experiment.html#poutyne.ModelBundle.train_dataset">[docs]</a>
-    <span class="k">def</span> <span class="nf">train_dataset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">train_dataset</span><span class="p">,</span> <span class="n">valid_dataset</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">train_dataset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">train_dataset</span><span class="p">,</span> <span class="n">valid_dataset</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Trains or finetunes the model on a dataset. If a previous training already occurred</span>
 <span class="sd">        and lasted a total of `n_previous` epochs, then the model&#39;s weights will be set to the last checkpoint and the</span>
@@ -904,7 +905,7 @@
 
 <div class="viewcode-block" id="ModelBundle.train_data">
 <a class="viewcode-back" href="../../../experiment.html#poutyne.ModelBundle.train_data">[docs]</a>
-    <span class="k">def</span> <span class="nf">train_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">validation_data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">train_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">validation_data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Trains or finetunes the model on data under the form of NumPy arrays or torch tensors. If a previous</span>
 <span class="sd">        training already occurred and lasted a total of `n_previous` epochs, then the model&#39;s weights will be set to the</span>
@@ -955,7 +956,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_train</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">validation_data</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
-    <span class="k">def</span> <span class="nf">_train</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_train</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">training_func</span><span class="p">,</span>
         <span class="o">*</span><span class="n">args</span><span class="p">,</span>
@@ -1033,7 +1034,7 @@
 
 <div class="viewcode-block" id="ModelBundle.load_checkpoint">
 <a class="viewcode-back" href="../../../experiment.html#poutyne.ModelBundle.load_checkpoint">[docs]</a>
-    <span class="k">def</span> <span class="nf">load_checkpoint</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">load_checkpoint</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">checkpoint</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="o">*</span><span class="p">,</span> <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">strict</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">Dict</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -1082,13 +1083,13 @@
         <span class="k">return</span> <span class="n">epoch_stats</span></div>
 
 
-    <span class="k">def</span> <span class="nf">_print_epoch_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">epoch_stats</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_print_epoch_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">epoch_stats</span><span class="p">):</span>
         <span class="n">metrics_str</span> <span class="o">=</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
             <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">metric_name</span><span class="si">}</span><span class="s1">: </span><span class="si">{</span><span class="n">epoch_stats</span><span class="p">[</span><span class="n">metric_name</span><span class="p">]</span><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="si">:</span><span class="s1">g</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">metric_name</span> <span class="ow">in</span> <span class="n">epoch_stats</span><span class="o">.</span><span class="n">columns</span><span class="p">[</span><span class="mi">2</span><span class="p">:]</span>
         <span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="n">metrics_str</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_load_epoch_checkpoint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">epoch</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">strict</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_load_epoch_checkpoint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">epoch</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">strict</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">ckpt_filename</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">best_checkpoint_filename</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">epoch</span><span class="o">=</span><span class="n">epoch</span><span class="p">)</span>
 
         <span class="n">history</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_stats</span><span class="p">()</span>
@@ -1103,7 +1104,7 @@
 
         <span class="k">return</span> <span class="n">epoch_stats</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">load_weights</span><span class="p">(</span><span class="n">ckpt_filename</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="n">strict</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_load_best_checkpoint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">strict</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_load_best_checkpoint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">strict</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
         <span class="n">best_epoch_stats</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_best_epoch_stats</span><span class="p">()</span>
         <span class="n">best_epoch</span> <span class="o">=</span> <span class="n">best_epoch_stats</span><span class="p">[</span><span class="s1">&#39;epoch&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
 
@@ -1116,7 +1117,7 @@
 
         <span class="k">return</span> <span class="n">best_epoch_stats</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">load_weights</span><span class="p">(</span><span class="n">ckpt_filename</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="n">strict</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_load_last_checkpoint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">strict</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_load_last_checkpoint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">strict</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">history</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_stats</span><span class="p">()</span>
         <span class="n">epoch_stats</span> <span class="o">=</span> <span class="n">history</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">:]</span>
 
@@ -1126,7 +1127,7 @@
 
         <span class="k">return</span> <span class="n">epoch_stats</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">load_weights</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_checkpoint_filename</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="n">strict</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_load_path_checkpoint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">strict</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_load_path_checkpoint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">strict</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Loading checkpoint </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
@@ -1134,7 +1135,7 @@
 
 <div class="viewcode-block" id="ModelBundle.test">
 <a class="viewcode-back" href="../../../experiment.html#poutyne.ModelBundle.test">[docs]</a>
-    <span class="k">def</span> <span class="nf">test</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">test_generator</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">test</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">test_generator</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Computes and returns the loss and the metrics of the model on a given test examples</span>
 <span class="sd">        generator.</span>
@@ -1172,7 +1173,7 @@
 
 <div class="viewcode-block" id="ModelBundle.test_dataset">
 <a class="viewcode-back" href="../../../experiment.html#poutyne.ModelBundle.test_dataset">[docs]</a>
-    <span class="k">def</span> <span class="nf">test_dataset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">test_dataset</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">test_dataset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">test_dataset</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Computes and returns the loss and the metrics of the model on a given test dataset.</span>
 
@@ -1208,7 +1209,7 @@
 
 <div class="viewcode-block" id="ModelBundle.test_data">
 <a class="viewcode-back" href="../../../experiment.html#poutyne.ModelBundle.test_data">[docs]</a>
-    <span class="k">def</span> <span class="nf">test_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">test_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Computes and returns the loss and the metrics of the model on a given test dataset.</span>
 
@@ -1247,7 +1248,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_test</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">evaluate</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
-    <span class="k">def</span> <span class="nf">_test</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_test</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">evaluate_func</span><span class="p">,</span>
         <span class="o">*</span><span class="n">args</span><span class="p">,</span>
@@ -1285,7 +1286,7 @@
 
 <div class="viewcode-block" id="ModelBundle.infer">
 <a class="viewcode-back" href="../../../experiment.html#poutyne.ModelBundle.infer">[docs]</a>
-    <span class="k">def</span> <span class="nf">infer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">generator</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">infer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">generator</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns the predictions of the network given batches of samples ``x``, where the tensors are</span>
 <span class="sd">        converted into Numpy arrays.</span>
@@ -1317,7 +1318,7 @@
 
 <div class="viewcode-block" id="ModelBundle.infer_dataset">
 <a class="viewcode-back" href="../../../experiment.html#poutyne.ModelBundle.infer_dataset">[docs]</a>
-    <span class="k">def</span> <span class="nf">infer_dataset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">infer_dataset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns the inferred predictions of the network given a dataset, where the tensors are</span>
 <span class="sd">        converted into Numpy arrays.</span>
@@ -1343,7 +1344,7 @@
 
 <div class="viewcode-block" id="ModelBundle.infer_data">
 <a class="viewcode-back" href="../../../experiment.html#poutyne.ModelBundle.infer_data">[docs]</a>
-    <span class="k">def</span> <span class="nf">infer_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">infer_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns the inferred predictions of the network given a dataset ``x``, where the tensors are</span>
 <span class="sd">        converted into Numpy arrays.</span>
@@ -1369,7 +1370,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_predict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
-    <span class="k">def</span> <span class="nf">_predict</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_predict</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">predict_func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">checkpoint</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;best&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logging</span><span class="p">:</span>
@@ -1382,7 +1383,7 @@
 
 <div class="viewcode-block" id="ModelBundle.is_better_than">
 <a class="viewcode-back" href="../../../experiment.html#poutyne.ModelBundle.is_better_than">[docs]</a>
-    <span class="k">def</span> <span class="nf">is_better_than</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">another_model_bundle</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_better_than</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">another_model_bundle</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compare the results of the ModelBundle with another model bundle. To compare, both ModelBundles need to be</span>
 <span class="sd">        logged, monitor the same metric and the same monitor mode (&quot;min&quot; or &quot;max&quot;).</span>
@@ -1432,7 +1433,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2018-2024, Frédérik Paradis.</p>
+    <p>&#169; Copyright 2018-2025, Frédérik Paradis.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

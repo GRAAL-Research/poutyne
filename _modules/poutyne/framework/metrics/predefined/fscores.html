@@ -5,14 +5,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>poutyne.framework.metrics.predefined.fscores &mdash; Poutyne 1.17.3 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=fa44fd50" />
+  <title>poutyne.framework.metrics.predefined.fscores &mdash; Poutyne 1.17.4 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="../../../../../_static/css/theme.css?v=e59714d7" />
 
   
       <script src="../../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../../_static/documentation_options.js?v=a487ca7d"></script>
+      <script src="../../../../../_static/documentation_options.js?v=6f0e5ab0"></script>
       <script src="../../../../../_static/doctools.js?v=9bcbadda"></script>
       <script src="../../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../../../_static/js/theme.js"></script>
@@ -124,20 +124,20 @@
 <span class="sd">limitations under the License.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
-<span class="kn">import</span> <span class="nn">warnings</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
 
-<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
 
-<span class="kn">from</span> <span class="nn">poutyne.framework.metrics.base</span> <span class="kn">import</span> <span class="n">Metric</span>
-<span class="kn">from</span> <span class="nn">poutyne.framework.metrics.metrics_registering</span> <span class="kn">import</span> <span class="n">register_metric_class</span>
-<span class="kn">from</span> <span class="nn">poutyne.framework.metrics.predefined.bincount</span> <span class="kn">import</span> <span class="n">_bincount</span>
-<span class="kn">from</span> <span class="nn">poutyne.utils</span> <span class="kn">import</span> <span class="n">set_deterministic_debug_mode</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">poutyne.framework.metrics.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">Metric</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">poutyne.framework.metrics.metrics_registering</span><span class="w"> </span><span class="kn">import</span> <span class="n">register_metric_class</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">poutyne.framework.metrics.predefined.bincount</span><span class="w"> </span><span class="kn">import</span> <span class="n">_bincount</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">poutyne.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">set_deterministic_debug_mode</span>
 
 
 <div class="viewcode-block" id="FBeta">
 <a class="viewcode-back" href="../../../../../metrics.html#poutyne.FBeta">[docs]</a>
-<span class="k">class</span> <span class="nc">FBeta</span><span class="p">(</span><span class="n">Metric</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">FBeta</span><span class="p">(</span><span class="n">Metric</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    The source code of this class is under the Apache v2 License and was copied from</span>
 <span class="sd">    the AllenNLP project and has been modified.</span>
@@ -211,7 +211,7 @@
 <span class="sd">            code slower.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
         <span class="n">metric</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -269,7 +269,7 @@
         <span class="c1"># Shape: (num_classes, )</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="s1">&#39;_true_sum&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_get_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">metric</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">metric</span><span class="p">):</span>
         <span class="n">name</span> <span class="o">=</span> <span class="n">metric</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_average</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">name</span> <span class="o">+=</span> <span class="s1">&#39;_&#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_average</span>
@@ -277,7 +277,7 @@
             <span class="n">name</span> <span class="o">+=</span> <span class="s1">&#39;_&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_label</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">name</span>
 
-    <span class="k">def</span> <span class="nf">_get_names</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">names</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_names</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">names</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_metric</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">default_name</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">metric_options</span><span class="p">))</span>
         <span class="k">else</span><span class="p">:</span>
@@ -289,7 +289,7 @@
 
         <span class="k">return</span> <span class="n">default_name</span>
 
-    <span class="k">def</span> <span class="nf">_validate_supplied_names</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">names</span><span class="p">,</span> <span class="n">default_name</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_validate_supplied_names</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">names</span><span class="p">,</span> <span class="n">default_name</span><span class="p">):</span>
         <span class="n">names_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">names</span><span class="p">]</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="n">names</span>
         <span class="n">default_name</span> <span class="o">=</span> <span class="p">[</span><span class="n">default_name</span><span class="p">]</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">default_name</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="n">default_name</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">names_list</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">default_name</span><span class="p">):</span>
@@ -297,7 +297,7 @@
 
 <div class="viewcode-block" id="FBeta.forward">
 <a class="viewcode-back" href="../../../../../metrics.html#poutyne.FBeta.forward">[docs]</a>
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">y_true</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]]</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">]]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -322,7 +322,7 @@
 
 <div class="viewcode-block" id="FBeta.update">
 <a class="viewcode-back" href="../../../../../metrics.html#poutyne.FBeta.update">[docs]</a>
-    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">y_true</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">y_true</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Update the confusion matrix for calculating the F-score.</span>
 
@@ -337,7 +337,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_update</span><span class="p">(</span><span class="n">y_pred</span><span class="p">,</span> <span class="n">y_true</span><span class="p">)</span></div>
 
 
-    <span class="k">def</span> <span class="nf">_update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">y_true</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">y_true</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="c1"># pylint: disable=too-many-branches</span>
         <span class="k">with</span> <span class="n">set_deterministic_debug_mode</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">deterministic_debug_mode</span><span class="p">):</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
@@ -417,7 +417,7 @@
 
 <div class="viewcode-block" id="FBeta.compute">
 <a class="viewcode-back" href="../../../../../metrics.html#poutyne.FBeta.compute">[docs]</a>
-    <span class="k">def</span> <span class="nf">compute</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">]]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">compute</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">]]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns either a float if a single metric is set in the ``__init__`` or a tuple</span>
 <span class="sd">        of floats (f-score, precision, recall) if all metrics are requested.</span>
@@ -428,7 +428,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_true_positive_sum</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pred_sum</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_true_sum</span><span class="p">)</span></div>
 
 
-    <span class="k">def</span> <span class="nf">_compute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tp_sum</span><span class="p">,</span> <span class="n">pred_sum</span><span class="p">,</span> <span class="n">true_sum</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_compute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tp_sum</span><span class="p">,</span> <span class="n">pred_sum</span><span class="p">,</span> <span class="n">true_sum</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_average</span> <span class="o">==</span> <span class="s1">&#39;micro&#39;</span><span class="p">:</span>
             <span class="n">tp_sum</span> <span class="o">=</span> <span class="n">tp_sum</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
             <span class="n">pred_sum</span> <span class="o">=</span> <span class="n">pred_sum</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
@@ -464,7 +464,7 @@
 
 <div class="viewcode-block" id="FBeta.reset">
 <a class="viewcode-back" href="../../../../../metrics.html#poutyne.FBeta.reset">[docs]</a>
-    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_true_positive_sum</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_pred_sum</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_true_sum</span> <span class="o">=</span> <span class="kc">None</span>
@@ -476,7 +476,7 @@
 <div class="viewcode-block" id="F1">
 <a class="viewcode-back" href="../../../../../metrics.html#poutyne.F1">[docs]</a>
 <span class="nd">@register_metric_class</span>
-<span class="k">class</span> <span class="nc">F1</span><span class="p">(</span><span class="n">FBeta</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">F1</span><span class="p">(</span><span class="n">FBeta</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Alias class for :class:`~poutyne.FBeta` where ``metric == &#39;fscore&#39;`` and ``beta == 1``.</span>
 
@@ -490,7 +490,7 @@
 <span class="sd">        where ``{average}`` is replaced by the value of the respective parameter.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="n">_raise_invalid_use_of_beta</span><span class="p">(</span><span class="s1">&#39;F1&#39;</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">metric</span><span class="o">=</span><span class="s1">&#39;fscore&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
@@ -499,7 +499,7 @@
 <div class="viewcode-block" id="Precision">
 <a class="viewcode-back" href="../../../../../metrics.html#poutyne.Precision">[docs]</a>
 <span class="nd">@register_metric_class</span>
-<span class="k">class</span> <span class="nc">Precision</span><span class="p">(</span><span class="n">FBeta</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Precision</span><span class="p">(</span><span class="n">FBeta</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Alias class for :class:`~poutyne.FBeta` where ``metric == &#39;precision&#39;``.</span>
 
@@ -513,7 +513,7 @@
 <span class="sd">        where ``{average}`` is replaced by the value of the respective parameter.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">metric</span><span class="o">=</span><span class="s1">&#39;precision&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
@@ -521,7 +521,7 @@
 <div class="viewcode-block" id="Recall">
 <a class="viewcode-back" href="../../../../../metrics.html#poutyne.Recall">[docs]</a>
 <span class="nd">@register_metric_class</span>
-<span class="k">class</span> <span class="nc">Recall</span><span class="p">(</span><span class="n">FBeta</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Recall</span><span class="p">(</span><span class="n">FBeta</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Alias class for :class:`~poutyne.FBeta` where ``metric == &#39;recall&#39;``.</span>
 
@@ -535,7 +535,7 @@
 <span class="sd">        where ``{average}`` is replaced by the value of the respective parameter.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">metric</span><span class="o">=</span><span class="s1">&#39;recall&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
@@ -543,7 +543,7 @@
 <div class="viewcode-block" id="BinaryF1">
 <a class="viewcode-back" href="../../../../../metrics.html#poutyne.BinaryF1">[docs]</a>
 <span class="nd">@register_metric_class</span><span class="p">(</span><span class="s1">&#39;binaryf1&#39;</span><span class="p">,</span> <span class="s1">&#39;binf1&#39;</span><span class="p">)</span>
-<span class="k">class</span> <span class="nc">BinaryF1</span><span class="p">(</span><span class="n">FBeta</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">BinaryF1</span><span class="p">(</span><span class="n">FBeta</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Alias class for :class:`~poutyne.FBeta` where ``metric == &#39;fscore&#39;``, ``average=&#39;binary&#39;`` and ``beta == 1``.</span>
 
@@ -556,7 +556,7 @@
 <span class="sd">        - Validation: ``&#39;val_bin_fscore&#39;``</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="n">_raise_invalid_use_of_beta</span><span class="p">(</span><span class="s1">&#39;BinaryF1&#39;</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span>
         <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;names&#39;</span><span class="p">:</span> <span class="s1">&#39;bin_fscore&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">}</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">metric</span><span class="o">=</span><span class="s1">&#39;fscore&#39;</span><span class="p">,</span> <span class="n">average</span><span class="o">=</span><span class="s1">&#39;binary&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
@@ -566,7 +566,7 @@
 <div class="viewcode-block" id="BinaryPrecision">
 <a class="viewcode-back" href="../../../../../metrics.html#poutyne.BinaryPrecision">[docs]</a>
 <span class="nd">@register_metric_class</span><span class="p">(</span><span class="s1">&#39;binaryprecision&#39;</span><span class="p">,</span> <span class="s1">&#39;binprecision&#39;</span><span class="p">)</span>
-<span class="k">class</span> <span class="nc">BinaryPrecision</span><span class="p">(</span><span class="n">FBeta</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">BinaryPrecision</span><span class="p">(</span><span class="n">FBeta</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Alias class for :class:`~poutyne.FBeta` where ``metric == &#39;precision&#39;`` and ``average=&#39;binary&#39;``.</span>
 
@@ -579,7 +579,7 @@
 <span class="sd">        - Validation: ``&#39;val_bin_precision&#39;``</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;names&#39;</span><span class="p">:</span> <span class="s1">&#39;bin_precision&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">}</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">metric</span><span class="o">=</span><span class="s1">&#39;precision&#39;</span><span class="p">,</span> <span class="n">average</span><span class="o">=</span><span class="s1">&#39;binary&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
@@ -588,7 +588,7 @@
 <div class="viewcode-block" id="BinaryRecall">
 <a class="viewcode-back" href="../../../../../metrics.html#poutyne.BinaryRecall">[docs]</a>
 <span class="nd">@register_metric_class</span><span class="p">(</span><span class="s1">&#39;binaryrecall&#39;</span><span class="p">,</span> <span class="s1">&#39;binrecall&#39;</span><span class="p">)</span>
-<span class="k">class</span> <span class="nc">BinaryRecall</span><span class="p">(</span><span class="n">FBeta</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">BinaryRecall</span><span class="p">(</span><span class="n">FBeta</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Alias class for :class:`~poutyne.FBeta` where ``metric == &#39;recall&#39;`` and ``average=&#39;binary&#39;``.</span>
 
@@ -601,13 +601,13 @@
 <span class="sd">        - Validation: ``&#39;val_bin_recall&#39;``</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;names&#39;</span><span class="p">:</span> <span class="s1">&#39;bin_recall&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">}</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">metric</span><span class="o">=</span><span class="s1">&#39;recall&#39;</span><span class="p">,</span> <span class="n">average</span><span class="o">=</span><span class="s1">&#39;binary&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
 
-<span class="k">def</span> <span class="nf">_prf_divide</span><span class="p">(</span><span class="n">numerator</span><span class="p">,</span> <span class="n">denominator</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_prf_divide</span><span class="p">(</span><span class="n">numerator</span><span class="p">,</span> <span class="n">denominator</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Performs division and handles divide-by-zero.</span>
 
 <span class="sd">    On zero-division, sets the corresponding result elements to zero.</span>
@@ -622,7 +622,7 @@
     <span class="k">return</span> <span class="n">result</span>
 
 
-<span class="k">def</span> <span class="nf">_raise_invalid_use_of_beta</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_raise_invalid_use_of_beta</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">):</span>
     <span class="k">if</span> <span class="s1">&#39;beta&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The use of the `beta` argument with </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> is invalid. Use FBeta instead.&quot;</span><span class="p">)</span>
 </pre></div>
@@ -634,7 +634,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2018-2024, Frédérik Paradis.</p>
+    <p>&#169; Copyright 2018-2025, Frédérik Paradis.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
