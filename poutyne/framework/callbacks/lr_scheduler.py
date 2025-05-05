@@ -18,6 +18,7 @@ You should have received a copy of the GNU Lesser General Public License along w
 """
 
 import inspect
+import pickle
 import sys
 from typing import BinaryIO, Dict
 
@@ -74,10 +75,10 @@ class _PyTorchLRSchedulerWrapper(Callback):
         return self.scheduler.state_dict()
 
     def load_state(self, f: BinaryIO):
-        self.load_state_dict(torch.load(f, map_location='cpu'))
+        self.load_state_dict(torch.load(f, pickle_module=pickle, map_location='cpu'))
 
     def save_state(self, f: BinaryIO):
-        torch.save(self.state_dict(), f)
+        torch.save(self.state_dict(), f, pickle_module=pickle)
 
 
 def new_init(torch_lr_scheduler):

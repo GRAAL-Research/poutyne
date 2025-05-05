@@ -22,6 +22,7 @@ import numbers
 
 # -*- coding: utf-8 -*-
 import os
+import pickle
 import random
 import warnings
 from typing import IO, Any, BinaryIO, Optional, Union
@@ -232,6 +233,7 @@ def save_random_states(f: Union[str, os.PathLike, BinaryIO, IO[bytes]]):
             python=random.getstate(),
         ),
         f,
+        pickle_module=pickle,
     )
 
 
@@ -243,7 +245,7 @@ def load_random_states(f: Any):
         f: a file-like object (has to implement :meth:`read`, :meth:`readline`, :meth:`tell`, and :meth:`seek`),
             or a string or os.PathLike object containing a file name
     """
-    states = torch.load(f)
+    states = torch.load(f, pickle_module=pickle)
     torch.set_rng_state(states["cpu"])
     torch.cuda.set_rng_state_all(states["cuda"])
     np.random.set_state(states["numpy"])
