@@ -232,7 +232,7 @@ def save_random_states(f: Union[str, os.PathLike, BinaryIO, IO[bytes]]):
             numpy=np.random.get_state(),
             python=random.getstate(),
         ),
-        f=f,
+        f,
         pickle_module=pickle,
     )
 
