@@ -1558,7 +1558,7 @@ class Model:
             f: File-like object (has to implement fileno that returns a file descriptor) or string
                 containing a file name.
         """
-        torch.save(self.network.state_dict(), f=f, pickle_module=pickle)
+        torch.save(self.network.state_dict(), f, pickle_module=pickle)
 
     def load_optimizer_state(self, f):
         """
@@ -1579,7 +1579,7 @@ class Model:
             f: File-like object (has to implement fileno that returns a file descriptor) or string
                 containing a file name.
         """
-        torch.save(self.optimizer.state_dict(), f=f, pickle_module=pickle)
+        torch.save(self.optimizer.state_dict(), f, pickle_module=pickle)
 
     def _transfer_optimizer_state_to_right_device(self):
         if self.optimizer is None:

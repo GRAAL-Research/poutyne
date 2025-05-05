@@ -78,7 +78,7 @@ class _PyTorchLRSchedulerWrapper(Callback):
         self.load_state_dict(torch.load(f, pickle_module=pickle, map_location='cpu'))
 
     def save_state(self, f: BinaryIO):
-        torch.save(self.state_dict(), f=f, pickle_module=pickle)
+        torch.save(self.state_dict(), f, pickle_module=pickle)
 
 
 def new_init(torch_lr_scheduler):
